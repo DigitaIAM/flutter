@@ -52,11 +52,16 @@ dependencies:
   prompt_dialog: ^1.0.9
   flutter_bloc: ^8.1.1
   timeago: ^3.3.0
+  country_icons: ^2.0.2
 
   flutter_feathersjs: ^4.0.5+1
   http: ^0.13.4
   mime: ^1.0.2
   http_parser: ^4.0.1
+
+
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -81,9 +86,11 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+     - lang/en.json
+     - lang/ru.json
+     - lang/uz.json
+     - lang/tj.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

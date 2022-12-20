@@ -20,7 +20,6 @@ class MySettings with ChangeNotifier {
 
 
   String reportUrl = "";
-  String wsServer = "wss://data.nss.uz";
   String server = "https://data.nss.uz";
   int timeOut = 0;
 
@@ -67,5 +66,12 @@ class MySettings with ChangeNotifier {
   }
 
 
+  String getLanguage(BuildContext context) {
+    if (locale.languageCode == "uz") return "Uzbek";
+    if (locale.languageCode == "en") return "English";
+    if (locale.languageCode == "ru") return "Russian";
+    if (locale.languageCode == "tr") return "Tajik";
+    return "English";
+  }
 
 }

@@ -1,5 +1,6 @@
 import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/core/my_settings.dart';
 import 'package:prompt_dialog/prompt_dialog.dart';
 import 'package:provider/provider.dart';
@@ -42,7 +43,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
         child: Container(
           color: Colors.grey.shade200,
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          child: ListView.builder(
+          child: rows.isEmpty ? Center(child: Text(AppLocalizations.of(context).translate("no-data"))) : ListView.builder(
             itemCount: rows.length,
             itemBuilder: (context, index) {
               return InkWell(
@@ -64,7 +65,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
                         children: [
                           Expanded(child: Text(rows[index]["name"], style: Theme.of(context).textTheme.headline6,)),
                           IconButton(onPressed: () async {
-                            String? newName = await prompt(context, title: Text("Company name"), initialValue: rows[index]["name"]);
+                            String? newName = await prompt(context, title: Text(AppLocalizations.of(context).translate("name")), initialValue: rows[index]["name"]);
                             if (newName == null) return;
                             settings.flutterFeathersjs.scketio.update(serviceName: "companies", objectId: rows[index]["_id"], data: {
                               "name": newName
@@ -73,10 +74,10 @@ class _CompaniesPageState extends State<CompaniesPage> {
                           IconButton(onPressed: () async {
                             if (await confirm(
                               context,
-                              title: const Text('Delete'),
-                              content: const Text('Would you like to remove?'),
-                              textOK: const Text('Yes'),
-                              textCancel: const Text('No'),
+                              title: Text(AppLocalizations.of(context).translate("delete")),
+                              content: Text(AppLocalizations.of(context).translate("delete-content")),
+                              textOK: Text(AppLocalizations.of(context).translate("yes")),
+                              textCancel: Text(AppLocalizations.of(context).translate("no")),
                             ))  {
                               await settings.flutterFeathersjs.scketio.remove(serviceName: "companies", objectId: rows[index]["_id"]);
                             }

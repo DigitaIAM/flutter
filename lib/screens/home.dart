@@ -1,5 +1,6 @@
 import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:flutter/material.dart';
+import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/core/my_settings.dart';
 import 'package:nae_hr/screens/cameras.dart';
 import 'package:nae_hr/screens/companies.dart';
@@ -42,7 +43,12 @@ class _HomePageState extends State<HomePage> {
               },
               child: Center(child: Text(selectedCompanyIndex == -1 ? "NO COMPANY" : companies[selectedCompanyIndex]["name"], style: Theme.of(context).textTheme.headline6!.copyWith(color: Colors.white, decoration: TextDecoration.underline,),), )),
             Text("  -  "),
-            Text(mainTitle)
+            Expanded(child: Text(mainTitle)),
+            InkWell(
+              onTap: () {
+                selectLanguage(settings);
+              },
+              child: Text(settings.getLanguage(context)))
           ],
         ),
         centerTitle: true,
@@ -93,100 +99,99 @@ class _HomePageState extends State<HomePage> {
             items: [
               SideMenuItem(
                 priority: 0,
-                title: 'Dashboard',
+                title: AppLocalizations.of(context).translate("dashboard"),
                 onTap: () {
                   page.jumpToPage(0);
                   setState(() {
-                    mainTitle = "Dashboard";
+                    mainTitle = AppLocalizations.of(context).translate("dashboard");
                   });
                 },
                 icon: const Icon(Icons.dashboard),
               ),
               SideMenuItem(
                 priority: 1,
-                title: 'People',
+                title: AppLocalizations.of(context).translate("people"),
                 onTap: () {
                   page.jumpToPage(1);
                   setState(() {
-                    mainTitle = "People";
+                    mainTitle = AppLocalizations.of(context).translate("people");
                   });
                 },
                 icon: const Icon(Icons.people),
               ),
               SideMenuItem(
                 priority: 2,
-                title: 'Shifts',
+                title: AppLocalizations.of(context).translate("shifts"),
                 onTap: () {
                   page.jumpToPage(2);
                   setState(() {
-                    mainTitle = "Shifts";
+                    mainTitle = AppLocalizations.of(context).translate("shifts");
                   });
                 },
                 icon: const Icon(Icons.calendar_month),
               ),
               SideMenuItem(
                 priority: 3,
-                title: 'Events',
+                title: AppLocalizations.of(context).translate("events"),
                 onTap: () {
                   page.jumpToPage(3);
                   setState(() {
-                    mainTitle = "Events";
+                    mainTitle = AppLocalizations.of(context).translate("events");
                   });
                 },
                 icon: const Icon(Icons.event),
               ),
               SideMenuItem(
                 priority: 4,
-                title: 'Attendance',
+                title: AppLocalizations.of(context).translate("attendance"),
                 onTap: () {
                   page.jumpToPage(4);
                   setState(() {
-                    mainTitle = "Attendance";
+                    mainTitle = AppLocalizations.of(context).translate("attendance");
                   });
                 },
                 icon: const Icon(Icons.event_available),
               ),
               SideMenuItem(
                 priority: 5,
-                title: 'Users',
+                title: AppLocalizations.of(context).translate("users"),
                 onTap: () {
                   page.jumpToPage(5);
                   setState(() {
-                    mainTitle = "Users";
+                    mainTitle = AppLocalizations.of(context).translate("users");
                   });
                 },
                 icon: const Icon(Icons.person),
-                tooltipContent: "This is a tooltip for Dashboard item",
               ),
               SideMenuItem(
                 priority: 6,
-                title: 'Companies',
+                title: AppLocalizations.of(context).translate("companies"),
                 onTap: () {
                   page.jumpToPage(6);
                   setState(() {
-                    mainTitle = "Companies";
+                    mainTitle = AppLocalizations.of(context).translate("companies");
                   });
                 },
                 icon: const Icon(Icons.location_city),
               ),
               SideMenuItem(
                 priority: 7,
-                title: 'Cameras',
+                title: AppLocalizations.of(context).translate("cameras"),
                 onTap: () {
                   page.jumpToPage(7);
                   setState(() {
-                    mainTitle = "Cameras";
+                    mainTitle = AppLocalizations.of(context).translate("cameras");
                   });
                 },
                 icon: const Icon(Icons.camera_alt),
               ),
               SideMenuItem(
                 priority: 8,
-                title: 'Settings',
+                title: AppLocalizations.of(context).translate("settings"),
                 onTap: () {
                   page.jumpToPage(8);
                   setState(() {
-                    mainTitle = "Settings";
+                    mainTitle = AppLocalizations.of(context).translate("settings");
                   });
                 },
                 icon: const Icon(Icons.settings),
@@ -267,7 +272,7 @@ class _HomePageState extends State<HomePage> {
   void selectCompany(MySettings settings) {
     SelectDialog.showModal<dynamic>(
       context,
-      label: "Simple Example",
+      label: AppLocalizations.of(context).translate("companies"),
       showSearchBox: false,
       items: companies,
       itemBuilder: (contex, item, isSelected) {
@@ -283,8 +288,57 @@ class _HomePageState extends State<HomePage> {
         settings.selectedCompanyId = selected["_id"];
         settings.saveAndNotify();
         page.jumpTo(0);
-        mainTitle = "Dashboard";
+        mainTitle = AppLocalizations.of(context).translate("dashboard");
       },
     );
+  }
+
+  void selectLanguage(MySettings settings) {
+    AlertDialog alert = AlertDialog(
+
+        content: SizedBox(
+          height: 240,
+          child: Column(
+            children: [
+              ListTile(
+                leading: Image.asset('icons/flags/png/uz.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
+                title: const Text("O'zbekcha"),
+                onTap: () async {
+                  settings.locale = const Locale("uz", "UZ");
+                  settings.saveAndNotify();
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Image.asset('icons/flags/png/gb.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
+                title: const Text("English"),
+                onTap: () async {
+                  settings.locale = const Locale("en", "US");
+                  settings.saveAndNotify();
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Image.asset('icons/flags/png/ru.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
+                title: const Text("Русский"),
+                onTap: () async {
+                  settings.locale = const Locale("ru", "RU");
+                  settings.saveAndNotify();
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Image.asset('icons/flags/png/tj.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
+                title: const Text("Tajiki"),
+                onTap: () async {
+                  settings.locale = const Locale("tr", "TR");
+                  settings.saveAndNotify();
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        ));
+    showDialog(context: context, builder: (context) { return alert; } );
   }
 }

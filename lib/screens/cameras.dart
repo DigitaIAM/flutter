@@ -1,5 +1,6 @@
 import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/core/my_settings.dart';
 import 'package:nae_hr/share/utils.dart';
 import 'package:provider/provider.dart';
@@ -50,7 +51,7 @@ class _CamerasPageState extends State<CamerasPage> {
         child: Container(
           color: Colors.grey.shade200,
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          child: ListView.builder(
+          child: rows.isEmpty ? Center(child: Text(AppLocalizations.of(context).translate("no-data"))) : ListView.builder(
             itemCount: rows.length,
             itemBuilder: (context, index) {
               return InkWell(
@@ -75,10 +76,10 @@ class _CamerasPageState extends State<CamerasPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(rows[index]["name"], style: Theme.of(context).textTheme.headline6,),
-                              SizedBox(height: 4),
-                              Text("IP, port:  " + rows[index]["ip"] + ":" + rows[index]["port"] + "   " + rows[index]["protocol"], style: Theme.of(context).textTheme.bodyText2,),
-                              SizedBox(height: 2),
-                              Text("User name:  " + rows[index]["username"], style: Theme.of(context).textTheme.bodyText2,)
+                              const SizedBox(height: 4),
+                              Text(rows[index]["ip"] + ":" + rows[index]["port"] + "   " + rows[index]["protocol"], style: Theme.of(context).textTheme.bodyText2,),
+                              const SizedBox(height: 2),
+                              Text(rows[index]["devIndex"] + "    "  + rows[index]["username"], style: Theme.of(context).textTheme.bodyText2,)
                             ],
                           )),
                           Text(rows[index]["status"]["name"] + "  " + timeago.format(DateTime.fromMillisecondsSinceEpoch(rows[index]["status"]["ts"] * 1000)), style: Theme.of(context).textTheme.bodyText2,),
@@ -91,10 +92,10 @@ class _CamerasPageState extends State<CamerasPage> {
                           IconButton(onPressed: () async {
                             if (await confirm(
                               context,
-                              title: const Text('Delete'),
-                              content: const Text('Would you like to remove?'),
-                              textOK: const Text('Yes'),
-                              textCancel: const Text('No'),
+                              title: Text(AppLocalizations.of(context).translate("delete")),
+                              content: Text(AppLocalizations.of(context).translate("delete-content")),
+                              textOK: Text(AppLocalizations.of(context).translate("yes")),
+                              textCancel: Text(AppLocalizations.of(context).translate("no")),
                             ))  {
                               await settings.flutterFeathersjs.scketio.remove(serviceName: "cameras", objectId: rows[index]["_id"]);
                             }
@@ -159,7 +160,7 @@ class _CamerasPageState extends State<CamerasPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Center(child: Text(_row == null ? "New camera" : _row["name"], style: Theme.of(context).textTheme.headline6,)),
                 ),),
-                IconButton(onPressed: () { Navigator.pop(context); }, icon: Icon(Icons.close))
+                IconButton(onPressed: () { Navigator.pop(context); }, icon: const Icon(Icons.close))
               ],
             ),
             Padding(
@@ -167,11 +168,11 @@ class _CamerasPageState extends State<CamerasPage> {
               child: TextFormField(
                 controller: nameController,
                 enabled: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   isDense: true,
-                  prefixStyle: TextStyle(color: Colors.red),
-                  labelText: "Name",
-                  border: OutlineInputBorder(),
+                  prefixStyle: const TextStyle(color: Colors.red),
+                  labelText: AppLocalizations.of(context).translate("name"),
+                  border: const OutlineInputBorder(),
                 ),
 
               ),
@@ -181,11 +182,11 @@ class _CamerasPageState extends State<CamerasPage> {
               child: TextFormField(
                 controller: devIndexController,
                 enabled: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   isDense: true,
-                  prefixStyle: TextStyle(color: Colors.red),
-                  labelText: "Dev Index",
-                  border: OutlineInputBorder(),
+                  prefixStyle: const TextStyle(color: Colors.red),
+                  labelText: AppLocalizations.of(context).translate("dev-index"),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ),
@@ -196,35 +197,35 @@ class _CamerasPageState extends State<CamerasPage> {
                   Expanded(child: TextFormField(
                       controller: protocolController,
                       enabled: true,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         isDense: true,
-                        prefixStyle: TextStyle(color: Colors.red),
-                        labelText: "Protocol",
-                        border: OutlineInputBorder(),
+                        prefixStyle: const TextStyle(color: Colors.red),
+                        labelText: AppLocalizations.of(context).translate("protocol"),
+                        border: const OutlineInputBorder(),
                       ),
 
                     ),),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Expanded(child: TextFormField(
                       controller: ipController,
                       enabled: true,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         isDense: true,
-                        prefixStyle: TextStyle(color: Colors.red),
-                        labelText: "IP address",
-                        border: OutlineInputBorder(),
+                        prefixStyle: const TextStyle(color: Colors.red),
+                        labelText: AppLocalizations.of(context).translate("ip"),
+                        border: const OutlineInputBorder(),
                       ),
 
                     ),),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Expanded(child: TextFormField(
                       controller: portController,
                       enabled: true,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         isDense: true,
-                        prefixStyle: TextStyle(color: Colors.red),
-                        labelText: "Port",
-                        border: OutlineInputBorder(),
+                        prefixStyle: const TextStyle(color: Colors.red),
+                        labelText: AppLocalizations.of(context).translate("port"),
+                        border: const OutlineInputBorder(),
                       ),
 
                     ),)
@@ -238,22 +239,22 @@ class _CamerasPageState extends State<CamerasPage> {
                   Expanded(child: TextFormField(
                     controller: userNameController,
                     enabled: true,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       isDense: true,
-                      prefixStyle: TextStyle(color: Colors.red),
-                      labelText: "Username",
-                      border: OutlineInputBorder(),
+                      prefixStyle: const TextStyle(color: Colors.red),
+                      labelText: AppLocalizations.of(context).translate("username"),
+                      border: const OutlineInputBorder(),
                     ),
                   ),),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Expanded(child: TextFormField(
                     controller: passwordController,
                     enabled: true,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       isDense: true,
-                      prefixStyle: TextStyle(color: Colors.red),
-                      labelText: "Password",
-                      border: OutlineInputBorder(),
+                      prefixStyle: const TextStyle(color: Colors.red),
+                      labelText: AppLocalizations.of(context).translate("password"),
+                      border: const OutlineInputBorder(),
                     ),
 
                   ),),
@@ -292,7 +293,7 @@ class _CamerasPageState extends State<CamerasPage> {
                       });
                     }
                     Navigator.pop(context);
-                  }, child: const Text("Save")),
+                  }, child: Text(AppLocalizations.of(context).translate("save"))),
                 ],
               ),
             )

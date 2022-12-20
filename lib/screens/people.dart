@@ -1,6 +1,7 @@
 import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:data_table_2/paginated_data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/core/my_settings.dart';
 import 'package:prompt_dialog/prompt_dialog.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +16,14 @@ class PeoplePage extends StatefulWidget {
 class _PeoplePageState extends State<PeoplePage> {
 
   bool _first = true;
+  dynamic selectedRow;
+  bool showEditForm = false;
   List<dynamic> rows = [];
+
+  TextEditingController nameController = TextEditingController();
+  TextEditingController positionController = TextEditingController();
+  TextEditingController divisionController = TextEditingController();
+  TextEditingController subdivisonController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -29,60 +37,86 @@ class _PeoplePageState extends State<PeoplePage> {
     }
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+      floatingActionButton: showEditForm ? null : FloatingActionButton(
+        child: const Icon(Icons.add),
         onPressed: () async {
-          String? newName = await prompt(context, title: Text("New person name"));
-          if (newName == null) return;
-          settings.flutterFeathersjs.scketio.create(serviceName: "people", data: {
-            "name": newName
+          selectedRow = null;
+          setState(() {
+            showEditForm = true;
+            refreshControllers(settings);
           });
         },
       ),
       body: SafeArea(
         child: Container(
           color: Colors.grey.shade200,
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          child: DataTable2(
-            decoration: BoxDecoration(
-              color: Colors.white
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+          child: showEditForm ? getBodyForEdit(settings) : DataTable2(
+            fixedColumnsColor: Colors.grey,
+            decoration: const BoxDecoration(
+              color: Colors.white,
             ),
-            columns: const [
+            border: TableBorder.all(color: Colors.grey.shade200, width: 1),
+            columnSpacing: 8,
+            dataRowHeight: 84,
+            headingRowColor: MaterialStateColor.resolveWith((states) => Colors.blue.shade100),
+            headingTextStyle: Theme.of(context).textTheme.bodyLarge,
+            empty: Text(AppLocalizations.of(context).translate("no-data")),
+            columns: [
               DataColumn2(
-                label: Text('Photo'),
-                size: ColumnSize.S,
+                label: Text(AppLocalizations.of(context).translate("photo"), textAlign: TextAlign.center),
+                fixedWidth: 64
               ),
-              DataColumn(
-                label: Text('Name'),
-                numeric: true,
+              DataColumn2(
+                label: Text(AppLocalizations.of(context).translate("person-name"), textAlign: TextAlign.center),
+                size: ColumnSize.L
               ),
-              DataColumn(
-                label: Text('Gender'),
-                numeric: true,
+              DataColumn2(
+                label: Text(AppLocalizations.of(context).translate("gender"), textAlign: TextAlign.center),
+                  fixedWidth: 42
               ),
-              DataColumn(
-                label: Text('Position'),
-                numeric: true,
+              DataColumn2(
+                label: Text(AppLocalizations.of(context).translate("person-position"), textAlign: TextAlign.center),
+                  size: ColumnSize.M
               ),
-              DataColumn(
-                label: Text('Division'),
-                numeric: true,
+              DataColumn2(
+                label: Text(AppLocalizations.of(context).translate("division"), textAlign: TextAlign.center),
+                  size: ColumnSize.M
               ),
-              DataColumn(
-                label: Text('Sub-division'),
-                numeric: true,
+              DataColumn2(
+                label: Text(AppLocalizations.of(context).translate("sub-division"), textAlign: TextAlign.center),
+                  size: ColumnSize.M
               ),
             ],
             rows: List<DataRow>.generate(rows.length,
                     (index) {
-
-                  return DataRow(cells: [
-                    DataCell(Text(rows[index]["name"]??"", )),
-                    DataCell(Text(rows[index]["name"]??"", )),
-                    DataCell(Text(rows[index]["gender"]??"", )),
-                    DataCell(Text(rows[index]["position"]??"", )),
-                    DataCell(Text(rows[index]["division"]??"", )),
-                    DataCell(Text(rows[index]["sub-division"]??"", )),
+                  return DataRow(
+                    color: MaterialStateColor.resolveWith((states) => Colors.white),
+                    cells: [
+                      DataCell(Image.network(settings.server + "/v1/picture?oid=" + settings.selectedCompanyId + "&pid=" + rows[index]["_id"],
+                        errorBuilder: (context, exp, st) {
+                          return Text("No photo", style: Theme.of(context).textTheme.caption,);
+                        } ,),
+                        onTap: () {
+                          Dialog myDialog = Dialog(
+                            child: Image.network(settings.server + "/v1/picture?oid=" + settings.selectedCompanyId + "&pid=" + rows[index]["_id"],
+                              errorBuilder: (context, exp, st) {
+                                return Text("No photo", style: Theme.of(context).textTheme.caption,);
+                              } ,),
+                          );
+                          showDialog(context: context, builder: (BuildContext context) => myDialog);
+                        }),
+                      DataCell(Text(rows[index]["name"]??"", )),
+                      DataCell(Icon((rows[index]["gender"]??"") == "male" ? Icons.man : Icons.woman, color: (rows[index]["gender"]??"") == "male" ? Colors.lightBlueAccent : Colors.redAccent)),
+                      DataCell(Text(rows[index]["position"]??"", )),
+                      DataCell(Text(rows[index]["division"]??"", )),
+                      DataCell(Text(rows[index]["sub-division"]??"", ), showEditIcon: true, onTap: () {
+                        setState(() {
+                          selectedRow = rows[index];
+                          showEditForm = true;
+                          refreshControllers(settings);
+                        });
+                      }),
                   ]);
                 }),
 
@@ -107,5 +141,163 @@ class _PeoplePageState extends State<PeoplePage> {
 
   void deleteRow(row) {
 
+  }
+
+  getBodyForEdit(MySettings settings) {
+    return Padding(padding: EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Image.network(settings.server + "/v1/picture?oid=" + settings.selectedCompanyId + "&pid=" + selectedRow["_id"],
+                    errorBuilder: (context, exp, st) {
+                      return Text("No photo", style: Theme.of(context).textTheme.caption,);
+                    }, width: 120, fit: BoxFit.fitWidth, ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(onPressed: () {}, child: Text(AppLocalizations.of(context).translate("capture-photo"))),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(onPressed: () {}, child: Text(AppLocalizations.of(context).translate("upload"))),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(onPressed: () {}, child: Text(AppLocalizations.of(context).translate("download"))),
+                  )
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 8,
+              child: Container(
+                color: Colors.white,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          controller: nameController,
+                          enabled: true,
+                          decoration: InputDecoration(
+                            fillColor: Colors.white,
+                            isDense: true,
+                            prefixStyle: const TextStyle(color: Colors.red),
+                            labelText: AppLocalizations.of(context).translate("person-name"),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          controller: positionController,
+                          enabled: true,
+                          decoration: InputDecoration(
+                            fillColor: Colors.white,
+                            isDense: true,
+                            prefixStyle: const TextStyle(color: Colors.red),
+                            labelText: AppLocalizations.of(context).translate("person-position"),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          controller: divisionController,
+                          enabled: true,
+                          decoration: InputDecoration(
+                            fillColor: Colors.white,
+                            isDense: true,
+                            prefixStyle: const TextStyle(color: Colors.red),
+                            labelText: AppLocalizations.of(context).translate("division"),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          controller: subdivisonController,
+                          enabled: true,
+                          decoration: InputDecoration(
+                            fillColor: Colors.white,
+                            isDense: true,
+                            prefixStyle: const TextStyle(color: Colors.red),
+                            labelText: AppLocalizations.of(context).translate("sub-division"),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(child: Text("")),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(onPressed: () async {
+                              print(settings.selectedCompanyId);
+                              if (selectedRow == null) {
+                                await settings.flutterFeathersjs.scketio.create(serviceName: "people", data: {
+                                  "oid": settings.selectedCompanyId,
+                                  "name": nameController.text,
+                                  "position": positionController.text,
+                                  "division": divisionController.text,
+                                  "sub_division": subdivisonController.text,
+                                });
+                              } else {
+                                await settings.flutterFeathersjs.scketio.patch(serviceName: "people", objectId: selectedRow["_id"], data: {
+                                  "oid": settings.selectedCompanyId,
+                                  "name": nameController.text,
+                                  "position": positionController.text,
+                                  "division": divisionController.text,
+                                  "sub_division": subdivisonController.text,
+                                });
+                              }
+                            }, child: Text(AppLocalizations.of(context).translate("save")), style: ElevatedButton.styleFrom(backgroundColor: Colors.green),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(onPressed: () {
+                              setState(() {
+                                selectedRow = true;
+                                showEditForm = false;
+                              });
+                            }, child: Text(AppLocalizations.of(context).translate("close")), style: ElevatedButton.styleFrom(backgroundColor: Colors.red),),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            )
+          ],
+        ));
+  }
+
+  void refreshControllers(MySettings settings) {
+    nameController.text = "";
+    positionController.text = "";
+    divisionController.text = "";
+    subdivisonController.text = "";
+    if (selectedRow != null) {
+      nameController.text = selectedRow["name"];
+      positionController.text = selectedRow["position"];
+      divisionController.text = selectedRow["division"];
+      subdivisonController.text = selectedRow["sub_division"];
+    }
   }
 }
