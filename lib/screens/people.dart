@@ -24,6 +24,7 @@ class _PeoplePageState extends State<PeoplePage> {
   TextEditingController positionController = TextEditingController();
   TextEditingController divisionController = TextEditingController();
   TextEditingController subdivisonController = TextEditingController();
+  TextEditingController employeeNoStringController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -242,6 +243,21 @@ class _PeoplePageState extends State<PeoplePage> {
                           ),
                         ),
                       ),
+                      SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          controller: employeeNoStringController,
+                          enabled: true,
+                          decoration: InputDecoration(
+                            fillColor: Colors.white,
+                            isDense: true,
+                            prefixStyle: const TextStyle(color: Colors.red),
+                            labelText: "employeeNoString",
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
                       Row(
                         children: [
                           Expanded(child: Text("")),
@@ -256,6 +272,7 @@ class _PeoplePageState extends State<PeoplePage> {
                                   "position": positionController.text,
                                   "division": divisionController.text,
                                   "sub_division": subdivisonController.text,
+                                  "employeeNoString": employeeNoStringController.text,
                                 });
                               } else {
                                 await settings.flutterFeathersjs.scketio.patch(serviceName: "people", objectId: selectedRow["_id"], data: {
@@ -264,6 +281,7 @@ class _PeoplePageState extends State<PeoplePage> {
                                   "position": positionController.text,
                                   "division": divisionController.text,
                                   "sub_division": subdivisonController.text,
+                                  "employeeNoString": employeeNoStringController.text,
                                 });
                               }
                             }, child: Text(AppLocalizations.of(context).translate("save")), style: ElevatedButton.styleFrom(backgroundColor: Colors.green),),
@@ -293,11 +311,13 @@ class _PeoplePageState extends State<PeoplePage> {
     positionController.text = "";
     divisionController.text = "";
     subdivisonController.text = "";
+    employeeNoStringController.text = "";
     if (selectedRow != null) {
       nameController.text = selectedRow["name"];
       positionController.text = selectedRow["position"];
       divisionController.text = selectedRow["division"];
       subdivisonController.text = selectedRow["sub_division"];
+      employeeNoStringController.text = selectedRow["employeeNoString"];
     }
   }
 }
