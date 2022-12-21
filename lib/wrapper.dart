@@ -1,4 +1,5 @@
 import 'package:nae_hr/core/my_settings.dart';
+import 'package:nae_hr/screens/login.dart';
 import 'package:nae_hr/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,12 +11,10 @@ class Wrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = Provider.of<MySettings>(context);
 
-
-    // if (settings.token.isEmpty) {
-    //   return const AccountPage();
-    // }
-
-
-    return const HomePage();
+    if (settings.token.isEmpty) {
+      return const LoginPage();
+    } else {
+      return const HomePage();
+    }
   }
 }

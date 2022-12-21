@@ -30,10 +30,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<MySettings>(context);
-    settings.flutterFeathersjs = FlutterFeathersjs();
-    settings.flutterFeathersjs.init(baseUrl: settings.server);
-
-
 
     return MaterialApp(
       title: "nae hr",
@@ -54,7 +50,7 @@ class MyApp extends StatelessWidget {
       locale: settings.locale,
       themeMode: settings.theme == 0 ? ThemeMode.system : (settings.theme == 2 ? ThemeMode.light : ThemeMode.dark),
       theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
+      darkTheme: ThemeData.light(),
       home: const Wrapper(),
     );
   }

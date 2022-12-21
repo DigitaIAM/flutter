@@ -8,6 +8,8 @@ import 'package:nae_hr/screens/people.dart';
 import 'package:provider/provider.dart';
 import 'package:select_dialog/select_dialog.dart';
 
+import '../api.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -249,13 +251,13 @@ class _HomePageState extends State<HomePage> {
 
   void connectToServer(MySettings settings) async {
     try {
-      var ff = await settings.flutterFeathersjs.scketio.find(serviceName: "companies", query: {});
+      var ff = await Api.feathers().find(serviceName: "companies", query: {});
     } catch (e) {
     }
   }
 
   void getFromServer(MySettings settings) {
-    settings.flutterFeathersjs.find(serviceName: "companies", query: {}).asStream().listen((event) {
+    Api.feathers().find(serviceName: "companies", query: {}).asStream().listen((event) {
       setState(() {
         companies = event["data"];
         if (companies.isNotEmpty&&selectedCompanyIndex == -1) {

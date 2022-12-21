@@ -6,6 +6,8 @@ import 'package:nae_hr/share/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../api.dart';
+
 class CamerasPage extends StatefulWidget {
   const CamerasPage({Key? key}) : super(key: key);
 
@@ -31,7 +33,7 @@ class _CamerasPageState extends State<CamerasPage> {
     final settings = Provider.of<MySettings>(context);
     if (_first) {
       getFromServer(settings);
-      settings.flutterFeathersjs.scketio.listen(serviceName: "cameras", fromJson: (e) {
+       Api.instance.flutterFeathersjs.scketio.listen(serviceName: "cameras", fromJson: (e) {
         getFromServer(settings);
       });
       _first = false;
@@ -97,7 +99,7 @@ class _CamerasPageState extends State<CamerasPage> {
                               textOK: Text(AppLocalizations.of(context).translate("yes")),
                               textCancel: Text(AppLocalizations.of(context).translate("no")),
                             ))  {
-                              await settings.flutterFeathersjs.scketio.remove(serviceName: "cameras", objectId: rows[index]["_id"]);
+                              await Api.feathers().remove(serviceName: "cameras", objectId: rows[index]["_id"]);
                             }
                           }, icon: const Icon(Icons.delete, color: Colors.red))
                         ],
@@ -114,7 +116,7 @@ class _CamerasPageState extends State<CamerasPage> {
 
   void getFromServer(MySettings settings) async {
     try {
-      settings.flutterFeathersjs.find(serviceName: "cameras", query: {"oid": settings.selectedCompanyId}).asStream().listen((event) {
+      Api.feathers().find(serviceName: "cameras", query: {"oid": settings.selectedCompanyId}).asStream().listen((event) {
         setState(() {
           rows = event["data"];
         });
@@ -268,7 +270,7 @@ class _CamerasPageState extends State<CamerasPage> {
                   const Expanded(child: Text("")),
                   ElevatedButton(onPressed: () async {
                     if (_id == "") {
-                      await settings.flutterFeathersjs.scketio.create(serviceName: "cameras", data: {
+                      await Api.feathers().create(serviceName: "cameras", data: {
                         "oid": settings.selectedCompanyId,
                         "name": nameController.text,
                         "enabled": true,
@@ -280,7 +282,7 @@ class _CamerasPageState extends State<CamerasPage> {
                         "password": passwordController.text,
                       });
                     } else {
-                      await settings.flutterFeathersjs.scketio.patch(serviceName: "cameras", objectId: _id, data: {
+                      await Api.feathers().patch(serviceName: "cameras", objectId: _id, data: {
                         "oid": settings.selectedCompanyId,
                         "name": nameController.text,
                         "enabled": true,

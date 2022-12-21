@@ -5,6 +5,8 @@ import 'package:nae_hr/core/my_settings.dart';
 import 'package:prompt_dialog/prompt_dialog.dart';
 import 'package:provider/provider.dart';
 
+import '../api.dart';
+
 class CompaniesPage extends StatefulWidget {
   const CompaniesPage({Key? key}) : super(key: key);
 
@@ -22,7 +24,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
     final settings = Provider.of<MySettings>(context);
     if (_first) {
       getFromServer(settings);
-      settings.flutterFeathersjs.scketio.listen(serviceName: "companies", fromJson: (e) {
+      Api.feathers().listen(serviceName: "companies", fromJson: (e) {
         getFromServer(settings);
       });
       _first = false;
@@ -34,7 +36,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
         onPressed: () async {
           String? newName = await prompt(context, title: Text("New company name"));
           if (newName == null) return;
-          settings.flutterFeathersjs.scketio.create(serviceName: "companies", data: {
+          Api.feathers().create(serviceName: "companies", data: {
             "name": newName
           });
         },
@@ -67,7 +69,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
                           IconButton(onPressed: () async {
                             String? newName = await prompt(context, title: Text(AppLocalizations.of(context).translate("name")), initialValue: rows[index]["name"]);
                             if (newName == null) return;
-                            settings.flutterFeathersjs.scketio.update(serviceName: "companies", objectId: rows[index]["_id"], data: {
+                            Api.feathers().update(serviceName: "companies", objectId: rows[index]["_id"], data: {
                               "name": newName
                             });
                           }, icon: Icon(Icons.edit, color: Colors.green)),
@@ -79,7 +81,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
                               textOK: Text(AppLocalizations.of(context).translate("yes")),
                               textCancel: Text(AppLocalizations.of(context).translate("no")),
                             ))  {
-                              await settings.flutterFeathersjs.scketio.remove(serviceName: "companies", objectId: rows[index]["_id"]);
+                              await Api.feathers().remove(serviceName: "companies", objectId: rows[index]["_id"]);
                             }
                           }, icon: Icon(Icons.delete, color: Colors.red))
                         ],
@@ -96,7 +98,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
 
   void getFromServer(MySettings settings) async {
     try {
-      settings.flutterFeathersjs.find(serviceName: "companies", query: {}).asStream().listen((event) {
+      Api.feathers().find(serviceName: "companies", query: {}).asStream().listen((event) {
         setState(() {
           rows = event["data"];
         });
