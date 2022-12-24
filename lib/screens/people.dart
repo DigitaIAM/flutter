@@ -33,7 +33,7 @@ class _PeoplePageState extends State<PeoplePage> {
     final settings = Provider.of<MySettings>(context);
     if (_first) {
       getFromServer(settings);
-      Api.io().listen(serviceName: "people", fromJson: (e) {
+      Api.feathers().listen(serviceName: "people", fromJson: (e) {
         getFromServer(settings);
       });
       _first = false;
@@ -131,7 +131,7 @@ class _PeoplePageState extends State<PeoplePage> {
 
   void getFromServer(MySettings settings) async {
     try {
-      Api.instance.flutterFeathersjs.find(serviceName: "people", query: {"oid": settings.selectedCompanyId}).asStream().listen((event) {
+      Api.feathers().find(serviceName: "people", query: {"oid": settings.selectedCompanyId}).asStream().listen((event) {
         setState(() {
           rows = event["data"];
         });

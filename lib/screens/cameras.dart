@@ -33,7 +33,7 @@ class _CamerasPageState extends State<CamerasPage> {
     final settings = Provider.of<MySettings>(context);
     if (_first) {
       getFromServer(settings);
-       Api.instance.flutterFeathersjs.scketio.listen(serviceName: "cameras", fromJson: (e) {
+       Api.feathers().listen(serviceName: "cameras", fromJson: (e) {
         getFromServer(settings);
       });
       _first = false;
