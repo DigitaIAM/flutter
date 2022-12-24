@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../api.dart';
 import '../core/my_settings.dart';
+import 'dart:convert';
+
+import 'home.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -147,7 +150,9 @@ class _LoginFormState extends State<LoginForm> {
                 ),
                 const SizedBox(width: 8),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    signin(settings);
+                  },
                   child: const Text("Sign Up"),
                 )
               ],
@@ -158,21 +163,65 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 
-  void login(MySettings settings) async {
-    print("emailController.text ${emailController.text}");
-    print("passwordController.text ${passwordController.text}");
+  void signin(MySettings settings) async {
     try {
-      var response = await Api.instance.flutterFeathersjs.scketio.create(
+      var response = await Api.feathers().create(
+          serviceName: "users", data: {
+        "email": emailController.text,
+        "password": passwordController.text,
+      });
+
+      updateSettings(settings, response);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+
+  void login(MySettings settings) async {
+    try {
+      var response = await Api.feathers().create(
           serviceName: "authentication", data: {
         "strategy": "local",
         "email": emailController.text,
         "password": passwordController.text,
       });
 
-      print("response " + response);
+      updateSettings(settings, response);
     } catch (e) {
       print(e);
     }
+  }
 
+  void updateSettings(MySettings settings, dynamic response) {
+    print("response: ");
+    print(response);
+
+    settings.token = response['accessToken'] as String ?? "";
+    final user = response['user'];
+    if (user != null) {
+      final oids = user['oids'];
+
+      print(oids);
+      if (oids != null) {
+        print("found oids");
+        settings.selectedCompanyId = oids[0];
+      }
+
+      gohome(settings);
+    }
+  }
+
+  void gohome(MySettings settings) {
+    if (settings.token.isEmpty) {
+      // TODO show warning screen
+    } else {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const HomePage()
+          )
+      );
+    }
   }
 }
