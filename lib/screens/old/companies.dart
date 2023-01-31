@@ -5,7 +5,7 @@ import 'package:nae_hr/core/my_settings.dart';
 import 'package:prompt_dialog/prompt_dialog.dart';
 import 'package:provider/provider.dart';
 
-import '../api.dart';
+import '../../api.dart';
 
 class CompaniesPage extends StatefulWidget {
   const CompaniesPage({Key? key}) : super(key: key);

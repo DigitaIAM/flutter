@@ -45,5 +45,17 @@
   "cameras": "Камеры",
   "settings": "Настройки",
   "login": "Войти",
-  "logout": "Выйти"
+  "logout": "Выйти",
+
+  "failed to fetch data": "не удалось получить данные",
+  "nothing yet": "пока пусто",
+
+  "production orders": "наряды",
+  "overview": "обзор",
+  "task": "задача",
+  "production": "изготовление",
+  "products": "изделия",
+  "product": "изделие",
+  "uoms": "единицы измерения",
+  "uom": "ед.изм."
 }

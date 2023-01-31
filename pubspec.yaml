@@ -48,17 +48,44 @@ dependencies:
   flutter_multi_formatter: ^2.7.5
   permission_handler: ^10.0.0
   data_table_2: ^2.3.10
-  easy_sidemenu: ^0.4.1
   prompt_dialog: ^1.0.9
-  flutter_bloc: ^8.1.1
   timeago: ^3.3.0
   country_icons: ^2.0.2
 
-  flutter_feathersjs: ^4.0.5+1
+  #flutter_feathersjs: ^4.0.5+1
+  flutter_feathersjs:
+    path: ../flutter_feathersjs.dart
   http: ^0.13.4
   mime: ^1.0.2
   http_parser: ^4.0.1
 
+#  flutter_redux: ^0.10.0
+#  get_it: ^7.2.0
+
+  copy_with_extension_gen: ^5.0.0
+  bloc_concurrency: ^0.2.0
+  flutter_bloc: ^8.1.1
+  stream_transform: ^2.1.0
+
+  overflow_view: ^0.3.1
+  adaptive_breakpoints: ^0.1.4
+#  dual_screen: ^1.0.3
+  side_navigation: ^1.0.4
+  pluto_grid: ^5.4.9
+  dropdown_search: ^5.0.5
+  reactive_forms: ^14.1.0
+  flutter_form_builder: ^7.7.0
+  form_builder_validators: ^8.4.0
+  equatable: ^2.0.5
+#  flutter_wall_layout: ^2.1.1
+#  docking: ^1.5.0
+#  xml_layout: ^2.3.15
+
+  image: ^3.0.2
+#  flutter_pos_printer_platform: ^1.0.12
+  esc_pos_printer: ^4.1.0
+  esc_pos_utils: ^1.1.0
+  windows1251: ^1.0.2
 
   flutter_localizations:
     sdk: flutter
@@ -73,6 +100,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+
+  build_runner: ^2.1.7
+  copy_with_extension_gen: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -91,6 +121,8 @@ flutter:
      - lang/ru.json
      - lang/uz.json
      - lang/tj.json
+     - assets/rabbit_black.jpg
+     - assets/rabbit_black.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

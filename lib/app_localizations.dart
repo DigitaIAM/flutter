@@ -28,7 +28,7 @@ class AppLocalizations {
   }
 
   String translate(String key) {
-    return _localizedStrings[key]??"???";
+    return _localizedStrings[key]??key;
   }
 }
 

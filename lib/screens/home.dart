@@ -1,12 +1,18 @@
-import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/core/my_settings.dart';
-import 'package:nae_hr/screens/cameras.dart';
-import 'package:nae_hr/screens/companies.dart';
-import 'package:nae_hr/screens/people.dart';
+import 'package:nae_hr/model/ui/ui_bloc.dart';
+import 'package:nae_hr/model/ui/ui_state.dart';
+import 'package:nae_hr/screens/common/uom/uom_view.dart';
+import 'package:nae_hr/screens/common/uom/uoms_screen.dart';
+import 'package:nae_hr/screens/production/orders/production_order_view.dart';
+import 'package:nae_hr/screens/production/orders/production_orders_screen.dart';
+import 'package:nae_hr/widgets/app_border.dart';
+import 'package:nae_hr/widgets/blank_screen.dart';
+import 'package:nae_hr/widgets/change_layout_banner.dart';
+import 'package:nae_hr/widgets/menu_drawer_builder.dart';
 import 'package:provider/provider.dart';
-import 'package:select_dialog/select_dialog.dart';
 
 import '../api.dart';
 
@@ -18,329 +24,249 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _first = true;
-  String mainTitle = "Dashboard";
-  PageController page = PageController();
 
-  int selectedCompanyIndex = -1;
-  List<dynamic> companies = [];
+  late UiBloc bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    bloc = UiBloc();
+  }
+
+  @override
+  void dispose(){
+    bloc.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<MySettings>(context);
-    if (_first) {
-      getFromServer(settings);
-      _first = false;
-    }
+    // SizeConfig().init(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            InkWell(
-              onTap: () {
-                selectCompany(settings);
-              },
-              child: Center(child: Text(selectedCompanyIndex == -1 ? "NO COMPANY" : companies[selectedCompanyIndex]["name"], style: Theme.of(context).textTheme.headline6!.copyWith(color: Colors.white, decoration: TextDecoration.underline,),), )),
-            Text("  -  "),
-            Expanded(child: Text(mainTitle)),
-            InkWell(
-              onTap: () {
-                selectLanguage(settings);
-              },
-              child: Text(settings.getLanguage(context)))
-          ],
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(onPressed: () { connectToServer(settings); }, icon: const Icon(Icons.link)),
-          IconButton(onPressed: () { connectToServer(settings); }, icon: const Icon(Icons.account_box)),
-        ],
-      ),
-      body: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SideMenu(
-            controller: page,
-            style: SideMenuStyle(
-              // showTooltip: false,
-              displayMode: SideMenuDisplayMode.auto,
-              hoverColor: Colors.blue[100],
-              selectedColor: Colors.lightBlue,
-              selectedTitleTextStyle: const TextStyle(color: Colors.white),
-              selectedIconColor: Colors.white,
-              openSideMenuWidth: 200
-              // decoration: BoxDecoration(
-              //   borderRadius: BorderRadius.all(Radius.circular(10)),
-              // ),
-              // backgroundColor: Colors.blueGrey[700]
-            ),
-            title: Column(
-              children: const [
-                // ConstrainedBox(
-                //   constraints: const BoxConstraints(
-                //     maxHeight: 150,
-                //     maxWidth: 150,
-                //   ),
-                //   child: Image.asset(
-                //     'assets/images/easy_sidemenu.png',
-                //   ),
-                // ),
-                Divider(
-                  indent: 2.0,
-                  endIndent: 2.0,
-                ),
-              ],
-            ),
-            footer: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('nae HR, 2022', style: Theme.of(context).textTheme.caption!),
-            ),
-            items: [
-              SideMenuItem(
-                priority: 0,
-                title: AppLocalizations.of(context).translate("dashboard"),
-                onTap: () {
-                  page.jumpToPage(0);
-                  setState(() {
-                    mainTitle = AppLocalizations.of(context).translate("dashboard");
-                  });
-                },
-                icon: const Icon(Icons.dashboard),
-              ),
-              SideMenuItem(
-                priority: 1,
-                title: AppLocalizations.of(context).translate("people"),
-                onTap: () {
-                  page.jumpToPage(1);
-                  setState(() {
-                    mainTitle = AppLocalizations.of(context).translate("people");
-                  });
-                },
-                icon: const Icon(Icons.people),
-              ),
-              SideMenuItem(
-                priority: 2,
-                title: AppLocalizations.of(context).translate("shifts"),
-                onTap: () {
-                  page.jumpToPage(2);
-                  setState(() {
-                    mainTitle = AppLocalizations.of(context).translate("shifts");
-                  });
-                },
-                icon: const Icon(Icons.calendar_month),
-              ),
-              SideMenuItem(
-                priority: 3,
-                title: AppLocalizations.of(context).translate("events"),
-                onTap: () {
-                  page.jumpToPage(3);
-                  setState(() {
-                    mainTitle = AppLocalizations.of(context).translate("events");
-                  });
-                },
-                icon: const Icon(Icons.event),
-              ),
-              SideMenuItem(
-                priority: 4,
-                title: AppLocalizations.of(context).translate("attendance"),
-                onTap: () {
-                  page.jumpToPage(4);
-                  setState(() {
-                    mainTitle = AppLocalizations.of(context).translate("attendance");
-                  });
-                },
-                icon: const Icon(Icons.event_available),
-              ),
-              SideMenuItem(
-                priority: 5,
-                title: AppLocalizations.of(context).translate("users"),
-                onTap: () {
-                  page.jumpToPage(5);
-                  setState(() {
-                    mainTitle = AppLocalizations.of(context).translate("users");
-                  });
-                },
-                icon: const Icon(Icons.person),
-              ),
-              SideMenuItem(
-                priority: 6,
-                title: AppLocalizations.of(context).translate("companies"),
-                onTap: () {
-                  page.jumpToPage(6);
-                  setState(() {
-                    mainTitle = AppLocalizations.of(context).translate("companies");
-                  });
-                },
-                icon: const Icon(Icons.location_city),
-              ),
-              SideMenuItem(
-                priority: 7,
-                title: AppLocalizations.of(context).translate("cameras"),
-                onTap: () {
-                  page.jumpToPage(7);
-                  setState(() {
-                    mainTitle = AppLocalizations.of(context).translate("cameras");
-                  });
-                },
-                icon: const Icon(Icons.camera_alt),
-              ),
-              SideMenuItem(
-                priority: 8,
-                title: AppLocalizations.of(context).translate("settings"),
-                onTap: () {
-                  page.jumpToPage(8);
-                  setState(() {
-                    mainTitle = AppLocalizations.of(context).translate("settings");
-                  });
-                },
-                icon: const Icon(Icons.settings),
-              ),
-            ],
-          ),
-          Expanded(
-            child: PageView(
-              controller: page,
-              physics: NeverScrollableScrollPhysics(),
-              children: [
-                Container(
-                  color: Colors.white,
-                  child: const Center(child: Text('Dashboard', style: TextStyle(fontSize: 35))),
-                ),
-                PeoplePage(),
-                Container(
-                  color: Colors.white,
-                  child: const Center(child: Text('Download', style: TextStyle(fontSize: 35))),
-                ),
-                Container(
-                  color: Colors.white,
-                  child: const Center(
-                    child: Text('Settings', style: TextStyle(fontSize: 35)),
-                  ),
-                ),
-                Container(
-                  color: Colors.white,
-                  child: const Center(
-                    child: Text('Only Title', style: TextStyle(fontSize: 35)),
-                  ),
-                ),
-                Container(
-                  color: Colors.white,
-                  child: const Center(
-                    child: Text('Only Icon', style: TextStyle(fontSize: 35)),
-                  ),
-                ),
-                CompaniesPage(),
-                CamerasPage(),
-                Container(
-                  color: Colors.white,
-                  child: const Center(
-                    child: Text('Only Icon', style: TextStyle(fontSize: 35)),
-                  ),
-                ),
+    bool showFilterSidebar = false;
 
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void connectToServer(MySettings settings) async {
-    try {
-      var ff = await Api.feathers().find(serviceName: "companies", query: {});
-    } catch (e) {
-    }
-  }
-
-  void getFromServer(MySettings settings) {
-    Api.feathers().find(serviceName: "companies", query: {}).asStream().listen((event) {
-      setState(() {
-        companies = event["data"];
-        if (companies.isNotEmpty&&selectedCompanyIndex == -1) {
-          for (int i = 0; i < companies.length; i++) {
-            if (companies[i]["_id"] == settings.selectedCompanyId) {
-              selectedCompanyIndex = i;
-            }
-          }
-        }
-      });
-    });
-  }
-
-  void selectCompany(MySettings settings) {
-    SelectDialog.showModal<dynamic>(
-      context,
-      label: AppLocalizations.of(context).translate("companies"),
-      showSearchBox: false,
-      items: companies,
-      itemBuilder: (contex, item, isSelected) {
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(item["name"]),
-        );
-      },
-      onChange: (dynamic selected) {
-        setState(() {
-          selectedCompanyIndex = companies.indexOf(selected);
-        });
-        settings.selectedCompanyId = selected["_id"];
-        settings.saveAndNotify();
-        page.jumpTo(0);
-        mainTitle = AppLocalizations.of(context).translate("dashboard");
-      },
-    );
-  }
-
-  void selectLanguage(MySettings settings) {
-    AlertDialog alert = AlertDialog(
-
-        content: SizedBox(
-          height: 240,
+    return BlocProvider(
+        create: (_) => bloc,
+        child: SafeArea(
           child: Column(
-            children: [
-              ListTile(
-                leading: Image.asset('icons/flags/png/uz.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
-                title: const Text("O'zbekcha"),
-                onTap: () async {
-                  settings.locale = const Locale("uz", "UZ");
-                  settings.saveAndNotify();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Image.asset('icons/flags/png/gb.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
-                title: const Text("English"),
-                onTap: () async {
-                  settings.locale = const Locale("en", "US");
-                  settings.saveAndNotify();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Image.asset('icons/flags/png/ru.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
-                title: const Text("Русский"),
-                onTap: () async {
-                  settings.locale = const Locale("ru", "RU");
-                  settings.saveAndNotify();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Image.asset('icons/flags/png/tj.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
-                title: const Text("Tajiki"),
-                onTap: () async {
-                  settings.locale = const Locale("tr", "TR");
-                  settings.saveAndNotify();
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        ));
-    showDialog(context: context, builder: (context) { return alert; } );
+              children: [
+                Expanded(
+                  child: ChangeLayoutBanner(
+                    child: BlocBuilder<UiBloc, UiState>(
+                      builder: (context, uiState) => Row(children: <Widget>[
+                        if (uiState.showMenu) MenuDrawerBuilder(),
+                        Expanded(
+                            child: AppBorder(
+                              isLeft: uiState.showMenu && (!settings.isFullScreen || showFilterSidebar),
+                              child: entityScreen(uiState),
+                            )),
+                      ]),
+                    )
+                  )
+                )
+              ]
+          )
+        )
+    );
+
+    // return Scaffold(
+    //   appBar: AppBar(
+    //     title: Row(
+    //       mainAxisAlignment: MainAxisAlignment.center,
+    //       crossAxisAlignment: CrossAxisAlignment.center,
+    //       children: [
+    //         InkWell(
+    //           onTap: () {
+    //             selectCompany(settings);
+    //           },
+    //           child: Center(
+    //             child: Text(
+    //               selectedCompanyIndex == -1 ? "NO COMPANY" : companies[selectedCompanyIndex]["name"],
+    //               style: Theme.of(context).textTheme.headline6!.copyWith(decoration: TextDecoration.underline,),
+    //             ),
+    //           )),
+    //         // Text("  -  "),
+    //         Expanded(
+    //             child: Center(
+    //                 child: Text(mainTitle)
+    //             )
+    //         ),
+    //         InkWell(
+    //           onTap: () {
+    //             selectLanguage(settings);
+    //           },
+    //           child: Text(settings.getLanguage(context)))
+    //       ],
+    //     ),
+    //     centerTitle: true,
+    //     actions: [
+    //       // IconButton(onPressed: () { connectToServer(settings); }, icon: const Icon(Icons.link)),
+    //       IconButton(onPressed: () { connectToServer(settings); }, icon: const Icon(Icons.account_box)),
+    //     ],
+    //   ),
+    //   body: SafeArea(
+    //     child: Row(
+    //       children: [
+    //         SideNavigationBar(
+    //           selectedIndex: selectedIndex,
+    //           items: [
+    //             SideNavigationBarItem(
+    //               icon: Icons.dashboard,
+    //               label: AppLocalizations.of(context).translate("Inventory"),
+    //             ),
+    //             SideNavigationBarItem(
+    //               icon: Icons.login,
+    //               label: AppLocalizations.of(context).translate("receives"),
+    //             ),
+    //             SideNavigationBarItem(
+    //               icon: Icons.logout,
+    //               label: AppLocalizations.of(context).translate("issues"),
+    //             ),
+    //             SideNavigationBarItem(
+    //               icon: Icons.square_foot_outlined,
+    //               label: AppLocalizations.of(context).translate("uom"),
+    //             ),
+    //           ],
+    //           onTap: (index) {
+    //             setState(() {
+    //               selectedIndex = index;
+    //               mainTitle = "";
+    //             });
+    //           },
+    //         ),
+    //
+    //         /// Make it take the rest of the available width
+    //         Expanded(
+    //           child: views.elementAt(selectedIndex),
+    //         )
+    //         // Your app screen body
+    //       ],
+    //     ),
+    //   ),
+    // );
   }
+
+  Widget entityScreen(UiState uiState) {
+    Widget screen = const BlankScreen();
+    if (uiState.currentRoute == ProductionOrdersScreen.route) {
+      screen = EntityScreens(
+        list: const ProductionOrdersScreen(),
+        view: ProductionOrderView(entity: uiState.entity, tabIndex: 0),
+      );
+    } else if (uiState.currentRoute == UomsScreen.route) {
+      screen = EntityScreens(
+        list: const UomsScreen(),
+        view: UomView(entity: uiState.entity),
+      );
+    }
+    return screen;
+  }
+
+  // void selectLanguage(MySettings settings) {
+  //   AlertDialog alert = AlertDialog(
+  //
+  //       content: SizedBox(
+  //         height: 240,
+  //         child: Column(
+  //           children: [
+  //             ListTile(
+  //               leading: Image.asset('icons/flags/png/uz.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
+  //               title: const Text("O'zbekcha"),
+  //               onTap: () async {
+  //                 settings.locale = const Locale("uz", "UZ");
+  //                 settings.saveAndNotify();
+  //                 Navigator.pop(context);
+  //               },
+  //             ),
+  //             ListTile(
+  //               leading: Image.asset('icons/flags/png/gb.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
+  //               title: const Text("English"),
+  //               onTap: () async {
+  //                 settings.locale = const Locale("en", "US");
+  //                 settings.saveAndNotify();
+  //                 Navigator.pop(context);
+  //               },
+  //             ),
+  //             ListTile(
+  //               leading: Image.asset('icons/flags/png/ru.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
+  //               title: const Text("Русский"),
+  //               onTap: () async {
+  //                 settings.locale = const Locale("ru", "RU");
+  //                 settings.saveAndNotify();
+  //                 Navigator.pop(context);
+  //               },
+  //             ),
+  //             ListTile(
+  //               leading: Image.asset('icons/flags/png/tj.png', package: 'country_icons', height: 20, width: 28, fit: BoxFit.fill, ),
+  //               title: const Text("Tajiki"),
+  //               onTap: () async {
+  //                 settings.locale = const Locale("tr", "TR");
+  //                 settings.saveAndNotify();
+  //                 Navigator.pop(context);
+  //               },
+  //             ),
+  //           ],
+  //         ),
+  //       ));
+  //   showDialog(context: context, builder: (context) { return alert; } );
+  // }
+}
+
+class EntityScreens extends StatelessWidget {
+
+  final Widget list;
+  final Widget view;
+
+  const EntityScreens({super.key, required this.list, required this.view});
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = Provider.of<MySettings>(context);
+
+    const previewFlex = 2;
+    int listFlex = 3;
+
+    Widget? topFilterChild;
+    Widget? leftFilterChild;
+
+    return Row(
+      children: [
+        Expanded(
+          flex: listFlex,
+          child: ClipRRect(
+            child: AppBorder(
+              isLeft: leftFilterChild != null,
+              child: topFilterChild == null || settings.isFilterVisible
+                ? list : Column(children: [
+                  // if (prefState.isViewerFullScreen(state.uiState.filterEntityType))
+                  //   SizedBox(
+                  //     height: 360,
+                  //     child: topFilterChild,
+                  //   )
+                  // else
+                    topFilterChild,
+                  Expanded(
+                    child: AppBorder(
+                      isTop: topFilterChild != null, // && uiState.filterEntityType != null,
+                      child: list,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (settings.isPreviewShown)
+          Expanded(
+            flex: settings.isFullScreen ? (listFlex + previewFlex) : previewFlex,
+            child: AppBorder(
+              isLeft: true,
+              child: view,
+            ),
+          ),
+      ]
+    );
+  }
+
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nae_hr/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../api.dart';
 import '../core/my_settings.dart';
@@ -77,48 +78,56 @@ class _LoginFormState extends State<LoginForm> {
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
+                  onFieldSubmitted: (value) {
+                    login(settings);
+                  },
                   autofocus: true,
                   controller: emailController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    label: const Text("Email"),
+                    label: Text(AppLocalizations.of(context).translate("Email")),
                     suffixIcon: const Icon(Icons.email),
                   ),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
+                  onFieldSubmitted: (value) {
+                    login(settings);
+                  },
                   controller: passwordController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    label: const Text("Password"),
+                    label: Text(AppLocalizations.of(context).translate("Password")),
                     suffixIcon: const Icon(Icons.lock),
                   ),
                   obscureText: true,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                // const SizedBox(height: 8),
-                // Row(
-                //   children: [
-                //     Checkbox(
-                //       value: false,
-                //       onChanged: (value) {},
-                //     ),
-                //     Text(
-                //       "Remeber Me",
-                //       style: Theme.of(context).textTheme.bodyMedium,
-                //     ),
-                //     const Expanded(child: SizedBox()),
-                //     TextButton(
-                //       onPressed: () {},
-                //       child: const Text("Forgot Password ?"),
-                //     )
-                //   ],
-                // ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: false,
+                      onChanged: (value) {
+
+                      },
+                    ),
+                    Text(
+                      AppLocalizations.of(context).translate("Remember Me"),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const Expanded(child: SizedBox()),
+                    // TextButton(
+                    //   onPressed: () {},
+                    //   child: const Text("Forgot Password ?"),
+                    // )
+                  ],
+                ),
                 const SizedBox(height: 32),
                 SizedBox(
                   width: MediaQuery.of(context).size.width,
@@ -166,10 +175,12 @@ class _LoginFormState extends State<LoginForm> {
   void signin(MySettings settings) async {
     try {
       var response = await Api.feathers().create(
-          serviceName: "users", data: {
-        "email": emailController.text,
-        "password": passwordController.text,
-      });
+          serviceName: "users",
+          data: {
+            "email": emailController.text,
+            "password": passwordController.text,
+          }
+      );
 
       updateSettings(settings, response);
     } catch (e) {
@@ -194,18 +205,16 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   void updateSettings(MySettings settings, dynamic response) {
-    print("response: ");
-    print(response);
+    settings.login = emailController.text;
+    settings.token = response['accessToken'] as String? ?? "";
+    settings.saveAndNotify();
 
-    settings.token = response['accessToken'] as String ?? "";
     final user = response['user'];
     if (user != null) {
       final oids = user['oids'];
-
-      print(oids);
       if (oids != null) {
-        print("found oids");
-        settings.selectedCompanyId = oids[0];
+        settings.companyId = oids[0];
+        settings.saveAndNotify();
       }
 
       gohome(settings);

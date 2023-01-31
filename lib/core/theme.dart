@@ -70,8 +70,8 @@ ThemeData darkTheme() {
 }
 
 
-Color getLoginColor(String _themeName) {
-  switch (_themeName) {
+Color getLoginColor(String themeName) {
+  switch (themeName) {
     case "DarkTheme": {return Colors.lime; }
     case "BrownTheme": {return Colors.brown[300]!; }
     case "PurpleTheme": {return Colors.purple[300]!; }
@@ -83,8 +83,8 @@ Color getLoginColor(String _themeName) {
 }
 
 
-Color getNavigationBarColor(String _themeName) {
-  switch (_themeName) {
+Color getNavigationBarColor(String themeName) {
+  switch (themeName) {
     case "DarkTheme": {return Colors.black; }
     case "PurpleTheme": {return Colors.purple[100]!; }
     case "RedTheme": {return Colors.red[100]!; }
@@ -96,8 +96,8 @@ Color getNavigationBarColor(String _themeName) {
 }
 
 
-Brightness getBrightness(String _themeName) {
-  switch (_themeName) {
+Brightness getBrightness(String themeName) {
+  switch (themeName) {
     case "DarkTheme": {return Brightness.light; }
     default: {return Brightness.dark; }
   }

@@ -6,7 +6,7 @@ import 'package:nae_hr/share/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../api.dart';
+import '../../api.dart';
 
 class CamerasPage extends StatefulWidget {
   const CamerasPage({Key? key}) : super(key: key);
@@ -116,7 +116,7 @@ class _CamerasPageState extends State<CamerasPage> {
 
   void getFromServer(MySettings settings) async {
     try {
-      Api.feathers().find(serviceName: "cameras", query: {"oid": settings.selectedCompanyId}).asStream().listen((event) {
+      Api.feathers().find(serviceName: "cameras", query: {"oid": settings.companyId}).asStream().listen((event) {
         setState(() {
           rows = event["data"];
         });
@@ -271,7 +271,7 @@ class _CamerasPageState extends State<CamerasPage> {
                   ElevatedButton(onPressed: () async {
                     if (_id == "") {
                       await Api.feathers().create(serviceName: "cameras", data: {
-                        "oid": settings.selectedCompanyId,
+                        "oid": settings.companyId,
                         "name": nameController.text,
                         "enabled": true,
                         "devIndex": devIndexController.text,
@@ -283,7 +283,7 @@ class _CamerasPageState extends State<CamerasPage> {
                       });
                     } else {
                       await Api.feathers().patch(serviceName: "cameras", objectId: _id, data: {
-                        "oid": settings.selectedCompanyId,
+                        "oid": settings.companyId,
                         "name": nameController.text,
                         "enabled": true,
                         "devIndex": devIndexController.text,

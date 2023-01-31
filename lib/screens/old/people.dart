@@ -6,7 +6,7 @@ import 'package:nae_hr/core/my_settings.dart';
 import 'package:prompt_dialog/prompt_dialog.dart';
 import 'package:provider/provider.dart';
 
-import '../api.dart';
+import '../../api.dart';
 
 class PeoplePage extends StatefulWidget {
   const PeoplePage({Key? key}) : super(key: key);
@@ -96,13 +96,13 @@ class _PeoplePageState extends State<PeoplePage> {
                   return DataRow(
                     color: MaterialStateColor.resolveWith((states) => Colors.white),
                     cells: [
-                      DataCell(Image.network(Api.server + "/v1/picture?oid=" + settings.selectedCompanyId + "&pid=" + rows[index]["_id"],
+                      DataCell(Image.network(Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + rows[index]["_id"],
                         errorBuilder: (context, exp, st) {
                           return Text("No photo", style: Theme.of(context).textTheme.caption,);
                         } ,),
                         onTap: () {
                           Dialog myDialog = Dialog(
-                            child: Image.network(Api.server + "/v1/picture?oid=" + settings.selectedCompanyId + "&pid=" + rows[index]["_id"],
+                            child: Image.network(Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + rows[index]["_id"],
                               errorBuilder: (context, exp, st) {
                                 return Text("No photo", style: Theme.of(context).textTheme.caption,);
                               } ,),
@@ -131,7 +131,7 @@ class _PeoplePageState extends State<PeoplePage> {
 
   void getFromServer(MySettings settings) async {
     try {
-      Api.feathers().find(serviceName: "people", query: {"oid": settings.selectedCompanyId}).asStream().listen((event) {
+      Api.feathers().find(serviceName: "people", query: {"oid": settings.companyId}).asStream().listen((event) {
         setState(() {
           rows = event["data"];
         });
@@ -158,7 +158,7 @@ class _PeoplePageState extends State<PeoplePage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Image.network(Api.server + "/v1/picture?oid=" + settings.selectedCompanyId + "&pid=" + selectedRow["_id"],
+                  Image.network(Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + selectedRow["_id"],
                     errorBuilder: (context, exp, st) {
                       return Text("No photo", style: Theme.of(context).textTheme.caption,);
                     }, width: 120, fit: BoxFit.fitWidth, ),
@@ -266,10 +266,9 @@ class _PeoplePageState extends State<PeoplePage> {
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: ElevatedButton(onPressed: () async {
-                              print(settings.selectedCompanyId);
                               if (selectedRow == null) {
                                 await Api.feathers().create(serviceName: "people", data: {
-                                  "oid": settings.selectedCompanyId,
+                                  "oid": settings.companyId,
                                   "name": nameController.text,
                                   "position": positionController.text,
                                   "division": divisionController.text,
@@ -278,7 +277,7 @@ class _PeoplePageState extends State<PeoplePage> {
                                 });
                               } else {
                                 await Api.feathers().patch(serviceName: "people", objectId: selectedRow["_id"], data: {
-                                  "oid": settings.selectedCompanyId,
+                                  "oid": settings.companyId,
                                   "name": nameController.text,
                                   "position": positionController.text,
                                   "division": divisionController.text,
