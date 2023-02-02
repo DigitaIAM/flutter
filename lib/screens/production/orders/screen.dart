@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nae_hr/widgets/list_filter.dart';
 
 import 'package:nae_hr/widgets/scaffold_list.dart';
 import 'package:nae_hr/widgets/memory_list.dart';
@@ -11,8 +12,16 @@ class ProductionOrdersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ScaffoldList(
-      body: ProductionOrdersListBuilder(),
+    return ScaffoldList(
+      entityType: route,
+      appBarTitle: ListFilter(
+        // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
+        filter: null, //state.productListState.filter,
+        onFilterChanged: (value) {
+          // store.dispatch(FilterProducts(value));
+        },
+      ),
+      body: const ProductionOrdersListBuilder(),
     );
   }
 }

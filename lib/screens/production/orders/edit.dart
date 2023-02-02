@@ -3,22 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/model/memory/item.dart';
 import 'package:nae_hr/widgets/entity_header.dart';
+import 'package:nae_hr/widgets/entity_screens.dart';
 import 'package:nae_hr/widgets/list_divider.dart';
 import 'package:nae_hr/widgets/scaffold_view.dart';
 import 'package:nae_hr/widgets/scrollable_list_view.dart';
 
-class ProductionOrderView extends StatefulWidget {
-  final MemoryItem entity;
-  final int tabIndex;
-
-  const ProductionOrderView({super.key, required this.entity, required this.tabIndex});
+class ProductionOrderEdit extends EntityHolder {
+  const ProductionOrderEdit({super.key, required super.entity});
 
   @override
-  State<ProductionOrderView> createState() => _ProductionOrderViewState();
+  State<ProductionOrderEdit> createState() => _ProductionOrderEditState();
 
 }
 
-class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTickerProviderStateMixin {
+class _ProductionOrderEditState extends State<ProductionOrderEdit> with SingleTickerProviderStateMixin {
 
   late TabController _controller;
 
@@ -29,7 +27,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
     // final state = widget.viewModel.state;
     _controller = TabController(
         vsync: this,
-        length: 3,
+        length: 2,
         initialIndex: 0 // widget.isFilter ? 0 : state.productUIState.tabIndex
     );
     _controller.addListener(_onTabChanged);
@@ -44,14 +42,14 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
     // store.dispatch(UpdateProductTab(tabIndex: _controller.index));
   }
 
-  @override
-  void didUpdateWidget(oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.tabIndex != widget.tabIndex) {
-      _controller.index = widget.tabIndex;
-    }
-  }
+  // @override
+  // void didUpdateWidget(oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //
+  //   if (oldWidget.tabIndex != widget.tabIndex) {
+  //     _controller.index = widget.tabIndex;
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -71,7 +69,6 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
         tabs: [
           Tab(text: localization.translate("overview")),
           Tab(text: localization.translate("task")),
-          Tab(text: localization.translate("production")),
         ],
       ),
       body: Builder(builder: (context) {
@@ -81,9 +78,6 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
               child: TabBarView(
                 controller: _controller,
                 children: <Widget>[
-                  ProductionOrderOverview(
-                      memoryItem: widget.entity
-                  ),
                   ProductionOrderOverview(
                       memoryItem: widget.entity
                   ),

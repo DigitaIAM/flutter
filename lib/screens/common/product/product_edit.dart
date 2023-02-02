@@ -1,21 +1,23 @@
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
 import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/model/memory/item.dart';
 import 'package:nae_hr/widgets/entity_header.dart';
-import 'package:nae_hr/widgets/entity_screens.dart';
 import 'package:nae_hr/widgets/list_divider.dart';
 import 'package:nae_hr/widgets/scaffold_view.dart';
 import 'package:nae_hr/widgets/scrollable_list_view.dart';
 
-class UomView extends EntityHolder {
-  const UomView({super.key, required super.entity});
+class ProductView extends StatefulWidget {
+  final MemoryItem entity;
+
+  const ProductView({super.key, required this.entity});
 
   @override
-  State<UomView> createState() => _UomViewState();
+  State<ProductView> createState() => _ProductViewState();
+
 }
 
-class _UomViewState extends State<UomView> with SingleTickerProviderStateMixin {
+class _ProductViewState extends State<ProductView> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class _UomViewState extends State<UomView> with SingleTickerProviderStateMixin {
         return Column(
           children: <Widget>[
             Expanded(
-              child: UomOverview(
+              child: ProductOverview(
                   entity: widget.entity
               ),
             ),
@@ -37,11 +39,11 @@ class _UomViewState extends State<UomView> with SingleTickerProviderStateMixin {
   }
 }
 
-class UomOverview extends StatelessWidget {
+class ProductOverview extends StatelessWidget {
 
   final MemoryItem entity;
 
-  const UomOverview({super.key, required this.entity});
+  const ProductOverview({super.key, required this.entity});
 
   @override
   Widget build(BuildContext context) {

@@ -9,13 +9,18 @@ abstract class UiEvent extends Equatable {
 }
 
 class ChangeView extends UiEvent {
-  ChangeView(this.ctx, {this.entity = const MemoryItem(id: '', json: {})});
+  ChangeView(this.ctx, {this.action = 'view', this.entity = const MemoryItem(id: '', json: {})});
 
   final List<String> ctx;
+  final String action;
   final MemoryItem entity;
 
   @override
-  List<Object> get props => [ctx, entity];
+  List<Object> get props => [ctx, action, entity];
+}
+
+class PreviousRoute extends UiEvent {
+
 }
 
 class MenuVisibility extends UiEvent {

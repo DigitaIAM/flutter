@@ -15,9 +15,13 @@ abstract class _$UiStateCWProxy {
 
   UiState entityId(String? entityId);
 
+  UiState isSaving(bool isSaving);
+
   UiState isMenuVisible(bool isMenuVisible);
 
   UiState isMenuCollapsed(bool isMenuCollapsed);
+
+  UiState isMenuFloated(bool isMenuFloated);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `UiState(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -30,8 +34,10 @@ abstract class _$UiStateCWProxy {
     String? subRoute,
     MemoryItem? entity,
     String? entityId,
+    bool? isSaving,
     bool? isMenuVisible,
     bool? isMenuCollapsed,
+    bool? isMenuFloated,
   });
 }
 
@@ -55,12 +61,19 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
   UiState entityId(String? entityId) => this(entityId: entityId);
 
   @override
+  UiState isSaving(bool isSaving) => this(isSaving: isSaving);
+
+  @override
   UiState isMenuVisible(bool isMenuVisible) =>
       this(isMenuVisible: isMenuVisible);
 
   @override
   UiState isMenuCollapsed(bool isMenuCollapsed) =>
       this(isMenuCollapsed: isMenuCollapsed);
+
+  @override
+  UiState isMenuFloated(bool isMenuFloated) =>
+      this(isMenuFloated: isMenuFloated);
 
   @override
 
@@ -75,8 +88,10 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
     Object? subRoute = const $CopyWithPlaceholder(),
     Object? entity = const $CopyWithPlaceholder(),
     Object? entityId = const $CopyWithPlaceholder(),
+    Object? isSaving = const $CopyWithPlaceholder(),
     Object? isMenuVisible = const $CopyWithPlaceholder(),
     Object? isMenuCollapsed = const $CopyWithPlaceholder(),
+    Object? isMenuFloated = const $CopyWithPlaceholder(),
   }) {
     return UiState(
       currentRoute:
@@ -98,6 +113,11 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
           ? _value.entityId
           // ignore: cast_nullable_to_non_nullable
           : entityId as String?,
+      isSaving: isSaving == const $CopyWithPlaceholder() || isSaving == null
+          // ignore: unnecessary_non_null_assertion
+          ? _value.isSaving!
+          // ignore: cast_nullable_to_non_nullable
+          : isSaving as bool,
       isMenuVisible:
           isMenuVisible == const $CopyWithPlaceholder() || isMenuVisible == null
               // ignore: unnecessary_non_null_assertion
@@ -110,6 +130,12 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
           ? _value.isMenuCollapsed!
           // ignore: cast_nullable_to_non_nullable
           : isMenuCollapsed as bool,
+      isMenuFloated:
+          isMenuFloated == const $CopyWithPlaceholder() || isMenuFloated == null
+              // ignore: unnecessary_non_null_assertion
+              ? _value.isMenuFloated!
+              // ignore: cast_nullable_to_non_nullable
+              : isMenuFloated as bool,
     );
   }
 }

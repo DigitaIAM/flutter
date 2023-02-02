@@ -12,14 +12,16 @@ import 'package:nae_hr/model/memory/memory_state.dart';
 import 'package:nae_hr/model/ui/ui_bloc.dart';
 import 'package:nae_hr/model/ui/ui_event.dart';
 import 'package:nae_hr/model/ui/ui_state.dart';
-import 'package:nae_hr/screens/common/uom/uoms_screen.dart';
-import 'package:nae_hr/screens/production/orders/production_orders_screen.dart';
+import 'package:nae_hr/screens/common/uom/uom_screen.dart';
+import 'package:nae_hr/screens/production/orders/screen.dart';
 import 'package:nae_hr/widgets/app_border.dart';
 import 'package:nae_hr/widgets/my_dropdown_button.dart';
 import 'package:nae_hr/widgets/scrollable_list_view.dart';
 import 'package:provider/provider.dart';
 
 class MenuDrawerBuilder extends StatelessWidget {
+  const MenuDrawerBuilder({super.key});
+
   @override
   Widget build(BuildContext context) {
     return const MenuDrawer(); // TODO viewModel: viewModel);
@@ -93,10 +95,10 @@ class _MenuDrawerState extends State<MenuDrawer> {
                                   // onLongPress: () => ,
                                 ),
                                 DrawerTile(
-                                  ctx: UomsScreen.route,
-                                  icon: UomsScreen.icon, // getEntityIcon(EntityType.dashboard),
+                                  ctx: UomScreen.route,
+                                  icon: UomScreen.icon, // getEntityIcon(EntityType.dashboard),
                                   title: localization.translate("uom"),
-                                  onTap: () => context.read<UiBloc>().add(ChangeView(UomsScreen.route)),
+                                  onTap: () => context.read<UiBloc>().add(ChangeView(UomScreen.route)),
                                   // onLongPress: () => ,
                                 ),
                               ]

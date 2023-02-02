@@ -16,6 +16,11 @@ class MemoryItem extends Equatable {
     // TODO?
   }
 
+  get isNew => id == 'new';
+  get updatedAt => null;
+
   @override
   List<Object> get props => [id, json];
+
+  static create() => const MemoryItem(id: 'new', json: {});
 }

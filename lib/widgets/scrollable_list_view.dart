@@ -11,7 +11,7 @@ class ScrollableListView extends StatefulWidget {
   const ScrollableListView({super.key, required this.children, this.showScrollbar = false, this.primary = false, this.padding});
 
   @override
-  _ScrollableListViewState createState() => _ScrollableListViewState();
+  State<ScrollableListView> createState() => _ScrollableListViewState();
 }
 
 class _ScrollableListViewState extends State<ScrollableListView> {

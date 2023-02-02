@@ -26,7 +26,6 @@ class MySettings with ChangeNotifier {
   bool isDesktop = true;
   bool isFullScreen = false;
 
-  bool isPreviewShown = true;
   bool isFilterVisible = false;
 
   // pref
