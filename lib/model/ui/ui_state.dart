@@ -3,15 +3,9 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/material.dart';
 
 import 'package:nae_hr/model/memory/item.dart';
-import 'package:nae_hr/screens/common/uom/uom_edit.dart';
-import 'package:nae_hr/screens/common/uom/uom_screen.dart';
-import 'package:nae_hr/screens/common/uom/uom_view.dart';
-import 'package:nae_hr/screens/home.dart';
-import 'package:nae_hr/screens/production/orders/edit.dart';
-import 'package:nae_hr/screens/production/orders/view.dart';
+import 'package:nae_hr/screens/common/uom/screen.dart';
 import 'package:nae_hr/screens/production/orders/screen.dart';
 import 'package:nae_hr/widgets/blank_screen.dart';
-import 'package:nae_hr/widgets/entity_screens.dart';
 
 part 'ui_state.g.dart';
 
@@ -21,9 +15,9 @@ part 'ui_state.g.dart';
 class UiState extends Equatable {
   const UiState({
     this.currentRoute = const ["login"],
-    this.subRoute,
+    this.action = 'view',
     this.entity = const MemoryItem(id: '', json: {}),
-    this.entityId,
+    // this.entityId = '',
 
     this.isSaving = false,
 
@@ -33,9 +27,9 @@ class UiState extends Equatable {
   });
 
   final List<String> currentRoute;
-  final String? subRoute;
+  final String action;
   final MemoryItem entity;
-  final String? entityId;
+  // final String entityId;
 
   final bool isSaving;
 
@@ -47,7 +41,7 @@ class UiState extends Equatable {
 
   @override
   List<Object> get props => [
-    currentRoute, subRoute ?? '', entity, entityId ?? '',
+    currentRoute, action, entity, // entityId,
     isSaving,
     isMenuVisible, isMenuCollapsed, isMenuFloated
   ];
@@ -55,15 +49,9 @@ class UiState extends Equatable {
   Widget entityScreen() {
     Widget screen = const BlankScreen();
     if (currentRoute == ProductionOrdersScreen.route) {
-      screen = EntityScreens(
-        list: const ProductionOrdersScreen(),
-        view: subRoute == "edit" ? ProductionOrderEdit(entity: entity) : ProductionOrderView(entity: entity, tabIndex: 0),
-      );
+      screen = ProductionOrdersScreen.create(action, entity.clone());
     } else if (currentRoute == UomScreen.route) {
-      screen = EntityScreens(
-        list: const UomScreen(),
-        view: subRoute == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
-      );
+      screen = UomScreen.create(action, entity.clone());
     }
     return screen;
   }

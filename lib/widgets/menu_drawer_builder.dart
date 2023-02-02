@@ -12,7 +12,7 @@ import 'package:nae_hr/model/memory/memory_state.dart';
 import 'package:nae_hr/model/ui/ui_bloc.dart';
 import 'package:nae_hr/model/ui/ui_event.dart';
 import 'package:nae_hr/model/ui/ui_state.dart';
-import 'package:nae_hr/screens/common/uom/uom_screen.dart';
+import 'package:nae_hr/screens/common/uom/screen.dart';
 import 'package:nae_hr/screens/production/orders/screen.dart';
 import 'package:nae_hr/widgets/app_border.dart';
 import 'package:nae_hr/widgets/my_dropdown_button.dart';

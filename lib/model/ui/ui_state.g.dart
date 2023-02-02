@@ -9,11 +9,9 @@ part of 'ui_state.dart';
 abstract class _$UiStateCWProxy {
   UiState currentRoute(List<String> currentRoute);
 
-  UiState subRoute(String? subRoute);
+  UiState action(String action);
 
   UiState entity(MemoryItem entity);
-
-  UiState entityId(String? entityId);
 
   UiState isSaving(bool isSaving);
 
@@ -31,9 +29,8 @@ abstract class _$UiStateCWProxy {
   /// ````
   UiState call({
     List<String>? currentRoute,
-    String? subRoute,
+    String? action,
     MemoryItem? entity,
-    String? entityId,
     bool? isSaving,
     bool? isMenuVisible,
     bool? isMenuCollapsed,
@@ -52,13 +49,10 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
       this(currentRoute: currentRoute);
 
   @override
-  UiState subRoute(String? subRoute) => this(subRoute: subRoute);
+  UiState action(String action) => this(action: action);
 
   @override
   UiState entity(MemoryItem entity) => this(entity: entity);
-
-  @override
-  UiState entityId(String? entityId) => this(entityId: entityId);
 
   @override
   UiState isSaving(bool isSaving) => this(isSaving: isSaving);
@@ -85,9 +79,8 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
   /// ````
   UiState call({
     Object? currentRoute = const $CopyWithPlaceholder(),
-    Object? subRoute = const $CopyWithPlaceholder(),
+    Object? action = const $CopyWithPlaceholder(),
     Object? entity = const $CopyWithPlaceholder(),
-    Object? entityId = const $CopyWithPlaceholder(),
     Object? isSaving = const $CopyWithPlaceholder(),
     Object? isMenuVisible = const $CopyWithPlaceholder(),
     Object? isMenuCollapsed = const $CopyWithPlaceholder(),
@@ -100,19 +93,16 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
               ? _value.currentRoute!
               // ignore: cast_nullable_to_non_nullable
               : currentRoute as List<String>,
-      subRoute: subRoute == const $CopyWithPlaceholder()
-          ? _value.subRoute
+      action: action == const $CopyWithPlaceholder() || action == null
+          // ignore: unnecessary_non_null_assertion
+          ? _value.action!
           // ignore: cast_nullable_to_non_nullable
-          : subRoute as String?,
+          : action as String,
       entity: entity == const $CopyWithPlaceholder() || entity == null
           // ignore: unnecessary_non_null_assertion
           ? _value.entity!
           // ignore: cast_nullable_to_non_nullable
           : entity as MemoryItem,
-      entityId: entityId == const $CopyWithPlaceholder()
-          ? _value.entityId
-          // ignore: cast_nullable_to_non_nullable
-          : entityId as String?,
       isSaving: isSaving == const $CopyWithPlaceholder() || isSaving == null
           // ignore: unnecessary_non_null_assertion
           ? _value.isSaving!

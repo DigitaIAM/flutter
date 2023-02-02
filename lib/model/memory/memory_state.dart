@@ -3,11 +3,15 @@ import 'package:nae_hr/model/memory/item.dart';
 
 enum RequestStatus { loading, success, failure }
 
+enum SaveStatus { ready, saving, success, failure }
+
 class RequestState extends Equatable {
   const RequestState({
     this.status = RequestStatus.loading,
     this.items = const <MemoryItem>[],
     this.hasReachedMax = false,
+
+    this.saveStatus = SaveStatus.ready,
   });
 
   const RequestState.loading() : this();
@@ -21,15 +25,20 @@ class RequestState extends Equatable {
   final List<MemoryItem> items;
   final bool hasReachedMax;
 
+  final SaveStatus saveStatus;
+
   RequestState copyWith({
     RequestStatus? status,
     List<MemoryItem>? items,
     bool? hasReachedMax,
+
+    SaveStatus? saveStatus,
   }) {
     return RequestState(
       status: status ?? this.status,
       items: items ?? this.items,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+      saveStatus: saveStatus ?? this.saveStatus
     );
   }
 

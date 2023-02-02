@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/utils/debouncer.dart';
 import 'package:nae_hr/widgets/search_text.dart';
 
@@ -63,7 +64,7 @@ class _ListFilterState extends State<ListFilter> {
           child: Padding(
             padding: const EdgeInsets.only(top: 2),
             child: SearchText(
-              placeholder: 'search',
+              placeholder: AppLocalizations.of(context).translate('search'),
               filterController: _filterController,
               focusNode: _focusNode,
               onCleared: () => widget.onFilterChanged(null),

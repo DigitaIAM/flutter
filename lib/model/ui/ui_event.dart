@@ -1,8 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:nae_hr/model/memory/item.dart';
 
-import '../../memory.dart';
-
 abstract class UiEvent extends Equatable {
   @override
   List<Object> get props => [];

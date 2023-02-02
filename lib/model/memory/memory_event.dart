@@ -1,8 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:nae_hr/model/memory/item.dart';
 
-import '../../memory.dart';
-
 abstract class MemoryEvent extends Equatable {
   @override
   List<Object> get props => [];
@@ -23,6 +21,14 @@ class MemoryRequest extends MemoryEvent {
   final String id;
 }
 
+class MemorySave extends MemoryEvent {
+  MemorySave(this.serviceName, this.ctx, this.data);
+
+  final String serviceName;
+  final List<String> ctx;
+  final MemoryItem data;
+}
+
 class MemoryCreate extends MemoryEvent {
   MemoryCreate(this.serviceName, this.ctx, this.data);
 
@@ -32,10 +38,8 @@ class MemoryCreate extends MemoryEvent {
 }
 
 class MemoryCreated extends MemoryEvent {
-  MemoryCreated(this.serviceName, this.ctx, this.item);
+  MemoryCreated(this.item);
 
-  final String serviceName;
-  final List<String> ctx;
   final MemoryItem item;
 }
 
@@ -47,10 +51,22 @@ class MemoryUpdate extends MemoryEvent {
   final Map<String, dynamic> data;
 }
 
+class MemoryUpdated extends MemoryEvent {
+  MemoryUpdated(this.item);
+
+  final MemoryItem item;
+}
+
 class MemoryRemove extends MemoryEvent {
   MemoryRemove(this.serviceName, this.ctx, this.id);
 
   final String serviceName;
   final List<String> ctx;
   final String id;
+}
+
+class MemoryRemoved extends MemoryEvent {
+  MemoryRemoved(this.item);
+
+  final MemoryItem item;
 }

@@ -1,27 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:overflow_view/overflow_view.dart';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pluto_grid/pluto_grid.dart';
+
 import 'package:nae_hr/app_localizations.dart';
-import 'package:nae_hr/core/my_settings.dart';
 import 'package:nae_hr/model/memory/item.dart';
 import 'package:nae_hr/model/memory/memory_state.dart';
 import 'package:nae_hr/model/ui/ui_bloc.dart';
 import 'package:nae_hr/model/ui/ui_event.dart';
 import 'package:nae_hr/widgets/icon_text.dart';
-
-import 'package:overflow_view/overflow_view.dart';
-
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae_hr/model/memory/memory_bloc.dart';
 import 'package:nae_hr/model/memory/memory_event.dart';
-
 import 'package:nae_hr/constants.dart';
 import 'package:nae_hr/core/platform.dart';
-import 'package:pluto_grid/pluto_grid.dart';
-import 'package:provider/provider.dart';
 
 IconData? getActionIcon(String action) {
   // return Icons.warning;
   return null;
+}
+
+class MemoryBlocHolder extends StatefulWidget {
+  const MemoryBlocHolder({super.key, this.init, required this.child});
+
+  final Function(MemoryBloc bloc)? init;
+  final Widget child;
+
+  @override
+  State<MemoryBlocHolder> createState() => _MemoryBlocHolderState();
+
+}
+
+class _MemoryBlocHolderState extends State<MemoryBlocHolder> {
+  late MemoryBloc bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    bloc = MemoryBloc();
+    widget.init?.call(bloc);
+  }
+
+  @override
+  void dispose(){
+    bloc.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => bloc,
+      child: widget.child,
+    );
+  }
 }
 
 class MemoryList extends StatefulWidget {
@@ -36,145 +68,129 @@ class MemoryList extends StatefulWidget {
 
 class _MemoryListState extends State<MemoryList> {
 
-  late MemoryBloc bloc;
   PlutoGridStateManager? stateManager;
-
-  int _firstRowIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    bloc = MemoryBloc();
-  }
-
-  @override
-  void dispose(){
-    bloc.close();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    // final settings = Provider.of<MySettings>(context);
     final localization = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     final List<String> actions = [];
 
-    return BlocProvider(
-        create: (context) => bloc..add(MemoryFetch("memories", widget.ctx)),
-        child: RefreshIndicator(
-          onRefresh: () => Future<void>(() => {}), // widget.onRefreshed(context),
-          child: Column(
-            children: [
-              AnimatedContainer(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                color: Theme.of(context).cardColor,
-                height: 0, // isInMultiselect ? kTopBottomBarHeight : 0,
+    return BlocBuilder<MemoryBloc, RequestState>(
+      // init: (bloc) => bloc.add(MemoryFetch("memories", widget.ctx)),
+      builder: (context, state) => RefreshIndicator(
+        onRefresh: () => Future<void>(() => {}), // widget.onRefreshed(context),
+        child: Column(
+          children: [
+            AnimatedContainer(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              color: Theme.of(context).cardColor,
+              height: 0, // isInMultiselect ? kTopBottomBarHeight : 0,
+              duration: const Duration(milliseconds: cAnimationDuration),
+              curve: Curves.easeInOutCubic,
+              child: AnimatedOpacity(
+                opacity: 0, // isInMultiselect ? 1 : 0,
                 duration: const Duration(milliseconds: cAnimationDuration),
                 curve: Curves.easeInOutCubic,
-                child: AnimatedOpacity(
-                  opacity: 0, // isInMultiselect ? 1 : 0,
-                  duration: const Duration(milliseconds: cAnimationDuration),
-                  curve: Curves.easeInOutCubic,
-                  child: Row(
-                      children: [
-                        if (isDesktop(context)) ...[
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 4),
-                            child: Text("")
-                              // isList
-                              //   ? '($countSelected)'
-                              //   : localization.countSelected
-                              //   .replaceFirst(':count', '$countSelected')),
-                          ),
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: OverflowView.flexible(
-                                spacing: 8,
-                                children: actions.map(
-                                  (action) => OutlinedButton(
-                                    child: IconText(
-                                      icon: getActionIcon(action),
-                                      text: AppLocalizations.of(context).translate('$action'),
-                                    ),
-                                    onPressed: () {
-                                      // handleEntitiesActions(entities, action);
-                                      // widget.onClearMultiselect();
-                                    },
+                child: Row(
+                    children: [
+                      if (isDesktop(context)) ...[
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: Text("")
+                            // isList
+                            //   ? '($countSelected)'
+                            //   : localization.countSelected
+                            //   .replaceFirst(':count', '$countSelected')),
+                        ),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: OverflowView.flexible(
+                              spacing: 8,
+                              children: actions.map(
+                                (action) => OutlinedButton(
+                                  child: IconText(
+                                    icon: getActionIcon(action),
+                                    text: AppLocalizations.of(context).translate('$action'),
                                   ),
-                                ).toList(),
-                                builder: (context, remaining) {
-                                  return PopupMenuButton<String>(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            localization.translate("more"),
-                                            style: theme.textTheme.bodySmall, // TextStyle(color: enableDarkMode ? Colors.white : Colors.black),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Icon(Icons.arrow_drop_down,
-                                              color: theme.textTheme.bodySmall?.color ?? Colors.white, // enableDarkMode ? Colors.white : Colors.black
-                                          ),
-                                        ],
-                                      ),
+                                  onPressed: () {
+                                    // handleEntitiesActions(entities, action);
+                                    // widget.onClearMultiselect();
+                                  },
+                                ),
+                              ).toList(),
+                              builder: (context, remaining) {
+                                return PopupMenuButton<String>(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          localization.translate("more"),
+                                          style: theme.textTheme.bodySmall, // TextStyle(color: enableDarkMode ? Colors.white : Colors.black),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Icon(Icons.arrow_drop_down,
+                                            color: theme.textTheme.bodySmall?.color ?? Colors.white, // enableDarkMode ? Colors.white : Colors.black
+                                        ),
+                                      ],
                                     ),
-                                    onSelected: (String action) {
-                                      // handleEntitiesActions(entities, action);
-                                      // widget.onClearMultiselect();
-                                    },
-                                    itemBuilder: (BuildContext context) {
-                                      return actions
-                                          .toList()
-                                          .sublist(actions.length - remaining)
-                                          .map((action) {
-                                        return PopupMenuItem<String>(
-                                          value: action,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                  getActionIcon(action),
-                                                  color: Theme.of(context).colorScheme.secondary
-                                              ),
-                                              const SizedBox(width: 16.0),
-                                              Text(localization.translate(action)),
-                                            ],
-                                          ),
-                                        );
-                                      }).toList();
-                                    }
-                                  );
-                                }
-                              ),
+                                  ),
+                                  onSelected: (String action) {
+                                    // handleEntitiesActions(entities, action);
+                                    // widget.onClearMultiselect();
+                                  },
+                                  itemBuilder: (BuildContext context) {
+                                    return actions
+                                        .toList()
+                                        .sublist(actions.length - remaining)
+                                        .map((action) {
+                                      return PopupMenuItem<String>(
+                                        value: action,
+                                        child: Row(
+                                          children: <Widget>[
+                                            Icon(
+                                                getActionIcon(action),
+                                                color: Theme.of(context).colorScheme.secondary
+                                            ),
+                                            const SizedBox(width: 16.0),
+                                            Text(localization.translate(action)),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList();
+                                  }
+                                );
+                              }
                             ),
                           ),
-                        ] else ...[
-                        ]
+                        ),
+                      ] else ...[
                       ]
-                  )
+                    ]
                 )
+              )
+            ),
+            Expanded(
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: <Widget>[
+                  listOrTable(),
+                  // if ((state.isLoading &&
+                  //     (isMobile(context) || !entityType.isSetting)) ||
+                  //     (state.isSaving &&
+                  //         (entityType.isSetting ||
+                  //             (!state.prefState.isPreviewVisible && !state.uiState.isEditing)
+                  //         )))
+                  //   const LinearProgressIndicator(),
+                ],
               ),
-              Expanded(
-                child: Stack(
-                  alignment: Alignment.topCenter,
-                  children: <Widget>[
-                    listOrTable(),
-                    // if ((state.isLoading &&
-                    //     (isMobile(context) || !entityType.isSetting)) ||
-                    //     (state.isSaving &&
-                    //         (entityType.isSetting ||
-                    //             (!state.prefState.isPreviewVisible && !state.uiState.isEditing)
-                    //         )))
-                    //   const LinearProgressIndicator(),
-                  ],
-                ),
-              ),
-            ]
-          )
+            ),
+          ]
         )
+      )
     );
   }
 

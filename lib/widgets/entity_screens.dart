@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:nae_hr/core/my_settings.dart';
 import 'package:nae_hr/model/memory/item.dart';
+import 'package:nae_hr/model/memory/memory_event.dart';
 import 'package:nae_hr/widgets/app_border.dart';
+import 'package:nae_hr/widgets/memory_list.dart';
 import 'package:provider/provider.dart';
 
 abstract class EntityHolder extends StatefulWidget {
@@ -17,11 +19,12 @@ abstract class EntityHolder extends StatefulWidget {
 
 class EntityScreens extends StatelessWidget {
 
+  final List<String> ctx;
   final Widget list;
   final EntityHolder view;
 
   const EntityScreens({super.key,
-    required this.list, required this.view
+    required this.ctx, required this.list, required this.view
   });
 
   @override
@@ -37,7 +40,9 @@ class EntityScreens extends StatelessWidget {
     // );
     Widget? leftFilterChild;
 
-    return Row(
+    return MemoryBlocHolder(
+      init: (bloc) => ctx.isNotEmpty ? bloc.add(MemoryFetch("memories", ctx)) : null,
+      child: Row(
         children: [
           Expanded(
             flex: listFlex,
@@ -73,6 +78,7 @@ class EntityScreens extends StatelessWidget {
               ),
             ),
         ]
+      )
     );
   }
 }

@@ -6,7 +6,6 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:nae_hr/api.dart';
 import 'package:nae_hr/model/memory/item.dart';
 import 'package:stream_transform/stream_transform.dart';
-import 'package:nae_hr/memory.dart';
 import 'package:nae_hr/model/memory/memory_event.dart';
 import 'package:nae_hr/model/memory/memory_state.dart';
 
@@ -23,6 +22,7 @@ EventTransformer<E> throttleDroppable<E>(Duration duration) {
 class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
   MemoryBloc() : super(const RequestState()) {
     print("init RequestState");
+    on<MemorySave>(_onSave);
     on<MemoryFetch>(
       _onFetched,
       transformer: throttleDroppable(throttleDuration),
@@ -31,42 +31,54 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     on<MemoryCreate>(_onCreate);
     on<MemoryCreated>(_onCreated);
     on<MemoryUpdate>(_onUpdate);
+    on<MemoryUpdated>(_onUpdated);
     // TODO on<MemoryRemove>(_onRemove);
 
-    streamSubscription = Api.feathers()
-        .listen<Map<String, dynamic>>(serviceName: "memories", fromJson: (e) { return e; } )
-        .listen((event) {
-          print("listen event:");
-          print(event.type);
-          print(event.data);
-          // event is FeathersJsEventData<Message>
-          // What event is sent by feathers js ?
-          if (event.type == FeathersJsEventType.created && event.data != null) {
-            if (event.data is Map<String, dynamic>) {
-              final json = event.data!;
-              final id = json["_id"];
-              print(id);
-              if (id != null && id is String && id.isNotEmpty) {
-                final item = MemoryItem(id: id, json: json);
-                add(MemoryCreated("memories", const ["TODO"], item));
-              }
-            }
-          // } else if (event.type == FeathersJsEventType.removed) {
-          //   //
-          // } else if (event.type == FeathersJsEventType.patched){
-          //   // ...
-          }
-        },
-        onError: (e) {
-          print("onError: ");
-          print(e);
-          // e is a FeatherJsError
-          // You can check what error occured: e.type
+    // Api.feathers().scketio.reset(serviceName: "memories");
 
-          // Add the event to flutter_bloc
-          // add(MessageError(message: e.error));
-        },
-    );
+    // TODO can not be unregistered and multiple call for same event
+    // streamSubscription = Api.feathers()
+    //     .listen<Map<String, dynamic>>(serviceName: "memories", fromJson: (e) { return e; } )
+    //     .listen((event) {
+    //       print("listen event:");
+    //       print(event.type);
+    //       print(event.data);
+    //       // event is FeathersJsEventData<Message>
+    //       // What event is sent by feathers js ?
+    //       if (event.type == FeathersJsEventType.created && event.data != null) {
+    //         if (event.data is Map<String, dynamic>) {
+    //           final json = event.data!;
+    //           final id = json["_id"];
+    //           print("found id:");
+    //           print(id);
+    //           if (id != null && id is String && id.isNotEmpty) {
+    //             final item = MemoryItem(id: id, json: json);
+    //             add(MemoryCreated(item));
+    //           }
+    //         }
+    //       } else if (event.type == FeathersJsEventType.updated) {
+    //         if (event.data is Map<String, dynamic>) {
+    //           final json = event.data!;
+    //           final id = json["_id"];
+    //           print("found id:");
+    //           print(id);
+    //           if (id != null && id is String && id.isNotEmpty) {
+    //             final item = MemoryItem(id: id, json: json);
+    //             add(MemoryUpdated(item));
+    //           }
+    //         }
+    //       }
+    //     },
+    //     onError: (e) {
+    //       print("onError: ");
+    //       print(e);
+    //       // e is a FeatherJsError
+    //       // You can check what error occured: e.type
+    //
+    //       // Add the event to flutter_bloc
+    //       // add(MessageError(message: e.error));
+    //     },
+    // );
   }
 
   StreamSubscription? streamSubscription;
@@ -145,22 +157,44 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     // throw Exception('error fetching');
   }
 
+  Future<void> _onSave(MemorySave event, Emitter<RequestState> emit) async {
+    print("_onSave: ${event.data.id}");
+    print(event.data.json);
+    if (event.data.isNew) {
+      return _onCreate(MemoryCreate(event.serviceName, event.ctx, event.data.json), emit);
+    } else {
+      return _onUpdate(MemoryUpdate(event.serviceName, event.ctx, event.data.json), emit);
+    }
+  }
+
   Future<void> _onCreate(MemoryCreate event, Emitter<RequestState> emit) async {
-    if (state.hasReachedMax) return;
     try {
-      if (state.status == RequestStatus.loading) {
-        final item = await _create(event.serviceName, event.ctx, event.data);
-        return emit(state.copyWith(
-          status: RequestStatus.success,
-          items: [item],
-          hasReachedMax: true,
-        ));
+      final saved = await _create(event.serviceName, event.ctx, event.data);
+
+      final List<MemoryItem> list = List.from(state.items);
+
+      // workaround: update list after save
+      bool notFound = false;
+      for (int i = 0; i < list.length; i++) {
+        final item = list[i];
+        if (item.id == saved.id) {
+          list[i] = saved;
+          notFound = true;
+        }
       }
+      if (notFound) {
+        list.insert(0, saved);
+      }
+
+      return emit(state.copyWith(
+        items: list,
+        saveStatus: SaveStatus.success,
+      ));
     } catch (e, stacktrace) {
       print("ERROR _onCreate:");
       print(e);
       print(stacktrace);
-      emit(state.copyWith(status: RequestStatus.failure));
+      emit(state.copyWith(saveStatus: SaveStatus.failure));
     }
   }
 
@@ -179,36 +213,29 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     );
   }
 
-  Future<void> _onCreated(MemoryCreated event, Emitter<RequestState> emit) async {
-    // workaround: search for item to avoid duplicate
-    for (var item in state.items) {
-      if (item.id == event.item.id) {
-        return emit(state); // TODO is it possible to emit nothing?
-      }
-    }
-    final List<MemoryItem> list = List.from(state.items);
-    list.insert(0, event.item);
-    return emit(state.copyWith(
-      items: list,
-    ));
-  }
-
   Future<void> _onUpdate(MemoryUpdate event, Emitter<RequestState> emit) async {
-    if (state.hasReachedMax) return;
     try {
-      if (state.status == RequestStatus.loading) {
-        final item = await _update(event.serviceName, event.ctx, event.data);
-        return emit(state.copyWith(
-          status: RequestStatus.success,
-          items: [item],
-          hasReachedMax: true,
-        ));
+      final saved = await _update(event.serviceName, event.ctx, event.data);
+
+      final List<MemoryItem> list = List.from(state.items);
+
+      // workaround: update list after save
+      for (int i = 0; i < list.length; i++) {
+        final item = list[i];
+        if (item.id == saved.id) {
+          list[i] = saved;
+        }
       }
+
+      return emit(state.copyWith(
+        items: list,
+        saveStatus: SaveStatus.success,
+      ));
     } catch (e, stacktrace) {
       print("ERROR _onUpdate:");
       print(e);
       print(stacktrace);
-      emit(state.copyWith(status: RequestStatus.failure));
+      emit(state.copyWith(saveStatus: SaveStatus.failure));
     }
   }
 
@@ -228,5 +255,43 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       id: response['_id'],
       json: response,
     );
+  }
+
+  Future<void> _onCreated(MemoryCreated event, Emitter<RequestState> emit) async {
+    print("_onCreated");
+    print(event.item.json);
+
+    // workaround: search for item to avoid duplicate
+    for (var item in state.items) {
+      if (item.id == event.item.id) {
+        print("found");
+        return emit(state); // TODO is it possible to emit nothing?
+      }
+    }
+
+    print("adding");
+    final List<MemoryItem> list = List.from(state.items);
+    list.insert(0, event.item);
+    return emit(state.copyWith(
+      items: list,
+    ));
+  }
+
+  Future<void> _onUpdated(MemoryUpdated event, Emitter<RequestState> emit) async {
+    print("_onUpdated");
+    print(event.item.json);
+
+    var items = state.items;
+    for (int i = 0; i < items.length; i++) {
+      final item = items[i];
+      if (item.id == event.item.id) {
+        print("found and replace");
+        items[i] = event.item;
+      }
+    }
+
+    return emit(state.copyWith(
+      items: items,
+    ));
   }
 }

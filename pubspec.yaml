@@ -62,7 +62,7 @@ dependencies:
 #  flutter_redux: ^0.10.0
 #  get_it: ^7.2.0
 
-  copy_with_extension_gen: ^5.0.0
+#  copy_with_extension_gen: ^5.0.0
   bloc_concurrency: ^0.2.0
   flutter_bloc: ^8.1.1
   stream_transform: ^2.1.0

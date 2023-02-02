@@ -46,8 +46,8 @@ class FormCard extends StatelessWidget {
             child: Padding(
               padding: internalPadding ?? const EdgeInsets.all(16),
               child: child ?? Container(
-                // width: double.infinity,
-                // constraints: constraints,
+                width: double.infinity,
+                constraints: constraints,
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,

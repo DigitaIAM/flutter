@@ -21,7 +21,7 @@ class UiBloc extends Bloc<UiEvent, UiState> {
       (ChangeView event, Emitter<UiState> emit) {
         emit(state.copyWith(
           currentRoute: event.ctx.isNotEmpty ? event.ctx : state.currentRoute,
-          subRoute: event.action,
+          action: event.action,
           entity: event.entity,
         ));
       },

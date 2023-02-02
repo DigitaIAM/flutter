@@ -1,14 +1,17 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:nae_hr/model/memory/item.dart';
 import 'package:nae_hr/widgets/scrollable_list_view.dart';
 
 class AppForm extends StatelessWidget {
   const AppForm({super.key,
-    required this.formKey, required this.focusNode,
+    required this.formKey, required this.entity, required this.focusNode,
     this.child, this.children
   });
 
-  final GlobalKey<FormState> formKey;
+  final GlobalKey<FormBuilderState> formKey;
+  final MemoryItem entity;
   final FocusScopeNode focusNode;
 
   // should be one of
@@ -19,15 +22,20 @@ class AppForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return FocusScope(
       node: focusNode,
-      child: Form(
+      child: FormBuilder(
         key: formKey,
-        child: child ??
-            ScrollableListView(
-              primary: true,
-              children: children!,
-            ),
+        initialValue: entity.json,
+        autovalidateMode: AutovalidateMode.disabled,
+        skipDisabled: true,
+        // onChanged: () {
+        //   formKey.currentState!.save();
+        //   debugPrint("onChanged: ${formKey.currentState!.value}");
+        // },
+        child: child ?? ScrollableListView(
+          primary: true,
+          children: children!,
+        ),
       ),
     );
   }
-
 }
