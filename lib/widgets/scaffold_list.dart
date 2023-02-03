@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/constants.dart';
 import 'package:nae_hr/core/platform.dart';
-import 'package:nae_hr/model/ui/ui_bloc.dart';
-import 'package:nae_hr/model/ui/ui_event.dart';
+import 'package:nae_hr/models/memory/item.dart';
+import 'package:nae_hr/models/ui/bloc.dart';
+import 'package:nae_hr/models/ui/event.dart';
 import 'package:nae_hr/widgets/icon_text.dart';
 import 'package:nae_hr/widgets/menu_drawer_builder.dart';
 import 'package:provider/provider.dart';
 
-import '../model/memory/item.dart';
-
 class ScaffoldList extends StatelessWidget {
-
-  const ScaffoldList({super.key,
+  const ScaffoldList({
+    super.key,
     required this.entityType,
     required this.appBarTitle,
     required this.body,
@@ -29,7 +28,6 @@ class ScaffoldList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final uiState = context.read<UiBloc>().state; // TODO move to builder
 
     Widget leading = const SizedBox();
@@ -46,7 +44,8 @@ class ScaffoldList extends StatelessWidget {
           ),
         ),
       );
-    } else if (entityType != null) { // TODO check can create
+    } else if (entityType != null) {
+      // TODO check can create
       leading = Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
         child: OutlinedButton(
@@ -54,7 +53,8 @@ class ScaffoldList extends StatelessWidget {
           //   backgroundColor: MaterialStateProperty.all(theme.primaryColor)
           // ),
           onPressed: () {
-            context.read<UiBloc>().add(ChangeView(entityType, action: 'edit', entity: MemoryItem.create()));
+            context.read<UiBloc>().add(ChangeView(entityType,
+                action: 'edit', entity: MemoryItem.create()));
           },
           child: IconText(
             text: localization.translate("create"),
@@ -74,22 +74,20 @@ class ScaffoldList extends StatelessWidget {
           return false;
         },
         child: Scaffold(
-          drawer: isMobile(context) || uiState.isMenuFloated ? const MenuDrawerBuilder() : null,
+          drawer: isMobile(context) || uiState.isMenuFloated
+              ? const MenuDrawerBuilder()
+              : null,
           appBar: AppBar(
-            centerTitle: false,
-            automaticallyImplyLeading: false,
-            leading: leading,
-            leadingWidth: leadingWidth,
-            title: Row(
-              children: [
+              centerTitle: false,
+              automaticallyImplyLeading: false,
+              leading: leading,
+              leadingWidth: leadingWidth,
+              title: Row(children: [
                 Expanded(child: appBarTitle),
-              ]
-            )
-          ),
+              ])),
           body: ClipRect(
             child: body,
           ),
-        )
-    );
+        ));
   }
 }

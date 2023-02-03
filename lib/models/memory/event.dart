@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:nae_hr/model/memory/item.dart';
+import 'package:nae_hr/models/memory/item.dart';
 
 abstract class MemoryEvent extends Equatable {
   @override
@@ -53,6 +53,20 @@ class MemoryUpdate extends MemoryEvent {
 
 class MemoryUpdated extends MemoryEvent {
   MemoryUpdated(this.item);
+
+  final MemoryItem item;
+}
+
+class MemoryPatch extends MemoryEvent {
+  MemoryPatch(this.serviceName, this.ctx, this.data);
+
+  final String serviceName;
+  final List<String> ctx;
+  final Map<String, dynamic> data;
+}
+
+class MemoryPatched extends MemoryEvent {
+  MemoryPatched(this.item);
 
   final MemoryItem item;
 }

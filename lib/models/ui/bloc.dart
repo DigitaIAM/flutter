@@ -1,11 +1,8 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:nae_hr/models/ui/event.dart';
+import 'package:nae_hr/models/ui/state.dart';
 import 'package:stream_transform/stream_transform.dart';
-
-import 'package:nae_hr/model/ui/ui_event.dart';
-import 'package:nae_hr/model/ui/ui_state.dart';
 
 const throttleDuration = Duration(milliseconds: 100);
 

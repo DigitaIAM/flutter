@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nae_hr/layout/adaptive.dart';
-import 'package:nae_hr/model/memory/item.dart';
+import 'package:nae_hr/models/memory/item.dart';
 import 'package:nae_hr/widgets/item_details.dart';
 
 class MasterDetailContainer extends StatefulWidget {

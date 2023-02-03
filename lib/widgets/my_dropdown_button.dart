@@ -1,9 +1,6 @@
-
 import 'package:flutter/material.dart';
-import 'package:nae_hr/model/memory/item.dart';
 
 class MyDropdownButton<T> extends StatelessWidget {
-
   final String? labelText;
   final T? value;
   final void Function(T?) onChanged;
@@ -17,13 +14,17 @@ class MyDropdownButton<T> extends StatelessWidget {
   final DropdownButtonBuilder? selectedItemBuilder;
   final bool enabled;
 
-  const MyDropdownButton({super.key,
-    this.labelText, required this.value,
-    required this.onChanged, required this.items,
-    this.selectedItemBuilder,
-    this.blankLabel, this.blankValue, this.showBlank = false,
-    this.enabled = true
-  });
+  const MyDropdownButton(
+      {super.key,
+      this.labelText,
+      required this.value,
+      required this.onChanged,
+      required this.items,
+      this.selectedItemBuilder,
+      this.blankLabel,
+      this.blankValue,
+      this.showBlank = false,
+      this.enabled = true});
 
   @override
   Widget build(BuildContext context) {
@@ -31,21 +32,20 @@ class MyDropdownButton<T> extends StatelessWidget {
 
     Widget dropDownButton = DropdownButtonHideUnderline(
         child: DropdownButton<T>(
-          value: value,
-          isExpanded: true,
-          isDense: labelText != null,
-          onChanged: enabled ? onChanged : null,
-          selectedItemBuilder: selectedItemBuilder,
-          items: [
-            if (showBlank || isEmpty)
-              DropdownMenuItem<T>(
-                value: blankValue,
-                child: blankLabel == null ? const SizedBox() : Text(blankLabel!),
-              ),
-            ...items
-          ],
-        )
-    );
+      value: value,
+      isExpanded: true,
+      isDense: labelText != null,
+      onChanged: enabled ? onChanged : null,
+      selectedItemBuilder: selectedItemBuilder,
+      items: [
+        if (showBlank || isEmpty)
+          DropdownMenuItem<T>(
+            value: blankValue,
+            child: blankLabel == null ? const SizedBox() : Text(blankLabel!),
+          ),
+        ...items
+      ],
+    ));
 
     if (labelText != null) {
       dropDownButton = InputDecorator(
@@ -53,8 +53,7 @@ class MyDropdownButton<T> extends StatelessWidget {
             labelText: labelText,
           ),
           isEmpty: isEmpty && blankLabel == null,
-          child: dropDownButton
-      );
+          child: dropDownButton);
     }
 
     return dropDownButton;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nae_hr/model/memory/item.dart';
+import 'package:nae_hr/models/memory/item.dart';
 import 'package:nae_hr/widgets/master_detail_container.dart';
 
 class ItemDetails extends StatelessWidget {
-  ItemDetails({super.key,
+  const ItemDetails({super.key,
     required this.isDesktopLayout,
     required this.builder,
     required this.item,

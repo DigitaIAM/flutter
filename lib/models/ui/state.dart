@@ -1,13 +1,12 @@
-import 'package:equatable/equatable.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-
-import 'package:nae_hr/model/memory/item.dart';
+import 'package:nae_hr/models/memory/item.dart';
 import 'package:nae_hr/screens/common/uom/screen.dart';
 import 'package:nae_hr/screens/production/orders/screen.dart';
 import 'package:nae_hr/widgets/blank_screen.dart';
 
-part 'ui_state.g.dart';
+part 'state.g.dart';
 
 // subRoute: [view, edit]
 
@@ -20,7 +19,6 @@ class UiState extends Equatable {
     // this.entityId = '',
 
     this.isSaving = false,
-
     this.isMenuVisible = true,
     this.isMenuCollapsed = false,
     this.isMenuFloated = false,
@@ -41,10 +39,10 @@ class UiState extends Equatable {
 
   @override
   List<Object> get props => [
-    currentRoute, action, entity, // entityId,
-    isSaving,
-    isMenuVisible, isMenuCollapsed, isMenuFloated
-  ];
+        currentRoute, action, entity, // entityId,
+        isSaving,
+        isMenuVisible, isMenuCollapsed, isMenuFloated
+      ];
 
   Widget entityScreen() {
     Widget screen = const BlankScreen();

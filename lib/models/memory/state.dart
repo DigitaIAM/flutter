@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:nae_hr/model/memory/item.dart';
+import 'package:nae_hr/models/memory/item.dart';
 
 enum RequestStatus { loading, success, failure }
 

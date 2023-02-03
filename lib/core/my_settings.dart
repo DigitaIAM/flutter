@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nae_hr/api.dart';
-import 'package:nae_hr/memory.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MySettings with ChangeNotifier {
 
   late SharedPreferences prefs;
-  late Memory memory;
 
   String login = "";
   String token = "";
@@ -36,7 +34,7 @@ class MySettings with ChangeNotifier {
   // ui state
   List<String> viewCtx = [];
 
-  MySettings(this.prefs, this.memory) {
+  MySettings(this.prefs) {
     load();
   }
 

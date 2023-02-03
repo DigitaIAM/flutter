@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:overflow_view/overflow_view.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pluto_grid/pluto_grid.dart';
-
 import 'package:nae_hr/app_localizations.dart';
-import 'package:nae_hr/model/memory/item.dart';
-import 'package:nae_hr/model/memory/memory_state.dart';
-import 'package:nae_hr/model/ui/ui_bloc.dart';
-import 'package:nae_hr/model/ui/ui_event.dart';
-import 'package:nae_hr/widgets/icon_text.dart';
-import 'package:nae_hr/model/memory/memory_bloc.dart';
-import 'package:nae_hr/model/memory/memory_event.dart';
 import 'package:nae_hr/constants.dart';
 import 'package:nae_hr/core/platform.dart';
+import 'package:nae_hr/models/memory/bloc.dart';
+import 'package:nae_hr/models/memory/item.dart';
+import 'package:nae_hr/models/memory/state.dart';
+import 'package:nae_hr/models/ui/bloc.dart';
+import 'package:nae_hr/models/ui/event.dart';
+import 'package:nae_hr/widgets/icon_text.dart';
+import 'package:overflow_view/overflow_view.dart';
+import 'package:pluto_grid/pluto_grid.dart';
 
 IconData? getActionIcon(String action) {
   // return Icons.warning;
@@ -28,7 +25,6 @@ class MemoryBlocHolder extends StatefulWidget {
 
   @override
   State<MemoryBlocHolder> createState() => _MemoryBlocHolderState();
-
 }
 
 class _MemoryBlocHolderState extends State<MemoryBlocHolder> {
@@ -42,7 +38,7 @@ class _MemoryBlocHolderState extends State<MemoryBlocHolder> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     bloc.close();
     super.dispose();
   }
@@ -63,11 +59,9 @@ class MemoryList extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => _MemoryListState();
-
 }
 
 class _MemoryListState extends State<MemoryList> {
-
   PlutoGridStateManager? stateManager;
 
   @override
@@ -78,120 +72,123 @@ class _MemoryListState extends State<MemoryList> {
     final List<String> actions = [];
 
     return BlocBuilder<MemoryBloc, RequestState>(
-      // init: (bloc) => bloc.add(MemoryFetch("memories", widget.ctx)),
-      builder: (context, state) => RefreshIndicator(
-        onRefresh: () => Future<void>(() => {}), // widget.onRefreshed(context),
-        child: Column(
-          children: [
-            AnimatedContainer(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              color: Theme.of(context).cardColor,
-              height: 0, // isInMultiselect ? kTopBottomBarHeight : 0,
-              duration: const Duration(milliseconds: cAnimationDuration),
-              curve: Curves.easeInOutCubic,
-              child: AnimatedOpacity(
-                opacity: 0, // isInMultiselect ? 1 : 0,
-                duration: const Duration(milliseconds: cAnimationDuration),
-                curve: Curves.easeInOutCubic,
-                child: Row(
-                    children: [
-                      if (isDesktop(context)) ...[
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4),
-                          child: Text("")
-                            // isList
-                            //   ? '($countSelected)'
-                            //   : localization.countSelected
-                            //   .replaceFirst(':count', '$countSelected')),
-                        ),
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: OverflowView.flexible(
-                              spacing: 8,
-                              children: actions.map(
-                                (action) => OutlinedButton(
-                                  child: IconText(
-                                    icon: getActionIcon(action),
-                                    text: AppLocalizations.of(context).translate('$action'),
-                                  ),
-                                  onPressed: () {
-                                    // handleEntitiesActions(entities, action);
-                                    // widget.onClearMultiselect();
-                                  },
-                                ),
-                              ).toList(),
-                              builder: (context, remaining) {
-                                return PopupMenuButton<String>(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          localization.translate("more"),
-                                          style: theme.textTheme.bodySmall, // TextStyle(color: enableDarkMode ? Colors.white : Colors.black),
+        // init: (bloc) => bloc.add(MemoryFetch("memories", widget.ctx)),
+        builder: (context, state) => RefreshIndicator(
+            onRefresh: () =>
+                Future<void>(() => {}), // widget.onRefreshed(context),
+            child: Column(children: [
+              AnimatedContainer(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  color: Theme.of(context).cardColor,
+                  height: 0, // isInMultiselect ? kTopBottomBarHeight : 0,
+                  duration: const Duration(milliseconds: cAnimationDuration),
+                  curve: Curves.easeInOutCubic,
+                  child: AnimatedOpacity(
+                      opacity: 0, // isInMultiselect ? 1 : 0,
+                      duration:
+                          const Duration(milliseconds: cAnimationDuration),
+                      curve: Curves.easeInOutCubic,
+                      child: Row(children: [
+                        if (isDesktop(context)) ...[
+                          const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4),
+                              child: Text("")
+                              // isList
+                              //   ? '($countSelected)'
+                              //   : localization.countSelected
+                              //   .replaceFirst(':count', '$countSelected')),
+                              ),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: OverflowView.flexible(
+                                  spacing: 8,
+                                  children: actions
+                                      .map(
+                                        (action) => OutlinedButton(
+                                          child: IconText(
+                                            icon: getActionIcon(action),
+                                            text: AppLocalizations.of(context)
+                                                .translate('$action'),
+                                          ),
+                                          onPressed: () {
+                                            // handleEntitiesActions(entities, action);
+                                            // widget.onClearMultiselect();
+                                          },
                                         ),
-                                        const SizedBox(width: 4),
-                                        Icon(Icons.arrow_drop_down,
-                                            color: theme.textTheme.bodySmall?.color ?? Colors.white, // enableDarkMode ? Colors.white : Colors.black
+                                      )
+                                      .toList(),
+                                  builder: (context, remaining) {
+                                    return PopupMenuButton<String>(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                localization.translate("more"),
+                                                style: theme.textTheme
+                                                    .bodySmall, // TextStyle(color: enableDarkMode ? Colors.white : Colors.black),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Icon(
+                                                Icons.arrow_drop_down,
+                                                color: theme.textTheme.bodySmall
+                                                        ?.color ??
+                                                    Colors
+                                                        .white, // enableDarkMode ? Colors.white : Colors.black
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                  onSelected: (String action) {
-                                    // handleEntitiesActions(entities, action);
-                                    // widget.onClearMultiselect();
-                                  },
-                                  itemBuilder: (BuildContext context) {
-                                    return actions
-                                        .toList()
-                                        .sublist(actions.length - remaining)
-                                        .map((action) {
-                                      return PopupMenuItem<String>(
-                                        value: action,
-                                        child: Row(
-                                          children: <Widget>[
-                                            Icon(
-                                                getActionIcon(action),
-                                                color: Theme.of(context).colorScheme.secondary
-                                            ),
-                                            const SizedBox(width: 16.0),
-                                            Text(localization.translate(action)),
-                                          ],
-                                        ),
-                                      );
-                                    }).toList();
-                                  }
-                                );
-                              }
+                                        onSelected: (String action) {
+                                          // handleEntitiesActions(entities, action);
+                                          // widget.onClearMultiselect();
+                                        },
+                                        itemBuilder: (BuildContext context) {
+                                          return actions
+                                              .toList()
+                                              .sublist(
+                                                  actions.length - remaining)
+                                              .map((action) {
+                                            return PopupMenuItem<String>(
+                                              value: action,
+                                              child: Row(
+                                                children: <Widget>[
+                                                  Icon(getActionIcon(action),
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .secondary),
+                                                  const SizedBox(width: 16.0),
+                                                  Text(localization
+                                                      .translate(action)),
+                                                ],
+                                              ),
+                                            );
+                                          }).toList();
+                                        });
+                                  }),
                             ),
                           ),
-                        ),
-                      ] else ...[
-                      ]
-                    ]
-                )
-              )
-            ),
-            Expanded(
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: <Widget>[
-                  listOrTable(),
-                  // if ((state.isLoading &&
-                  //     (isMobile(context) || !entityType.isSetting)) ||
-                  //     (state.isSaving &&
-                  //         (entityType.isSetting ||
-                  //             (!state.prefState.isPreviewVisible && !state.uiState.isEditing)
-                  //         )))
-                  //   const LinearProgressIndicator(),
-                ],
+                        ] else
+                          ...[]
+                      ]))),
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  children: <Widget>[
+                    listOrTable(),
+                    // if ((state.isLoading &&
+                    //     (isMobile(context) || !entityType.isSetting)) ||
+                    //     (state.isSaving &&
+                    //         (entityType.isSetting ||
+                    //             (!state.prefState.isPreviewVisible && !state.uiState.isEditing)
+                    //         )))
+                    //   const LinearProgressIndicator(),
+                  ],
+                ),
               ),
-            ),
-          ]
-        )
-      )
-    );
+            ])));
   }
 
   Widget listOrTable() {
@@ -205,28 +202,28 @@ class _MemoryListState extends State<MemoryList> {
       ),
     ];
 
-    return BlocBuilder<MemoryBloc, RequestState>(
-        builder: (context, state) {
-          switch (state.status) {
-            case RequestStatus.failure:
-              return Center(child: Text(localization.translate('failed to fetch data')));
-            case RequestStatus.success:
-              if (state.items.isEmpty) {
-                return Center(child: Text(localization.translate('nothing yet')));
-              }
-              final rows = List.of(state.items.map((item) => PlutoRow(cells: {
+    return BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
+      switch (state.status) {
+        case RequestStatus.failure:
+          return Center(
+              child: Text(localization.translate('failed to fetch data')));
+        case RequestStatus.success:
+          if (state.items.isEmpty) {
+            return Center(child: Text(localization.translate('nothing yet')));
+          }
+          final rows = List.of(state.items.map((item) => PlutoRow(cells: {
                 'memory': PlutoCell(value: item),
                 'label': PlutoCell(value: item.json["label"] ?? ""),
               })));
-              return buildPlutoGrid(context, columns, rows);
-            case RequestStatus.loading:
-              return const Center(child: CircularProgressIndicator());
-          }
-        }
-    );
+          return buildPlutoGrid(context, columns, rows);
+        case RequestStatus.loading:
+          return const Center(child: CircularProgressIndicator());
+      }
+    });
   }
 
-  PlutoGrid buildPlutoGrid(BuildContext context, List<PlutoColumn> columns, List<PlutoRow> rows) {
+  PlutoGrid buildPlutoGrid(
+      BuildContext context, List<PlutoColumn> columns, List<PlutoRow> rows) {
     final theme = Theme.of(context);
 
     final config = PlutoGridConfiguration.dark(
@@ -234,8 +231,7 @@ class _MemoryListState extends State<MemoryList> {
         style: PlutoGridStyleConfig.dark(
           gridBackgroundColor: theme.canvasColor,
           rowColor: theme.canvasColor,
-        )
-    );
+        ));
 
     return PlutoGrid(
       key: UniqueKey(),
@@ -394,5 +390,4 @@ class _MemoryListState extends State<MemoryList> {
   //     ],
   //   );
   // }
-
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:nae_hr/model/memory/item.dart';
+import 'package:nae_hr/models/memory/item.dart';
 import 'package:nae_hr/screens/common/uom/edit.dart';
 import 'package:nae_hr/widgets/entity_screens.dart';
 import 'package:nae_hr/widgets/list_filter.dart';

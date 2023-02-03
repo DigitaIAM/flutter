@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae_hr/core/my_settings.dart';
-import 'package:nae_hr/model/memory/item.dart';
-import 'package:nae_hr/model/ui/ui_bloc.dart';
-import 'package:nae_hr/model/ui/ui_state.dart';
+import 'package:nae_hr/models/ui/bloc.dart';
+import 'package:nae_hr/models/ui/state.dart';
 import 'package:nae_hr/widgets/app_border.dart';
 import 'package:nae_hr/widgets/change_layout_banner.dart';
 import 'package:nae_hr/widgets/menu_drawer_builder.dart';
@@ -17,7 +16,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   late UiBloc bloc;
 
   @override
@@ -27,7 +25,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     bloc.close();
     super.dispose();
   }
@@ -42,25 +40,20 @@ class _HomePageState extends State<HomePage> {
     return BlocProvider(
         create: (_) => bloc,
         child: SafeArea(
-          child: Column(
-              children: [
-                Expanded(
-                  child: ChangeLayoutBanner(
-                    child: BlocBuilder<UiBloc, UiState>(
-                      builder: (context, uiState) => Row(children: <Widget>[
-                        if (uiState.showMenu) const MenuDrawerBuilder(),
-                        Expanded(
-                            child: AppBorder(
-                              isLeft: uiState.showMenu && (!settings.isFullScreen || showFilterSidebar),
-                              child: uiState.entityScreen(),
-                            )),
-                      ]),
-                    )
-                  )
-                )
-              ]
-          )
-        )
-    );
+            child: Column(children: [
+          Expanded(
+              child: ChangeLayoutBanner(
+                  child: BlocBuilder<UiBloc, UiState>(
+            builder: (context, uiState) => Row(children: <Widget>[
+              if (uiState.showMenu) const MenuDrawerBuilder(),
+              Expanded(
+                  child: AppBorder(
+                isLeft: uiState.showMenu &&
+                    (!settings.isFullScreen || showFilterSidebar),
+                child: uiState.entityScreen(),
+              )),
+            ]),
+          )))
+        ])));
   }
 }

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'ui_state.dart';
+part of 'state.dart';
 
 // **************************************************************************
 // CopyWithGenerator

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nae_hr/model/memory/item.dart';
+import 'package:nae_hr/models/memory/item.dart';
 import 'package:nae_hr/screens/production/orders/edit.dart';
 import 'package:nae_hr/screens/production/orders/view.dart';
 import 'package:nae_hr/widgets/entity_screens.dart';
