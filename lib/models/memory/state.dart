@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:nae_hr/models/memory/item.dart';
+import 'package:nae/models/memory/item.dart';
 
 enum RequestStatus { loading, success, failure }
 
@@ -10,14 +10,12 @@ class RequestState extends Equatable {
     this.status = RequestStatus.loading,
     this.items = const <MemoryItem>[],
     this.hasReachedMax = false,
-
     this.saveStatus = SaveStatus.ready,
   });
 
   const RequestState.loading() : this();
 
-  const RequestState.success(List<MemoryItem> items)
-      : this(status: RequestStatus.success, items: items);
+  const RequestState.success(List<MemoryItem> items) : this(status: RequestStatus.success, items: items);
 
   const RequestState.failure() : this(status: RequestStatus.failure);
 
@@ -31,15 +29,13 @@ class RequestState extends Equatable {
     RequestStatus? status,
     List<MemoryItem>? items,
     bool? hasReachedMax,
-
     SaveStatus? saveStatus,
   }) {
     return RequestState(
-      status: status ?? this.status,
-      items: items ?? this.items,
-      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
-      saveStatus: saveStatus ?? this.saveStatus
-    );
+        status: status ?? this.status,
+        items: items ?? this.items,
+        hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+        saveStatus: saveStatus ?? this.saveStatus);
   }
 
   @override

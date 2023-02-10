@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae_hr/models/memory/bloc.dart';
-import 'package:nae_hr/models/memory/item.dart';
-import 'package:nae_hr/models/memory/state.dart';
-import 'package:nae_hr/models/ui/bloc.dart';
-import 'package:nae_hr/widgets/menu_drawer_builder.dart';
-import 'package:nae_hr/widgets/save_cancel_buttons.dart';
+import 'package:nae/models/memory/bloc.dart';
+import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/memory/state.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/widgets/menu_drawer_builder.dart';
+import 'package:nae/widgets/save_cancel_buttons.dart';
 
 import '../models/ui/state.dart';
 

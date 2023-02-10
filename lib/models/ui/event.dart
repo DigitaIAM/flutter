@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:nae_hr/models/memory/item.dart';
+import 'package:nae/models/memory/item.dart';
 
 abstract class UiEvent extends Equatable {
   @override
@@ -17,9 +17,7 @@ class ChangeView extends UiEvent {
   List<Object> get props => [ctx, action, entity];
 }
 
-class PreviousRoute extends UiEvent {
-
-}
+class PreviousRoute extends UiEvent {}
 
 class MenuVisibility extends UiEvent {
   MenuVisibility({this.visible = true, this.collapsed = false});

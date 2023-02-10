@@ -1,9 +1,7 @@
-import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:data_table_2/paginated_data_table_2.dart';
 import 'package:flutter/material.dart';
-import 'package:nae_hr/app_localizations.dart';
-import 'package:nae_hr/core/my_settings.dart';
-import 'package:prompt_dialog/prompt_dialog.dart';
+import 'package:nae/app_localizations.dart';
+import 'package:nae/core/my_settings.dart';
 import 'package:provider/provider.dart';
 
 import '../../api.dart';
@@ -16,7 +14,6 @@ class PeoplePage extends StatefulWidget {
 }
 
 class _PeoplePageState extends State<PeoplePage> {
-
   bool _first = true;
   dynamic selectedRow;
   bool showEditForm = false;
@@ -33,97 +30,116 @@ class _PeoplePageState extends State<PeoplePage> {
     final settings = Provider.of<MySettings>(context);
     if (_first) {
       getFromServer(settings);
-      Api.feathers().listen(serviceName: "people", fromJson: (e) {
-        getFromServer(settings);
-      });
+      Api.feathers().listen(
+          serviceName: "people",
+          fromJson: (e) {
+            getFromServer(settings);
+          });
       _first = false;
     }
 
     return Scaffold(
-      floatingActionButton: showEditForm ? null : FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () async {
-          selectedRow = null;
-          setState(() {
-            showEditForm = true;
-            refreshControllers(settings);
-          });
-        },
-      ),
+      floatingActionButton: showEditForm
+          ? null
+          : FloatingActionButton(
+              child: const Icon(Icons.add),
+              onPressed: () async {
+                selectedRow = null;
+                setState(() {
+                  showEditForm = true;
+                  refreshControllers(settings);
+                });
+              },
+            ),
       body: SafeArea(
         child: Container(
           color: Colors.grey.shade200,
           padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-          child: showEditForm ? getBodyForEdit(settings) : DataTable2(
-            fixedColumnsColor: Colors.grey,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-            ),
-            border: TableBorder.all(color: Colors.grey.shade200, width: 1),
-            columnSpacing: 8,
-            dataRowHeight: 84,
-            headingRowColor: MaterialStateColor.resolveWith((states) => Colors.blue.shade100),
-            headingTextStyle: Theme.of(context).textTheme.bodyLarge,
-            empty: Text(AppLocalizations.of(context).translate("no-data")),
-            columns: [
-              DataColumn2(
-                label: Text(AppLocalizations.of(context).translate("photo"), textAlign: TextAlign.center),
-                fixedWidth: 64
-              ),
-              DataColumn2(
-                label: Text(AppLocalizations.of(context).translate("person-name"), textAlign: TextAlign.center),
-                size: ColumnSize.L
-              ),
-              DataColumn2(
-                label: Text(AppLocalizations.of(context).translate("gender"), textAlign: TextAlign.center),
-                  fixedWidth: 42
-              ),
-              DataColumn2(
-                label: Text(AppLocalizations.of(context).translate("person-position"), textAlign: TextAlign.center),
-                  size: ColumnSize.M
-              ),
-              DataColumn2(
-                label: Text(AppLocalizations.of(context).translate("division"), textAlign: TextAlign.center),
-                  size: ColumnSize.M
-              ),
-              DataColumn2(
-                label: Text(AppLocalizations.of(context).translate("sub-division"), textAlign: TextAlign.center),
-                  size: ColumnSize.M
-              ),
-            ],
-            rows: List<DataRow>.generate(rows.length,
-                    (index) {
-                  return DataRow(
-                    color: MaterialStateColor.resolveWith((states) => Colors.white),
-                    cells: [
-                      DataCell(Image.network(Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + rows[index]["_id"],
-                        errorBuilder: (context, exp, st) {
-                          return Text("No photo", style: Theme.of(context).textTheme.caption,);
-                        } ,),
-                        onTap: () {
-                          Dialog myDialog = Dialog(
-                            child: Image.network(Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + rows[index]["_id"],
-                              errorBuilder: (context, exp, st) {
-                                return Text("No photo", style: Theme.of(context).textTheme.caption,);
-                              } ,),
-                          );
-                          showDialog(context: context, builder: (BuildContext context) => myDialog);
-                        }),
-                      DataCell(Text(rows[index]["name"]??"", )),
-                      DataCell(Icon((rows[index]["gender"]??"") == "male" ? Icons.man : Icons.woman, color: (rows[index]["gender"]??"") == "male" ? Colors.lightBlueAccent : Colors.redAccent)),
-                      DataCell(Text(rows[index]["position"]??"", )),
-                      DataCell(Text(rows[index]["division"]??"", )),
-                      DataCell(Text(rows[index]["sub-division"]??"", ), showEditIcon: true, onTap: () {
+          child: showEditForm
+              ? getBodyForEdit(settings)
+              : DataTable2(
+                  fixedColumnsColor: Colors.grey,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                  ),
+                  border: TableBorder.all(color: Colors.grey.shade200, width: 1),
+                  columnSpacing: 8,
+                  dataRowHeight: 84,
+                  headingRowColor: MaterialStateColor.resolveWith((states) => Colors.blue.shade100),
+                  headingTextStyle: Theme.of(context).textTheme.bodyLarge,
+                  empty: Text(AppLocalizations.of(context).translate("no-data")),
+                  columns: [
+                    DataColumn2(
+                        label: Text(AppLocalizations.of(context).translate("photo"), textAlign: TextAlign.center),
+                        fixedWidth: 64),
+                    DataColumn2(
+                        label: Text(AppLocalizations.of(context).translate("person-name"), textAlign: TextAlign.center),
+                        size: ColumnSize.L),
+                    DataColumn2(
+                        label: Text(AppLocalizations.of(context).translate("gender"), textAlign: TextAlign.center),
+                        fixedWidth: 42),
+                    DataColumn2(
+                        label: Text(AppLocalizations.of(context).translate("person-position"),
+                            textAlign: TextAlign.center),
+                        size: ColumnSize.M),
+                    DataColumn2(
+                        label: Text(AppLocalizations.of(context).translate("division"), textAlign: TextAlign.center),
+                        size: ColumnSize.M),
+                    DataColumn2(
+                        label:
+                            Text(AppLocalizations.of(context).translate("sub-division"), textAlign: TextAlign.center),
+                        size: ColumnSize.M),
+                  ],
+                  rows: List<DataRow>.generate(rows.length, (index) {
+                    return DataRow(color: MaterialStateColor.resolveWith((states) => Colors.white), cells: [
+                      DataCell(
+                          Image.network(
+                            Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + rows[index]["_id"],
+                            errorBuilder: (context, exp, st) {
+                              return Text(
+                                "No photo",
+                                style: Theme.of(context).textTheme.caption,
+                              );
+                            },
+                          ), onTap: () {
+                        Dialog myDialog = Dialog(
+                          child: Image.network(
+                            Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + rows[index]["_id"],
+                            errorBuilder: (context, exp, st) {
+                              return Text(
+                                "No photo",
+                                style: Theme.of(context).textTheme.caption,
+                              );
+                            },
+                          ),
+                        );
+                        showDialog(context: context, builder: (BuildContext context) => myDialog);
+                      }),
+                      DataCell(Text(
+                        rows[index]["name"] ?? "",
+                      )),
+                      DataCell(Icon((rows[index]["gender"] ?? "") == "male" ? Icons.man : Icons.woman,
+                          color: (rows[index]["gender"] ?? "") == "male" ? Colors.lightBlueAccent : Colors.redAccent)),
+                      DataCell(Text(
+                        rows[index]["position"] ?? "",
+                      )),
+                      DataCell(Text(
+                        rows[index]["division"] ?? "",
+                      )),
+                      DataCell(
+                          Text(
+                            rows[index]["sub-division"] ?? "",
+                          ),
+                          showEditIcon: true, onTap: () {
                         setState(() {
                           selectedRow = rows[index];
                           showEditForm = true;
                           refreshControllers(settings);
                         });
                       }),
-                  ]);
-                }),
-
-          ),
+                    ]);
+                  }),
+                ),
         ),
       ),
     );
@@ -132,22 +148,21 @@ class _PeoplePageState extends State<PeoplePage> {
   void getFromServer(MySettings settings) async {
     try {
       Api.feathers().find(serviceName: "people", query: {"oid": settings.companyId}).asStream().listen((event) {
-        setState(() {
-          rows = event["data"];
-        });
-        print(rows);
-      });
+            setState(() {
+              rows = event["data"];
+            });
+            print(rows);
+          });
     } catch (e) {
       print(e);
     }
   }
 
-  void deleteRow(row) {
-
-  }
+  void deleteRow(row) {}
 
   getBodyForEdit(MySettings settings) {
-    return Padding(padding: EdgeInsets.all(16),
+    return Padding(
+        padding: EdgeInsets.all(16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -158,21 +173,31 @@ class _PeoplePageState extends State<PeoplePage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Image.network(Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + selectedRow["_id"],
+                  Image.network(
+                    Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + selectedRow["_id"],
                     errorBuilder: (context, exp, st) {
-                      return Text("No photo", style: Theme.of(context).textTheme.caption,);
-                    }, width: 120, fit: BoxFit.fitWidth, ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(onPressed: () {}, child: Text(AppLocalizations.of(context).translate("capture-photo"))),
+                      return Text(
+                        "No photo",
+                        style: Theme.of(context).textTheme.caption,
+                      );
+                    },
+                    width: 120,
+                    fit: BoxFit.fitWidth,
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(onPressed: () {}, child: Text(AppLocalizations.of(context).translate("upload"))),
+                    child: ElevatedButton(
+                        onPressed: () {}, child: Text(AppLocalizations.of(context).translate("capture-photo"))),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(onPressed: () {}, child: Text(AppLocalizations.of(context).translate("download"))),
+                    child:
+                        ElevatedButton(onPressed: () {}, child: Text(AppLocalizations.of(context).translate("upload"))),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                        onPressed: () {}, child: Text(AppLocalizations.of(context).translate("download"))),
                   )
                 ],
               ),
@@ -265,36 +290,45 @@ class _PeoplePageState extends State<PeoplePage> {
                           Expanded(child: Text("")),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: ElevatedButton(onPressed: () async {
-                              if (selectedRow == null) {
-                                await Api.feathers().create(serviceName: "people", data: {
-                                  "oid": settings.companyId,
-                                  "name": nameController.text,
-                                  "position": positionController.text,
-                                  "division": divisionController.text,
-                                  "sub_division": subdivisonController.text,
-                                  "employeeNoString": employeeNoStringController.text,
-                                });
-                              } else {
-                                await Api.feathers().patch(serviceName: "people", objectId: selectedRow["_id"], data: {
-                                  "oid": settings.companyId,
-                                  "name": nameController.text,
-                                  "position": positionController.text,
-                                  "division": divisionController.text,
-                                  "sub_division": subdivisonController.text,
-                                  "employeeNoString": employeeNoStringController.text,
-                                });
-                              }
-                            }, child: Text(AppLocalizations.of(context).translate("save")), style: ElevatedButton.styleFrom(backgroundColor: Colors.green),),
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                if (selectedRow == null) {
+                                  await Api.feathers().create(serviceName: "people", data: {
+                                    "oid": settings.companyId,
+                                    "name": nameController.text,
+                                    "position": positionController.text,
+                                    "division": divisionController.text,
+                                    "sub_division": subdivisonController.text,
+                                    "employeeNoString": employeeNoStringController.text,
+                                  });
+                                } else {
+                                  await Api.feathers()
+                                      .patch(serviceName: "people", objectId: selectedRow["_id"], data: {
+                                    "oid": settings.companyId,
+                                    "name": nameController.text,
+                                    "position": positionController.text,
+                                    "division": divisionController.text,
+                                    "sub_division": subdivisonController.text,
+                                    "employeeNoString": employeeNoStringController.text,
+                                  });
+                                }
+                              },
+                              child: Text(AppLocalizations.of(context).translate("save")),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                            ),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: ElevatedButton(onPressed: () {
-                              setState(() {
-                                selectedRow = true;
-                                showEditForm = false;
-                              });
-                            }, child: Text(AppLocalizations.of(context).translate("close")), style: ElevatedButton.styleFrom(backgroundColor: Colors.red),),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  selectedRow = true;
+                                  showEditForm = false;
+                                });
+                              },
+                              child: Text(AppLocalizations.of(context).translate("close")),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            ),
                           )
                         ],
                       )

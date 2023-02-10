@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
-import 'package:nae_hr/api.dart';
-import 'package:nae_hr/schema/schema.dart';
+import 'package:nae/api.dart';
+import 'package:nae/schema/schema.dart';
 
 class MemoryItem extends Equatable {
   const MemoryItem({required this.id, required this.json});
@@ -25,6 +25,7 @@ class MemoryItem extends Equatable {
   }
 
   get isNew => id == 'new';
+
   get updatedAt => null;
 
   @override

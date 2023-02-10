@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:nae_hr/constants.dart';
+import 'package:nae/constants.dart';
 
 class Debouncer {
   Debouncer({

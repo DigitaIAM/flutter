@@ -1,7 +1,7 @@
 // import 'dart:io';
 //
-// import 'package:nae_hr/core/my_settings.dart';
-// import 'package:nae_hr/share/utils.dart';
+// import 'package:nae/core/my_settings.dart';
+// import 'package:nae/share/utils.dart';
 // import 'package:flutter/material.dart';
 // import 'package:http/http.dart';
 // import 'package:http_parser/http_parser.dart';

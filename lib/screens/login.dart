@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae_hr/app_localizations.dart';
-import 'package:nae_hr/models/ui/bloc.dart';
-import 'package:nae_hr/models/ui/state.dart';
-import 'package:nae_hr/wrapper.dart';
+import 'package:nae/app_localizations.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/models/ui/state.dart';
+import 'package:nae/wrapper.dart';
 import 'package:provider/provider.dart';
 
 import '../api.dart';

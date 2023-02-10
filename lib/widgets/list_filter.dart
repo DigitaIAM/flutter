@@ -1,14 +1,10 @@
-
 import 'package:flutter/material.dart';
-import 'package:nae_hr/app_localizations.dart';
-import 'package:nae_hr/utils/debouncer.dart';
-import 'package:nae_hr/widgets/search_text.dart';
+import 'package:nae/app_localizations.dart';
+import 'package:nae/utils/debouncer.dart';
+import 'package:nae/widgets/search_text.dart';
 
 class ListFilter extends StatefulWidget {
-  const ListFilter({super.key,
-    required this.filter,
-    required this.onFilterChanged
-  });
+  const ListFilter({super.key, required this.filter, required this.onFilterChanged});
 
   final String? filter;
   final Function(String?) onFilterChanged;
@@ -18,7 +14,6 @@ class ListFilter extends StatefulWidget {
 }
 
 class _ListFilterState extends State<ListFilter> {
-
   final _debouncer = Debouncer();
   late TextEditingController _filterController;
   late FocusNode _focusNode;
@@ -57,27 +52,25 @@ class _ListFilterState extends State<ListFilter> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: SearchText(
-              placeholder: AppLocalizations.of(context).translate('search'),
-              filterController: _filterController,
-              focusNode: _focusNode,
-              onCleared: () => widget.onFilterChanged(null),
-              onChanged: (value) {
-                _debouncer.run(() {
-                  widget.onFilterChanged(value);
-                });
-              },
-              // placeholder: _getPlaceholder,
-            ),
+    return Row(children: [
+      Expanded(
+        flex: 2,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: SearchText(
+            placeholder: AppLocalizations.of(context).translate('search'),
+            filterController: _filterController,
+            focusNode: _focusNode,
+            onCleared: () => widget.onFilterChanged(null),
+            onChanged: (value) {
+              _debouncer.run(() {
+                widget.onFilterChanged(value);
+              });
+            },
+            // placeholder: _getPlaceholder,
           ),
         ),
-      ]
-    );
+      ),
+    ]);
   }
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae_hr/app_localizations.dart';
-import 'package:nae_hr/constants.dart';
-import 'package:nae_hr/models/memory/item.dart';
-import 'package:nae_hr/models/ui/bloc.dart';
-import 'package:nae_hr/models/ui/event.dart';
-import 'package:nae_hr/widgets/icon_text.dart';
-import 'package:nae_hr/widgets/menu_drawer_builder.dart';
+import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
+import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/models/ui/event.dart';
+import 'package:nae/widgets/icon_text.dart';
+import 'package:nae/widgets/menu_drawer_builder.dart';
 
 import '../models/ui/state.dart';
 

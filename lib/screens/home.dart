@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae_hr/models/ui/bloc.dart';
-import 'package:nae_hr/widgets/app_border.dart';
-import 'package:nae_hr/widgets/change_layout_banner.dart';
-import 'package:nae_hr/widgets/menu_drawer_builder.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/widgets/app_border.dart';
+import 'package:nae/widgets/change_layout_banner.dart';
+import 'package:nae/widgets/menu_drawer_builder.dart';
 
 import '../models/ui/state.dart';
 

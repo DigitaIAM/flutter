@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter/material.dart';
-import 'package:nae_hr/core/platform.dart';
-import 'package:nae_hr/models/ui/event.dart';
-import 'package:nae_hr/models/ui/state.dart';
+import 'package:nae/core/platform.dart';
+import 'package:nae/models/ui/event.dart';
+import 'package:nae/models/ui/state.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 const throttleDuration = Duration(milliseconds: 100);

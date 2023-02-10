@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae_hr/app_localizations.dart';
-import 'package:nae_hr/models/memory/bloc.dart';
-import 'package:nae_hr/models/memory/state.dart';
-import 'package:nae_hr/widgets/app_text_button.dart';
+import 'package:nae/app_localizations.dart';
+import 'package:nae/models/memory/bloc.dart';
+import 'package:nae/models/memory/state.dart';
+import 'package:nae/widgets/app_text_button.dart';
 
 class SaveCancelButtons extends StatelessWidget {
   const SaveCancelButtons({

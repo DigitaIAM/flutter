@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae_hr/app_localizations.dart';
-import 'package:nae_hr/constants.dart';
-import 'package:nae_hr/models/memory/bloc.dart';
-import 'package:nae_hr/models/memory/item.dart';
-import 'package:nae_hr/models/memory/state.dart';
-import 'package:nae_hr/models/ui/bloc.dart';
-import 'package:nae_hr/models/ui/event.dart';
-import 'package:nae_hr/schema/schema.dart';
-import 'package:nae_hr/widgets/icon_text.dart';
+import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
+import 'package:nae/models/memory/bloc.dart';
+import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/memory/state.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/models/ui/event.dart';
+import 'package:nae/schema/schema.dart';
+import 'package:nae/widgets/icon_text.dart';
 import 'package:overflow_view/overflow_view.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 
@@ -83,7 +83,8 @@ class _MemoryListState extends State<MemoryList> {
             AnimatedContainer(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               color: Theme.of(context).cardColor,
-              height: 0, // isInMultiselect ? kTopBottomBarHeight : 0,
+              height: 0,
+              // isInMultiselect ? kTopBottomBarHeight : 0,
               duration: const Duration(milliseconds: cAnimationDuration),
               curve: Curves.easeInOutCubic,
               child: AnimatedOpacity(
@@ -293,134 +294,134 @@ class _MemoryListState extends State<MemoryList> {
     );
   }
 
-  // Widget list(RequestState state) {
-  //   return Column(
-  //     mainAxisSize: MainAxisSize.min,
-  //     children: <Widget>[
-  //       // if (uiState.filterEntityId != null && isMobile(context))
-  //       //   ListFilterMessage(
-  //       //     filterEntityId: uiState.filterEntityId,
-  //       //     filterEntityType: uiState.filterEntityType,
-  //       //     onPressed: (_) => viewEntityById(
-  //       //         entityId: state.uiState.filterEntityId,
-  //       //         entityType: state.uiState.filterEntityType),
-  //       //     onClearPressed: () => store.dispatch(ClearEntityFilter()),
-  //       //   ),
-  //       Flexible(
-  //         fit: FlexFit.loose,
-  //         child: entityList.isEmpty
-  //             ? HelpText(AppLocalization.of(context).clickPlusToCreateRecord)
-  //             : ScrollableListViewBuilder(
-  //           primary: true,
-  //           padding: const EdgeInsets.symmetric(vertical: 20),
-  //           separatorBuilder: (context, index) =>
-  //           (index == 0 || index == entityList.length)
-  //               ? SizedBox()
-  //               : ListDivider(),
-  //           itemCount: entityList.length + 2,
-  //           itemBuilder: (BuildContext context, index) {
-  //             if (index == 0 || index == entityList.length + 1) {
-  //               return Container(
-  //                 color: Theme.of(context).cardColor,
-  //                 height: 25,
-  //               );
-  //             } else {
-  //               return widget.itemBuilder(context, index - 1);
-  //             }
-  //           },
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
-  //
-  // Widget table(RequestState state) {
-  //   final settings = Provider.of<MySettings>(context);
-  //
-  //   final rowsPerPage = settings.prefRowsPerPage;
-  //
-  //   return Column(
-  //     mainAxisSize: MainAxisSize.max,
-  //     children: [
-  //       // if (uiState.filterEntityId != null && isMobile(context))
-  //       //   ListFilterMessage(
-  //       //     filterEntityId: uiState.filterEntityId,
-  //       //     filterEntityType: uiState.filterEntityType,
-  //       //     onPressed: (_) {
-  //       //       viewEntityById(
-  //       //           entityId: state.uiState.filterEntityId,
-  //       //           entityType: state.uiState.filterEntityType);
-  //       //     },
-  //       //     onClearPressed: () {
-  //       //       store.dispatch(ClearEntityFilter());
-  //       //     },
-  //       //   ),
-  //       Expanded(
-  //         child: SingleChildScrollView(
-  //           primary: true,
-  //           child: Padding(
-  //             padding: const EdgeInsets.symmetric(vertical: 16),
-  //             child: AppPaginatedDataTable(
-  //               onSelectAll: (value) {
-  //                 final startIndex =
-  //                 min(_firstRowIndex, entityList.length - 1);
-  //                 final endIndex =
-  //                 min(_firstRowIndex + rowsPerPage, entityList.length);
-  //                 final entities = entityList
-  //                     .sublist(startIndex, endIndex)
-  //                     .map<BaseEntity>(
-  //                         (String entityId) => entityMap[entityId])
-  //                     .where((invoice) =>
-  //                 value != listUIState.isSelected(invoice.id))
-  //                     .toList();
-  //                 handleEntitiesActions(
-  //                     entities, EntityAction.toggleMultiselect);
-  //               },
-  //               columns: [
-  //                 if (!isInMultiselect) DataColumn(label: SizedBox()),
-  //                 ...widget.tableColumns.map((field) {
-  //                   String label =
-  //                   AppLocalization.of(context).lookup(field);
-  //                   if (field.startsWith('custom')) {
-  //                     final key = field.replaceFirst(
-  //                         'custom', entityType.snakeCase);
-  //                     label = state.company.getCustomFieldLabel(key);
-  //                   }
-  //                   return DataColumn(
-  //                       label: Container(
-  //                         child: Text(
-  //                           label,
-  //                           overflow: TextOverflow.ellipsis,
-  //                         ),
-  //                       ),
-  //                       onSort: (int columnIndex, bool ascending) {
-  //                         widget.onSortColumn(field);
-  //                       });
-  //                 }),
-  //               ],
-  //               source: dataTableSource,
-  //               sortColumnIndex:
-  //               widget.tableColumns.contains(listUIState.sortField)
-  //                   ? widget.tableColumns.indexOf(listUIState.sortField)
-  //                   : 0,
-  //               sortAscending: listUIState.sortAscending,
-  //               rowsPerPage: state.prefState.rowsPerPage,
-  //               onPageChanged: (row) => _firstRowIndex = row,
-  //               initialFirstRowIndex: _firstRowIndex,
-  //               availableRowsPerPage: [
-  //                 10,
-  //                 25,
-  //                 50,
-  //                 100,
-  //               ],
-  //               onRowsPerPageChanged: (value) {
-  //                 store.dispatch(UpdateUserPreferences(rowsPerPage: value));
-  //               },
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
+// Widget list(RequestState state) {
+//   return Column(
+//     mainAxisSize: MainAxisSize.min,
+//     children: <Widget>[
+//       // if (uiState.filterEntityId != null && isMobile(context))
+//       //   ListFilterMessage(
+//       //     filterEntityId: uiState.filterEntityId,
+//       //     filterEntityType: uiState.filterEntityType,
+//       //     onPressed: (_) => viewEntityById(
+//       //         entityId: state.uiState.filterEntityId,
+//       //         entityType: state.uiState.filterEntityType),
+//       //     onClearPressed: () => store.dispatch(ClearEntityFilter()),
+//       //   ),
+//       Flexible(
+//         fit: FlexFit.loose,
+//         child: entityList.isEmpty
+//             ? HelpText(AppLocalization.of(context).clickPlusToCreateRecord)
+//             : ScrollableListViewBuilder(
+//           primary: true,
+//           padding: const EdgeInsets.symmetric(vertical: 20),
+//           separatorBuilder: (context, index) =>
+//           (index == 0 || index == entityList.length)
+//               ? SizedBox()
+//               : ListDivider(),
+//           itemCount: entityList.length + 2,
+//           itemBuilder: (BuildContext context, index) {
+//             if (index == 0 || index == entityList.length + 1) {
+//               return Container(
+//                 color: Theme.of(context).cardColor,
+//                 height: 25,
+//               );
+//             } else {
+//               return widget.itemBuilder(context, index - 1);
+//             }
+//           },
+//         ),
+//       ),
+//     ],
+//   );
+// }
+//
+// Widget table(RequestState state) {
+//   final settings = Provider.of<MySettings>(context);
+//
+//   final rowsPerPage = settings.prefRowsPerPage;
+//
+//   return Column(
+//     mainAxisSize: MainAxisSize.max,
+//     children: [
+//       // if (uiState.filterEntityId != null && isMobile(context))
+//       //   ListFilterMessage(
+//       //     filterEntityId: uiState.filterEntityId,
+//       //     filterEntityType: uiState.filterEntityType,
+//       //     onPressed: (_) {
+//       //       viewEntityById(
+//       //           entityId: state.uiState.filterEntityId,
+//       //           entityType: state.uiState.filterEntityType);
+//       //     },
+//       //     onClearPressed: () {
+//       //       store.dispatch(ClearEntityFilter());
+//       //     },
+//       //   ),
+//       Expanded(
+//         child: SingleChildScrollView(
+//           primary: true,
+//           child: Padding(
+//             padding: const EdgeInsets.symmetric(vertical: 16),
+//             child: AppPaginatedDataTable(
+//               onSelectAll: (value) {
+//                 final startIndex =
+//                 min(_firstRowIndex, entityList.length - 1);
+//                 final endIndex =
+//                 min(_firstRowIndex + rowsPerPage, entityList.length);
+//                 final entities = entityList
+//                     .sublist(startIndex, endIndex)
+//                     .map<BaseEntity>(
+//                         (String entityId) => entityMap[entityId])
+//                     .where((invoice) =>
+//                 value != listUIState.isSelected(invoice.id))
+//                     .toList();
+//                 handleEntitiesActions(
+//                     entities, EntityAction.toggleMultiselect);
+//               },
+//               columns: [
+//                 if (!isInMultiselect) DataColumn(label: SizedBox()),
+//                 ...widget.tableColumns.map((field) {
+//                   String label =
+//                   AppLocalization.of(context).lookup(field);
+//                   if (field.startsWith('custom')) {
+//                     final key = field.replaceFirst(
+//                         'custom', entityType.snakeCase);
+//                     label = state.company.getCustomFieldLabel(key);
+//                   }
+//                   return DataColumn(
+//                       label: Container(
+//                         child: Text(
+//                           label,
+//                           overflow: TextOverflow.ellipsis,
+//                         ),
+//                       ),
+//                       onSort: (int columnIndex, bool ascending) {
+//                         widget.onSortColumn(field);
+//                       });
+//                 }),
+//               ],
+//               source: dataTableSource,
+//               sortColumnIndex:
+//               widget.tableColumns.contains(listUIState.sortField)
+//                   ? widget.tableColumns.indexOf(listUIState.sortField)
+//                   : 0,
+//               sortAscending: listUIState.sortAscending,
+//               rowsPerPage: state.prefState.rowsPerPage,
+//               onPageChanged: (row) => _firstRowIndex = row,
+//               initialFirstRowIndex: _firstRowIndex,
+//               availableRowsPerPage: [
+//                 10,
+//                 25,
+//                 50,
+//                 100,
+//               ],
+//               onRowsPerPageChanged: (value) {
+//                 store.dispatch(UpdateUserPreferences(rowsPerPage: value));
+//               },
+//             ),
+//           ),
+//         ),
+//       ),
+//     ],
+//   );
+// }
 }

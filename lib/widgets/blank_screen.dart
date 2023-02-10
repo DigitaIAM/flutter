@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae_hr/models/ui/bloc.dart';
-import 'package:nae_hr/widgets/help_text.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/widgets/help_text.dart';
 
 import '../models/ui/state.dart';
 

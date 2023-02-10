@@ -1,15 +1,15 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:nae_hr/models/memory/item.dart';
-import 'package:nae_hr/models/ui/entity.dart';
-import 'package:nae_hr/screens/common/person/screen.dart';
-import 'package:nae_hr/screens/common/product/screen.dart';
-import 'package:nae_hr/screens/common/uom/screen.dart';
-import 'package:nae_hr/screens/production/area/screen.dart';
-import 'package:nae_hr/screens/production/order/screen.dart';
-import 'package:nae_hr/screens/settings/printer/screen.dart';
-import 'package:nae_hr/widgets/blank_screen.dart';
+import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/ui/entity.dart';
+import 'package:nae/screens/common/person/screen.dart';
+import 'package:nae/screens/common/product/screen.dart';
+import 'package:nae/screens/common/uom/screen.dart';
+import 'package:nae/screens/production/area/screen.dart';
+import 'package:nae/screens/production/order/screen.dart';
+import 'package:nae/screens/settings/printer/screen.dart';
+import 'package:nae/widgets/blank_screen.dart';
 
 part 'state.g.dart';
 
@@ -34,12 +34,15 @@ class UiState extends Equatable {
   // blockSizeVertical = screenHeight! / 100;
 
   final MediaQueryData mediaQueryData;
+
   double get screenWidth => mediaQueryData.size.width;
+
   double get screenHeight => mediaQueryData.size.height;
 
   final List<String> currentRoute;
   final String action;
   final MemoryItem entity;
+
   // final String entityId;
 
   final bool isMenuVisible;
@@ -51,6 +54,7 @@ class UiState extends Equatable {
   bool get showMenu => isMenuVisible;
 
   bool get isFullScreen => !isDesktop;
+
   bool get isMobile => !isDesktop;
 
   final List<List<Entity>> entities = [

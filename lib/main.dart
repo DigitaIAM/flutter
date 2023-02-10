@@ -4,10 +4,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:nae_hr/app_localizations.dart';
-import 'package:nae_hr/constants.dart';
-import 'package:nae_hr/core/my_settings.dart';
-import 'package:nae_hr/wrapper.dart';
+import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
+import 'package:nae/core/my_settings.dart';
+import 'package:nae/wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -36,7 +36,8 @@ class MyApp extends StatelessWidget {
           return StyledToast(
               locale: settings.locale,
               duration: const Duration(seconds: 3),
-              backgroundColor: Colors.white, // state.prefState.enableDarkMode ? Colors.white : Colors.black,
+              backgroundColor: Colors.white,
+              // state.prefState.enableDarkMode ? Colors.white : Colors.black,
               textStyle: const TextStyle(
                 color: Colors.black87, // state.prefState.enableDarkMode ? Colors.black87 : Colors.white,
               ),
@@ -60,7 +61,8 @@ class MyApp extends StatelessWidget {
                 locale: settings.locale,
                 themeMode: ThemeMode.system,
                 // settings.theme == 0 ? ThemeMode.system : (settings.theme == 2 ? ThemeMode.light : ThemeMode.dark),
-                theme: light(), // ThemeData.light(useMaterial3: true),
+                theme: light(),
+                // ThemeData.light(useMaterial3: true),
                 darkTheme: ThemeData.dark(useMaterial3: true),
                 home: const Wrapper(),
               ));
@@ -107,8 +109,10 @@ class MyApp extends StatelessWidget {
       canvasColor: Colors.white,
       cardColor: Colors.white,
       bottomAppBarColor: Colors.white,
-      primaryColorDark: const Color(0xFF0D5D91), // hasAccentColor ? accentColor : const Color(0xFF0D5D91),
-      primaryColorLight: const Color(0xFF5dabf4), //hasAccentColor ? accentColor : const Color(0xFF5dabf4),
+      primaryColorDark: const Color(0xFF0D5D91),
+      // hasAccentColor ? accentColor : const Color(0xFF0D5D91),
+      primaryColorLight: const Color(0xFF5dabf4),
+      //hasAccentColor ? accentColor : const Color(0xFF5dabf4),
       scaffoldBackgroundColor: const Color(0xFFF3F4F6),
       tabBarTheme: TabBarTheme(
         labelColor: Colors.black, // hasAccentColor ? Colors.white : Colors.black,

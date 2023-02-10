@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nae_hr/api.dart';
+import 'package:nae/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MySettings with ChangeNotifier {

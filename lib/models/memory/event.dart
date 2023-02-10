@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:nae_hr/models/memory/item.dart';
+import 'package:nae/models/memory/item.dart';
 
 abstract class MemoryEvent extends Equatable {
   @override

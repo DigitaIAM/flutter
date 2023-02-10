@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nae_hr/constants.dart';
-import 'package:nae_hr/widgets/app_border.dart';
+import 'package:nae/constants.dart';
+import 'package:nae/widgets/app_border.dart';
 
 class FormCard extends StatelessWidget {
   const FormCard({

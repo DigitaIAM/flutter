@@ -1,4 +1,4 @@
-import 'package:nae_hr/printer/network_printer.dart';
+import 'package:nae/printer/network_printer.dart';
 
 class Labels {
   static Future<PrintResult> connect(String ip, int port, Future<PrintResult> Function(NetworkPrinter) onReady) async {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nae_hr/widgets/copy_to_clipboard.dart';
+import 'package:nae/widgets/copy_to_clipboard.dart';
 
 class Pair {
   final String label;

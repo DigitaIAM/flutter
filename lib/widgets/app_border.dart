@@ -1,8 +1,5 @@
-
 import 'package:flutter/material.dart';
-import 'package:nae_hr/constants.dart';
-
-
+import 'package:nae/constants.dart';
 
 class AppBorder extends StatelessWidget {
   final Widget child;
@@ -26,16 +23,16 @@ class AppBorder extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius:
-        isAllSides ? BorderRadius.circular(cBorderRadius) : null,
-        border: isAllSides ? Border.all(width: borderWidth, color: color) : Border(
-          top: isTop == true ? BorderSide(width: borderWidth, color: color) : BorderSide.none,
-          bottom: isBottom == true ? BorderSide(width: borderWidth, color: color) : BorderSide.none,
-          left: isLeft == true ? BorderSide(width: borderWidth, color: color) : BorderSide.none,
-        ),
+        borderRadius: isAllSides ? BorderRadius.circular(cBorderRadius) : null,
+        border: isAllSides
+            ? Border.all(width: borderWidth, color: color)
+            : Border(
+                top: isTop == true ? BorderSide(width: borderWidth, color: color) : BorderSide.none,
+                bottom: isBottom == true ? BorderSide(width: borderWidth, color: color) : BorderSide.none,
+                left: isLeft == true ? BorderSide(width: borderWidth, color: color) : BorderSide.none,
+              ),
       ),
       child: child,
     );
   }
-
 }

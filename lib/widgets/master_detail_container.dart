@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:nae_hr/layout/adaptive.dart';
-import 'package:nae_hr/models/memory/item.dart';
-import 'package:nae_hr/widgets/item_details.dart';
+import 'package:nae/layout/adaptive.dart';
+import 'package:nae/models/memory/item.dart';
+import 'package:nae/widgets/item_details.dart';
 
 class MasterDetailContainer extends StatefulWidget {
-  const MasterDetailContainer({super.key, required this.title, required this.masterBuilder, required this.detailsBuilder});
+  const MasterDetailContainer(
+      {super.key, required this.title, required this.masterBuilder, required this.detailsBuilder});
 
   final String title;
   final MasterBuilder masterBuilder;
@@ -15,7 +16,6 @@ class MasterDetailContainer extends StatefulWidget {
 }
 
 class _MasterDetailContainerState extends State<MasterDetailContainer> {
-
   @override
   Widget build(BuildContext context) {
     Widget content;
@@ -50,15 +50,13 @@ class _MasterDetailContainerState extends State<MasterDetailContainer> {
         if (widget.detailsBuilder.selected != null)
           Flexible(
             flex: 1,
-            child: Column(
-              children: <Widget>[
-                ItemDetails(
-                  isDesktopLayout: true,
-                  builder: widget.detailsBuilder,
-                  item: widget.detailsBuilder.selected!,
-                ),
-              ]
-            ),
+            child: Column(children: <Widget>[
+              ItemDetails(
+                isDesktopLayout: true,
+                builder: widget.detailsBuilder,
+                item: widget.detailsBuilder.selected!,
+              ),
+            ]),
           ),
       ],
     );
@@ -68,7 +66,6 @@ class _MasterDetailContainerState extends State<MasterDetailContainer> {
 typedef MasterContentBuilder = Widget Function(BuildContext context);
 
 class MasterBuilder {
-
   MasterBuilder({required this.builder});
 
   final MasterContentBuilder builder;
@@ -81,7 +78,6 @@ class MasterBuilder {
 typedef DetailsContentBuilder = List<Widget> Function(BuildContext context, MemoryItem item);
 
 class DetailsBuilder {
-
   DetailsBuilder({required this.builder, required this.selected});
 
   final MemoryItem? selected;

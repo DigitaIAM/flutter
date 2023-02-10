@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae_hr/models/ui/bloc.dart';
-import 'package:nae_hr/models/ui/event.dart';
-import 'package:nae_hr/models/ui/state.dart';
-import 'package:nae_hr/widgets/copy_to_clipboard.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/models/ui/event.dart';
+import 'package:nae/models/ui/state.dart';
+import 'package:nae/widgets/copy_to_clipboard.dart';
 
 class ScaffoldView extends StatelessWidget {
   // final BaseEntity entity;

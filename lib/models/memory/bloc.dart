@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
-import 'package:nae_hr/api.dart';
-import 'package:nae_hr/models/memory/event.dart';
-import 'package:nae_hr/models/memory/item.dart';
-import 'package:nae_hr/models/memory/state.dart';
+import 'package:nae/api.dart';
+import 'package:nae/models/memory/event.dart';
+import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/memory/state.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 // const _postLimit = 20;

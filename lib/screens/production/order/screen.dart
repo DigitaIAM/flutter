@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:nae_hr/models/memory/item.dart';
-import 'package:nae_hr/models/ui/entity.dart';
-import 'package:nae_hr/schema/schema.dart';
-import 'package:nae_hr/widgets/entity_screens.dart';
-import 'package:nae_hr/widgets/list_filter.dart';
-import 'package:nae_hr/widgets/memory_list.dart';
-import 'package:nae_hr/widgets/scaffold_list.dart';
+import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/ui/entity.dart';
+import 'package:nae/schema/schema.dart';
+import 'package:nae/widgets/entity_screens.dart';
+import 'package:nae/widgets/list_filter.dart';
+import 'package:nae/widgets/memory_list.dart';
+import 'package:nae/widgets/scaffold_list.dart';
 
 import 'edit.dart';
 import 'view.dart';
