@@ -39,6 +39,4 @@ class Api {
   String _oid = "";
 }
 
-class Connection {
-
-}
+class Connection {}

@@ -2,8 +2,13 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:nae_hr/models/memory/item.dart';
+import 'package:nae_hr/models/ui/entity.dart';
+import 'package:nae_hr/screens/common/person/screen.dart';
+import 'package:nae_hr/screens/common/product/screen.dart';
 import 'package:nae_hr/screens/common/uom/screen.dart';
-import 'package:nae_hr/screens/production/orders/screen.dart';
+import 'package:nae_hr/screens/production/area/screen.dart';
+import 'package:nae_hr/screens/production/order/screen.dart';
+import 'package:nae_hr/screens/settings/printer/screen.dart';
 import 'package:nae_hr/widgets/blank_screen.dart';
 
 part 'state.g.dart';
@@ -12,45 +17,67 @@ part 'state.g.dart';
 
 @CopyWith()
 class UiState extends Equatable {
-  const UiState({
+  UiState({
+    required this.mediaQueryData,
     this.currentRoute = const ["login"],
     this.action = 'view',
     this.entity = const MemoryItem(id: '', json: {}),
     // this.entityId = '',
 
-    this.isSaving = false,
+    this.isDesktop = true,
     this.isMenuVisible = true,
     this.isMenuCollapsed = false,
     this.isMenuFloated = false,
   });
+
+  // blockSizeHorizontal = screenWidth! / 100;
+  // blockSizeVertical = screenHeight! / 100;
+
+  final MediaQueryData mediaQueryData;
+  double get screenWidth => mediaQueryData.size.width;
+  double get screenHeight => mediaQueryData.size.height;
 
   final List<String> currentRoute;
   final String action;
   final MemoryItem entity;
   // final String entityId;
 
-  final bool isSaving;
-
   final bool isMenuVisible;
+
+  final bool isDesktop;
   final bool isMenuCollapsed;
   final bool isMenuFloated;
 
   bool get showMenu => isMenuVisible;
 
+  bool get isFullScreen => !isDesktop;
+  bool get isMobile => !isDesktop;
+
+  final List<List<Entity>> entities = [
+    [ProductionOrder()],
+    [Product(), Uom(), ProductionArea()],
+    [Person()],
+    [Printer()],
+  ];
+
   @override
   List<Object> get props => [
         currentRoute, action, entity, // entityId,
-        isSaving,
+        entities,
+        isDesktop,
         isMenuVisible, isMenuCollapsed, isMenuFloated
       ];
 
   Widget entityScreen() {
-    Widget screen = const BlankScreen();
-    if (currentRoute == ProductionOrdersScreen.route) {
-      screen = ProductionOrdersScreen.create(action, entity.clone());
-    } else if (currentRoute == UomScreen.route) {
-      screen = UomScreen.create(action, entity.clone());
+    print("entityScreen $currentRoute");
+    for (final list in entities) {
+      for (final item in list) {
+        if (currentRoute == item.route()) {
+          return item.screen(action, entity);
+        }
+      }
     }
-    return screen;
+
+    return const BlankScreen();
   }
 }

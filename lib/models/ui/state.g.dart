@@ -7,13 +7,15 @@ part of 'state.dart';
 // **************************************************************************
 
 abstract class _$UiStateCWProxy {
+  UiState mediaQueryData(MediaQueryData mediaQueryData);
+
   UiState currentRoute(List<String> currentRoute);
 
   UiState action(String action);
 
   UiState entity(MemoryItem entity);
 
-  UiState isSaving(bool isSaving);
+  UiState isDesktop(bool isDesktop);
 
   UiState isMenuVisible(bool isMenuVisible);
 
@@ -28,10 +30,11 @@ abstract class _$UiStateCWProxy {
   /// UiState(...).copyWith(id: 12, name: "My name")
   /// ````
   UiState call({
+    MediaQueryData? mediaQueryData,
     List<String>? currentRoute,
     String? action,
     MemoryItem? entity,
-    bool? isSaving,
+    bool? isDesktop,
     bool? isMenuVisible,
     bool? isMenuCollapsed,
     bool? isMenuFloated,
@@ -45,6 +48,10 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
   final UiState _value;
 
   @override
+  UiState mediaQueryData(MediaQueryData mediaQueryData) =>
+      this(mediaQueryData: mediaQueryData);
+
+  @override
   UiState currentRoute(List<String> currentRoute) =>
       this(currentRoute: currentRoute);
 
@@ -55,7 +62,7 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
   UiState entity(MemoryItem entity) => this(entity: entity);
 
   @override
-  UiState isSaving(bool isSaving) => this(isSaving: isSaving);
+  UiState isDesktop(bool isDesktop) => this(isDesktop: isDesktop);
 
   @override
   UiState isMenuVisible(bool isMenuVisible) =>
@@ -78,15 +85,22 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
   /// UiState(...).copyWith(id: 12, name: "My name")
   /// ````
   UiState call({
+    Object? mediaQueryData = const $CopyWithPlaceholder(),
     Object? currentRoute = const $CopyWithPlaceholder(),
     Object? action = const $CopyWithPlaceholder(),
     Object? entity = const $CopyWithPlaceholder(),
-    Object? isSaving = const $CopyWithPlaceholder(),
+    Object? isDesktop = const $CopyWithPlaceholder(),
     Object? isMenuVisible = const $CopyWithPlaceholder(),
     Object? isMenuCollapsed = const $CopyWithPlaceholder(),
     Object? isMenuFloated = const $CopyWithPlaceholder(),
   }) {
     return UiState(
+      mediaQueryData: mediaQueryData == const $CopyWithPlaceholder() ||
+              mediaQueryData == null
+          // ignore: unnecessary_non_null_assertion
+          ? _value.mediaQueryData!
+          // ignore: cast_nullable_to_non_nullable
+          : mediaQueryData as MediaQueryData,
       currentRoute:
           currentRoute == const $CopyWithPlaceholder() || currentRoute == null
               // ignore: unnecessary_non_null_assertion
@@ -103,11 +117,11 @@ class _$UiStateCWProxyImpl implements _$UiStateCWProxy {
           ? _value.entity!
           // ignore: cast_nullable_to_non_nullable
           : entity as MemoryItem,
-      isSaving: isSaving == const $CopyWithPlaceholder() || isSaving == null
+      isDesktop: isDesktop == const $CopyWithPlaceholder() || isDesktop == null
           // ignore: unnecessary_non_null_assertion
-          ? _value.isSaving!
+          ? _value.isDesktop!
           // ignore: cast_nullable_to_non_nullable
-          : isSaving as bool,
+          : isDesktop as bool,
       isMenuVisible:
           isMenuVisible == const $CopyWithPlaceholder() || isMenuVisible == null
               // ignore: unnecessary_non_null_assertion

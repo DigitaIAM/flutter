@@ -18,15 +18,15 @@ import 'package:nae_hr/widgets/scrollable_list_view.dart';
 
 import 'screen.dart';
 
-class UomEdit extends EntityHolder {
-  const UomEdit({super.key, required super.entity});
+class ProductionAreaEdit extends EntityHolder {
+  const ProductionAreaEdit({super.key, required super.entity});
 
   @override
-  State<UomEdit> createState() => _UomEditState();
+  State<ProductionAreaEdit> createState() => _ProductionAreaEditState();
 }
 
-class _UomEditState extends State<UomEdit> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_uomEdit');
+class _ProductionAreaEditState extends State<ProductionAreaEdit> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_ProductionAreaEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   @override
@@ -43,12 +43,9 @@ class _UomEditState extends State<UomEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      debugPrint("saving");
-      debugPrint(data.toString());
-
-      print("sending event");
-      context.read<MemoryBloc>().add(MemorySave("memories", Uom.ctx, MemoryItem(id: widget.entity.id, json: data)));
-      print("event send");
+      context
+          .read<MemoryBloc>()
+          .add(MemorySave("memories", ProductionArea.ctx, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -64,7 +61,7 @@ class _UomEditState extends State<UomEdit> {
     final localization = AppLocalizations.of(context);
 
     routerBack(BuildContext context) {
-      context.read<UiBloc>().add(ChangeView(Uom.ctx));
+      context.read<UiBloc>().add(ChangeView(ProductionArea.ctx));
       // TODO context.read<UiBloc>().add(PreviousRoute());
     }
 
@@ -76,9 +73,9 @@ class _UomEditState extends State<UomEdit> {
         },
         child: EditScaffold(
             entity: widget.entity,
-            title: widget.entity.isNew ? localization.translate("new uom") : localization.translate("edit uom"),
+            title: widget.entity.isNew ? localization.translate("new area") : localization.translate("edit area"),
             onClose: (context) {
-              context.read<UiBloc>().add(ChangeView(Uom.ctx));
+              context.read<UiBloc>().add(ChangeView(ProductionArea.ctx));
             },
             onCancel: routerBack,
             onSave: _onSave,
@@ -95,9 +92,6 @@ class _UomEditState extends State<UomEdit> {
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(),
                       ]),
-                      // (val) => val == null || val.isEmpty || val.trim().isEmpty
-                      // ? localization.translate("please, enter name")
-                      // : null,
                       onSave: _onSave,
                       keyboardType: TextInputType.text,
                     ),

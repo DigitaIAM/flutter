@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae_hr/core/platform.dart';
 import 'package:nae_hr/models/ui/bloc.dart';
 import 'package:nae_hr/models/ui/event.dart';
+import 'package:nae_hr/models/ui/state.dart';
 import 'package:nae_hr/widgets/copy_to_clipboard.dart';
 
 class ScaffoldView extends StatelessWidget {
@@ -28,11 +28,12 @@ class ScaffoldView extends StatelessWidget {
       },
     );
 
-    return Scaffold(
+    return BlocBuilder<UiBloc, UiState>(
+      builder: (context, uiState) => Scaffold(
         backgroundColor: Theme.of(context).cardColor,
         appBar: AppBar(
           leading: leading,
-          automaticallyImplyLeading: isMobile(context),
+          automaticallyImplyLeading: uiState.isMobile,
           centerTitle: false,
           title: CopyToClipboard(
             value: appBarTitle,
@@ -42,6 +43,8 @@ class ScaffoldView extends StatelessWidget {
         ),
         body: SafeArea(
           child: body,
-        ));
+        ),
+      ),
+    );
   }
 }

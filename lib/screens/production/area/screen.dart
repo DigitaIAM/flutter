@@ -9,8 +9,8 @@ import 'package:nae_hr/widgets/scaffold_list.dart';
 
 import 'edit.dart';
 
-class Uom extends Entity {
-  static const List<String> ctx = ['uom'];
+class ProductionArea extends Entity {
+  static const List<String> ctx = ['production', 'area'];
 
   static const List<Field> schema = [
     Field('name', StringType()),
@@ -20,19 +20,19 @@ class Uom extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "uom";
+  String name() => "area";
 
   @override
-  IconData icon() => Icons.square_foot_rounded;
+  IconData icon() => Icons.handyman_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
       key: ValueKey('__${name()}_${DateTime.now().toString()}__'),
       ctx: ctx,
-      list: const UomScreen(),
+      list: const ProductionAreaScreen(),
       // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
-      view: UomEdit(
+      view: ProductionAreaEdit(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
         entity: entity,
       ),
@@ -40,13 +40,13 @@ class Uom extends Entity {
   }
 }
 
-class UomScreen extends StatelessWidget {
-  const UomScreen({super.key});
+class ProductionAreaScreen extends StatelessWidget {
+  const ProductionAreaScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldList(
-      entityType: Uom.ctx,
+      entityType: ProductionArea.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
         filter: null, //state.productListState.filter,
@@ -54,19 +54,19 @@ class UomScreen extends StatelessWidget {
           // store.dispatch(FilterProducts(value));
         },
       ),
-      body: const UomListBuilder(),
+      body: const ProductionAreaListBuilder(),
     );
   }
 }
 
-class UomListBuilder extends StatelessWidget {
-  const UomListBuilder({super.key});
+class ProductionAreaListBuilder extends StatelessWidget {
+  const ProductionAreaListBuilder({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const MemoryList(
-      ctx: Uom.ctx,
-      cols: Uom.schema,
+      ctx: ProductionArea.ctx,
+      cols: ProductionArea.schema,
     );
   }
 }

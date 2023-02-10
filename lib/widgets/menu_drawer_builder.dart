@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/constants.dart';
 import 'package:nae_hr/core/my_settings.dart';
-import 'package:nae_hr/core/platform.dart';
 import 'package:nae_hr/models/memory/bloc.dart';
 import 'package:nae_hr/models/memory/event.dart';
 import 'package:nae_hr/models/memory/item.dart';
@@ -11,8 +10,6 @@ import 'package:nae_hr/models/memory/state.dart';
 import 'package:nae_hr/models/ui/bloc.dart';
 import 'package:nae_hr/models/ui/event.dart';
 import 'package:nae_hr/models/ui/state.dart';
-import 'package:nae_hr/screens/common/uom/screen.dart';
-import 'package:nae_hr/screens/production/orders/screen.dart';
 import 'package:nae_hr/widgets/app_border.dart';
 import 'package:nae_hr/widgets/my_dropdown_button.dart';
 import 'package:nae_hr/widgets/scrollable_list_view.dart';
@@ -52,82 +49,83 @@ class _MenuDrawerState extends State<MenuDrawer> {
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     return BlocProvider(
-        create: (_) => bloc..add(MemoryFetch("companies", const [])),
-        child: FocusTraversalGroup(
-            child: BlocBuilder<UiBloc, UiState>(
-                builder: (context, uiState) => SizedBox(
-                    width: uiState.isMenuCollapsed
-                        ? 65
-                        : isDesktop(context)
-                            ? cDrawerWidthDesktop
-                            : cDrawerWidthMobile,
-                    child: Drawer(
-                        child: SafeArea(
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.max,
-                                children: <Widget>[
-                          Expanded(
-                              child: Container(
-                                  color: Theme.of(context).cardColor,
-                                  child: ScrollableListView(children: <Widget>[
-                                    Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 14, vertical: 3),
-                                        color: Theme.of(context).cardColor,
-                                        child: uiState.isMenuCollapsed
-                                            ? collapsedCompanySelector()
-                                            : expandedCompanySelector()),
-                                    DrawerTile(
-                                      ctx: ProductionOrdersScreen.route,
-                                      icon: ProductionOrdersScreen.icon,
-                                      title: localization
-                                          .translate("production orders"),
-                                      onTap: () => context.read<UiBloc>().add(
-                                          ChangeView(
-                                              ProductionOrdersScreen.route)),
+      create: (_) => bloc..add(MemoryFetch("companies", const [])),
+      child: FocusTraversalGroup(
+        child: BlocBuilder<UiBloc, UiState>(
+          builder: (context, uiState) => SizedBox(
+            width: uiState.isMenuCollapsed
+                ? cDrawerToolsWidth
+                : uiState.isDesktop
+                    ? cDrawerWidthDesktop
+                    : cDrawerWidthMobile,
+            child: Drawer(
+              child: SafeArea(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      Expanded(
+                        child: Container(
+                          color: Theme.of(context).cardColor,
+                          child: ScrollableListView(children: <Widget>[
+                            Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+                                color: Theme.of(context).cardColor,
+                                child:
+                                    uiState.isMenuCollapsed ? collapsedCompanySelector() : expandedCompanySelector()),
+                            ...List.generate(uiState.entities.length, (i) {
+                              final list = uiState.entities[i];
+                              final isLast = i == uiState.entities.length - 1;
+                              return [
+                                ...list.map((item) => DrawerTile(
+                                      ctx: item.route(),
+                                      icon: item.icon(),
+                                      title: localization.translate(item.name()),
+                                      onTap: () {
+                                        print("fire ChangeView ${item.route()}");
+                                        context.read<UiBloc>().add(ChangeView(item.route()));
+                                      },
                                       // onLongPress: () => ,
-                                    ),
-                                    DrawerTile(
-                                      ctx: const ["products"],
-                                      icon: Icons
-                                          .people, // getEntityIcon(EntityType.dashboard),
-                                      title: localization.translate("products"),
-                                      onTap: () => context
-                                          .read<UiBloc>()
-                                          .add(ChangeView(const ["products"])),
-                                      // onLongPress: () => ,
-                                    ),
-                                    DrawerTile(
-                                      ctx: UomScreen.route,
-                                      icon: UomScreen
-                                          .icon, // getEntityIcon(EntityType.dashboard),
-                                      title: localization.translate("uom"),
-                                      onTap: () => context
-                                          .read<UiBloc>()
-                                          .add(ChangeView(UomScreen.route)),
-                                      // onLongPress: () => ,
-                                    ),
-                                  ]))),
-                          SizedBox(
-                            height: cBarHeight,
-                            child: AppBorder(
-                              isTop: true,
-                              child: Align(
-                                alignment: const Alignment(0, 1),
-                                child: uiState.isMenuCollapsed
-                                    ? const SidebarFooterCollapsed()
-                                    : const SidebarFooter(),
-                              ),
-                            ),
+                                    )),
+                                if (!isLast)
+                                  Divider(
+                                    height: 2,
+                                    thickness: 1,
+                                    indent: 2,
+                                    endIndent: 2,
+                                    color: theme.dividerColor,
+                                  ),
+                              ];
+                            }).expand((element) => element)
+                          ]),
+                        ),
+                      ),
+                      SizedBox(
+                        height: cBarHeight,
+                        child: AppBorder(
+                          isTop: true,
+                          child: Align(
+                            alignment: const Alignment(0, 1),
+                            child: uiState.isMenuCollapsed ? const SidebarFooterCollapsed() : const SidebarFooter(),
                           ),
-                        ])))))));
+                        ),
+                      ),
+                    ]),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget collapsedCompanySelector() {
-    return const SizedBox(); // TODO PopupMenuButton<String>();
+    return const SizedBox(
+      height: cBarHeight,
+    ); // TODO PopupMenuButton<String>();
   }
 
   Widget expandedCompanySelector() {
@@ -147,8 +145,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
               value: selected,
               items: [
                 ...state.items
-                    .map((company) => DropdownMenuItem<MemoryItem>(
-                        value: company, child: ItemWidget(item: company)))
+                    .map((company) => DropdownMenuItem<MemoryItem>(value: company, child: ItemWidget(item: company)))
                     .toList(),
               ],
               onChanged: (MemoryItem? value) {
@@ -174,13 +171,9 @@ class SidebarFooterCollapsed extends StatelessWidget {
       child: IconButton(
         icon: Icon(
           Icons.chevron_right,
-          color: settings.isUpdateAvailable
-              ? Theme.of(context).colorScheme.secondary
-              : null,
+          color: settings.isUpdateAvailable ? Theme.of(context).colorScheme.secondary : null,
         ),
-        tooltip: settings.enableTooltips
-            ? AppLocalizations.of(context).translate("show_menu")
-            : null,
+        tooltip: settings.enableTooltips ? AppLocalizations.of(context).translate("show_menu") : null,
         onPressed: () {
           context.read<UiBloc>().add(MenuVisibility(collapsed: false));
         },
@@ -198,29 +191,22 @@ class SidebarFooter extends StatelessWidget {
 
     return Material(
         color: Theme.of(context).bottomAppBarTheme.color,
-        child: Row(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              // if (isNotMobile(context))
-              AppBorder(
-                isLeft: true,
-                child: Tooltip(
-                  message: settings.enableTooltips
-                      ? AppLocalizations.of(context).translate("hide_menu")
-                      : '',
-                  child: InkWell(
-                    onTap: () => context
-                        .read<UiBloc>()
-                        .add(MenuVisibility(collapsed: true)),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Icon(Icons.chevron_left),
-                    ),
-                  ),
+        child: Row(mainAxisSize: MainAxisSize.max, crossAxisAlignment: CrossAxisAlignment.stretch, children: <Widget>[
+          // if (isNotMobile(context))
+          AppBorder(
+            isLeft: true,
+            child: Tooltip(
+              message: settings.enableTooltips ? AppLocalizations.of(context).translate("hide_menu") : '',
+              child: InkWell(
+                onTap: () => context.read<UiBloc>().add(MenuVisibility(collapsed: true)),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Icon(Icons.chevron_left),
                 ),
-              )
-            ]));
+              ),
+            ),
+          )
+        ]));
   }
 }
 
@@ -235,12 +221,7 @@ class DrawerTile extends StatefulWidget {
   final void Function()? onLongPress;
 
   const DrawerTile(
-      {super.key,
-      required this.ctx,
-      required this.title,
-      required this.icon,
-      this.onTap,
-      this.onLongPress});
+      {super.key, required this.ctx, required this.title, required this.icon, this.onTap, this.onLongPress});
 
   @override
   State<DrawerTile> createState() => _DrawerTileState();
@@ -259,20 +240,16 @@ class _DrawerTileState extends State<DrawerTile> {
       Widget? iconWidget;
       Color color = Colors.transparent;
 
-      Color textColor = Theme.of(context)
-          .textTheme
-          .bodyLarge!
-          .color!
-          .withOpacity(isSelected ? 1 : .7);
+      Color textColor = Theme.of(context).textTheme.bodyLarge!.color!.withOpacity(isSelected ? 1 : .7);
 
       Widget child = Material(
         color: color,
         child: Opacity(
           opacity: isSelected ? 1 : .8,
           child: ListTile(
-            contentPadding: const EdgeInsets.only(left: 12),
+            contentPadding: const EdgeInsets.only(left: 1),
             dense: true,
-            leading: _isHovered && isDesktop(context) && iconWidget != null
+            leading: _isHovered && uiState.isDesktop && iconWidget != null
                 ? iconWidget
                 : isLoading
                     ? Padding(
@@ -291,22 +268,24 @@ class _DrawerTileState extends State<DrawerTile> {
                           onPressed: widget.onTap,
                         ),
                       ),
-            title: Text(
-              widget.title,
-              key: ValueKey('menu_${widget.title}'),
-              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    fontSize: 14,
-                    color: textColor,
+            title: uiState.isMenuCollapsed
+                ? null
+                : Text(
+                    widget.title,
+                    key: ValueKey('menu_${widget.title}'),
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                          fontSize: 14,
+                          color: textColor,
+                        ),
                   ),
-            ),
             onTap: widget.onTap,
             onLongPress: widget.onLongPress,
-            trailing: isMobile(context)
-                ? Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: iconWidget,
-                  )
-                : null,
+            // trailing: uiState.isMobile
+            //     ? Padding(
+            //         padding: const EdgeInsets.only(right: 12),
+            //         child: iconWidget,
+            //       )
+            //     : null,
           ),
         ),
       );
@@ -335,6 +314,6 @@ class _ItemWidgetState extends State<ItemWidget> {
     return Row(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[Expanded(child: Text(widget.item.label()))]);
+        children: <Widget>[Expanded(child: Text(widget.item.name()))]);
   }
 }

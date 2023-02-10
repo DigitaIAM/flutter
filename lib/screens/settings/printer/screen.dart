@@ -9,30 +9,32 @@ import 'package:nae_hr/widgets/scaffold_list.dart';
 
 import 'edit.dart';
 
-class Uom extends Entity {
-  static const List<String> ctx = ['uom'];
+class Printer extends Entity {
+  static const List<String> ctx = ['printer'];
 
   static const List<Field> schema = [
     Field('name', StringType()),
+    Field('ip', StringType()),
+    Field('port', StringType()),
   ];
 
   @override
   List<String> route() => ctx;
 
   @override
-  String name() => "uom";
+  String name() => "printer";
 
   @override
-  IconData icon() => Icons.square_foot_rounded;
+  IconData icon() => Icons.print_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
       key: ValueKey('__${name()}_${DateTime.now().toString()}__'),
       ctx: ctx,
-      list: const UomScreen(),
+      list: const PrinterScreen(),
       // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
-      view: UomEdit(
+      view: PrinterEdit(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
         entity: entity,
       ),
@@ -40,13 +42,13 @@ class Uom extends Entity {
   }
 }
 
-class UomScreen extends StatelessWidget {
-  const UomScreen({super.key});
+class PrinterScreen extends StatelessWidget {
+  const PrinterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldList(
-      entityType: Uom.ctx,
+      entityType: Printer.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
         filter: null, //state.productListState.filter,
@@ -65,8 +67,8 @@ class UomListBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MemoryList(
-      ctx: Uom.ctx,
-      cols: Uom.schema,
+      ctx: Printer.ctx,
+      cols: Printer.schema,
     );
   }
 }

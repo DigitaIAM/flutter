@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:nae_hr/api.dart';
@@ -82,8 +83,6 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
 
   @override
   Future<void> close() {
-    print("onClose: ");
-    print(streamSubscription);
     streamSubscription?.cancel();
     return super.close();
   }
@@ -99,8 +98,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
           hasReachedMax: false,
         ));
       }
-      final items =
-          await _fetch(event.serviceName, event.ctx, state.items.length);
+      final items = await _fetch(event.serviceName, event.ctx, state.items.length);
       emit(items.isEmpty
           ? state.copyWith(hasReachedMax: true)
           : state.copyWith(
@@ -116,20 +114,13 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
   }
 
-  Future<List<MemoryItem>> _fetch(String serviceName, List<String> ctx,
-      [int startIndex = 0]) async {
-    print("fetching");
-    print(Api.instance.oid);
+  Future<List<MemoryItem>> _fetch(String serviceName, List<String> ctx, [int startIndex = 0]) async {
     var query = {
       "oid": Api.instance.oid,
       "ctx": ctx,
       "\$skip": '$startIndex',
-      // '$_postLimit'
     };
-    final response =
-        await Api.feathers().find(serviceName: serviceName, query: query);
-    print("response:");
-    print(response);
+    final response = await Api.feathers().find(serviceName: serviceName, query: query);
 
     List<MemoryItem> list = [];
 
@@ -160,11 +151,9 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     print("_onSave: ${event.data.id}");
     print(event.data.json);
     if (event.data.isNew) {
-      return _onCreate(
-          MemoryCreate(event.serviceName, event.ctx, event.data.json), emit);
+      return _onCreate(MemoryCreate(event.serviceName, event.ctx, event.data.json), emit);
     } else {
-      return _onUpdate(
-          MemoryUpdate(event.serviceName, event.ctx, event.data.json), emit);
+      return _onUpdate(MemoryUpdate(event.serviceName, event.ctx, event.data.json), emit);
     }
   }
 
@@ -175,17 +164,22 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       final List<MemoryItem> list = List.from(state.items);
 
       // workaround: update list after save
-      bool notFound = false;
+      bool notFound = true;
       for (int i = 0; i < list.length; i++) {
         final item = list[i];
         if (item.id == saved.id) {
           list[i] = saved;
-          notFound = true;
+          notFound = false;
         }
       }
       if (notFound) {
         list.insert(0, saved);
       }
+
+      print("state: ");
+      print(state);
+      print("list: ");
+      print(list);
 
       return emit(state.copyWith(
         items: list,
@@ -199,14 +193,12 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
   }
 
-  Future<MemoryItem> _create(
-      String serviceName, List<String> ctx, Map<String, dynamic> data) async {
+  Future<MemoryItem> _create(String serviceName, List<String> ctx, Map<String, dynamic> data) async {
     var params = {
       "oid": Api.instance.oid,
       "ctx": ctx,
     };
-    final response = await Api.feathers()
-        .create(serviceName: serviceName, data: data, params: params);
+    final response = await Api.feathers().create(serviceName: serviceName, data: data, params: params);
     print("update response:");
     print(response);
 
@@ -242,15 +234,13 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
   }
 
-  Future<MemoryItem> _update(
-      String serviceName, List<String> ctx, Map<String, dynamic> data) async {
+  Future<MemoryItem> _update(String serviceName, List<String> ctx, Map<String, dynamic> data) async {
     var params = {
       "oid": Api.instance.oid,
       "ctx": ctx,
     };
     final id = data["_id"] as String;
-    final response = await Api.feathers().update(
-        serviceName: serviceName, objectId: id, data: data, params: params);
+    final response = await Api.feathers().update(serviceName: serviceName, objectId: id, data: data, params: params);
     print("update response:");
     print(response);
 
@@ -286,15 +276,13 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
   }
 
-  Future<MemoryItem> _patch(
-      String serviceName, List<String> ctx, Map<String, dynamic> data) async {
+  Future<MemoryItem> _patch(String serviceName, List<String> ctx, Map<String, dynamic> data) async {
     var params = {
       "oid": Api.instance.oid,
       "ctx": ctx,
     };
     final id = data["_id"] as String;
-    final response = await Api.feathers().patch(
-        serviceName: serviceName, objectId: id, data: data, params: params);
+    final response = await Api.feathers().patch(serviceName: serviceName, objectId: id, data: data, params: params);
     print("patch response:");
     print(response);
 
@@ -304,8 +292,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     );
   }
 
-  Future<void> _onCreated(
-      MemoryCreated event, Emitter<RequestState> emit) async {
+  Future<void> _onCreated(MemoryCreated event, Emitter<RequestState> emit) async {
     print("_onCreated");
     print(event.item.json);
 
@@ -325,8 +312,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     ));
   }
 
-  Future<void> _onUpdated(
-      MemoryUpdated event, Emitter<RequestState> emit) async {
+  Future<void> _onUpdated(MemoryUpdated event, Emitter<RequestState> emit) async {
     print("_onUpdated");
     print(event.item.json);
 

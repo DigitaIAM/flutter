@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae_hr/app_localizations.dart';
 import 'package:nae_hr/constants.dart';
-import 'package:nae_hr/core/platform.dart';
 import 'package:nae_hr/models/memory/item.dart';
 import 'package:nae_hr/models/ui/bloc.dart';
 import 'package:nae_hr/models/ui/event.dart';
 import 'package:nae_hr/widgets/icon_text.dart';
 import 'package:nae_hr/widgets/menu_drawer_builder.dart';
-import 'package:provider/provider.dart';
+
+import '../models/ui/state.dart';
 
 class ScaffoldList extends StatelessWidget {
   const ScaffoldList({
@@ -28,55 +29,51 @@ class ScaffoldList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
-    final uiState = context.read<UiBloc>().state; // TODO move to builder
 
-    Widget leading = const SizedBox();
-    if (isMobile(context) || uiState.isMenuFloated) {
-      leading = Builder(
-        builder: (context) => InkWell(
-          onLongPress: onHamburgerLongPress,
-          child: IconButton(
-            tooltip: localization.translate("menuSidebar"),
-            icon: const Icon(Icons.menu),
+    return BlocBuilder<UiBloc, UiState>(builder: (context, uiState) {
+      Widget leading = const SizedBox();
+      if (uiState.isMobile || uiState.isMenuFloated) {
+        leading = Builder(
+          builder: (context) => InkWell(
+            onLongPress: onHamburgerLongPress,
+            child: IconButton(
+              tooltip: localization.translate("menuSidebar"),
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
+          ),
+        );
+      } else if (entityType != null) {
+        // TODO check can create
+        leading = Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          child: OutlinedButton(
+            // style: ButtonStyle(
+            //   backgroundColor: MaterialStateProperty.all(theme.primaryColor)
+            // ),
             onPressed: () {
-              Scaffold.of(context).openDrawer();
+              context.read<UiBloc>().add(ChangeView(entityType, action: 'edit', entity: MemoryItem.create()));
             },
+            child: IconText(
+              text: localization.translate("create"),
+              icon: Icons.add,
+              // style: const TextStyle(color: Colors.white),
+            ),
           ),
-        ),
-      );
-    } else if (entityType != null) {
-      // TODO check can create
-      leading = Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-        child: OutlinedButton(
-          // style: ButtonStyle(
-          //   backgroundColor: MaterialStateProperty.all(theme.primaryColor)
-          // ),
-          onPressed: () {
-            context.read<UiBloc>().add(ChangeView(entityType,
-                action: 'edit', entity: MemoryItem.create()));
-          },
-          child: IconText(
-            text: localization.translate("create"),
-            icon: Icons.add,
-            // style: const TextStyle(color: Colors.white),
-          ),
-        ),
-      );
-    }
+        );
+      }
 
-    double leadingWidth = (isDesktop(context) ? 100 : 10) +
-        (cMinInteractiveDimension * (isMobile(context) ? 1 : 2));
+      double leadingWidth = (uiState.isDesktop ? 100 : 10) + (cMinInteractiveDimension * (uiState.isMobile ? 1 : 2));
 
-    return WillPopScope(
+      return WillPopScope(
         onWillPop: () async {
           // store.dispatch(ViewDashboard());
           return false;
         },
         child: Scaffold(
-          drawer: isMobile(context) || uiState.isMenuFloated
-              ? const MenuDrawerBuilder()
-              : null,
+          drawer: uiState.isMobile || uiState.isMenuFloated ? const MenuDrawerBuilder() : null,
           appBar: AppBar(
               centerTitle: false,
               automaticallyImplyLeading: false,
@@ -88,6 +85,8 @@ class ScaffoldList extends StatelessWidget {
           body: ClipRect(
             child: body,
           ),
-        ));
+        ),
+      );
+    });
   }
 }

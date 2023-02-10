@@ -9,8 +9,8 @@ import 'package:nae_hr/widgets/scaffold_list.dart';
 
 import 'edit.dart';
 
-class Uom extends Entity {
-  static const List<String> ctx = ['uom'];
+class Person extends Entity {
+  static const List<String> ctx = ['person'];
 
   static const List<Field> schema = [
     Field('name', StringType()),
@@ -20,10 +20,10 @@ class Uom extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "uom";
+  String name() => "person";
 
   @override
-  IconData icon() => Icons.square_foot_rounded;
+  IconData icon() => Icons.person_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {
@@ -32,7 +32,7 @@ class Uom extends Entity {
       ctx: ctx,
       list: const UomScreen(),
       // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
-      view: UomEdit(
+      view: PersonEdit(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
         entity: entity,
       ),
@@ -46,7 +46,7 @@ class UomScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScaffoldList(
-      entityType: Uom.ctx,
+      entityType: Person.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
         filter: null, //state.productListState.filter,
@@ -65,8 +65,8 @@ class UomListBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MemoryList(
-      ctx: Uom.ctx,
-      cols: Uom.schema,
+      ctx: Person.ctx,
+      cols: Person.schema,
     );
   }
 }

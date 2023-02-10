@@ -53,11 +53,22 @@
   "create": "создать",
 
   "production orders": "наряды",
+  "production order": "наряд",
   "overview": "обзор",
   "task": "задача",
   "production": "изготовление",
   "products": "изделия",
   "product": "изделие",
+  "part number": "артикул",
   "uoms": "единицы измерения",
-  "uom": "ед.изм."
+  "uom": "ед.изм.",
+
+  "area": "участок",
+  "qty in box": "колво в коробке",
+
+  "printer": "принтер",
+  "customer": "заказчик",
+  "label": "этикетка",
+  "operator": "оператор",
+  "control": "контролёр"
 }

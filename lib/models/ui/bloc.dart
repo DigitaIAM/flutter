@@ -1,5 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:flutter/material.dart';
+import 'package:nae_hr/core/platform.dart';
 import 'package:nae_hr/models/ui/event.dart';
 import 'package:nae_hr/models/ui/state.dart';
 import 'package:stream_transform/stream_transform.dart';
@@ -13,9 +15,13 @@ EventTransformer<E> throttleDroppable<E>(Duration duration) {
 }
 
 class UiBloc extends Bloc<UiEvent, UiState> {
-  UiBloc() : super(const UiState()) {
+  UiBloc()
+      : super(UiState(
+            isDesktop: isDesktopOS() || isWeb(),
+            mediaQueryData: MediaQueryData.fromWindow(WidgetsBinding.instance.window))) {
     on<ChangeView>(
       (ChangeView event, Emitter<UiState> emit) {
+        print("on ChangeView $event");
         emit(state.copyWith(
           currentRoute: event.ctx.isNotEmpty ? event.ctx : state.currentRoute,
           action: event.action,

@@ -1,60 +1,63 @@
-
-import 'package:flutter/material.dart';
 import 'package:nae_hr/printer/network_printer.dart';
 
 class Labels {
-  void testPrint(BuildContext ctx) async {
+  static Future<PrintResult> connect(String ip, int port, Future<PrintResult> Function(NetworkPrinter) onReady) async {
     print("connecting");
     // const PaperSize paper = PaperSize.mm80;
     // final profile = await CapabilityProfile.load();
     final printer = NetworkPrinter(); // paper, profile);
-    final PrintResult res = await printer.connect('192.168.3.239', port: 9100);
+    final PrintResult res = await printer.connect(ip, port: port);
 
     if (res == PrintResult.success) {
-      testReceipt(printer);
-      printer.disconnect();
+      try {
+        final res2 = await onReady(printer);
+        print('Printed with result: ${res.msg}');
+
+        return res2;
+      } finally {
+        printer.disconnect();
+      }
     }
 
     print('Print result: ${res.msg}');
 
+    return res;
   }
 
-  void testReceipt(NetworkPrinter printer) {
+  static void lines(NetworkPrinter printer, String id, Map<String, String> data) {
     printer.clear();
     printer.codepage(name: "1251");
     printer.direction();
 
-    printer.qrcode(450, 10, "https://product.midasplastics.uz/2023-01-26T08:19:33.981Z", cellWidth: 8);
+    printer.text(20, 50, "OOO", font: "5", mx: 1, my: 1);
+    printer.text(20, 120, "Midas", font: "5", mx: 1, my: 1);
+    printer.text(20, 190, "Plastics", font: "5", mx: 1, my: 1);
 
-    final data = {
-      "продукция": "стакан полипропиленовый",
-      "артикуль": "110 Д95 КЭ 420",
-      "дата": "24 Января 2023",
-      "количество": "640 шт",
-      "line1": "",
-      "заказчик": "PureMilky",
-      "этикетка": "каймак 330",
-      "line2": "",
-      "оператор": "Кулмурадов",
-      "проверил": "Орипов",
-    };
+    printer.dmatrix(20, 260, 144, 144, id);
+
+    printer.qrcode(450, 50, id, cellWidth: 7);
+    printer.text(780, 50, id, font: "2", mx: 1, my: 1, rotation: 90); // alignment: 3,
+    printer.bar(750, 10, 2, 780);
+
+    // printer.qrcode(
+    //     450, 10, "https://product.midasplastics.uz/2023-01-26T08:19:33.981Z",
+    //     cellWidth: 8);
 
     // printer.text(10, 10, "Test Test");
     var y = 370;
+    printer.bar(5, y - 1, 740, 3);
+    y += 10;
+
     for (final entry in data.entries) {
       final name = entry.key;
       final value = entry.value;
 
       if (name.startsWith("line")) {
-        printer.bar(0,y-2,800,4);
-        y += 12;
+        printer.bar(5, y - 1, 740, 3);
+        y += 10;
       } else {
-        printer.text(
-            195, y, "$name:", font: "3", mx: 1, my: 1, alignment: 3
-        );
-        printer.text(
-            195, y, " $value", font: "4", mx: 1, my: 1
-        );
+        printer.text(195, y, "$name:", font: "3", mx: 1, my: 1, alignment: 3);
+        printer.text(180, y, " $value", font: "4", mx: 1, my: 1);
         y += 50;
       }
     }

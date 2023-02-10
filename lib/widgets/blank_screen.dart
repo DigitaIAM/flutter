@@ -1,7 +1,9 @@
-
 import 'package:flutter/material.dart';
-import 'package:nae_hr/core/platform.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nae_hr/models/ui/bloc.dart';
 import 'package:nae_hr/widgets/help_text.dart';
+
+import '../models/ui/state.dart';
 
 class BlankScreen extends StatelessWidget {
   final String? message;
@@ -10,16 +12,16 @@ class BlankScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        automaticallyImplyLeading: isMobile(context),
-      ),
-      body: Container(
-        color: Theme.of(context).cardColor,
-        child: HelpText(message: message ?? ''),
-      ),
-    );
+    return BlocBuilder<UiBloc, UiState>(
+        builder: (context, uiState) => Scaffold(
+              appBar: AppBar(
+                centerTitle: false,
+                automaticallyImplyLeading: uiState.isMobile,
+              ),
+              body: Container(
+                color: Theme.of(context).cardColor,
+                child: HelpText(message: message ?? ''),
+              ),
+            ));
   }
-
 }

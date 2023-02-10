@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae_hr/app_localizations.dart';
-import 'package:nae_hr/core/platform.dart';
 import 'package:nae_hr/models/memory/bloc.dart';
 import 'package:nae_hr/models/memory/item.dart';
 import 'package:nae_hr/models/memory/state.dart';
+import 'package:nae_hr/models/ui/bloc.dart';
 import 'package:nae_hr/widgets/menu_drawer_builder.dart';
 import 'package:nae_hr/widgets/save_cancel_buttons.dart';
+
+import '../models/ui/state.dart';
 
 class EditScaffold extends StatelessWidget {
   const EditScaffold(
@@ -32,12 +33,9 @@ class EditScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localization = AppLocalizations.of(context);
-    bool isEnabled = true; // !uiState.isSaving && (entity?.isEditable ?? true);
     bool isCancelEnabled = false;
 
-    final showOverflow =
-        false; // TODO isDesktop(context) && uiState.isFullScreen;
+    final showOverflow = false; // TODO isDesktop(context) && uiState.isFullScreen;
 
     return WillPopScope(
         onWillPop: () async {
@@ -45,16 +43,13 @@ class EditScaffold extends StatelessWidget {
         },
         child: Focus(
             onKey: (node, event) {
-              if (LogicalKeySet(LogicalKeyboardKey.escape)
-                  .accepts(event, RawKeyboard.instance)) {
+              if (LogicalKeySet(LogicalKeyboardKey.escape).accepts(event, RawKeyboard.instance)) {
                 onClose(context);
 
                 return KeyEventResult.handled;
-              } else if (LogicalKeySet(
-                          LogicalKeyboardKey.meta, LogicalKeyboardKey.keyS)
+              } else if (LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyS)
                       .accepts(event, RawKeyboard.instance) ||
-                  const SingleActivator(LogicalKeyboardKey.keyS, control: true)
-                      .accepts(event, RawKeyboard.instance)) {
+                  const SingleActivator(LogicalKeyboardKey.keyS, control: true).accepts(event, RawKeyboard.instance)) {
                 print("ctrl+s");
                 onSave?.call(context);
 
@@ -62,26 +57,19 @@ class EditScaffold extends StatelessWidget {
               }
               return KeyEventResult.ignored;
             },
-            child: Builder(
-                builder: (context) => FocusTraversalGroup(
+            child: BlocBuilder<UiBloc, UiState>(
+                builder: (context, uiState) => FocusTraversalGroup(
                     child: BlocBuilder<MemoryBloc, RequestState>(
                         builder: (context, memState) => Scaffold(
-                            drawer: isDesktop(context)
-                                ? const MenuDrawerBuilder()
-                                : null,
+                            drawer: uiState.isDesktop ? const MenuDrawerBuilder() : null,
                             appBar: AppBar(
                                 centerTitle: false,
-                                automaticallyImplyLeading: isMobile(context),
+                                automaticallyImplyLeading: uiState.isMobile,
                                 title: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      if (showOverflow)
-                                        Text(title)
-                                      else
-                                        Flexible(child: Text(title)),
+                                      if (showOverflow) Text(title) else Flexible(child: Text(title)),
                                     ]),
                                 actions: [
                                   // if (isMobile(context))
@@ -92,23 +80,19 @@ class EditScaffold extends StatelessWidget {
                                           child: SizedBox(
                                         width: 26,
                                         height: 26,
-                                        child: CircularProgressIndicator(
-                                            color: Colors.white),
+                                        child: CircularProgressIndicator(color: Colors.white),
                                       )),
                                     )
                                   else
                                     SaveCancelButtons(
-                                        isEnabled: isEnabled && onSave != null,
+                                        isEnabled: isEnabled(memState) && onSave != null,
                                         isHeader: true,
                                         isCancelEnabled: isCancelEnabled,
                                         saveLabel: saveLabel,
-                                        cancelLabel:
-                                            localization.translate("cancel"),
                                         onSave: (context) {
                                           // prevent form become changed and to hide the keyboard
-                                          FocusScope.of(context).unfocus(
-                                              disposition: UnfocusDisposition
-                                                  .previouslyFocusedChild);
+                                          FocusScope.of(context)
+                                              .unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
                                           onSave?.call(context);
                                         },
                                         onCancel: (context) {
@@ -120,14 +104,17 @@ class EditScaffold extends StatelessWidget {
                                   //     children: []
                                   //   )
                                 ]),
-                            body: Stack(
-                                alignment: Alignment.topCenter,
-                                children: [
-                                  Column(children: [
-                                    Expanded(
-                                      child: body,
-                                    ),
-                                  ])
-                                ])))))));
+                            body: Stack(alignment: Alignment.topCenter, children: [
+                              Column(children: [
+                                Expanded(
+                                  child: body,
+                                ),
+                              ])
+                            ])))))));
+  }
+
+  bool isEnabled(RequestState state) {
+    // entity?.isEditable ?? true
+    return state.saveStatus == SaveStatus.ready || state.saveStatus == SaveStatus.failure;
   }
 }

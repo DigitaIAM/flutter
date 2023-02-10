@@ -1,14 +1,12 @@
-import 'dart:io';
 import 'dart:async';
+import 'dart:io';
+
 import 'package:windows1251/windows1251.dart';
 
 class NetworkPrinter {
   late Socket _socket;
 
-  Future<PrintResult> connect(String host, {
-    int port = 9100,
-    Duration timeout = const Duration(seconds: 15)
-  }) async {
+  Future<PrintResult> connect(String host, {int port = 9100, Duration timeout = const Duration(seconds: 15)}) async {
     try {
       _socket = await Socket.connect(host, port, timeout: timeout);
       // _socket.add(_generator.reset());
@@ -61,19 +59,16 @@ class NetworkPrinter {
   void bar(int x, int y, int width, int height) {
     sendCommand('BAR $x,$y,$width,$height \r\n');
   }
-  void barcode(int x, int y, String content, {
-    String code_type = '128',
-    int height = 100,
-    int human_readable = 1,
-    int rotation = 0,
-    int narrow = 2,
-    int wide = 2,
-  }) {
-    sendCommand('BARCODE $x,$y, "$code_type", $height,$human_readable,$rotation,$narrow,$wide, "$content" \r\n');
+
+  void dmatrix(int x, int y, int width, int height, String content) {
+    sendCommand('DMATRIX $x,$y,$width,$height, "$content" \r\n');
   }
 
   // QRCODE x,y,ECC Level,cell width,mode,rotation,[justification,]model,]mask,]area],]length]"content"
-  void qrcode(int x, int y, String content, {
+  void qrcode(
+    int x,
+    int y,
+    String content, {
     String eccLevel = 'H',
     int cellWidth = 4,
     String mode = 'A',
@@ -82,18 +77,12 @@ class NetworkPrinter {
     sendCommand('QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,"$content"\r\n');
   }
 
-
-  void text(int x, int y, String content, {
-    String font = "1",
-    int rotation: 0,
-    int mx = 1,
-    int my = 1,
-    int alignment = 0
-    // 0 : Default (Left)
-    // 1 : Left
-    // 2 : Center
-    // 3 : Right
-  }) {
+  void text(int x, int y, String content, {String font = "1", int rotation: 0, int mx = 1, int my = 1, int alignment = 0
+      // 0 : Default (Left)
+      // 1 : Left
+      // 2 : Center
+      // 3 : Right
+      }) {
     sendCommand('TEXT $x,$y,"$font",$rotation,$mx,$my,$alignment,"$content"\r\n');
   }
 
@@ -105,7 +94,7 @@ class NetworkPrinter {
     sendCommand('CUT \r\n');
   }
 
-  void print_({int copies = 1 }) {
+  void print_({int copies = 1}) {
     sendCommand('PRINT $copies \r\n');
   }
 }
