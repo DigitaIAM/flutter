@@ -45,5 +45,30 @@
   "cameras": "Камеры",
   "settings": "Настройки",
   "login": "Войти",
-  "logout": "Выйти"
+  "logout": "Выйти",
+
+  "failed to fetch data": "не удалось получить данные",
+  "nothing yet": "пока пусто",
+
+  "create": "создать",
+
+  "production orders": "наряды",
+  "production order": "наряд",
+  "overview": "обзор",
+  "task": "задача",
+  "production": "изготовление",
+  "products": "изделия",
+  "product": "изделие",
+  "part number": "артикул",
+  "uoms": "единицы измерения",
+  "uom": "ед.изм.",
+
+  "area": "участок",
+  "qty in box": "колво в коробке",
+
+  "printer": "принтер",
+  "customer": "заказчик",
+  "label": "этикетка",
+  "operator": "оператор",
+  "control": "контролёр"
 }

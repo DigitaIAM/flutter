@@ -45,5 +45,30 @@
   "cameras": "Cameras",
   "settings": "Settings",
   "login": "Login",
-  "logout": "Logout"
+  "logout": "Logout",
+
+  "failed to fetch data": "failed to fetch data",
+  "nothing yet": "nothing yet",
+
+  "create": "create",
+
+  "production orders": "production orders",
+  "production order": "production order",
+  "overview": "overview",
+  "task": "task",
+  "production": "production",
+  "products": "products",
+  "product": "product",
+  "part number": "part number",
+  "uoms": "unit of measure",
+  "uom": "UoM",
+
+  "area": "area",
+  "qty in box": "qty in box",
+
+  "printer": "printer",
+  "customer": "customer",
+  "label": "label",
+  "operator": "operator",
+  "control": "control"
 }

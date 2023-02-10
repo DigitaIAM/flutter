@@ -45,5 +45,14 @@
   "cameras": "Cameras",
   "settings": "Settings",
   "login": "Login",
-  "logout": "Logout"
+  "logout": "Logout",
+
+  "production orders": "production orders",
+  "overview": "overview",
+  "task": "task",
+  "production": "production",
+  "products": "products",
+  "product": "product",
+  "uoms": "unit of measure",
+  "uom": "UoM"
 }
