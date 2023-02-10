@@ -39,7 +39,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
     // final state = widget.viewModel.state;
     _controller = TabController(
         vsync: this, length: 2, initialIndex: 0 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
-        );
+    );
     _controller.addListener(_onTabChanged);
   }
 
@@ -269,8 +269,15 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
       final date = data['date'] ?? '';
       final customer = data['customer'] ?? '';
       final label = data['label'] ?? '';
-      final operator = data['operator']['name'] ?? '';
-      final control = data['control']['name'] ?? '';
+
+      final operator = data['operator'];
+      final operatorId = operator['_id'] ?? '';
+      final operatorName = operator['name'] ?? '';
+
+      final control = data['control'];
+      final controlId = control['_id'] ?? '';
+      final controlName = control['name'] ?? '';
+
       final qty = data['qty'] ?? 0;
 
       final result = await Labels.connect(ip, port, (printer) async {
@@ -278,8 +285,8 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
         final record = await Api.feathers().create(serviceName: 'memories', data: {
           'order': orderId,
           'date': date,
-          'operator': operator,
-          'control': control,
+          'operator': operatorId,
+          'control': controlId,
           'qty': qty
         }, params: {
           'oid': Api.instance.oid,
@@ -298,8 +305,8 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
           "дата": dd,
           "количество": "$qty шт",
           "line1": "",
-          "оператор": operator, // "Кулмурадов",
-          "проверил": control, // "Орипов",
+          "оператор": operatorName, // "Кулмурадов",
+          "проверил": controlName, // "Орипов",
           "line2": "",
           "этикетка": label,
           "заказчик": customer,

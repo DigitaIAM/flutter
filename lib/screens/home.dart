@@ -15,29 +15,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late UiBloc bloc;
-
-  @override
-  void initState() {
-    super.initState();
-    bloc = UiBloc();
-  }
-
-  @override
-  void dispose() {
-    bloc.close();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => bloc, // UiBloc(),
-      child: SafeArea(
+    return BlocBuilder<UiBloc, UiState>(
+      builder: (context, uiState) => SafeArea(
         child: Column(children: [
           Expanded(
             child: ChangeLayoutBanner(
-              child: Builder(builder: (context) => content(context)),
+              child: content(context, uiState),
             ),
           ),
         ]),
@@ -45,19 +30,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget content(BuildContext context) {
+  Widget content(BuildContext context, UiState uiState) {
     bool showFilterSidebar = false;
 
-    return BlocBuilder<UiBloc, UiState>(
-      builder: (context, uiState) => Row(children: <Widget>[
-        if (uiState.showMenu) const MenuDrawerBuilder(),
-        Expanded(
-          child: AppBorder(
-            isLeft: uiState.showMenu && (!uiState.isFullScreen || showFilterSidebar),
-            child: uiState.entityScreen(),
-          ),
+    return Row(children: <Widget>[
+      if (uiState.showMenu) const MenuDrawerBuilder(),
+      Expanded(
+        child: AppBorder(
+          isLeft: uiState.showMenu && (!uiState.isFullScreen || showFilterSidebar),
+          child: uiState.entityScreen(),
         ),
-      ]),
-    );
+      ),
+    ]);
   }
 }

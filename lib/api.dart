@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_feathersjs/flutter_feathersjs.dart';
 
 class Api {
-  // static const String server = "https://data.nss.uz";
-  static const String server = "http://localhost:3030";
+  static const String server = "https://data.animi.dev";
+
+  // static const String server = "http://10.0.2.2:3030";
+  // static const String server = "http://localhost:3030";
 
   static final Api instance = Api._internal();
 
@@ -15,19 +18,21 @@ class Api {
   }
 
   static FlutterFeathersjs feathers() {
-    return instance.flutterFeathersjs;
+    return instance.connection;
   }
 
-  late FlutterFeathersjs flutterFeathersjs;
+  late FlutterFeathersjs connection;
 
   factory Api() {
     return instance;
   }
 
   Api._internal() {
-    print("creating Feathers");
-    flutterFeathersjs = FlutterFeathersjs();
-    flutterFeathersjs.init(baseUrl: server);
+    if (kDebugMode) {
+      print("creating Feathers for $server");
+    }
+    connection = FlutterFeathersjs();
+    connection.init(baseUrl: server);
 
     // flutterFeathersjs.listen(serviceName: "memories", fromJson: (e) {
     //   print("listen event: ");
