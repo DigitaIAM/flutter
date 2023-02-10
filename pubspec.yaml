@@ -54,15 +54,16 @@ dependencies:
 
   #flutter_feathersjs: ^4.0.5+1
   flutter_feathersjs:
-    path: ../flutter_feathersjs.dart
+    git: https://github.com/DigitaIAM/flutter_feathersjs.dart
+    #path: ../flutter_feathersjs.dart
   http: ^0.13.5
   mime: ^1.0.4
   http_parser: ^4.0.2
 
-#  flutter_redux: ^0.10.0
-#  get_it: ^7.2.0
+  #flutter_redux: ^0.10.0
+  #get_it: ^7.2.0
 
-#  copy_with_extension_gen: ^5.0.0
+  #copy_with_extension_gen: ^5.0.0
   bloc_concurrency: ^0.2.1
   flutter_bloc: ^8.1.2
   stream_transform: ^2.1.0
@@ -71,25 +72,25 @@ dependencies:
   flutter_screenutil: ^5.6.1
   overflow_view: ^0.3.1
   adaptive_breakpoints: ^0.1.6
-#  dual_screen: ^1.0.3
+  #dual_screen: ^1.0.3
   side_navigation: ^1.0.4
   pluto_grid: ^5.4.9
   dropdown_search: ^5.0.5
-#  reactive_forms: ^14.2.0
+  #reactive_forms: ^14.2.0
   flutter_form_builder: ^7.7.0
-#  form_builder_extra_fields: ^8.3.0
-#  flutter_chips_input: # workaround for https://github.com/danvick/flutter_chips_input/issues/136
-#    git: https://github.com/bradintheusa/flutter_chips_input
+  #form_builder_extra_fields: ^8.3.0
+  #flutter_chips_input: # workaround for https://github.com/danvick/flutter_chips_input/issues/136
+  #  git: https://github.com/bradintheusa/flutter_chips_input
   form_builder_validators: ^8.4.0
   equatable: ^2.0.5
-#  flutter_wall_layout: ^2.1.1
-#  docking: ^1.5.0
-#  xml_layout: ^2.3.15
+  #flutter_wall_layout: ^2.1.1
+  #docking: ^1.5.0
+  #xml_layout: ^2.3.15
 
   image: ^4.0.13
-#  flutter_pos_printer_platform: ^1.0.12
-#  esc_pos_printer: ^4.1.0
-#  esc_pos_utils: ^1.1.0
+  #flutter_pos_printer_platform: ^1.0.12
+  #esc_pos_printer: ^4.1.0
+  #esc_pos_utils: ^1.1.0
   windows1251: ^1.0.2
 
   flutter_localizations:
@@ -122,10 +123,10 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-     - lang/en.json
-     - lang/ru.json
-     - lang/uz.json
-     - lang/tj.json
+    - lang/en.json
+    - lang/ru.json
+    - lang/uz.json
+    - lang/tj.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

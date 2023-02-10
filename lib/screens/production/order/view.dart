@@ -39,7 +39,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
     // final state = widget.viewModel.state;
     _controller = TabController(
         vsync: this, length: 2, initialIndex: 0 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
-    );
+        );
     _controller.addListener(_onTabChanged);
   }
 
@@ -305,8 +305,8 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
           "дата": dd,
           "количество": "$qty шт",
           "line1": "",
-          "оператор": operatorName, // "Кулмурадов",
-          "проверил": controlName, // "Орипов",
+          "оператор": operatorName,
+          "проверил": controlName,
           "line2": "",
           "этикетка": label,
           "заказчик": customer,

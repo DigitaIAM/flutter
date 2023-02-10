@@ -361,9 +361,11 @@ packages:
   flutter_feathersjs:
     dependency: "direct main"
     description:
-      path: "../flutter_feathersjs.dart"
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "8bcdba439b8853d26fcf4cfbbc6009c8bca5526a"
+      url: "https://github.com/DigitaIAM/flutter_feathersjs.dart"
+    source: git
     version: "4.1.2-dev"
   flutter_form_builder:
     dependency: "direct main"
