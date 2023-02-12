@@ -66,7 +66,7 @@ class ProductionAreaListBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MemoryList(
       ctx: ProductionArea.ctx,
-      cols: ProductionArea.schema,
+      schema: ProductionArea.schema,
     );
   }
 }

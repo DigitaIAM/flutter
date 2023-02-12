@@ -68,7 +68,7 @@ class UomListBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MemoryList(
       ctx: Printer.ctx,
-      cols: Printer.schema,
+      schema: Printer.schema,
     );
   }
 }

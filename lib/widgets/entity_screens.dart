@@ -5,6 +5,7 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/state.dart';
+import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/app_border.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:provider/provider.dart';
@@ -21,16 +22,17 @@ abstract class EntityHolder extends StatefulWidget {
 
 class EntityScreens extends StatelessWidget {
   final List<String> ctx;
+  final List<Field>? schema;
   final Widget list;
   final EntityHolder view;
 
-  const EntityScreens({super.key, required this.ctx, required this.list, required this.view});
+  const EntityScreens({super.key, required this.ctx, required this.list, required this.view, this.schema});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<UiBloc, UiState>(
         builder: (context, uiState) => MemoryBlocHolder(
-            init: (bloc) => ctx.isNotEmpty ? bloc.add(MemoryFetch("memories", ctx)) : null,
+            init: (bloc) => ctx.isNotEmpty ? bloc.add(MemoryFetch("memories", ctx, schema: schema)) : null,
             child: Row(children: uiState.isFullScreen ? smallScreen(context, uiState) : bigScreen(context, uiState))));
   }
 

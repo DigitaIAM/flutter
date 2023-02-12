@@ -8,7 +8,8 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:stream_transform/stream_transform.dart';
 
-// const _postLimit = 20;
+import '../../utils/cache.dart';
+
 const throttleDuration = Duration(milliseconds: 100);
 
 EventTransformer<E> throttleDroppable<E>(Duration duration) {
@@ -91,14 +92,27 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     if (state.hasReachedMax) return;
     try {
       if (state.status == RequestStatus.loading) {
-        final items = await _fetch(event.serviceName, event.ctx);
-        return emit(state.copyWith(
-          status: RequestStatus.success,
-          items: items,
-          hasReachedMax: false,
-        ));
+        // reset cache
+        Cache().clear();
       }
+      // if (state.status == RequestStatus.loading) {
+      //   final items = await _fetch(event.serviceName, event.ctx);
+      //   return emit(state.copyWith(
+      //     status: RequestStatus.success,
+      //     items: items,
+      //     hasReachedMax: false,
+      //   ));
+      // }
       final items = await _fetch(event.serviceName, event.ctx, state.items.length);
+
+      // enrich
+      if (event.schema != null) {
+        for (int i = 0; i < items.length; i++) {
+          final item = items[i];
+          items[i] = await item.enrich(event.schema!);
+        }
+      }
+
       emit(items.isEmpty
           ? state.copyWith(hasReachedMax: true)
           : state.copyWith(

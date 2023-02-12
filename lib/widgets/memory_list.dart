@@ -56,9 +56,9 @@ class _MemoryBlocHolderState extends State<MemoryBlocHolder> {
 
 class MemoryList extends StatefulWidget {
   final List<String> ctx;
-  final List<Field> cols;
+  final List<Field> schema;
 
-  const MemoryList({super.key, required this.ctx, required this.cols});
+  const MemoryList({super.key, required this.ctx, required this.schema});
 
   @override
   State<StatefulWidget> createState() => _MemoryListState();
@@ -188,7 +188,7 @@ class _MemoryListState extends State<MemoryList> {
   Widget listOrTable() {
     final localization = AppLocalizations.of(context);
 
-    final List<PlutoColumn> columns = widget.cols.map((field) {
+    final List<PlutoColumn> columns = widget.schema.map((field) {
       PlutoColumnType type = PlutoColumnType.text();
       if (field.type is NumberType) {
         type = PlutoColumnType.number();
@@ -217,8 +217,17 @@ class _MemoryListState extends State<MemoryList> {
             final cells = {
               '_memory_': PlutoCell(value: item),
             };
-            for (final field in widget.cols) {
-              cells[field.name] = PlutoCell(value: item.json[field.name] ?? "");
+            for (final field in widget.schema) {
+              if (field.type is ReferenceType) {
+                String label = '';
+                final ref = item.json[field.name];
+                if (ref is MemoryItem) {
+                  label = ref.json['name'] ?? '';
+                }
+                cells[field.name] = PlutoCell(value: label);
+              } else {
+                cells[field.name] = PlutoCell(value: item.json[field.name] ?? "");
+              }
             }
             return PlutoRow(cells: cells);
           }));
@@ -277,7 +286,7 @@ class _MemoryListState extends State<MemoryList> {
         print(event);
         stateManager = event.stateManager;
         // stateManager.setShowColumnFilter(true);
-        stateManager?.setSelectingMode(PlutoGridSelectingMode.none);
+        stateManager?.setSelectingMode(PlutoGridSelectingMode.row);
       },
       onChanged: (PlutoGridOnChangedEvent event) {
         print(event);

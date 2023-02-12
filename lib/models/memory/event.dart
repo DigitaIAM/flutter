@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/schema/schema.dart';
 
 abstract class MemoryEvent extends Equatable {
   @override
@@ -7,10 +8,11 @@ abstract class MemoryEvent extends Equatable {
 }
 
 class MemoryFetch extends MemoryEvent {
-  MemoryFetch(this.serviceName, this.ctx);
+  MemoryFetch(this.serviceName, this.ctx, {this.schema});
 
   final String serviceName;
   final List<String> ctx;
+  final List<Field>? schema;
 }
 
 class MemoryRequest extends MemoryEvent {

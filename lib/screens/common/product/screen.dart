@@ -68,7 +68,7 @@ class ProductListBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MemoryList(
       ctx: Product.ctx,
-      cols: Product.schema,
+      schema: Product.schema,
     );
   }
 }

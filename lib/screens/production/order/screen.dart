@@ -35,6 +35,7 @@ class ProductionOrder extends Entity {
     return EntityScreens(
       key: ValueKey('__${name()}_${DateTime.now().toString()}__'),
       ctx: ctx,
+      schema: schema,
       list: const ProductionOrderScreen(),
       view: action == "edit"
           ? ProductionOrderEdit(
@@ -76,7 +77,7 @@ class ProductionOrdersListBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MemoryList(
       ctx: ProductionOrder.ctx,
-      cols: ProductionOrder.schema,
+      schema: ProductionOrder.schema,
     );
   }
 }
