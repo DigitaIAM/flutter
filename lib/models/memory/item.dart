@@ -48,27 +48,29 @@ class MemoryItem extends Equatable {
         final name = field.name;
         final type = field.type as ReferenceType;
 
-        final String id = copy[name] ?? '';
-        if (id.isNotEmpty) {
-          try {
-            final cached = cache.get(id);
-            if (cached != null) {
-              copy[name] = cached;
-            } else {
-              final response = await Api.feathers().get(serviceName: "memories", objectId: id, params: {
-                "oid": Api.instance.oid,
-                "ctx": type.ctx,
-              });
+        if (copy[name] is! MemoryItem) {
+          final String id = copy[name] ?? '';
+          if (id.isNotEmpty) {
+            try {
+              final cached = cache.get(id);
+              if (cached != null) {
+                copy[name] = cached;
+              } else {
+                final response = await Api.feathers().get(serviceName: "memories", objectId: id, params: {
+                  "oid": Api.instance.oid,
+                  "ctx": type.ctx,
+                });
 
-              final item = MemoryItem(id: id, json: response);
-              cache.add(item);
-              copy[name] = item;
+                final item = MemoryItem(id: id, json: response);
+                cache.add(item);
+                copy[name] = item;
+              }
+            } catch (e) {
+              copy[name] = MemoryItem(id: id, json: const {});
             }
-          } catch (e) {
+          } else {
             copy[name] = MemoryItem(id: id, json: const {});
           }
-        } else {
-          copy[name] = MemoryItem(id: id, json: const {});
         }
       }
     }

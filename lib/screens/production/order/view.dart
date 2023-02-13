@@ -324,7 +324,8 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
             alignment: Alignment.center,
             position: StyledToastPosition.bottom);
       }
-    } catch (e) {
+    } catch (e, stacktrace) {
+      print(stacktrace);
       showToast(e.toString(),
           // context: context,
           axis: Axis.horizontal,
