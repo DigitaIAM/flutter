@@ -74,7 +74,7 @@ class NetworkPrinter {
     String mode = 'A',
     int rotation = 0,
   }) {
-    sendCommand('QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,"$content"\r\n');
+    sendCommand('QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,M2,"$content"\r\n');
   }
 
   void text(int x, int y, String content, {String font = "1", int rotation: 0, int mx = 1, int my = 1, int alignment = 0
@@ -101,6 +101,7 @@ class NetworkPrinter {
 
 class PrintResult {
   const PrintResult._internal(this.value);
+
   final int value;
   static const success = PrintResult._internal(1);
   static const timeout = PrintResult._internal(2);

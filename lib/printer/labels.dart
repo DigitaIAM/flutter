@@ -29,11 +29,11 @@ class Labels {
     printer.codepage(name: "1251");
     printer.direction();
 
-    printer.text(20, 50, "OOO", font: "5", mx: 1, my: 1);
-    printer.text(20, 120, "Midas", font: "5", mx: 1, my: 1);
-    printer.text(20, 190, "Plastics", font: "5", mx: 1, my: 1);
+    // printer.text(20, 50, "OOO", font: "5", mx: 1, my: 1);
+    // printer.text(20, 120, "Midas", font: "5", mx: 1, my: 1);
+    // printer.text(20, 190, "Plastics", font: "5", mx: 1, my: 1);
 
-    printer.dmatrix(20, 260, 144, 144, id);
+    printer.dmatrix(50, 100, 144, 144, id);
 
     printer.qrcode(450, 50, id, cellWidth: 7);
     printer.text(780, 50, id, font: "2", mx: 1, my: 1, rotation: 90); // alignment: 3,
