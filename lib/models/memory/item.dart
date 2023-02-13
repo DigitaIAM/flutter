@@ -39,7 +39,12 @@ class MemoryItem extends Equatable {
 
     final Map<String, dynamic> copy = Map.from(json);
     for (final field in schema) {
-      if (field.type is ReferenceType) {
+      if (field.type is CalculatedType) {
+        final name = field.name;
+        final type = field.type as CalculatedType;
+
+        copy[name] = await type.eval(this);
+      } else if (field.type is ReferenceType) {
         final name = field.name;
         final type = field.type as ReferenceType;
 

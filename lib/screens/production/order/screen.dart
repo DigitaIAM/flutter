@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nae/api.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/schema/schema.dart';
@@ -13,12 +14,49 @@ import 'view.dart';
 class ProductionOrder extends Entity {
   static const List<String> ctx = ['production', 'order'];
 
-  static const List<Field> schema = [
-    Field('date', DateType()),
-    Field('area', ReferenceType(['production', 'area'])),
-    Field('product', ReferenceType(['product'])),
-    Field('planned', NumberType()),
-    Field('produced', CalculatedType()),
+  static final List<Field> schema = [
+    const Field('date', DateType()),
+    const Field('area', ReferenceType(['production', 'area'])),
+    const Field('product', ReferenceType(['product'])),
+    const Field('planned', NumberType()),
+    Field('produced', CalculatedType((MemoryItem order) async {
+      // /production/produce[order == order.id]/sum(qty)
+
+      int result = 0;
+
+      int skip = 0;
+      int total = -1;
+      while (total == -1 || skip < total) {
+        total = 0;
+        final response = await Api.feathers().find(serviceName: 'memories', query: {
+          'oid': Api.instance.oid,
+          'ctx': ['production', 'produce'],
+          'filter': {'order': order.id},
+          '\$skip': skip,
+        });
+        // print(response);
+        total = response['total'];
+        final data = response['data'];
+        if (data is List) {
+          skip += data.length;
+          for (var item in data) {
+            final num = item['qty'];
+            if (num is int) {
+              result += num;
+            } else if (num is String) {
+              result += int.parse(num);
+            } else {
+              // print("num type unknown");
+              // print(num);
+            }
+          }
+        } else {
+          break;
+        }
+      }
+
+      return result.toString();
+    })),
   ];
 
   @override
@@ -75,7 +113,7 @@ class ProductionOrdersListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MemoryList(
+    return MemoryList(
       ctx: ProductionOrder.ctx,
       schema: ProductionOrder.schema,
     );

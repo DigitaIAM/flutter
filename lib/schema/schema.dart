@@ -1,3 +1,5 @@
+import 'package:nae/models/memory/item.dart';
+
 class Field {
   final String name;
   final Type type;
@@ -28,5 +30,7 @@ class ReferenceType extends Type {
 }
 
 class CalculatedType extends Type {
-  const CalculatedType();
+  CalculatedType(this.eval);
+
+  final Future<String> Function(MemoryItem) eval;
 }

@@ -12,11 +12,11 @@ import 'edit.dart';
 class Product extends Entity {
   static const List<String> ctx = ['product'];
 
-  static const List<Field> schema = [
-    Field('name', StringType()),
-    Field('part_number', StringType()),
-    Field('uom', ReferenceType(['uom'])),
-    Field('qty', CalculatedType()),
+  static List<Field> schema = [
+    const Field('name', StringType()),
+    const Field('part_number', StringType()),
+    const Field('uom', ReferenceType(['uom'])),
+    Field('qty', CalculatedType((MemoryItem product) async => "?"))
   ];
 
   @override
@@ -66,7 +66,7 @@ class ProductListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MemoryList(
+    return MemoryList(
       ctx: Product.ctx,
       schema: Product.schema,
     );
