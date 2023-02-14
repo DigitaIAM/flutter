@@ -8,6 +8,7 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
+import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
 import 'package:nae/widgets/app_form_field.dart';
@@ -43,8 +44,6 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      debugPrint(data.toString());
-
       context
           .read<MemoryBloc>()
           .add(MemorySave("memories", ProductionOrder.ctx, MemoryItem(id: widget.entity.id, json: data)));
@@ -79,7 +78,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
         schema: ProductionOrder.schema,
         formKey: _formKey,
         focusNode: _focusNode,
-        entity: widget.entity,
+        entity: getEntity(),
         child: ScrollableListView(children: <Widget>[
           FormCard(isLast: true, children: <Widget>[
             DecoratedFormField(
@@ -128,5 +127,14 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
         ]),
       ),
     );
+  }
+
+  MemoryItem getEntity() {
+    if (widget.entity.isNew && widget.entity.json["date"] == null) {
+      final json = Map.of(widget.entity.json);
+      json["date"] = Utils.today();
+      return MemoryItem(id: widget.entity.id, json: json);
+    }
+    return widget.entity;
   }
 }
