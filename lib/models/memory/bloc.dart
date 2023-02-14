@@ -103,7 +103,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       //     hasReachedMax: false,
       //   ));
       // }
-      final items = await _fetch(event.serviceName, event.ctx, state.items.length);
+      final items = await _fetch(event.serviceName, event.ctx, state.items.length, event.filter);
 
       // enrich
       if (event.schema != null) {
@@ -128,12 +128,18 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
   }
 
-  Future<List<MemoryItem>> _fetch(String serviceName, List<String> ctx, [int startIndex = 0]) async {
+  Future<List<MemoryItem>> _fetch(
+      String serviceName, List<String> ctx, int startIndex, Map<String, String>? filter) async {
     var query = {
       "oid": Api.instance.oid,
       "ctx": ctx,
       "\$skip": '$startIndex',
     };
+
+    if (filter != null && filter.isNotEmpty) {
+      query['filter'] = filter;
+    }
+
     final response = await Api.feathers().find(serviceName: serviceName, query: query);
 
     List<MemoryItem> list = [];
