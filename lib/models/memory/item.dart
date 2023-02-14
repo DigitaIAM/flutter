@@ -18,6 +18,11 @@ class MemoryItem extends Equatable {
   }
 
   String name() {
+    // workaround for product
+    final partNumber = json["part_number"];
+    if (partNumber is String) {
+      return "$partNumber ${json["name"] ?? ""}";
+    }
     return json["name"] ?? "";
   }
 
