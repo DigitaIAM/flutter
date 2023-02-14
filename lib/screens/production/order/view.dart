@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/models/memory/bloc.dart';
+import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
@@ -17,6 +20,7 @@ import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/entity_header.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_divider.dart';
+import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
@@ -86,7 +90,9 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
           Expanded(
             child: TabBarView(controller: _controller, children: <Widget>[
               ProductionOrderOverview(order: widget.entity),
-              ProductionOrderProduced(order: widget.entity),
+              (widget.entity.json["date"] == Utils.today())
+                  ? ProductionOrderProduced(order: widget.entity)
+                  : ProductionOrderProducedView(order: widget.entity),
             ]),
           ),
         ]);
@@ -336,5 +342,26 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
         status = "register";
       });
     }
+  }
+}
+
+class ProductionOrderProducedView extends StatelessWidget {
+  final MemoryItem order;
+
+  const ProductionOrderProducedView({super.key, required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    final ctx = ['production', 'produce'];
+    final schema = [
+      const Field('qty', NumberType()),
+      Field('code', CalculatedType((MemoryItem bag) async {
+        return bag.id.split('T').last;
+      }))
+    ];
+    return BlocProvider(
+        create: (context) =>
+            MemoryBloc()..add(MemoryFetch('memories', ctx, schema: schema, filter: {'order': order.id})),
+        child: MemoryList(ctx: ctx, schema: schema));
   }
 }
