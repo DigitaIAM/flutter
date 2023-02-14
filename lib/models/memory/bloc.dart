@@ -23,8 +23,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     print("init RequestState");
     on<MemorySave>(_onSave);
     on<MemoryFetch>(
-      _onFetched,
-      transformer: throttleDroppable(throttleDuration),
+      _onFetch,
+      // transformer: throttleDroppable(throttleDuration),
     );
     // TODO on<MemoryRequest>(_onRequest);
     on<MemoryCreate>(_onCreate);
@@ -88,7 +88,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     return super.close();
   }
 
-  Future<void> _onFetched(MemoryFetch event, Emitter<RequestState> emit) async {
+  Future<void> _onFetch(MemoryFetch event, Emitter<RequestState> emit) async {
+    // print('_onFetching ${state.hasReachedMax}');
     if (state.hasReachedMax) return;
     try {
       if (state.status == RequestStatus.loading) {
@@ -103,7 +104,10 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       //     hasReachedMax: false,
       //   ));
       // }
+
+      // print('fetching ${state.items.length}');
       final items = await _fetch(event.serviceName, event.ctx, state.items.length, event.filter);
+      // print(items.length);
 
       // enrich
       if (event.schema != null) {
@@ -114,7 +118,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       }
 
       emit(items.isEmpty
-          ? state.copyWith(hasReachedMax: true)
+          ? state.copyWith(status: RequestStatus.success, hasReachedMax: true)
           : state.copyWith(
               status: RequestStatus.success,
               items: List.of(state.items)..addAll(items),
@@ -133,7 +137,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     var query = {
       "oid": Api.instance.oid,
       "ctx": ctx,
-      "\$skip": '$startIndex',
+      "\$skip": startIndex,
     };
 
     if (filter != null && filter.isNotEmpty) {

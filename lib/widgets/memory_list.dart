@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
+import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
@@ -75,112 +76,109 @@ class _MemoryListState extends State<MemoryList> {
     final List<String> actions = [];
 
     return BlocBuilder<UiBloc, UiState>(
-      builder: (_, uiState) => BlocBuilder<MemoryBloc, RequestState>(
-        // init: (bloc) => bloc.add(MemoryFetch("memories", widget.ctx)),
-        builder: (context, state) => RefreshIndicator(
-          onRefresh: () => Future<void>(() => {}), // widget.onRefreshed(context),
-          child: Column(children: [
-            AnimatedContainer(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              color: Theme.of(context).cardColor,
-              height: 0,
-              // isInMultiselect ? kTopBottomBarHeight : 0,
+      builder: (_, uiState) => RefreshIndicator(
+        onRefresh: () => Future<void>(() => {}), // widget.onRefreshed(context),
+        child: Column(children: [
+          AnimatedContainer(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            color: Theme.of(context).cardColor,
+            height: 0,
+            // isInMultiselect ? kTopBottomBarHeight : 0,
+            duration: const Duration(milliseconds: cAnimationDuration),
+            curve: Curves.easeInOutCubic,
+            child: AnimatedOpacity(
+              opacity: 0, // isInMultiselect ? 1 : 0,
               duration: const Duration(milliseconds: cAnimationDuration),
               curve: Curves.easeInOutCubic,
-              child: AnimatedOpacity(
-                opacity: 0, // isInMultiselect ? 1 : 0,
-                duration: const Duration(milliseconds: cAnimationDuration),
-                curve: Curves.easeInOutCubic,
-                child: Row(children: [
-                  if (uiState.isDesktop) ...[
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text("")
-                        // isList
-                        //   ? '($countSelected)'
-                        //   : localization.countSelected
-                        //   .replaceFirst(':count', '$countSelected')),
-                        ),
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: OverflowView.flexible(
-                            spacing: 8,
-                            children: actions
-                                .map(
-                                  (action) => OutlinedButton(
-                                    child: IconText(
-                                      icon: getActionIcon(action),
-                                      text: AppLocalizations.of(context).translate(action),
-                                    ),
-                                    onPressed: () {
-                                      // handleEntitiesActions(entities, action);
-                                      // widget.onClearMultiselect();
-                                    },
+              child: Row(children: [
+                if (uiState.isDesktop) ...[
+                  const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text("")
+                      // isList
+                      //   ? '($countSelected)'
+                      //   : localization.countSelected
+                      //   .replaceFirst(':count', '$countSelected')),
+                      ),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: OverflowView.flexible(
+                          spacing: 8,
+                          children: actions
+                              .map(
+                                (action) => OutlinedButton(
+                                  child: IconText(
+                                    icon: getActionIcon(action),
+                                    text: AppLocalizations.of(context).translate(action),
                                   ),
-                                )
-                                .toList(),
-                            builder: (context, remaining) {
-                              return PopupMenuButton<String>(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          localization.translate("more"),
-                                          style: theme.textTheme
-                                              .bodySmall, // TextStyle(color: enableDarkMode ? Colors.white : Colors.black),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Icon(
-                                          Icons.arrow_drop_down,
-                                          color: theme.textTheme.bodySmall?.color ??
-                                              Colors.white, // enableDarkMode ? Colors.white : Colors.black
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  onSelected: (String action) {
+                                  onPressed: () {
                                     // handleEntitiesActions(entities, action);
                                     // widget.onClearMultiselect();
                                   },
-                                  itemBuilder: (BuildContext context) {
-                                    return actions.toList().sublist(actions.length - remaining).map((action) {
-                                      return PopupMenuItem<String>(
-                                        value: action,
-                                        child: Row(
-                                          children: <Widget>[
-                                            Icon(getActionIcon(action), color: Theme.of(context).colorScheme.secondary),
-                                            const SizedBox(width: 16.0),
-                                            Text(localization.translate(action)),
-                                          ],
-                                        ),
-                                      );
-                                    }).toList();
-                                  });
-                            }),
-                      ),
+                                ),
+                              )
+                              .toList(),
+                          builder: (context, remaining) {
+                            return PopupMenuButton<String>(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        localization.translate("more"),
+                                        style: theme.textTheme
+                                            .bodySmall, // TextStyle(color: enableDarkMode ? Colors.white : Colors.black),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Icon(
+                                        Icons.arrow_drop_down,
+                                        color: theme.textTheme.bodySmall?.color ??
+                                            Colors.white, // enableDarkMode ? Colors.white : Colors.black
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                onSelected: (String action) {
+                                  // handleEntitiesActions(entities, action);
+                                  // widget.onClearMultiselect();
+                                },
+                                itemBuilder: (BuildContext context) {
+                                  return actions.toList().sublist(actions.length - remaining).map((action) {
+                                    return PopupMenuItem<String>(
+                                      value: action,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Icon(getActionIcon(action), color: Theme.of(context).colorScheme.secondary),
+                                          const SizedBox(width: 16.0),
+                                          Text(localization.translate(action)),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList();
+                                });
+                          }),
                     ),
-                  ] else
-                    ...[]
-                ]),
-              ),
+                  ),
+                ] else
+                  ...[]
+              ]),
             ),
-            Expanded(
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: <Widget>[
-                  listOrTable(),
-                  // if ((state.isLoading &&
-                  //     (isMobile(context) || !entityType.isSetting)) ||
-                  //     (state.isSaving &&
-                  //         (entityType.isSetting ||
-                  //             (!state.prefState.isPreviewVisible && !state.uiState.isEditing)
-                  //         )))
-                  //   const LinearProgressIndicator(),
-                ],
-              ),
+          ),
+          Expanded(
+            child: Stack(
+              alignment: Alignment.topCenter,
+              children: <Widget>[
+                listOrTable(),
+                // if ((state.isLoading &&
+                //     (isMobile(context) || !entityType.isSetting)) ||
+                //     (state.isSaving &&
+                //         (entityType.isSetting ||
+                //             (!state.prefState.isPreviewVisible && !state.uiState.isEditing)
+                //         )))
+                //   const LinearProgressIndicator(),
+              ],
             ),
-          ]),
-        ),
+          ),
+        ]),
       ),
     );
   }
@@ -213,32 +211,14 @@ class _MemoryListState extends State<MemoryList> {
           if (state.items.isEmpty) {
             return Center(child: Text(localization.translate('nothing yet')));
           }
-          final rows = List.of(state.items.map((item) {
-            final cells = {
-              '_memory_': PlutoCell(value: item),
-            };
-            for (final field in widget.schema) {
-              if (field.type is ReferenceType) {
-                String label = '';
-                final ref = item.json[field.name];
-                if (ref is MemoryItem) {
-                  label = ref.json['name'] ?? '';
-                }
-                cells[field.name] = PlutoCell(value: label);
-              } else {
-                cells[field.name] = PlutoCell(value: item.json[field.name] ?? "");
-              }
-            }
-            return PlutoRow(cells: cells);
-          }));
-          return buildPlutoGrid(context, columns, rows);
+          return buildPlutoGrid(context, state, columns);
         case RequestStatus.loading:
           return const Center(child: CircularProgressIndicator());
       }
     });
   }
 
-  PlutoGrid buildPlutoGrid(BuildContext context, List<PlutoColumn> columns, List<PlutoRow> rows) {
+  PlutoGrid buildPlutoGrid(BuildContext context, RequestState state, List<PlutoColumn> columns) {
     final theme = Theme.of(context);
     final DataTableThemeData dataTableTheme = DataTableTheme.of(context);
 
@@ -277,30 +257,73 @@ class _MemoryListState extends State<MemoryList> {
         ));
 
     return PlutoGrid(
-      key: UniqueKey(),
-      columns: columns,
-      rows: rows,
-      // columnGroups: columnGroups,
-      configuration: config,
-      onLoaded: (PlutoGridOnLoadedEvent event) {
-        print(event);
-        stateManager = event.stateManager;
-        // stateManager.setShowColumnFilter(true);
-        stateManager?.setSelectingMode(PlutoGridSelectingMode.row);
-      },
-      onChanged: (PlutoGridOnChangedEvent event) {
-        print(event);
-      },
-      onSelected: (PlutoGridOnSelectedEvent event) {
-        print("onSelected");
-        final item = event.row?.cells["_memory_"]?.value;
-        if (item is MemoryItem) {
-          print("fire ChangeView");
-          context.read<UiBloc>().add(ChangeView(widget.ctx, entity: item));
+        key: UniqueKey(),
+        columns: columns,
+        rows: intoRows(state, null),
+        // columnGroups: columnGroups,
+        configuration: config,
+        onLoaded: (PlutoGridOnLoadedEvent event) {
+          print(event);
+          stateManager = event.stateManager;
+          // stateManager.setShowColumnFilter(true);
+          stateManager?.setSelectingMode(PlutoGridSelectingMode.row);
+        },
+        onChanged: (PlutoGridOnChangedEvent event) {
+          print(event);
+        },
+        onSelected: (PlutoGridOnSelectedEvent event) {
+          print("onSelected");
+          final item = event.row?.cells["_memory_"]?.value;
+          if (item is MemoryItem) {
+            print("fire ChangeView");
+            context.read<UiBloc>().add(ChangeView(widget.ctx, entity: item));
+          }
+        },
+        mode: PlutoGridMode.select,
+        createFooter: (stateManager) => PlutoInfinityScrollRows(
+            initialFetch: true,
+            fetch: (r) async {
+              print('createFooter fetch ${state.hasReachedMax} ${state.status}');
+              if (state.status == RequestStatus.success) {
+                print('fetch more');
+                context.read<MemoryBloc>().add(MemoryFetch('memories', widget.ctx, schema: widget.schema));
+              }
+
+              return PlutoInfinityScrollRowsResponse(isLast: false, rows: intoRows(state, r.lastRow));
+            },
+            stateManager: stateManager));
+  }
+
+  List<PlutoRow> intoRows(RequestState state, PlutoRow? lastRow) {
+    var items = state.items;
+    if (lastRow != null) {
+      final after = lastRow.cells['_memory_']?.value;
+      if (after != null) {
+        final pos = items.indexOf(after);
+        if (pos >= items.length) {
+          return [];
         }
-      },
-      mode: PlutoGridMode.select,
-    );
+        items = items.sublist(pos + 1);
+      }
+    }
+    return List.of(items.map((item) {
+      final cells = {
+        '_memory_': PlutoCell(value: item),
+      };
+      for (final field in widget.schema) {
+        if (field.type is ReferenceType) {
+          String label = '';
+          final ref = item.json[field.name];
+          if (ref is MemoryItem) {
+            label = ref.json['name'] ?? '';
+          }
+          cells[field.name] = PlutoCell(value: label);
+        } else {
+          cells[field.name] = PlutoCell(value: item.json[field.name] ?? "");
+        }
+      }
+      return PlutoRow(cells: cells);
+    }));
   }
 
 // Widget list(RequestState state) {
