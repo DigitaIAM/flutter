@@ -10,10 +10,13 @@ import 'package:nae/core/my_settings.dart';
 import 'package:nae/wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:upgrader/upgrader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  // await Upgrader.clearSavedSettings();
 
   runApp(MultiProvider(
     providers: [ChangeNotifierProvider<MySettings>(create: (_) => MySettings(prefs))],
@@ -64,7 +67,7 @@ class MyApp extends StatelessWidget {
                 theme: light(),
                 // ThemeData.light(useMaterial3: true),
                 darkTheme: ThemeData.dark(useMaterial3: true),
-                home: const Wrapper(),
+                home: UpgradeAlert(child: const Wrapper()),
               ));
         });
   }

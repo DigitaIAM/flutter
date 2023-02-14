@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'dart:math';
 
-import 'package:device_info/device_info.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
@@ -75,42 +73,6 @@ class Utils {
   static double dp(double val, int places) {
     //double mod = pow(10.0, places);
     return 0.0;
-  }
-
-  Future<String> getDeviceId() async {
-    String deviceId = "";
-    DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
-    try {
-      if (Platform.isAndroid) {
-        AndroidDeviceInfo build = await deviceInfoPlugin.androidInfo;
-        deviceId = build.androidId;
-      } else if (Platform.isIOS) {
-        IosDeviceInfo build = await deviceInfoPlugin.iosInfo;
-        deviceId = build.identifierForVendor;
-      }
-      return deviceId;
-    } catch (e) {
-      print("Error on getting device Info. $e");
-    }
-    return "-";
-  }
-
-  Future<String> getDeviceName() async {
-    String deviceName = "";
-    DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
-    try {
-      if (Platform.isAndroid) {
-        AndroidDeviceInfo build = await deviceInfoPlugin.androidInfo;
-        deviceName = build.device;
-      } else if (Platform.isIOS) {
-        IosDeviceInfo build = await deviceInfoPlugin.iosInfo;
-        deviceName = build.name;
-      }
-      return deviceName;
-    } catch (e) {
-      print("Error on getting device Info. $e");
-    }
-    return "-";
   }
 
   static double checkDouble(dynamic value) {
