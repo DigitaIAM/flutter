@@ -11,13 +11,13 @@ import 'package:nae/widgets/menu_drawer_builder.dart';
 import '../models/ui/state.dart';
 
 class ScaffoldList extends StatelessWidget {
-  const ScaffoldList({
-    super.key,
-    required this.entityType,
-    required this.appBarTitle,
-    required this.body,
-    this.onHamburgerLongPress,
-  });
+  const ScaffoldList(
+      {super.key,
+      required this.entityType,
+      required this.appBarTitle,
+      required this.body,
+      this.onHamburgerLongPress,
+      this.floatingActionButton});
 
   final List<String> entityType;
 
@@ -25,6 +25,7 @@ class ScaffoldList extends StatelessWidget {
   final Widget body;
 
   final GestureLongPressCallback? onHamburgerLongPress;
+  final FloatingActionButton? floatingActionButton;
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +83,7 @@ class ScaffoldList extends StatelessWidget {
               title: Row(children: [
                 Expanded(child: appBarTitle),
               ])),
+          floatingActionButton: floatingActionButton,
           body: ClipRect(
             child: body,
           ),

@@ -14,7 +14,6 @@
   "error": "Ошибка",
   "date": "Дата",
   "no-connection": "Нет соединения",
-
   "name": "Название",
   "dev-index": "Device Index",
   "protocol": "Протокол",
@@ -22,7 +21,6 @@
   "port": "Порт",
   "username": "Имя пользователя",
   "password": "Пароль",
-
   "photo": "Фото",
   "upload": "Загрузить",
   "download": "Скачать",
@@ -34,7 +32,6 @@
   "division": "Отдел",
   "sub-division": "Отделение",
   "date-of-birth": "День рожд.",
-
   "dashboard": "Dashboard",
   "people": "Сотрудники",
   "shifts": "Смена",
@@ -46,14 +43,12 @@
   "settings": "Настройки",
   "login": "Войти",
   "logout": "Выйти",
-
   "failed to fetch data": "не удалось получить данные",
   "nothing yet": "пока пусто",
-
   "create": "создать",
-
-  "production orders": "наряды",
-  "production order": "наряд",
+  "production orders": "сменные задания",
+  "production order": "сменное задание",
+  "new production order": "новое сменное задание",
   "overview": "обзор",
   "task": "задача",
   "production": "изготовление",
@@ -62,10 +57,8 @@
   "part number": "артикул",
   "uoms": "единицы измерения",
   "uom": "ед.изм.",
-
   "area": "участок",
   "qty in box": "колво в коробке",
-
   "printer": "принтер",
   "customer": "заказчик",
   "label": "этикетка",

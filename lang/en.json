@@ -14,7 +14,6 @@
   "error": "Error",
   "date": "Date",
   "no-connection": "No connection",
-
   "name": "Name",
   "dev-index": "Device Index",
   "protocol": "Protocol",
@@ -22,7 +21,6 @@
   "port": "Port",
   "username": "User name",
   "password": "Password",
-
   "photo": "Photo",
   "upload": "Upload",
   "download": "Download",
@@ -34,7 +32,6 @@
   "division": "Division",
   "sub-division": "Sub division",
   "date-of-birth": "Date of birth",
-
   "dashboard": "Dashboard",
   "people": "People",
   "shifts": "Shifts",
@@ -46,14 +43,12 @@
   "settings": "Settings",
   "login": "Login",
   "logout": "Logout",
-
   "failed to fetch data": "failed to fetch data",
   "nothing yet": "nothing yet",
-
   "create": "create",
-
   "production orders": "production orders",
   "production order": "production order",
+  "new production order": "new production order",
   "overview": "overview",
   "task": "task",
   "production": "production",
@@ -62,10 +57,8 @@
   "part number": "part number",
   "uoms": "unit of measure",
   "uom": "UoM",
-
   "area": "area",
   "qty in box": "qty in box",
-
   "printer": "printer",
   "customer": "customer",
   "label": "label",

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/api.dart';
+import 'package:nae/app_localizations.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
+import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
@@ -94,6 +98,7 @@ class ProductionOrderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return ScaffoldList(
       entityType: ProductionOrder.ctx,
       appBarTitle: ListFilter(
@@ -102,6 +107,18 @@ class ProductionOrderScreen extends StatelessWidget {
         onFilterChanged: (value) {
           // store.dispatch(FilterProducts(value));
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'product_fab',
+        backgroundColor: theme.primaryColorDark,
+        onPressed: () {
+          context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, action: 'edit', entity: MemoryItem.create()));
+        },
+        tooltip: AppLocalizations.of(context).translate("new production order"),
+        child: Icon(
+          Icons.add,
+          color: theme.primaryColorLight,
+        ),
       ),
       body: const ProductionOrdersListBuilder(),
     );
