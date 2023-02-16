@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
@@ -23,44 +22,15 @@ class ProductionOrder extends Entity {
     const Field('area', ReferenceType(['production', 'area'])),
     const Field('product', ReferenceType(['product'])),
     const Field('planned', NumberType()),
-    Field('produced', CalculatedType((MemoryItem order) async {
-      // /production/produce[order == order.id]/sum(qty)
-
-      int result = 0;
-
-      int skip = 0;
-      int total = -1;
-      while (total == -1 || skip < total) {
-        total = 0;
-        final response = await Api.feathers().find(serviceName: 'memories', query: {
-          'oid': Api.instance.oid,
-          'ctx': ['production', 'produce'],
-          'filter': {'order': order.id},
-          '\$skip': skip,
-        });
-        // print(response);
-        total = response['total'];
-        final data = response['data'];
-        if (data is List) {
-          skip += data.length;
-          for (var item in data) {
-            final num = item['qty'];
-            if (num is int) {
-              result += num;
-            } else if (num is String) {
-              result += int.parse(num);
-            } else {
-              // print("num type unknown");
-              // print(num);
-            }
-          }
-        } else {
-          break;
-        }
-      }
-
-      return result.toString();
-    })),
+    // /production/produce[order == order.id]/sum(qty) = pieces
+    // /production/produce[order == order.id]/count() = boxes
+    Field(
+      'produce',
+      CalculatedType((MemoryItem order) async {
+        final produced = order.json['produced'];
+        return '${produced['piece']} шт, ${produced['box']} кор';
+      }),
+    ),
   ];
 
   @override

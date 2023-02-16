@@ -48,7 +48,9 @@ class MemoryItem extends Equatable {
         final name = field.name;
         final type = field.type as CalculatedType;
 
-        copy[name] = await type.eval(this);
+        if (copy[name] == null) {
+          copy[name] = await type.eval(this);
+        }
       } else if (field.type is ReferenceType) {
         final name = field.name;
         final type = field.type as ReferenceType;

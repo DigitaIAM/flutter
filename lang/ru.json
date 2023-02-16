@@ -49,6 +49,10 @@
   "production orders": "сменные задания",
   "production order": "сменное задание",
   "new production order": "новое сменное задание",
+  "plan": "планировать",
+  "planned": "запланированный",
+  "produce": "произведено",
+  "produced": "произведено",
   "overview": "обзор",
   "task": "задача",
   "production": "изготовление",
@@ -62,6 +66,8 @@
   "printer": "принтер",
   "customer": "заказчик",
   "label": "этикетка",
+  "people": "люди",
+  "person": "человек",
   "operator": "оператор",
   "control": "контролёр"
 }

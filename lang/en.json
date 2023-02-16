@@ -33,7 +33,6 @@
   "sub-division": "Sub division",
   "date-of-birth": "Date of birth",
   "dashboard": "Dashboard",
-  "people": "People",
   "shifts": "Shifts",
   "events": "Events",
   "attendance": "Attendance",
@@ -49,6 +48,10 @@
   "production orders": "production orders",
   "production order": "production order",
   "new production order": "new production order",
+  "plan": "plan",
+  "planned": "planned",
+  "produce": "produce",
+  "produced": "produced",
   "overview": "overview",
   "task": "task",
   "production": "production",
@@ -62,6 +65,8 @@
   "printer": "printer",
   "customer": "customer",
   "label": "label",
+  "people": "people",
+  "person": "person",
   "operator": "operator",
   "control": "control"
 }
