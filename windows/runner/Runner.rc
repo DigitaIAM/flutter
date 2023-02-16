@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "uz.merasoft" "\0"
-            VALUE "FileDescription", "nae_hr" "\0"
+            VALUE "CompanyName", "DigitaIAM" "\0"
+            VALUE "FileDescription", "nae" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "nae_hr" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2022 uz.merasoft. All rights reserved." "\0"
-            VALUE "OriginalFilename", "nae_hr.exe" "\0"
-            VALUE "ProductName", "nae_hr" "\0"
+            VALUE "InternalName", "nae" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2023 DigitaIAM. All rights reserved." "\0"
+            VALUE "OriginalFilename", "nae.exe" "\0"
+            VALUE "ProductName", "Nae" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
