@@ -6,7 +6,6 @@ import 'package:nae/app_localizations.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
-import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/widgets/app_form.dart';
@@ -43,12 +42,7 @@ class _UomEditState extends State<UomEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      debugPrint("saving");
-      debugPrint(data.toString());
-
-      print("sending event");
       context.read<MemoryBloc>().add(MemorySave("memories", Uom.ctx, MemoryItem(id: widget.entity.id, json: data)));
-      print("event send");
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -68,40 +62,36 @@ class _UomEditState extends State<UomEdit> {
       // TODO context.read<UiBloc>().add(PreviousRoute());
     }
 
-    return BlocListener<MemoryBloc, RequestState>(
-        listener: (context, state) {
-          if (state.saveStatus == SaveStatus.success) {
-            routerBack(context);
-          } else if (state.saveStatus == SaveStatus.failure) {}
-        },
-        child: EditScaffold(
-            entity: widget.entity,
-            title: widget.entity.isNew ? localization.translate("new uom") : localization.translate("edit uom"),
-            onClose: (context) {
-              context.read<UiBloc>().add(ChangeView(Uom.ctx));
-            },
-            onCancel: routerBack,
-            onSave: _onSave,
-            body: AppForm(
-                formKey: _formKey,
-                focusNode: _focusNode,
-                entity: widget.entity,
-                child: ScrollableListView(children: <Widget>[
-                  FormCard(isLast: true, children: <Widget>[
-                    DecoratedFormField(
-                      name: 'name',
-                      label: localization.translate("name"),
-                      autofocus: true,
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(),
-                      ]),
-                      // (val) => val == null || val.isEmpty || val.trim().isEmpty
-                      // ? localization.translate("please, enter name")
-                      // : null,
-                      onSave: _onSave,
-                      keyboardType: TextInputType.text,
-                    ),
-                  ])
-                ]))));
+    return EditScaffold(
+      entity: widget.entity,
+      title: widget.entity.isNew ? localization.translate("new uom") : localization.translate("edit uom"),
+      onClose: (context) {
+        context.read<UiBloc>().add(ChangeView(Uom.ctx));
+      },
+      onCancel: routerBack,
+      onSave: _onSave,
+      body: AppForm(
+        formKey: _formKey,
+        focusNode: _focusNode,
+        entity: widget.entity,
+        child: ScrollableListView(children: <Widget>[
+          FormCard(isLast: true, children: <Widget>[
+            DecoratedFormField(
+              name: 'name',
+              label: localization.translate("name"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              // (val) => val == null || val.isEmpty || val.trim().isEmpty
+              // ? localization.translate("please, enter name")
+              // : null,
+              onSave: _onSave,
+              keyboardType: TextInputType.text,
+            ),
+          ])
+        ]),
+      ),
+    );
   }
 }

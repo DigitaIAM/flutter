@@ -197,7 +197,7 @@ class _MemoryListState extends State<MemoryList> {
       }
 
       return PlutoColumn(
-        title: localization.translate(field.name),
+        title: localization.translate(field.name.replaceAll('~', '')),
         field: field.name,
         type: type,
       );

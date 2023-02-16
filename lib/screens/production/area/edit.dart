@@ -6,7 +6,6 @@ import 'package:nae/app_localizations.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
-import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/widgets/app_form.dart';
@@ -65,37 +64,31 @@ class _ProductionAreaEditState extends State<ProductionAreaEdit> {
       // TODO context.read<UiBloc>().add(PreviousRoute());
     }
 
-    return BlocListener<MemoryBloc, RequestState>(
-        listener: (context, state) {
-          if (state.saveStatus == SaveStatus.success) {
-            routerBack(context);
-          } else if (state.saveStatus == SaveStatus.failure) {}
-        },
-        child: EditScaffold(
-            entity: widget.entity,
-            title: widget.entity.isNew ? localization.translate("new area") : localization.translate("edit area"),
-            onClose: (context) {
-              context.read<UiBloc>().add(ChangeView(ProductionArea.ctx));
-            },
-            onCancel: routerBack,
-            onSave: _onSave,
-            body: AppForm(
-                formKey: _formKey,
-                focusNode: _focusNode,
-                entity: widget.entity,
-                child: ScrollableListView(children: <Widget>[
-                  FormCard(isLast: true, children: <Widget>[
-                    DecoratedFormField(
-                      name: 'name',
-                      label: localization.translate("name"),
-                      autofocus: true,
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(),
-                      ]),
-                      onSave: _onSave,
-                      keyboardType: TextInputType.text,
-                    ),
-                  ])
-                ]))));
+    return EditScaffold(
+      entity: widget.entity,
+      title: widget.entity.isNew ? localization.translate("new area") : localization.translate("edit area"),
+      onClose: routerBack,
+      onCancel: routerBack,
+      onSave: _onSave,
+      body: AppForm(
+        formKey: _formKey,
+        focusNode: _focusNode,
+        entity: widget.entity,
+        child: ScrollableListView(children: <Widget>[
+          FormCard(isLast: true, children: <Widget>[
+            DecoratedFormField(
+              name: 'name',
+              label: localization.translate("name"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: _onSave,
+              keyboardType: TextInputType.text,
+            ),
+          ])
+        ]),
+      ),
+    );
   }
 }

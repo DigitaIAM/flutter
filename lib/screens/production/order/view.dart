@@ -112,8 +112,9 @@ class ProductionOrderOverview extends StatelessWidget {
     final widgets = <Widget>[
       EntityHeader(pairs: [
         // Pair(localization.translate("production order"), memoryItem.json['date'])
-        Pair(localization.translate("planned"), order.json['planned'] ?? '0'),
-        Pair(localization.translate("produced"), order.json['produced'] ?? '0'),
+        Pair(localization.translate("planned"), order.json['planned'] ?? '-'),
+        Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
+        Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
       ]),
       ListDivider(),
     ];

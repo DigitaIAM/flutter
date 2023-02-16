@@ -19,7 +19,7 @@ EventTransformer<E> throttleDroppable<E>(Duration duration) {
 }
 
 class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
-  MemoryBloc() : super(const RequestState()) {
+  MemoryBloc() : super(RequestState()) {
     print("init RequestState");
     on<MemorySave>(_onSave);
     on<MemoryFetch>(

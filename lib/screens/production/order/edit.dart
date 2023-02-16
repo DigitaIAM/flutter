@@ -61,18 +61,18 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
+    routerBack(BuildContext context) {
+      context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx));
+      // TODO context.read<UiBloc>().add(PreviousRoute());
+    }
+
     return EditScaffold(
       entity: widget.entity,
       title: widget.entity.isNew
           ? localization.translate("new production order")
           : localization.translate("edit production order"),
-      onClose: (context) {
-        context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx));
-      },
-      onCancel: (context) {
-        context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx));
-        // TODO context.read<UiBloc>().add(PreviousRoute());
-      },
+      onClose: routerBack,
+      onCancel: routerBack,
       onSave: _onSave,
       body: AppForm(
         schema: ProductionOrder.schema,

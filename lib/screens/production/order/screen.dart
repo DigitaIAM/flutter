@@ -25,9 +25,12 @@ class ProductionOrder extends Entity {
     // /production/produce[order == order.id]/sum(qty) = pieces
     // /production/produce[order == order.id]/count() = boxes
     Field(
-      'produce',
+      'produced~',
       CalculatedType((MemoryItem order) async {
         final produced = order.json['produced'];
+        if (produced == null) {
+          return '';
+        }
         return '${produced['piece']} шт, ${produced['box']} кор';
       }),
     ),
@@ -45,7 +48,8 @@ class ProductionOrder extends Entity {
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
-      key: ValueKey('__${name()}_${DateTime.now().toString()}__'),
+      key: ValueKey('__${name()}'),
+      // _${DateTime.now().toString()}__'),
       ctx: ctx,
       schema: schema,
       list: const ProductionOrderScreen(),

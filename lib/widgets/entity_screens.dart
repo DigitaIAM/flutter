@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/core/my_settings.dart';
+import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
@@ -31,9 +33,19 @@ class EntityScreens extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<UiBloc, UiState>(
-        builder: (context, uiState) => MemoryBlocHolder(
-            init: (bloc) => ctx.isNotEmpty ? bloc.add(MemoryFetch("memories", ctx, schema: schema)) : null,
-            child: Row(children: uiState.isFullScreen ? smallScreen(context, uiState) : bigScreen(context, uiState))));
+      builder: (context, uiState) => MemoryBlocHolder(
+        init: (bloc) => ctx.isNotEmpty ? bloc.add(MemoryFetch("memories", ctx, schema: schema)) : null,
+        child: screens(context, uiState),
+      ),
+    );
+  }
+
+  Widget screens(BuildContext context, UiState uiState) {
+    return BlocBuilder<MemoryBloc, RequestState>(
+      builder: (context, state) => Row(
+          key: ValueKey('__${ctx.join('_')}_${state.updated}'),
+          children: uiState.isFullScreen ? smallScreen(context, uiState) : bigScreen(context, uiState)),
+    );
   }
 
   List<Widget> smallScreen(BuildContext context, UiState uiState) {

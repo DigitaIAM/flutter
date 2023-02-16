@@ -6,18 +6,21 @@ enum RequestStatus { loading, success, failure }
 enum SaveStatus { ready, saving, success, failure }
 
 class RequestState extends Equatable {
-  const RequestState({
+  RequestState({
     this.status = RequestStatus.loading,
     this.items = const <MemoryItem>[],
     this.hasReachedMax = false,
     this.saveStatus = SaveStatus.ready,
-  });
+    DateTime? ts,
+  }) : updated = ts ?? DateTime.now();
 
-  const RequestState.loading() : this();
+  RequestState.loading() : this();
 
-  const RequestState.success(List<MemoryItem> items) : this(status: RequestStatus.success, items: items);
+  RequestState.success(List<MemoryItem> items) : this(status: RequestStatus.success, items: items);
 
-  const RequestState.failure() : this(status: RequestStatus.failure);
+  RequestState.failure() : this(status: RequestStatus.failure);
+
+  final DateTime updated;
 
   final RequestStatus status;
   final List<MemoryItem> items;
