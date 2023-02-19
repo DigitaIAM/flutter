@@ -12,8 +12,8 @@ import 'package:nae/widgets/scaffold_list.dart';
 
 import 'edit.dart';
 
-class ProductionArea extends Entity {
-  static const List<String> ctx = ['production', 'area'];
+class Counterparty extends Entity {
+  static const List<String> ctx = ['counterparty'];
 
   static const List<Field> schema = [
     Field('name', StringType()),
@@ -23,19 +23,19 @@ class ProductionArea extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "area";
+  String name() => "counterparty";
 
   @override
-  IconData icon() => Icons.handyman_outlined;
+  IconData icon() => Icons.work_outline;
 
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
       key: ValueKey('__${name()}_${DateTime.now().toString()}__'),
       ctx: ctx,
-      list: const ProductionAreaScreen(),
-      // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
-      view: ProductionAreaEdit(
+      list: const CounterpartyScreen(),
+      // action == "edit" ? CounterpartyEdit(entity: entity) : CounterpartyView(entity: entity),
+      view: CounterpartyEdit(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
         entity: entity,
       ),
@@ -43,13 +43,13 @@ class ProductionArea extends Entity {
   }
 }
 
-class ProductionAreaScreen extends StatelessWidget {
-  const ProductionAreaScreen({super.key});
+class CounterpartyScreen extends StatelessWidget {
+  const CounterpartyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldList(
-      entityType: ProductionArea.ctx,
+      entityType: Counterparty.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
         filter: null, //state.productListState.filter,
@@ -57,22 +57,22 @@ class ProductionAreaScreen extends StatelessWidget {
           // store.dispatch(FilterProducts(value));
         },
       ),
-      body: const ProductionAreaListBuilder(),
+      body: const CounterpartyListBuilder(),
     );
   }
 }
 
-class ProductionAreaListBuilder extends StatelessWidget {
-  const ProductionAreaListBuilder({super.key});
+class CounterpartyListBuilder extends StatelessWidget {
+  const CounterpartyListBuilder({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MemoryList(
-      ctx: ProductionArea.ctx,
-      schema: ProductionArea.schema,
+      ctx: Counterparty.ctx,
+      schema: Counterparty.schema,
       title: (MemoryItem item) => item.name(),
       subtitle: (MemoryItem item) => '',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(ProductionArea.ctx, entity: item)),
+      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(Counterparty.ctx, entity: item)),
     );
   }
 }

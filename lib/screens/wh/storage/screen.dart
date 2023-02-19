@@ -12,30 +12,32 @@ import 'package:nae/widgets/scaffold_list.dart';
 
 import 'edit.dart';
 
-class ProductionArea extends Entity {
-  static const List<String> ctx = ['production', 'area'];
+class WHStorage extends Entity {
+  static const List<String> ctx = ['warehouse', 'storage'];
 
   static const List<Field> schema = [
+    Field('location', ReferenceType(['warehouse', 'storage'])),
     Field('name', StringType()),
+    Field('code', StringType()),
   ];
 
   @override
   List<String> route() => ctx;
 
   @override
-  String name() => "area";
+  String name() => "storage";
 
   @override
-  IconData icon() => Icons.handyman_outlined;
+  IconData icon() => Icons.place_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
       key: ValueKey('__${name()}_${DateTime.now().toString()}__'),
       ctx: ctx,
-      list: const ProductionAreaScreen(),
-      // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
-      view: ProductionAreaEdit(
+      list: const WHStorageScreen(),
+      // action == "edit" ? WHStorageEdit(entity: entity) : WHStorageView(entity: entity),
+      view: WHStorageEdit(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
         entity: entity,
       ),
@@ -43,13 +45,13 @@ class ProductionArea extends Entity {
   }
 }
 
-class ProductionAreaScreen extends StatelessWidget {
-  const ProductionAreaScreen({super.key});
+class WHStorageScreen extends StatelessWidget {
+  const WHStorageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldList(
-      entityType: ProductionArea.ctx,
+      entityType: WHStorage.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
         filter: null, //state.productListState.filter,
@@ -57,22 +59,22 @@ class ProductionAreaScreen extends StatelessWidget {
           // store.dispatch(FilterProducts(value));
         },
       ),
-      body: const ProductionAreaListBuilder(),
+      body: const WHStorageListBuilder(),
     );
   }
 }
 
-class ProductionAreaListBuilder extends StatelessWidget {
-  const ProductionAreaListBuilder({super.key});
+class WHStorageListBuilder extends StatelessWidget {
+  const WHStorageListBuilder({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MemoryList(
-      ctx: ProductionArea.ctx,
-      schema: ProductionArea.schema,
+      ctx: WHStorage.ctx,
+      schema: WHStorage.schema,
       title: (MemoryItem item) => item.name(),
       subtitle: (MemoryItem item) => '',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(ProductionArea.ctx, entity: item)),
+      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHStorage.ctx, entity: item)),
     );
   }
 }

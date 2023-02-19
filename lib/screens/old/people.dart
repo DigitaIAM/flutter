@@ -94,7 +94,7 @@ class _PeoplePageState extends State<PeoplePage> {
                     return DataRow(color: MaterialStateColor.resolveWith((states) => Colors.white), cells: [
                       DataCell(
                           Image.network(
-                            Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + rows[index]["_id"],
+                            "${Api.server}/v1/picture?oid=${settings.companyId}&pid=" + rows[index]["_id"],
                             errorBuilder: (context, exp, st) {
                               return Text(
                                 "No photo",
@@ -104,7 +104,7 @@ class _PeoplePageState extends State<PeoplePage> {
                           ), onTap: () {
                         Dialog myDialog = Dialog(
                           child: Image.network(
-                            Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + rows[index]["_id"],
+                            "${Api.server}/v1/picture?oid=${settings.companyId}&pid=" + rows[index]["_id"],
                             errorBuilder: (context, exp, st) {
                               return Text(
                                 "No photo",
@@ -151,7 +151,6 @@ class _PeoplePageState extends State<PeoplePage> {
             setState(() {
               rows = event["data"];
             });
-            print(rows);
           });
     } catch (e) {
       print(e);
@@ -162,7 +161,7 @@ class _PeoplePageState extends State<PeoplePage> {
 
   getBodyForEdit(MySettings settings) {
     return Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -174,7 +173,7 @@ class _PeoplePageState extends State<PeoplePage> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Image.network(
-                    Api.server + "/v1/picture?oid=" + settings.companyId + "&pid=" + selectedRow["_id"],
+                    "${Api.server}/v1/picture?oid=${settings.companyId}&pid=${selectedRow["_id"]}",
                     errorBuilder: (context, exp, st) {
                       return Text(
                         "No photo",
@@ -225,7 +224,7 @@ class _PeoplePageState extends State<PeoplePage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextFormField(
@@ -240,7 +239,7 @@ class _PeoplePageState extends State<PeoplePage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextFormField(
@@ -255,7 +254,7 @@ class _PeoplePageState extends State<PeoplePage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextFormField(
@@ -270,24 +269,24 @@ class _PeoplePageState extends State<PeoplePage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextFormField(
                           controller: employeeNoStringController,
                           enabled: true,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             fillColor: Colors.white,
                             isDense: true,
-                            prefixStyle: const TextStyle(color: Colors.red),
+                            prefixStyle: TextStyle(color: Colors.red),
                             labelText: "employeeNoString",
-                            border: const OutlineInputBorder(),
+                            border: OutlineInputBorder(),
                           ),
                         ),
                       ),
                       Row(
                         children: [
-                          Expanded(child: Text("")),
+                          const Expanded(child: Text("")),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: ElevatedButton(
@@ -313,8 +312,8 @@ class _PeoplePageState extends State<PeoplePage> {
                                   });
                                 }
                               },
-                              child: Text(AppLocalizations.of(context).translate("save")),
                               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                              child: Text(AppLocalizations.of(context).translate("save")),
                             ),
                           ),
                           Padding(
@@ -326,8 +325,8 @@ class _PeoplePageState extends State<PeoplePage> {
                                   showEditForm = false;
                                 });
                               },
-                              child: Text(AppLocalizations.of(context).translate("close")),
                               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                              child: Text(AppLocalizations.of(context).translate("close")),
                             ),
                           )
                         ],

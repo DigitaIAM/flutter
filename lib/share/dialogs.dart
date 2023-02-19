@@ -7,7 +7,7 @@ void showMyInputText(BuildContext context, TextEditingController controller, Voi
       width: 300.0,
       child: Column(
         children: <Widget>[
-          SizedBox(
+          const SizedBox(
             height: 40,
           ),
           SizedBox(
@@ -18,7 +18,7 @@ void showMyInputText(BuildContext context, TextEditingController controller, Voi
               autofocus: true,
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
           SizedBox(
@@ -29,13 +29,13 @@ void showMyInputText(BuildContext context, TextEditingController controller, Voi
                 callback();
                 Navigator.of(context).pop();
               },
-              child: Text(
+              child: const Text(
                 "Saqlash",
                 style: TextStyle(fontSize: 18.0, color: Colors.white),
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
         ],
@@ -43,13 +43,11 @@ void showMyInputText(BuildContext context, TextEditingController controller, Voi
     ),
   );
 
-  showDialog(
-      context: context, builder: (BuildContext context) => myDialog);
+  showDialog(context: context, builder: (BuildContext context) => myDialog);
 }
 
-
 Future<dynamic>? showYesNo(BuildContext context, String msg, VoidCallback callbackYes, VoidCallback callbackNo,
-      {String? yesText, String? noText}) {
+    {String? yesText, String? noText}) {
   Dialog dialogWithImage = Dialog(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     child: Container(
@@ -59,7 +57,7 @@ Future<dynamic>? showYesNo(BuildContext context, String msg, VoidCallback callba
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: <Widget>[
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             Expanded(
@@ -68,8 +66,6 @@ Future<dynamic>? showYesNo(BuildContext context, String msg, VoidCallback callba
                 child: Text(msg, textAlign: TextAlign.center, style: Theme.of(context).textTheme.headline6),
               ),
             ),
-
-
             SizedBox(
               height: 60,
               child: Row(
@@ -79,35 +75,36 @@ Future<dynamic>? showYesNo(BuildContext context, String msg, VoidCallback callba
                   SizedBox(
                     height: 50,
                     child: ElevatedButton(
-                      style:  ElevatedButton.styleFrom(primary: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      style: ElevatedButton.styleFrom(
+                          primary: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       onPressed: () {
                         callbackNo();
                         Navigator.of(context).pop(false);
                       },
                       child: Text(
-                        noText??"Yo'q",
+                        noText ?? "Yo'q",
                         style: TextStyle(fontSize: 18.0, color: Colors.white),
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 8,
                   ),
                   SizedBox(
                     height: 50,
                     child: ElevatedButton(
-                      style:  ElevatedButton.styleFrom(primary: Colors.blue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      style: ElevatedButton.styleFrom(
+                          primary: Colors.blue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       onPressed: () {
                         callbackYes();
                         Navigator.of(context).pop(true);
                       },
                       child: Text(
-                        yesText??"Ha",
-                        style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        yesText ?? "Ha",
+                        style: const TextStyle(fontSize: 18.0, color: Colors.white),
                       ),
                     ),
                   ),
-
                 ],
               ),
             ),
@@ -117,10 +114,8 @@ Future<dynamic>? showYesNo(BuildContext context, String msg, VoidCallback callba
     ),
   );
 
-  return showDialog(
-      context: context, builder: (BuildContext context) => dialogWithImage);
+  return showDialog(context: context, builder: (BuildContext context) => dialogWithImage);
 }
-
 
 void showAlert(BuildContext context, String msg, {String? okText}) {
   Dialog dialogWithImage = Dialog(
@@ -129,32 +124,37 @@ void showAlert(BuildContext context, String msg, {String? okText}) {
       width: 300.0,
       child: Column(
         children: <Widget>[
-          SizedBox(
+          const SizedBox(
             height: 40,
           ),
           SizedBox(
             width: 200,
             height: 60,
-            child: Text(msg, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).errorColor, fontSize: Theme.of(context).textTheme.subtitle1!.fontSize, )),
+            child: Text(msg,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).errorColor,
+                  fontSize: Theme.of(context).textTheme.subtitle1!.fontSize,
+                )),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           SizedBox(
             width: 200,
             height: 50,
             child: ElevatedButton(
-              style:  ElevatedButton.styleFrom(primary: Colors.grey),
+              style: ElevatedButton.styleFrom(primary: Colors.grey),
               onPressed: () {
                 Navigator.of(context).pop();
               },
               child: Text(
-                okText??'OK',
-                style: TextStyle(fontSize: 18.0, color: Colors.white),
+                okText ?? 'OK',
+                style: const TextStyle(fontSize: 18.0, color: Colors.white),
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
         ],
@@ -162,10 +162,8 @@ void showAlert(BuildContext context, String msg, {String? okText}) {
     ),
   );
 
-  showDialog(
-      context: context, builder: (BuildContext context) => dialogWithImage);
+  showDialog(context: context, builder: (BuildContext context) => dialogWithImage);
 }
-
 
 void showYesNoCancel(BuildContext context, String msg, VoidCallback callbackYes, VoidCallback callbackNo,
     {String? yesText, String? noText, String? cancelText}) {
@@ -175,7 +173,7 @@ void showYesNoCancel(BuildContext context, String msg, VoidCallback callbackYes,
       width: 300.0,
       child: Column(
         children: <Widget>[
-          SizedBox(
+          const SizedBox(
             height: 40,
           ),
           SizedBox(
@@ -183,60 +181,60 @@ void showYesNoCancel(BuildContext context, String msg, VoidCallback callbackYes,
             height: 60,
             child: Text(msg, style: Theme.of(context).textTheme.headline6),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           SizedBox(
             width: 200,
             height: 50,
             child: ElevatedButton(
-              style:  ElevatedButton.styleFrom(primary: Colors.blue),
+              style: ElevatedButton.styleFrom(primary: Colors.blue),
               onPressed: () {
                 callbackYes();
                 Navigator.of(context).pop();
               },
               child: Text(
-                yesText??"Ha",
-                style: TextStyle(fontSize: 18.0, color: Colors.white),
+                yesText ?? "Ha",
+                style: const TextStyle(fontSize: 18.0, color: Colors.white),
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           SizedBox(
             width: 200,
             height: 50,
             child: ElevatedButton(
-              style:  ElevatedButton.styleFrom(primary: Colors.red),
+              style: ElevatedButton.styleFrom(primary: Colors.red),
               onPressed: () {
                 callbackNo();
                 Navigator.of(context).pop();
               },
               child: Text(
-                noText??"Yo'q",
-                style: TextStyle(fontSize: 18.0, color: Colors.white),
+                noText ?? "Yo'q",
+                style: const TextStyle(fontSize: 18.0, color: Colors.white),
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           SizedBox(
             width: 200,
             height: 50,
             child: ElevatedButton(
-              style:  ElevatedButton.styleFrom(primary: Colors.grey),
+              style: ElevatedButton.styleFrom(primary: Colors.grey),
               onPressed: () {
                 Navigator.of(context).pop();
               },
               child: Text(
-                cancelText??"Bekor qilish",
-                style: TextStyle(fontSize: 18.0, color: Colors.white),
+                cancelText ?? "Bekor qilish",
+                style: const TextStyle(fontSize: 18.0, color: Colors.white),
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
         ],
@@ -244,6 +242,5 @@ void showYesNoCancel(BuildContext context, String msg, VoidCallback callbackYes,
     ),
   );
 
-  showDialog(
-      context: context, builder: (BuildContext context) => dialogWithImage);
+  showDialog(context: context, builder: (BuildContext context) => dialogWithImage);
 }

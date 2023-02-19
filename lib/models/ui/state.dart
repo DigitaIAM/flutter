@@ -9,6 +9,10 @@ import 'package:nae/screens/common/uom/screen.dart';
 import 'package:nae/screens/production/area/screen.dart';
 import 'package:nae/screens/production/order/screen.dart';
 import 'package:nae/screens/settings/printer/screen.dart';
+import 'package:nae/screens/wh/dispatch/screen.dart';
+import 'package:nae/screens/wh/inventory/screen.dart';
+import 'package:nae/screens/wh/receive/screen.dart';
+import 'package:nae/screens/wh/storage/screen.dart';
 import 'package:nae/widgets/blank_screen.dart';
 
 part 'state.g.dart';
@@ -59,6 +63,8 @@ class UiState extends Equatable {
 
   final List<List<Entity>> entities = [
     [ProductionOrder()],
+    [WHReceive(), WHDispatch(), WHInventory()],
+    [WHStorage()],
     [Product(), Uom(), ProductionArea()],
     [Person()],
     [Printer()],

@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
-import 'package:nae/models/memory/bloc.dart';
-import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
-import 'package:nae/schema/schema.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
@@ -20,20 +16,21 @@ import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/entity_header.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_divider.dart';
-import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
-class ProductionOrderView extends EntityHolder {
+import 'screen.dart';
+
+class WHInventoryView extends EntityHolder {
   final int tabIndex;
 
-  const ProductionOrderView({super.key, required super.entity, required this.tabIndex});
+  const WHInventoryView({super.key, required super.entity, required this.tabIndex});
 
   @override
-  State<ProductionOrderView> createState() => _ProductionOrderViewState();
+  State<WHInventoryView> createState() => _WHInventoryViewState();
 }
 
-class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTickerProviderStateMixin {
+class _WHInventoryViewState extends State<WHInventoryView> with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -42,8 +39,8 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
 
     // final state = widget.viewModel.state;
     _controller = TabController(
-        vsync: this, length: 2, initialIndex: 0 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
-        );
+      vsync: this, length: 2, initialIndex: 0, // widget.isFilter ? 0 : state.whInventoryUIState.tabIndex
+    );
     _controller.addListener(_onTabChanged);
   }
 
@@ -82,18 +79,15 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
         isScrollable: true,
         tabs: [
           Tab(text: localization.translate("overview")),
-          Tab(text: localization.translate("production")),
+          Tab(text: localization.translate("goods")),
         ],
       ),
       body: Builder(builder: (context) {
         return Column(children: <Widget>[
           Expanded(
-            child: TabBarView(controller: _controller, children: <Widget>[
-              ProductionOrderOverview(order: widget.entity),
-              (widget.entity.json["date"] == Utils.today())
-                  ? ProductionOrderProduced(order: widget.entity)
-                  : ProductionOrderProducedView(order: widget.entity),
-            ]),
+            child: TabBarView(
+                controller: _controller,
+                children: <Widget>[WHInventoryOverview(doc: widget.entity), WHInventoryGoods(doc: widget.entity)]),
           ),
         ]);
       }),
@@ -101,34 +95,18 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
   }
 }
 
-class ProductionOrderOverview extends StatelessWidget {
-  final MemoryItem order;
+class WHInventoryOverview extends StatelessWidget {
+  final MemoryItem doc;
 
-  const ProductionOrderOverview({super.key, required this.order});
+  const WHInventoryOverview({super.key, required this.doc});
 
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
     final widgets = <Widget>[
       EntityHeader(pairs: [
-        // Pair(localization.translate("production order"), memoryItem.json['date'])
-        Pair(localization.translate("plan"), order.json['planned'] ?? '-'),
-        Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
-        Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
+        Pair(localization.translate("date"), doc.json['date'] ?? '-'),
       ]),
-      ListDivider(),
-      ListTile(
-        title: Text(order.json['product'].name()),
-        subtitle: Text(localization.translate("product")),
-      ),
-      ListTile(
-        title: Text(order.json['area'].name()),
-        subtitle: Text(localization.translate("area")),
-      ),
-      ListTile(
-        title: Text(order.json['date']),
-        subtitle: Text(localization.translate("date")),
-      ),
       ListDivider(),
     ];
 
@@ -138,17 +116,17 @@ class ProductionOrderOverview extends StatelessWidget {
   }
 }
 
-class ProductionOrderProduced extends StatefulWidget {
-  final MemoryItem order;
+class WHInventoryGoods extends StatefulWidget {
+  final MemoryItem doc;
 
-  const ProductionOrderProduced({super.key, required this.order});
+  const WHInventoryGoods({super.key, required this.doc});
 
   @override
-  State<StatefulWidget> createState() => _ProductionOrderProducedState();
+  State<StatefulWidget> createState() => _WHInventoryGoodsState();
 }
 
-class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_productionOrderProducedEdit');
+class _WHInventoryGoodsState extends State<WHInventoryGoods> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_whInventoryGoodsEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -180,42 +158,11 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
                 ]),
                 onSave: (context) {},
               ),
-              DecoratedFormField(
-                name: 'date',
-                label: localization.translate("date"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.datetime,
-                readOnly: true,
-              ),
-              DecoratedFormField(
-                name: 'customer',
-                label: localization.translate("customer"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.text,
-              ),
-              DecoratedFormField(
-                name: 'label',
-                label: localization.translate("label"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.text,
-              ),
               DecoratedFormPickerField(
                 keepAsID: false,
-                ctx: const ['person'],
-                name: 'operator',
-                label: localization.translate("operator"),
+                ctx: const ['warehouse', 'storage'],
+                name: 'storage',
+                label: localization.translate("storage"),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -224,9 +171,20 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
               ),
               DecoratedFormPickerField(
                 keepAsID: false,
-                ctx: const ['person'],
-                name: 'control',
-                label: localization.translate("control"),
+                ctx: const ['goods'],
+                name: 'goods',
+                label: localization.translate("goods"),
+                autofocus: true,
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(),
+                ]),
+                onSave: (context) {},
+              ),
+              DecoratedFormPickerField(
+                keepAsID: false,
+                ctx: const ['uom'],
+                name: 'uom',
+                label: localization.translate("uom"),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -235,7 +193,7 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
               ),
               DecoratedFormField(
                 name: 'qty',
-                label: localization.translate("qty in box"),
+                label: localization.translate("qty"),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -275,42 +233,32 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
 
       print("printer $ip $port");
 
-      final order = await widget.order.enrich([
-        const Field("product", ReferenceType(['product']))
-      ]);
+      final doc = await widget.doc.enrich(WHInventory.schema);
 
-      print("order ${order.json}");
+      print("doc ${doc.json}");
 
-      final orderId = order.id;
-      final product = order.json['product'].json;
-      final productName = product['name'] ?? '';
-      final partNumber = product['part_number'] ?? '';
+      final docId = doc.id;
+      final goods = data['goods'] as MemoryItem;
+      final uom = data['uom'] as MemoryItem;
 
-      final date = data['date'] ?? '';
-      final customer = data['customer'] ?? '';
-      final label = data['label'] ?? '';
+      final date = doc.json['date']!;
+      final counterparty = doc.json['counterparty'];
 
-      final operator = data['operator'];
-      final operatorId = operator['_id'] ?? '';
-      final operatorName = operator['name'] ?? '';
+      // final operator = data['operator'];
 
-      final control = data['control'];
-      final controlId = control['_id'] ?? '';
-      final controlName = control['name'] ?? '';
-
-      final qty = data['qty'] ?? 0;
+      final qty = data['qty']!;
 
       final result = await Labels.connect(ip, port, (printer) async {
         setState(() => status = "registering");
         final record = await Api.feathers().create(serviceName: 'memories', data: {
-          'order': orderId,
-          'date': date,
-          'operator': operatorId,
-          'control': controlId,
+          'document': docId,
+          // 'operator': operator.id,
+          'goods': goods.id,
+          'uom': uom.id,
           'qty': qty
         }, params: {
           'oid': Api.instance.oid,
-          'ctx': ['production', 'produce']
+          'ctx': ['warehouse', 'dispatch', 'records']
         });
 
         setState(() => status = "printing");
@@ -320,16 +268,12 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
         final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
 
         final Map<String, String> labelData = {
-          "продукция": productName,
-          "артикул": partNumber,
+          "материал": goods.name(),
           "дата": dd,
           "количество": "$qty шт",
           "line1": "",
-          "оператор": operatorName,
-          "проверил": controlName,
-          "line2": "",
-          "этикетка": label,
-          "заказчик": customer,
+          "поставщик": counterparty.name(),
+          // "оператор": operator.name(),
         };
 
         Labels.lines(printer, id, labelData);
@@ -356,32 +300,5 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
         status = "register";
       });
     }
-  }
-}
-
-class ProductionOrderProducedView extends StatelessWidget {
-  final MemoryItem order;
-
-  const ProductionOrderProducedView({super.key, required this.order});
-
-  @override
-  Widget build(BuildContext context) {
-    final ctx = ['production', 'produce'];
-    final schema = [
-      const Field('qty', NumberType()),
-      Field('code', CalculatedType((MemoryItem bag) async {
-        return bag.id.split('T').last;
-      }))
-    ];
-    return BlocProvider(
-      create: (context) => MemoryBloc()..add(MemoryFetch('memories', ctx, schema: schema, filter: {'order': order.id})),
-      child: MemoryList(
-        ctx: ctx,
-        schema: schema,
-        title: (MemoryItem item) => item.json['qty'],
-        subtitle: (MemoryItem item) => item.id.split('T').last,
-        onTap: (MemoryItem item) => {},
-      ),
-    );
   }
 }

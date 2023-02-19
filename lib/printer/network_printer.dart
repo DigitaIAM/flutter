@@ -77,7 +77,8 @@ class NetworkPrinter {
     sendCommand('QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,M2,"$content"\r\n');
   }
 
-  void text(int x, int y, String content, {String font = "1", int rotation: 0, int mx = 1, int my = 1, int alignment = 0
+  void text(int x, int y, String content,
+      {String font = "1", int rotation = 0, int mx = 1, int my = 1, int alignment = 0
       // 0 : Default (Left)
       // 1 : Left
       // 2 : Center

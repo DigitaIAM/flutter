@@ -25,8 +25,15 @@ class DateType extends Type {
 
 class ReferenceType extends Type {
   final List<String> ctx;
+  final List<Field> fields;
 
-  const ReferenceType(this.ctx);
+  const ReferenceType(this.ctx, {this.fields = const []});
+}
+
+class ListType extends Type {
+  final List<Field> fields;
+
+  const ListType(this.fields);
 }
 
 class CalculatedType extends Type {

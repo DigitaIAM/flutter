@@ -12,7 +12,7 @@
   "search": "Поиск",
   "clear": "Очистить",
   "error": "Ошибка",
-  "date": "Дата",
+  "date": "дата",
   "no-connection": "Нет соединения",
   "name": "Название",
   "dev-index": "Device Index",
@@ -70,5 +70,17 @@
   "people": "люди",
   "person": "человек",
   "operator": "оператор",
-  "control": "контролёр"
+  "control": "контролёр",
+  "register": "зарегистрировать",
+  "connecting": "подключение к принтеру",
+  "registering": "регистрация в системе",
+  "printing": "печать этикетки",
+  "warehouse receive": "приходная накладная",
+  "new warehouse receive": "новая приходная накладная",
+  "edit warehouse receive": "редактирование приходной накладной",
+  "warehouse dispatch": "расходная накладная",
+  "new warehouse dispatch": "новая расходная накладная",
+  "edit warehouse dispatch": "редактирование расходной накладной",
+  "storage": "место хранения",
+  "counterparty": "контрагент"
 }

@@ -85,7 +85,9 @@ class _MenuDrawerState extends State<MenuDrawer> {
                                       icon: item.icon(),
                                       title: localization.translate(item.name()),
                                       onTap: () {
-                                        print("fire ChangeView ${item.route()}");
+                                        if (uiState.isMobile) {
+                                          context.read<UiBloc>().add(MenuVisibility(visible: false, collapsed: false));
+                                        }
                                         context.read<UiBloc>().add(ChangeView(item.route()));
                                       },
                                       // onLongPress: () => ,

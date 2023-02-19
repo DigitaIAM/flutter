@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:grouped_list/grouped_list.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
@@ -7,7 +8,6 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
-import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/icon_text.dart';
 import 'package:overflow_view/overflow_view.dart';
@@ -59,7 +59,18 @@ class MemoryList extends StatefulWidget {
   final List<String> ctx;
   final List<Field> schema;
 
-  const MemoryList({super.key, required this.ctx, required this.schema});
+  final String Function(MemoryItem) title;
+  final String Function(MemoryItem) subtitle;
+  final Function(MemoryItem) onTap;
+
+  const MemoryList({
+    super.key,
+    required this.ctx,
+    required this.schema,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
   @override
   State<StatefulWidget> createState() => _MemoryListState();
@@ -167,7 +178,7 @@ class _MemoryListState extends State<MemoryList> {
             child: Stack(
               alignment: Alignment.topCenter,
               children: <Widget>[
-                listOrTable(),
+                listOrTable(uiState),
                 // if ((state.isLoading &&
                 //     (isMobile(context) || !entityType.isSetting)) ||
                 //     (state.isSaving &&
@@ -183,7 +194,66 @@ class _MemoryListState extends State<MemoryList> {
     );
   }
 
-  Widget listOrTable() {
+  Widget listOrTable(UiState uiState) {
+    final localization = AppLocalizations.of(context);
+
+    return BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
+      switch (state.status) {
+        case RequestStatus.failure:
+          return Center(child: Text(localization.translate('failed to fetch data')));
+        case RequestStatus.success:
+          if (state.items.isEmpty) {
+            return Center(child: Text(localization.translate('nothing yet')));
+          }
+          if (uiState.isMobile) {
+            return buildList(context, state);
+          } else {
+            return buildPlutoGrid(context, state);
+          }
+        case RequestStatus.loading:
+          return const Center(child: CircularProgressIndicator());
+      }
+    });
+  }
+
+  GroupedListView buildList(BuildContext context, RequestState state) {
+    return GroupedListView<MemoryItem, String>(
+      elements: state.items,
+      groupBy: (element) => element.json['date'] ?? '',
+      groupComparator: (g1, g2) => g2.compareTo(g1),
+      itemComparator: (item1, item2) => item1.id.compareTo(item2.id),
+      order: GroupedListOrder.ASC,
+      useStickyGroupSeparators: true,
+      groupSeparatorBuilder: (String value) => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          value,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
+      itemBuilder: (context, item) {
+        return Card(
+          elevation: 3.0,
+          margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+          child: SizedBox(
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              // leading: const Icon(Icons.account_circle),
+              title: Text(widget.title(item)),
+              subtitle: Text(widget.subtitle(item)),
+              trailing: const Icon(Icons.arrow_forward),
+              onTap: () {
+                widget.onTap(item);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  PlutoGrid buildPlutoGrid(BuildContext context, RequestState state) {
     final localization = AppLocalizations.of(context);
 
     final List<PlutoColumn> columns = widget.schema.map((field) {
@@ -203,22 +273,6 @@ class _MemoryListState extends State<MemoryList> {
       );
     }).toList();
 
-    return BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
-      switch (state.status) {
-        case RequestStatus.failure:
-          return Center(child: Text(localization.translate('failed to fetch data')));
-        case RequestStatus.success:
-          if (state.items.isEmpty) {
-            return Center(child: Text(localization.translate('nothing yet')));
-          }
-          return buildPlutoGrid(context, state, columns);
-        case RequestStatus.loading:
-          return const Center(child: CircularProgressIndicator());
-      }
-    });
-  }
-
-  PlutoGrid buildPlutoGrid(BuildContext context, RequestState state, List<PlutoColumn> columns) {
     final theme = Theme.of(context);
     final DataTableThemeData dataTableTheme = DataTableTheme.of(context);
 
@@ -272,11 +326,9 @@ class _MemoryListState extends State<MemoryList> {
           print(event);
         },
         onSelected: (PlutoGridOnSelectedEvent event) {
-          print("onSelected");
           final item = event.row?.cells["_memory_"]?.value;
           if (item is MemoryItem) {
-            print("fire ChangeView");
-            context.read<UiBloc>().add(ChangeView(widget.ctx, entity: item));
+            widget.onTap(item);
           }
         },
         mode: PlutoGridMode.select,

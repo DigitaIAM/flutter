@@ -6,9 +6,8 @@ import 'package:nae/api.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
+import 'package:nae/utils/cache.dart';
 import 'package:stream_transform/stream_transform.dart';
-
-import '../../utils/cache.dart';
 
 const throttleDuration = Duration(milliseconds: 100);
 

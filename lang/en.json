@@ -69,5 +69,17 @@
   "people": "people",
   "person": "person",
   "operator": "operator",
-  "control": "control"
+  "control": "control",
+  "register": "register",
+  "connecting": "connecting",
+  "registering": "registering",
+  "printing": "printing",
+  "warehouse receive": "warehouse receive",
+  "new warehouse receive": "new warehouse receive",
+  "edit warehouse receive": "edit warehouse receive",
+  "warehouse dispatch": "warehouse dispatch",
+  "new warehouse dispatch": "new warehouse dispatch",
+  "edit warehouse dispatch": "edit warehouse dispatch",
+  "storage": "storage",
+  "counterparty": "counterparty"
 }

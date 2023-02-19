@@ -18,15 +18,15 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 
 import 'screen.dart';
 
-class ProductEdit extends EntityHolder {
-  const ProductEdit({super.key, required super.entity});
+class WHStorageEdit extends EntityHolder {
+  const WHStorageEdit({super.key, required super.entity});
 
   @override
-  State<ProductEdit> createState() => _ProductEditState();
+  State<WHStorageEdit> createState() => _WHStorageEditState();
 }
 
-class _ProductEditState extends State<ProductEdit> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_productEdit');
+class _WHStorageEditState extends State<WHStorageEdit> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_whStorageEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   @override
@@ -43,14 +43,16 @@ class _ProductEditState extends State<ProductEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      context.read<MemoryBloc>().add(MemorySave("memories", Product.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context
+          .read<MemoryBloc>()
+          .add(MemorySave("memories", WHStorage.ctx, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
     }
 
     // if (_formKey.currentState?.validate() ?? false) {
-    //   context.read<MemoryBloc>().add(MemorySave("memories", UomScreen.route, widget.entity));
+    //   context.read<MemoryBloc>().add(MemorySave("memories", WHStorageScreen.route, widget.entity));
     // }
   }
 
@@ -58,24 +60,36 @@ class _ProductEditState extends State<ProductEdit> {
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
+    routerBack(BuildContext context) {
+      context.read<UiBloc>().add(ChangeView(WHStorage.ctx));
+      // TODO context.read<UiBloc>().add(PreviousRoute());
+    }
+
     return EditScaffold(
       entity: widget.entity,
-      title: widget.entity.isNew ? localization.translate("new product") : localization.translate("edit product"),
+      title: widget.entity.isNew ? localization.translate("new storage") : localization.translate("edit storage"),
       onClose: (context) {
-        context.read<UiBloc>().add(ChangeView(Product.ctx));
+        context.read<UiBloc>().add(ChangeView(WHStorage.ctx));
       },
-      onCancel: (context) {
-        context.read<UiBloc>().add(ChangeView(Product.ctx));
-        // TODO context.read<UiBloc>().add(PreviousRoute());
-      },
+      onCancel: routerBack,
       onSave: _onSave,
       body: AppForm(
-        schema: Product.schema,
         formKey: _formKey,
         focusNode: _focusNode,
         entity: widget.entity,
         child: ScrollableListView(children: <Widget>[
           FormCard(isLast: true, children: <Widget>[
+            DecoratedFormPickerField(
+              ctx: const ['warehouse', 'storage'],
+              name: 'location',
+              label: localization.translate('location'),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: _onSave,
+              // keyboardType: TextInputType.text,
+            ),
             DecoratedFormField(
               name: 'name',
               label: localization.translate("name"),
@@ -87,24 +101,14 @@ class _ProductEditState extends State<ProductEdit> {
               keyboardType: TextInputType.text,
             ),
             DecoratedFormField(
-              name: 'part_number',
-              label: localization.translate("part number"),
+              name: 'code',
+              label: localization.translate("code"),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
               ]),
               onSave: _onSave,
               keyboardType: TextInputType.text,
-            ),
-            DecoratedFormPickerField(
-              ctx: const ['uom'],
-              name: 'uom',
-              label: localization.translate("uom"),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-              ]),
-              onSave: _onSave,
             ),
           ])
         ]),

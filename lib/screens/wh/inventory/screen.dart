@@ -14,36 +14,41 @@ import 'package:nae/widgets/scaffold_list.dart';
 import 'edit.dart';
 import 'view.dart';
 
-class ProductionOrder extends Entity {
-  static const List<String> ctx = ['production', 'order'];
+class WHInventory extends Entity {
+  static const List<String> ctx = ['warehouse', 'inventory', 'document'];
 
   static final List<Field> schema = [
     const Field('date', DateType()),
-    const Field('area', ReferenceType(['production', 'area'])),
-    const Field('product', ReferenceType(['product'])),
-    const Field('planned', NumberType()),
-    // /production/produce[order == order.id]/sum(qty) = pieces
-    // /production/produce[order == order.id]/count() = boxes
-    Field(
-      'produced~',
-      CalculatedType((MemoryItem order) async {
-        final produced = order.json['produced'];
-        if (produced == null) {
-          return '';
-        }
-        return '${produced['piece']} шт, ${produced['box']} кор';
-      }),
-    ),
+    const Field('storage', ReferenceType(['warehouse', 'storage'])),
+    const Field(
+        'goods',
+        ListType([
+          Field('storage', ReferenceType(['warehouse', 'storage'])),
+          // Field('ref', ReferenceType(['goods'])),
+          Field('code', StringType()),
+          Field(
+            'goods',
+            ReferenceType([
+              'goods'
+            ], fields: [
+              Field('name', StringType()),
+              Field('uom', ReferenceType(['uom'])),
+            ]),
+          ),
+          Field('qty', NumberType()),
+          // Field('price', NumberType()),
+          // Field('cost', NumberType()),
+        ]))
   ];
 
   @override
   List<String> route() => ctx;
 
   @override
-  String name() => "production order";
+  String name() => "warehouse inventory";
 
   @override
-  IconData icon() => Icons.precision_manufacturing_outlined;
+  IconData icon() => Icons.fact_check_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {
@@ -52,13 +57,13 @@ class ProductionOrder extends Entity {
       // _${DateTime.now().toString()}__'),
       ctx: ctx,
       schema: schema,
-      list: const ProductionOrderScreen(),
+      list: const WHInventoriesScreen(),
       view: action == "edit"
-          ? ProductionOrderEdit(
+          ? WHInventoryEdit(
               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
               entity: entity,
             )
-          : ProductionOrderView(
+          : WHInventoryView(
               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
               entity: entity,
               tabIndex: 0,
@@ -67,17 +72,17 @@ class ProductionOrder extends Entity {
   }
 }
 
-class ProductionOrderScreen extends StatelessWidget {
-  const ProductionOrderScreen({super.key});
+class WHInventoriesScreen extends StatelessWidget {
+  const WHInventoriesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return ScaffoldList(
-      entityType: ProductionOrder.ctx,
+      entityType: WHInventory.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
-        filter: null, //state.productionOrderListState.filter,
+        filter: null, //state.whInventoryListState.filter,
         onFilterChanged: (value) {
           // store.dispatch(FilterProducts(value));
         },
@@ -86,30 +91,30 @@ class ProductionOrderScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(WHInventory.ctx, action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip: AppLocalizations.of(context).translate("new production order"),
+        tooltip: AppLocalizations.of(context).translate("new warehouse inventory"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,
         ),
       ),
-      body: const ProductionOrdersListBuilder(),
+      body: const WHInventoriesListBuilder(),
     );
   }
 }
 
-class ProductionOrdersListBuilder extends StatelessWidget {
-  const ProductionOrdersListBuilder({super.key});
+class WHInventoriesListBuilder extends StatelessWidget {
+  const WHInventoriesListBuilder({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MemoryList(
-      ctx: ProductionOrder.ctx,
-      schema: ProductionOrder.schema,
-      title: (MemoryItem item) => '${item.json['area']?.name()}\n${item.json['product']?.name()}',
-      subtitle: (MemoryItem item) => 'план: ${item.json['planned']} шт\nвыработка: ${item.json['produced~']}',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, entity: item)),
+      ctx: WHInventory.ctx,
+      schema: WHInventory.schema,
+      title: (MemoryItem item) => item.name(),
+      subtitle: (MemoryItem item) => '',
+      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHInventory.ctx, entity: item)),
     );
   }
 }

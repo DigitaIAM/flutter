@@ -8,6 +8,7 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
+import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
 import 'package:nae/widgets/app_form_field.dart';
@@ -18,15 +19,15 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 
 import 'screen.dart';
 
-class ProductEdit extends EntityHolder {
-  const ProductEdit({super.key, required super.entity});
+class WHInventoryEdit extends EntityHolder {
+  const WHInventoryEdit({super.key, required super.entity});
 
   @override
-  State<ProductEdit> createState() => _ProductEditState();
+  State<WHInventoryEdit> createState() => _WHInventoryEditState();
 }
 
-class _ProductEditState extends State<ProductEdit> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_productEdit');
+class _WHInventoryEditState extends State<WHInventoryEdit> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_whInventoryEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   @override
@@ -43,7 +44,9 @@ class _ProductEditState extends State<ProductEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      context.read<MemoryBloc>().add(MemorySave("memories", Product.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context
+          .read<MemoryBloc>()
+          .add(MemorySave("memories", WHInventory.ctx, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -58,57 +61,70 @@ class _ProductEditState extends State<ProductEdit> {
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
+    routerBack(BuildContext context) {
+      context.read<UiBloc>().add(ChangeView(WHInventory.ctx));
+      // TODO context.read<UiBloc>().add(PreviousRoute());
+    }
+
     return EditScaffold(
       entity: widget.entity,
-      title: widget.entity.isNew ? localization.translate("new product") : localization.translate("edit product"),
-      onClose: (context) {
-        context.read<UiBloc>().add(ChangeView(Product.ctx));
-      },
-      onCancel: (context) {
-        context.read<UiBloc>().add(ChangeView(Product.ctx));
-        // TODO context.read<UiBloc>().add(PreviousRoute());
-      },
+      title: widget.entity.isNew
+          ? localization.translate("new warehouse inventory")
+          : localization.translate("edit warehouse inventory"),
+      onClose: routerBack,
+      onCancel: routerBack,
       onSave: _onSave,
       body: AppForm(
-        schema: Product.schema,
+        schema: WHInventory.schema,
         formKey: _formKey,
         focusNode: _focusNode,
-        entity: widget.entity,
+        entity: getEntity(),
         child: ScrollableListView(children: <Widget>[
           FormCard(isLast: true, children: <Widget>[
             DecoratedFormField(
-              name: 'name',
-              label: localization.translate("name"),
+              name: 'date',
+              label: localization.translate("date"),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
               ]),
               onSave: _onSave,
-              keyboardType: TextInputType.text,
-            ),
-            DecoratedFormField(
-              name: 'part_number',
-              label: localization.translate("part number"),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-              ]),
-              onSave: _onSave,
-              keyboardType: TextInputType.text,
+              keyboardType: TextInputType.datetime,
             ),
             DecoratedFormPickerField(
-              ctx: const ['uom'],
-              name: 'uom',
-              label: localization.translate("uom"),
+              ctx: const ['counterparty'],
+              name: 'counterparty',
+              label: localization.translate('counterparty'),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
               ]),
               onSave: _onSave,
+              // keyboardType: TextInputType.text,
+            ),
+            DecoratedFormPickerField(
+              ctx: const ['warehouse', 'storage'],
+              name: 'storage',
+              label: localization.translate("storage"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: _onSave,
+              // keyboardType: TextInputType.text,
             ),
           ])
         ]),
       ),
     );
+  }
+
+  MemoryItem getEntity() {
+    if (widget.entity.isNew && widget.entity.json["date"] == null) {
+      final json = Map.of(widget.entity.json);
+      json["date"] = Utils.today();
+      return MemoryItem(id: widget.entity.id, json: json);
+    }
+    return widget.entity;
   }
 }

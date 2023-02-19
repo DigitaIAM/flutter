@@ -20,6 +20,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final localization = AppLocalizations.of(context);
     final settings = Provider.of<MySettings>(context);
     if (_first) {
       getFromServer(settings);
@@ -82,21 +83,21 @@ class _CompaniesPageState extends State<CompaniesPage> {
                                           objectId: rows[index]["_id"],
                                           data: {"name": newName});
                                     },
-                                    icon: Icon(Icons.edit, color: Colors.green)),
+                                    icon: const Icon(Icons.edit, color: Colors.green)),
                                 IconButton(
                                     onPressed: () async {
                                       if (await confirm(
                                         context,
-                                        title: Text(AppLocalizations.of(context).translate("delete")),
-                                        content: Text(AppLocalizations.of(context).translate("delete-content")),
-                                        textOK: Text(AppLocalizations.of(context).translate("yes")),
-                                        textCancel: Text(AppLocalizations.of(context).translate("no")),
+                                        title: Text(localization.translate("delete")),
+                                        content: Text(localization.translate("delete-content")),
+                                        textOK: Text(localization.translate("yes")),
+                                        textCancel: Text(localization.translate("no")),
                                       )) {
                                         await Api.feathers()
                                             .remove(serviceName: "companies", objectId: rows[index]["_id"]);
                                       }
                                     },
-                                    icon: Icon(Icons.delete, color: Colors.red))
+                                    icon: const Icon(Icons.delete, color: Colors.red))
                               ],
                             )),
                       ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
+import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
@@ -30,8 +33,8 @@ class Person extends Entity {
     return EntityScreens(
       key: ValueKey('__${name()}_${DateTime.now().toString()}__'),
       ctx: ctx,
-      list: const UomScreen(),
-      // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
+      list: const PersonScreen(),
+      // action == "edit" ? PersonEdit(entity: entity) : PersonView(entity: entity),
       view: PersonEdit(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
         entity: entity,
@@ -40,8 +43,8 @@ class Person extends Entity {
   }
 }
 
-class UomScreen extends StatelessWidget {
-  const UomScreen({super.key});
+class PersonScreen extends StatelessWidget {
+  const PersonScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -54,19 +57,22 @@ class UomScreen extends StatelessWidget {
           // store.dispatch(FilterProducts(value));
         },
       ),
-      body: const UomListBuilder(),
+      body: const PersonListBuilder(),
     );
   }
 }
 
-class UomListBuilder extends StatelessWidget {
-  const UomListBuilder({super.key});
+class PersonListBuilder extends StatelessWidget {
+  const PersonListBuilder({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MemoryList(
+    return MemoryList(
       ctx: Person.ctx,
       schema: Person.schema,
+      title: (MemoryItem item) => item.name(),
+      subtitle: (MemoryItem item) => '',
+      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(Person.ctx, entity: item)),
     );
   }
 }

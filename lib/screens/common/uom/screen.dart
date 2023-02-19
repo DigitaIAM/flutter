@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
+import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
@@ -64,9 +67,12 @@ class UomListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MemoryList(
+    return MemoryList(
       ctx: Uom.ctx,
       schema: Uom.schema,
+      title: (MemoryItem item) => item.name(),
+      subtitle: (MemoryItem item) => '',
+      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(Uom.ctx, entity: item)),
     );
   }
 }

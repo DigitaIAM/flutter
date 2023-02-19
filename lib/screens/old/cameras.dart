@@ -28,6 +28,7 @@ class _CamerasPageState extends State<CamerasPage> {
 
   @override
   Widget build(BuildContext context) {
+    final localization = AppLocalizations.of(context);
     final settings = Provider.of<MySettings>(context);
     if (_first) {
       getFromServer(settings);
@@ -115,10 +116,10 @@ class _CamerasPageState extends State<CamerasPage> {
                                     onPressed: () async {
                                       if (await confirm(
                                         context,
-                                        title: Text(AppLocalizations.of(context).translate("delete")),
-                                        content: Text(AppLocalizations.of(context).translate("delete-content")),
-                                        textOK: Text(AppLocalizations.of(context).translate("yes")),
-                                        textCancel: Text(AppLocalizations.of(context).translate("no")),
+                                        title: Text(localization.translate("delete")),
+                                        content: Text(localization.translate("delete-content")),
+                                        textOK: Text(localization.translate("yes")),
+                                        textCancel: Text(localization.translate("no")),
                                       )) {
                                         await Api.feathers()
                                             .remove(serviceName: "cameras", objectId: rows[index]["_id"]);
@@ -151,7 +152,7 @@ class _CamerasPageState extends State<CamerasPage> {
 
   void deleteRow(row) {}
 
-  getDialogBody(MySettings settings, String _id, dynamic _row) {
+  getDialogBody(MySettings settings, String id, dynamic row) {
     nameController.text = "";
     devIndexController.text = "";
     protocolController.text = "";
@@ -159,14 +160,13 @@ class _CamerasPageState extends State<CamerasPage> {
     portController.text = "";
     userNameController.text = "";
     passwordController.text = "";
-    if (_row != null) {
-      print(_row);
-      nameController.text = _row["name"];
-      devIndexController.text = _row["devIndex"];
-      protocolController.text = _row["protocol"];
-      ipController.text = _row["ip"];
-      portController.text = _row["port"];
-      userNameController.text = _row["username"];
+    if (row != null) {
+      nameController.text = row["name"];
+      devIndexController.text = row["devIndex"];
+      protocolController.text = row["protocol"];
+      ipController.text = row["ip"];
+      portController.text = row["port"];
+      userNameController.text = row["username"];
       // passwordController.text = _row["password"];
     }
 
@@ -183,7 +183,7 @@ class _CamerasPageState extends State<CamerasPage> {
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
                         child: Text(
-                      _row == null ? "New camera" : _row["name"],
+                      row == null ? "New camera" : row["name"],
                       style: Theme.of(context).textTheme.headline6,
                     )),
                   ),
@@ -305,7 +305,7 @@ class _CamerasPageState extends State<CamerasPage> {
                   const Expanded(child: Text("")),
                   ElevatedButton(
                       onPressed: () async {
-                        if (_id == "") {
+                        if (id == "") {
                           await Api.feathers().create(serviceName: "cameras", data: {
                             "oid": settings.companyId,
                             "name": nameController.text,
@@ -318,7 +318,7 @@ class _CamerasPageState extends State<CamerasPage> {
                             "password": passwordController.text,
                           });
                         } else {
-                          await Api.feathers().patch(serviceName: "cameras", objectId: _id, data: {
+                          await Api.feathers().patch(serviceName: "cameras", objectId: id, data: {
                             "oid": settings.companyId,
                             "name": nameController.text,
                             "enabled": true,

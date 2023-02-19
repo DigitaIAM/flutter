@@ -97,6 +97,10 @@ class MyApp extends StatelessWidget {
     return ThemeData(
       colorScheme: ColorScheme.fromSwatch().copyWith(
         secondary: accentColor,
+        background: Colors.white,
+      ),
+      bottomAppBarTheme: const BottomAppBarTheme(
+        color: Colors.white,
       ),
       tooltipTheme: const TooltipThemeData(
         waitDuration: Duration(milliseconds: 500),
@@ -108,29 +112,32 @@ class MyApp extends StatelessWidget {
         selectionColor: accentColor,
       ),
       fontFamily: fontFamily,
-      backgroundColor: Colors.white,
       canvasColor: Colors.white,
       cardColor: Colors.white,
-      bottomAppBarColor: Colors.white,
-      primaryColorDark: const Color(0xFF0D5D91),
       // hasAccentColor ? accentColor : const Color(0xFF0D5D91),
-      primaryColorLight: const Color(0xFF5dabf4),
+      primaryColorDark: const Color(0xFF0D5D91),
       //hasAccentColor ? accentColor : const Color(0xFF5dabf4),
+      primaryColorLight: const Color(0xFF5dabf4),
       scaffoldBackgroundColor: const Color(0xFFF3F4F6),
       tabBarTheme: TabBarTheme(
-        labelColor: Colors.black, // hasAccentColor ? Colors.white : Colors.black,
-        unselectedLabelColor: Colors.black
-            .withOpacity(.65), //hasAccentColor ? Colors.white.withOpacity(.65) : Colors.black.withOpacity(.65),
+        // hasAccentColor ? Colors.white : Colors.black,
+        labelColor: Colors.black,
+        //hasAccentColor ? Colors.white.withOpacity(.65) : Colors.black.withOpacity(.65),
+        unselectedLabelColor: Colors.black.withOpacity(.65),
       ),
-      iconTheme: IconThemeData(
-        color: null, // hasAccentColor ? null : accentColor,
+      iconTheme: const IconThemeData(
+        // hasAccentColor ? null : accentColor,
+        color: null,
       ),
-      appBarTheme: AppBarTheme(
-        color: accentColor, // hasAccentColor ? accentColor : Colors.white,
+      appBarTheme: const AppBarTheme(
+        // hasAccentColor ? accentColor : Colors.white,
+        color: accentColor,
         iconTheme: IconThemeData(
-          color: Colors.white, // hasAccentColor ? Colors.white : accentColor,
+          // hasAccentColor ? Colors.white : accentColor,
+          color: Colors.white,
         ),
-        titleTextStyle: TextStyle(fontSize: 20, color: Colors.white), // hasAccentColor ? Colors.white : Colors.black),
+        // hasAccentColor ? Colors.white : Colors.black),
+        titleTextStyle: TextStyle(fontSize: 20, color: Colors.white),
       ),
       textButtonTheme: TextButtonThemeData(style: textButtonTheme),
       outlinedButtonTheme: OutlinedButtonThemeData(style: outlinedButtonTheme),
