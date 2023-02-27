@@ -81,5 +81,6 @@
   "new warehouse dispatch": "new warehouse dispatch",
   "edit warehouse dispatch": "edit warehouse dispatch",
   "storage": "storage",
-  "counterparty": "counterparty"
+  "counterparty": "counterparty",
+  "goods": "goods"
 }

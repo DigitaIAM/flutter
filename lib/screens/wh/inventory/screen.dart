@@ -11,8 +11,7 @@ import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_list.dart';
 
-import 'edit.dart';
-import 'view.dart';
+import 'edit_fullscreen.dart';
 
 class WHInventory extends Entity {
   static const List<String> ctx = ['warehouse', 'inventory', 'document'];
@@ -20,6 +19,7 @@ class WHInventory extends Entity {
   static final List<Field> schema = [
     const Field('date', DateType()),
     const Field('storage', ReferenceType(['warehouse', 'storage'])),
+    const Field('counterparty', ReferenceType(['counterparty'])),
     const Field(
         'goods',
         ListType([
@@ -48,7 +48,7 @@ class WHInventory extends Entity {
   String name() => "warehouse inventory";
 
   @override
-  IconData icon() => Icons.fact_check_outlined;
+  IconData icon() => Icons.inventory_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {
@@ -58,16 +58,20 @@ class WHInventory extends Entity {
       ctx: ctx,
       schema: schema,
       list: const WHInventoriesScreen(),
-      view: action == "edit"
-          ? WHInventoryEdit(
-              key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-              entity: entity,
-            )
-          : WHInventoryView(
-              key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-              entity: entity,
-              tabIndex: 0,
-            ),
+      view: WHInventoryEditFS(
+        key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+        entity: entity,
+      ),
+      // view: action == "edit"
+      //     ? WHInventoryEditFS(
+      //         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+      //         entity: entity,
+      //       )
+      //     : WHInventoryView(
+      //         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+      //         entity: entity,
+      //         tabIndex: 0,
+      //       ),
     );
   }
 }

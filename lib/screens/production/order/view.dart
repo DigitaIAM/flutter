@@ -170,7 +170,6 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
               DecoratedFormPickerField(
-                keepAsID: false,
                 ctx: const ['printer'],
                 name: 'printer',
                 label: localization.translate("printer"),
@@ -212,7 +211,6 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
                 keyboardType: TextInputType.text,
               ),
               DecoratedFormPickerField(
-                keepAsID: false,
                 ctx: const ['person'],
                 name: 'operator',
                 label: localization.translate("operator"),
@@ -223,7 +221,6 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
                 onSave: (context) {},
               ),
               DecoratedFormPickerField(
-                keepAsID: false,
                 ctx: const ['person'],
                 name: 'control',
                 label: localization.translate("control"),

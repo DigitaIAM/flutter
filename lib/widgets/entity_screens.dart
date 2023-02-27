@@ -13,9 +13,10 @@ import 'package:nae/widgets/memory_list.dart';
 import 'package:provider/provider.dart';
 
 abstract class EntityHolder extends StatefulWidget {
-  const EntityHolder({super.key, required this.entity});
+  const EntityHolder({super.key, required this.entity, this.fullscreen = false});
 
   final MemoryItem entity;
+  final bool fullscreen;
 
   bool anythingToShow() {
     return entity.id.isNotEmpty;
@@ -28,7 +29,13 @@ class EntityScreens extends StatelessWidget {
   final Widget list;
   final EntityHolder view;
 
-  const EntityScreens({super.key, required this.ctx, required this.list, required this.view, this.schema});
+  const EntityScreens({
+    super.key,
+    required this.ctx,
+    required this.list,
+    required this.view,
+    this.schema,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -86,33 +93,34 @@ class EntityScreens extends StatelessWidget {
     // );
     Widget? leftFilterChild;
     return [
-      Expanded(
-        flex: listFlex,
-        child: ClipRRect(
-          child: AppBorder(
-            isLeft: leftFilterChild != null,
-            child: topFilterChild == null || settings.isFilterVisible
-                ? list
-                : Column(
-                    children: [
-                      // if (prefState.isViewerFullScreen(state.uiState.filterEntityType))
-                      //   SizedBox(
-                      //     height: 360,
-                      //     child: topFilterChild,
-                      //   )
-                      // else
-                      topFilterChild,
-                      Expanded(
-                        child: AppBorder(
-                          isTop: topFilterChild != null, // && uiState.filterEntityType != null,
-                          child: list,
-                        ),
-                      )
-                    ],
-                  ),
+      if (!(view.fullscreen && view.anythingToShow()))
+        Expanded(
+          flex: listFlex,
+          child: ClipRRect(
+            child: AppBorder(
+              isLeft: leftFilterChild != null,
+              child: topFilterChild == null || settings.isFilterVisible
+                  ? list
+                  : Column(
+                      children: [
+                        // if (prefState.isViewerFullScreen(state.uiState.filterEntityType))
+                        //   SizedBox(
+                        //     height: 360,
+                        //     child: topFilterChild,
+                        //   )
+                        // else
+                        topFilterChild,
+                        Expanded(
+                          child: AppBorder(
+                            isTop: topFilterChild != null, // && uiState.filterEntityType != null,
+                            child: list,
+                          ),
+                        )
+                      ],
+                    ),
+            ),
           ),
         ),
-      ),
       if (view.anythingToShow())
         Expanded(
           flex: uiState.isFullScreen ? (listFlex + previewFlex) : previewFlex,

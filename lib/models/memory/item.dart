@@ -11,7 +11,7 @@ class MemoryItem extends Equatable {
   final String id;
   final Map<String, dynamic> json;
 
-  MemoryItem.clone(MemoryItem item) : this(id: item.id, json: jsonDecode(jsonEncode(item.json))); // Map.from(item.json)
+  MemoryItem.clone(MemoryItem item) : this(id: item.id, json: jsonDecode(jsonEncode(item.json)));
 
   MemoryItem clone() {
     return MemoryItem.clone(this);
@@ -32,13 +32,39 @@ class MemoryItem extends Equatable {
 
   get isNew => id == 'new';
 
+  get isEmpty => json.isEmpty;
+
   get updatedAt => null;
 
   @override
   List<Object> get props => [id, json];
 
+  Map<String, dynamic> toJson() {
+    return processMap(json);
+  }
+
+  Map<String, dynamic> processMap(Map<String, dynamic> map) {
+    final Map<String, dynamic> data = {};
+
+    for (final entry in map.entries) {
+      final key = entry.key;
+      final value = entry.value;
+      if (value is MemoryItem) {
+        final id = value.id;
+        assert(id.isNotEmpty && id != 'new');
+        data[key] = id;
+      } else if (value is Map<String, dynamic>) {
+        data[key] = processMap(value);
+      } else {
+        data[key] = value;
+      }
+    }
+
+    return data;
+  }
+
   Future<MemoryItem> enrich(List<Field> schema) async {
-    // TODO make configurable
+    // TODO make configurable?
 
     final cache = Cache();
 
@@ -88,4 +114,11 @@ class MemoryItem extends Equatable {
   static create() => const MemoryItem(id: 'new', json: {});
 
   static MemoryItem from(Map<String, dynamic> json) => MemoryItem(id: json['_id'], json: json);
+}
+
+class Holder {
+  final Map<String, dynamic> data;
+  final Iterable<MapEntry<String, dynamic>> entries;
+
+  Holder(this.data, this.entries);
 }

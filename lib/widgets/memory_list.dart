@@ -317,7 +317,6 @@ class _MemoryListState extends State<MemoryList> {
         // columnGroups: columnGroups,
         configuration: config,
         onLoaded: (PlutoGridOnLoadedEvent event) {
-          print(event);
           stateManager = event.stateManager;
           // stateManager.setShowColumnFilter(true);
           stateManager?.setSelectingMode(PlutoGridSelectingMode.row);

@@ -1,8 +1,8 @@
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:nae/api.dart';
 import 'package:nae/models/memory/item.dart';
-import 'package:nae/widgets/form_builder_searchable_dropdown.dart';
+import 'package:nae/widgets/autocomplete.dart';
 
 class DecoratedFormPickerField extends StatefulWidget {
   const DecoratedFormPickerField({
@@ -18,7 +18,6 @@ class DecoratedFormPickerField extends StatefulWidget {
     this.maxLines = 1,
     this.decoration,
     required this.onSave,
-    this.keepAsID = true,
   });
 
   final List<String> ctx;
@@ -36,8 +35,6 @@ class DecoratedFormPickerField extends StatefulWidget {
   final InputDecoration? decoration;
   final Function(BuildContext)? onSave;
 
-  final bool keepAsID;
-
   @override
   State<DecoratedFormPickerField> createState() => _DecoratedFormPickerFieldState();
 }
@@ -46,37 +43,68 @@ class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
   @override
   Widget build(BuildContext context) {
     final label = widget.label ?? '';
-    InputDecoration inputDecoration = widget.decoration ??
-        InputDecoration(
-            labelText: label,
-            floatingLabelBehavior: label.isEmpty ? FloatingLabelBehavior.always : FloatingLabelBehavior.auto);
-    return FormBuilderSearchableDropdown<MemoryItem>(
-      name: widget.name,
-      popupProps: const PopupProps.menu(showSearchBox: true),
-      // decoration: InputDecoration(labelText: AppLocalizations.of(context).translate("label")),
-      decoration: inputDecoration,
-      // TODO style: Theme.of(context).textTheme.bodyMedium,
-      // validator: widget.validator,
-      // autovalidateMode: AutovalidateMode.onUserInteraction,
-      compareFn: (a, b) => a.id == b.id,
-      asyncItems: (filter) async {
-        print("filter: $filter");
-        final response = await Api.feathers()
-            .find(serviceName: "memories", query: {"oid": Api.instance.oid, "ctx": widget.ctx, "\$search": filter});
-        return (response['data'] ?? []).map<MemoryItem>((item) => MemoryItem.from(item)).toList();
-      },
-      itemAsString: (MemoryItem? item) {
-        return item?.name() ?? '';
-      },
+    // InputDecoration inputDecoration = widget.decoration ??
+    // InputDecoration inputDecoration = InputDecoration(
+    //     labelText: label,
+    //     floatingLabelBehavior: label.isEmpty ? FloatingLabelBehavior.always : FloatingLabelBehavior.auto);
 
-      valueTransformer: (MemoryItem? item) {
-        if (widget.keepAsID) {
-          return item?.id;
-        } else {
-          return item?.json;
-        }
+    return FormBuilderField<MemoryItem>(
+      name: widget.name,
+      onChanged: (val) => debugPrint(val.toString()),
+      builder: (FormFieldState field) {
+        return AutocompleteField<MemoryItem>(
+          label: widget.label,
+          initialValue: field.value,
+          create: (text) async {
+            final response = await Api.feathers().create(
+                serviceName: "memories", data: {'name': text}, params: {"oid": Api.instance.oid, "ctx": widget.ctx});
+            print("response: $response");
+            return MemoryItem.from(response);
+          },
+          delegate: (text) async {
+            final response = await Api.feathers()
+                .find(serviceName: "memories", query: {"oid": Api.instance.oid, "ctx": widget.ctx, "search": text});
+            return (response['data'] ?? []).map<MemoryItem>((item) => MemoryItem.from(item)).toList();
+          },
+          displayStringForOption: (item) => item?.name() ?? '',
+          itemBuilder: (context, entry) {
+            return Text(entry.name(), style: Theme.of(context).textTheme.labelMedium);
+          },
+          onItemSelected: (entry) {
+            print('onItemSelected $entry');
+            field.didChange(entry);
+          },
+          // decoration: inputDecoration,
+        );
       },
-      focusNode: widget.focusNode,
     );
+    // return FormBuilderSearchableDropdown<MemoryItem>(
+    //   name: widget.name,
+    //   popupProps: const PopupProps.menu(showSearchBox: true),
+    //   // decoration: InputDecoration(labelText: AppLocalizations.of(context).translate("label")),
+    //   decoration: inputDecoration,
+    //   // TODO style: Theme.of(context).textTheme.bodyMedium,
+    //   // validator: widget.validator,
+    //   // autovalidateMode: AutovalidateMode.onUserInteraction,
+    //   compareFn: (a, b) => a.id == b.id,
+    //   asyncItems: (text) async {
+    //     print("text: $text");
+    //     final response = await Api.feathers()
+    //         .find(serviceName: "memories", query: {"oid": Api.instance.oid, "ctx": widget.ctx, "search": text});
+    //     return (response['data'] ?? []).map<MemoryItem>((item) => MemoryItem.from(item)).toList();
+    //   },
+    //   itemAsString: (MemoryItem? item) {
+    //     return item?.name() ?? '';
+    //   },
+    //
+    //   valueTransformer: (MemoryItem? item) {
+    //     if (widget.keepAsID) {
+    //       return item?.id;
+    //     } else {
+    //       return item?.json;
+    //     }
+    //   },
+    //   focusNode: widget.focusNode,
+    // );
   }
 }

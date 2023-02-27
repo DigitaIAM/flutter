@@ -28,7 +28,7 @@ class WHStorage extends Entity {
   String name() => "storage";
 
   @override
-  IconData icon() => Icons.place_outlined;
+  IconData icon() => Icons.shelves; // Icons.place_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {

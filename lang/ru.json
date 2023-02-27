@@ -81,6 +81,8 @@
   "warehouse dispatch": "расходная накладная",
   "new warehouse dispatch": "новая расходная накладная",
   "edit warehouse dispatch": "редактирование расходной накладной",
+  "warehouse inventory": "акт инвенторизации",
   "storage": "место хранения",
-  "counterparty": "контрагент"
+  "counterparty": "контрагент",
+  "goods": "товар"
 }
