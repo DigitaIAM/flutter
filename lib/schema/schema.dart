@@ -3,8 +3,9 @@ import 'package:nae/models/memory/item.dart';
 class Field {
   final String name;
   final Type type;
+  final double width;
 
-  const Field(this.name, this.type);
+  const Field(this.name, this.type, {this.width = 1.0});
 }
 
 abstract class Type {

@@ -148,7 +148,6 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
               DecoratedFormPickerField(
-                keepAsID: false,
                 ctx: const ['printer'],
                 name: 'printer',
                 label: localization.translate("printer"),
@@ -159,7 +158,6 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
                 onSave: (context) {},
               ),
               DecoratedFormPickerField(
-                keepAsID: false,
                 ctx: const ['warehouse', 'storage'],
                 name: 'storage',
                 label: localization.translate("storage"),
@@ -170,7 +168,6 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
                 onSave: (context) {},
               ),
               DecoratedFormPickerField(
-                keepAsID: false,
                 ctx: const ['goods'],
                 name: 'goods',
                 label: localization.translate("goods"),
@@ -181,7 +178,6 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
                 onSave: (context) {},
               ),
               DecoratedFormPickerField(
-                keepAsID: false,
                 ctx: const ['uom'],
                 name: 'uom',
                 label: localization.translate("uom"),

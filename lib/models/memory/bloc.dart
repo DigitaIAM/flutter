@@ -6,6 +6,7 @@ import 'package:nae/api.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
+import 'package:nae/schema/schema.dart';
 import 'package:nae/utils/cache.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -18,7 +19,7 @@ EventTransformer<E> throttleDroppable<E>(Duration duration) {
 }
 
 class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
-  MemoryBloc() : super(RequestState()) {
+  MemoryBloc({this.schema, this.reverse = false}) : super(RequestState()) {
     print("init RequestState");
     on<MemorySave>(_onSave);
     on<MemoryFetch>(
@@ -30,6 +31,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     on<MemoryCreated>(_onCreated);
     on<MemoryUpdate>(_onUpdate);
     on<MemoryUpdated>(_onUpdated);
+    on<MemoryPatch>(_onPatch);
+    // on<MemoryPatched>(_onPatched);
     // TODO on<MemoryRemove>(_onRemove);
 
     // Api.feathers().scketio.reset(serviceName: "memories");
@@ -79,6 +82,9 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     // );
   }
 
+  final List<Field>? schema;
+  final bool reverse;
+
   StreamSubscription? streamSubscription;
 
   @override
@@ -95,32 +101,37 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
         // reset cache
         Cache().clear();
       }
-      // if (state.status == RequestStatus.loading) {
-      //   final items = await _fetch(event.serviceName, event.ctx);
-      //   return emit(state.copyWith(
-      //     status: RequestStatus.success,
-      //     items: items,
-      //     hasReachedMax: false,
-      //   ));
-      // }
 
-      // print('fetching ${state.items.length}');
-      final items = await _fetch(event.serviceName, event.ctx, state.items.length, event.filter);
-      // print(items.length);
+      List<MemoryItem> result = [];
 
-      // enrich
-      if (event.schema != null) {
-        for (int i = 0; i < items.length; i++) {
-          final item = items[i];
-          items[i] = await item.enrich(event.schema!);
+      while (true) {
+        final items = await _fetch(event, state.items.length + result.length);
+        print(items);
+
+        // enrich
+        final s = event.schema ?? schema ?? [];
+        if (s.isNotEmpty) {
+          for (int i = 0; i < items.length; i++) {
+            final item = items[i];
+            result.add(await item.enrich(s));
+          }
+        } else {
+          result.addAll(items);
         }
+
+        if (items.isEmpty) {
+          break;
+        } else if (event.loadAll) {
+          continue;
+        }
+        break;
       }
 
-      emit(items.isEmpty
+      emit(result.isEmpty
           ? state.copyWith(status: RequestStatus.success, hasReachedMax: true)
           : state.copyWith(
               status: RequestStatus.success,
-              items: List.of(state.items)..addAll(items),
+              items: List.of(state.items)..addAll(result),
               hasReachedMax: false,
             ));
     } catch (e, stacktrace) {
@@ -131,19 +142,20 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
   }
 
-  Future<List<MemoryItem>> _fetch(
-      String serviceName, List<String> ctx, int startIndex, Map<String, String>? filter) async {
+  Future<List<MemoryItem>> _fetch(MemoryFetch event, int startIndex) async {
     var query = {
-      "oid": Api.instance.oid,
-      "ctx": ctx,
-      "\$skip": startIndex,
+      'oid': Api.instance.oid,
+      'ctx': event.ctx,
+      '\$skip': startIndex,
+      'reverse': event.reverse,
     };
 
-    if (filter != null && filter.isNotEmpty) {
+    final filter = event.filter;
+    if (filter.isNotEmpty) {
       query['filter'] = filter;
     }
 
-    final response = await Api.feathers().find(serviceName: serviceName, query: query);
+    final response = await Api.feathers().find(serviceName: event.serviceName, query: query);
 
     List<MemoryItem> list = [];
 
@@ -174,9 +186,9 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     print("_onSave: ${event.data.id}");
     print(event.data.json);
     if (event.data.isNew) {
-      return _onCreate(MemoryCreate(event.serviceName, event.ctx, event.data.json), emit);
+      return _onCreate(MemoryCreate(event.serviceName, event.ctx, event.data.toJson()), emit);
     } else {
-      return _onUpdate(MemoryUpdate(event.serviceName, event.ctx, event.data.json), emit);
+      return _onUpdate(MemoryUpdate(event.serviceName, event.ctx, event.data.toJson()), emit);
     }
   }
 
@@ -196,7 +208,11 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
         }
       }
       if (notFound) {
-        list.insert(0, saved);
+        if (reverse) {
+          list.add(saved);
+        } else {
+          list.insert(0, saved);
+        }
       }
 
       print("state: ");
@@ -225,10 +241,17 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     print("update response:");
     print(response);
 
-    return MemoryItem(
+    final item = MemoryItem(
       id: response['_id'],
       json: response,
     );
+
+    // enrich
+    final s = schema ?? [];
+    if (s.isNotEmpty) {
+      return await item.enrich(s);
+    }
+    return item;
   }
 
   Future<void> _onUpdate(MemoryUpdate event, Emitter<RequestState> emit) async {
@@ -244,6 +267,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
           list[i] = saved;
         }
       }
+
+      print("saved $saved");
 
       return emit(state.copyWith(
         items: list,
@@ -267,15 +292,22 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     print("update response:");
     print(response);
 
-    return MemoryItem(
+    final item = MemoryItem(
       id: response['_id'],
       json: response,
     );
+
+    // enrich
+    final s = schema ?? [];
+    if (s.isNotEmpty) {
+      return await item.enrich(s);
+    }
+    return item;
   }
 
   Future<void> _onPatch(MemoryPatch event, Emitter<RequestState> emit) async {
     try {
-      final saved = await _patch(event.serviceName, event.ctx, event.data);
+      final saved = await _patch(event.serviceName, event.ctx, event.id, event.data);
 
       final List<MemoryItem> list = List.from(state.items);
 
@@ -299,20 +331,26 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
   }
 
-  Future<MemoryItem> _patch(String serviceName, List<String> ctx, Map<String, dynamic> data) async {
+  Future<MemoryItem> _patch(String serviceName, List<String> ctx, String id, Map<String, dynamic> data) async {
     var params = {
       "oid": Api.instance.oid,
       "ctx": ctx,
     };
-    final id = data["_id"] as String;
     final response = await Api.feathers().patch(serviceName: serviceName, objectId: id, data: data, params: params);
     print("patch response:");
     print(response);
 
-    return MemoryItem(
+    final item = MemoryItem(
       id: response['_id'],
       json: response,
     );
+
+    // enrich
+    final s = schema ?? [];
+    if (s.isNotEmpty) {
+      return await item.enrich(s);
+    }
+    return item;
   }
 
   Future<void> _onCreated(MemoryCreated event, Emitter<RequestState> emit) async {

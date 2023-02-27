@@ -14,5 +14,7 @@ const double cDrawerWidthMobile = 272;
 const double cDrawerWidthDesktop = 210;
 const double cBarHeight = 50;
 
+const double cTableColumnGap = 16;
+
 // JavaScript does not support integers, use it detect web environment
 const bool cIsWeb = identical(0, 0.0);

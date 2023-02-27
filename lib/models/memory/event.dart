@@ -8,12 +8,15 @@ abstract class MemoryEvent extends Equatable {
 }
 
 class MemoryFetch extends MemoryEvent {
-  MemoryFetch(this.serviceName, this.ctx, {this.schema, this.filter = const {}});
+  MemoryFetch(this.serviceName, this.ctx,
+      {this.schema, this.filter = const {}, this.loadAll = false, this.reverse = false});
 
   final String serviceName;
   final List<String> ctx;
   final List<Field>? schema;
   final Map<String, String> filter;
+  final bool reverse;
+  final bool loadAll;
 }
 
 class MemoryRequest extends MemoryEvent {
@@ -61,10 +64,11 @@ class MemoryUpdated extends MemoryEvent {
 }
 
 class MemoryPatch extends MemoryEvent {
-  MemoryPatch(this.serviceName, this.ctx, this.data);
+  MemoryPatch(this.serviceName, this.ctx, this.id, this.data);
 
   final String serviceName;
   final List<String> ctx;
+  final String id;
   final Map<String, dynamic> data;
 }
 

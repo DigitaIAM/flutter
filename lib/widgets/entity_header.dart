@@ -34,7 +34,7 @@ class EntityHeader extends StatelessWidget {
     return widgets;
   }
 
-  Widget title(BuildContext context, String label, String value) {
+  Widget title(BuildContext context, String label, String? value) {
     final text = Theme.of(context).textTheme.bodyLarge!;
 
     return CopyToClipboard(
@@ -48,7 +48,7 @@ class EntityHeader extends StatelessWidget {
           const SizedBox(height: 8),
           FittedBox(
             child: Text(
-              (value ?? '').isEmpty ? ' ' : value,
+              (value ?? '').isEmpty ? ' ' : value ?? '',
               style: text.copyWith(fontSize: 30),
             ),
           )

@@ -12,32 +12,31 @@ import 'package:nae/widgets/scaffold_list.dart';
 
 import 'edit.dart';
 
-class Product extends Entity {
-  static const List<String> ctx = ['product'];
+class Goods extends Entity {
+  static const List<String> ctx = ['goods'];
 
   static List<Field> schema = [
     const Field('name', StringType()),
-    const Field('part_number', StringType()),
     const Field('uom', ReferenceType(['uom'])),
-    Field('qty', CalculatedType((MemoryItem product) async => "?"))
+    Field('qty', CalculatedType((MemoryItem goods) async => "?"))
   ];
 
   @override
   List<String> route() => ctx;
 
   @override
-  String name() => "product";
+  String name() => "goods";
 
   @override
-  IconData icon() => Icons.catching_pokemon_outlined;
+  IconData icon() => Icons.widgets_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
       key: ValueKey('__${name()}_${DateTime.now().toString()}__'),
       ctx: ctx,
-      list: const ProductScreen(),
-      view: ProductEdit(
+      list: const GoodsScreen(),
+      view: GoodsEdit(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
         entity: entity,
       ), // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
@@ -45,36 +44,36 @@ class Product extends Entity {
   }
 }
 
-class ProductScreen extends StatelessWidget {
-  const ProductScreen({super.key});
+class GoodsScreen extends StatelessWidget {
+  const GoodsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldList(
-      entityType: Product.ctx,
+      entityType: Goods.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
-        filter: null, //state.productListState.filter,
+        filter: null, //state.goodsListState.filter,
         onFilterChanged: (value) {
-          // store.dispatch(FilterProducts(value));
+          // store.dispatch(FilterGoodss(value));
         },
       ),
-      body: const ProductListBuilder(),
+      body: const GoodsListBuilder(),
     );
   }
 }
 
-class ProductListBuilder extends StatelessWidget {
-  const ProductListBuilder({super.key});
+class GoodsListBuilder extends StatelessWidget {
+  const GoodsListBuilder({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MemoryList(
-      ctx: Product.ctx,
-      schema: Product.schema,
+      ctx: Goods.ctx,
+      schema: Goods.schema,
       title: (MemoryItem item) => item.name(),
       subtitle: (MemoryItem item) => '',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(Product.ctx, entity: item)),
+      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(Goods.ctx, entity: item)),
     );
   }
 }
