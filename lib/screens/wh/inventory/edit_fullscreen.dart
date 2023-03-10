@@ -166,8 +166,8 @@ class _LinesState extends State<Lines> {
     final schema = <Field>[
       // const Field('code', StringType()),
       const Field('goods', ReferenceType(['goods']), width: 3.0),
-      const Field('uom', ReferenceType(['uom']), width: 0.5),
-      const Field('qty', NumberType(), width: 1.0),
+      const Field('uom', ReferenceType(['uom']), path: ['qty','uom'], width: 0.5),
+      const Field('qty', NumberType(), path: ['qty','number'], width: 1.0),
       // const Field('storage', ReferenceType(['warehouse', 'storage'])),
     ];
 
@@ -252,7 +252,7 @@ class _LinesState extends State<Lines> {
           final column = entry.value;
           if (column.type is ReferenceType) {
             final type = column.type as ReferenceType;
-            final MemoryItem? value = item.json[column.name];
+            final MemoryItem? value = column.resolve(item.json);
             return Padding(
               padding: const EdgeInsets.only(right: cTableColumnGap),
               child: AutocompleteField<MemoryItem>(

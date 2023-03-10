@@ -32,10 +32,10 @@ class WHInventory extends Entity {
               'goods'
             ], fields: [
               Field('name', StringType()),
-              Field('uom', ReferenceType(['uom'])),
+              Field('uom', ReferenceType(['uom']), path: ['qty','uom']),
             ]),
           ),
-          Field('qty', NumberType()),
+          Field('qty', NumberType(), path: ['qty','number']),
           // Field('price', NumberType()),
           // Field('cost', NumberType()),
         ]))

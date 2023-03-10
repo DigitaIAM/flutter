@@ -2,10 +2,53 @@ import 'package:nae/models/memory/item.dart';
 
 class Field {
   final String name;
+  final List<String>? path;
+
   final Type type;
   final double width;
 
-  const Field(this.name, this.type, {this.width = 1.0});
+  const Field(this.name, this.type, {this.path, this.width = 1.0});
+
+  dynamic resolve(Map<String, dynamic> json) {
+    print("resolve: ");
+    print(path);
+    print(json);
+    if (path != null) {
+      dynamic value = json;
+
+      for (final name in path!) {
+        if (value == null) {
+          return null;
+        }
+        value = value[name];
+      }
+
+      return value;
+    }
+    return json[name];
+  }
+
+  void update(Map<String, dynamic> json, MemoryItem value) {
+    if (path != null) {
+      var v = json;
+
+      final _path = path!;
+      final _last = _path.length - 1;
+
+      print("----");
+      for (final name in _path.sublist(0, _last)) {
+        print(name);
+        v = v[name];
+      }
+
+      print("====");
+      print(_path[_last]);
+
+      v[_path[_last]] = value;
+    } else {
+      json[name] = value;
+    }
+  }
 }
 
 abstract class Type {

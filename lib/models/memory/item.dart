@@ -81,13 +81,15 @@ class MemoryItem extends Equatable {
         final name = field.name;
         final type = field.type as ReferenceType;
 
-        if (copy[name] is! MemoryItem) {
-          final String id = copy[name] ?? '';
+        final dynamic value = field.resolve(copy); // copy[name]
+        if (value is! MemoryItem) {
+          final String id = value ?? '';
           if (id.isNotEmpty) {
             try {
               final cached = cache.get(id);
               if (cached != null) {
-                copy[name] = cached;
+                // copy[name] = cached;
+                field.update(copy, cached);
               } else {
                 final response = await Api.feathers().get(serviceName: "memories", objectId: id, params: {
                   "oid": Api.instance.oid,
@@ -96,13 +98,16 @@ class MemoryItem extends Equatable {
 
                 final item = MemoryItem(id: id, json: response);
                 cache.add(item);
-                copy[name] = item;
+                // copy[name] = item;
+                field.update(copy, item);
               }
             } catch (e) {
-              copy[name] = MemoryItem(id: id, json: const {});
+              // copy[name] = MemoryItem(id: id, json: const {});
+              field.update(copy, MemoryItem(id: id, json: const {}));
             }
           } else {
-            copy[name] = MemoryItem(id: id, json: const {});
+            // copy[name] = MemoryItem(id: id, json: const {});
+            field.update(copy, MemoryItem(id: id, json: const {}));
           }
         }
       }
