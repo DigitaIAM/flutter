@@ -10,9 +10,9 @@ class Field {
   const Field(this.name, this.type, {this.path, this.width = 1.0});
 
   dynamic resolve(Map<String, dynamic> json) {
-    print("resolve: ");
-    print(path);
-    print(json);
+    // print("resolve: ");
+    // print(path);
+    // print(json);
     if (path != null) {
       dynamic value = json;
 
@@ -32,19 +32,19 @@ class Field {
     if (path != null) {
       var v = json;
 
-      final _path = path!;
-      final _last = _path.length - 1;
+      final steps = path!;
+      final last = steps.length - 1;
 
-      print("----");
-      for (final name in _path.sublist(0, _last)) {
-        print(name);
+      // print("----");
+      for (final name in steps.sublist(0, last)) {
+        // print(name);
         v = v[name];
       }
 
-      print("====");
-      print(_path[_last]);
+      // print("====");
+      // print(_path[_last]);
 
-      v[_path[_last]] = value;
+      v[steps[last]] = value;
     } else {
       json[name] = value;
     }
