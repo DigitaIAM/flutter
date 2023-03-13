@@ -39,7 +39,7 @@ class _WHDispatchViewState extends State<WHDispatchView> with SingleTickerProvid
 
     // final state = widget.viewModel.state;
     _controller = TabController(
-      vsync: this, length: 2, initialIndex: 0, // widget.isFilter ? 0 : state.whDispatchUIState.tabIndex
+      vsync: this, length: 2, initialIndex: 0, // widget.isFilter ? 0 : state.WHDispatchUIState.tabIndex
     );
     _controller.addListener(_onTabChanged);
   }
@@ -126,7 +126,7 @@ class WHDispatchGoods extends StatefulWidget {
 }
 
 class _WHDispatchGoodsState extends State<WHDispatchGoods> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_whDispatchGoodsEdit');
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHDispatchGoodsEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});

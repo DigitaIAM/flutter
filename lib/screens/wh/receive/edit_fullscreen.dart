@@ -24,15 +24,15 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 
 import 'screen.dart';
 
-class WHInventoryEditFS extends EntityHolder {
-  const WHInventoryEditFS({super.key, required super.entity}) : super(fullscreen: true);
+class WHReceiveEditFS extends EntityHolder {
+  const WHReceiveEditFS({super.key, required super.entity}) : super(fullscreen: true);
 
   @override
-  State<WHInventoryEditFS> createState() => _WHInventoryEditFSState();
+  State<WHReceiveEditFS> createState() => _WHReceiveEditFSState();
 }
 
-class _WHInventoryEditFSState extends State<WHInventoryEditFS> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_whInventoryEditFS');
+class _WHReceiveEditFSState extends State<WHReceiveEditFS> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveEditFS');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   @override
@@ -54,7 +54,7 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> {
 
       context
           .read<MemoryBloc>()
-          .add(MemorySave("memories", WHInventory.ctx, MemoryItem(id: widget.entity.id, json: data)));
+          .add(MemorySave("memories", WHReceive.ctx, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -70,18 +70,18 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> {
     final localization = AppLocalizations.of(context);
 
     routerBack(BuildContext context) {
-      context.read<UiBloc>().add(ChangeView(WHInventory.ctx));
+      context.read<UiBloc>().add(ChangeView(WHReceive.ctx));
       // TODO context.read<UiBloc>().add(PreviousRoute());
     }
 
     return EditScaffold(
       entity: widget.entity,
-      title: localization.translate("warehouse inventory"),
+      title: localization.translate("warehouse receive"),
       onClose: routerBack,
       onCancel: routerBack,
       onSave: _onSave,
       body: AppForm(
-        schema: WHInventory.schema,
+        schema: WHReceive.schema,
         formKey: _formKey,
         focusNode: _focusNode,
         entity: getEntity(),
@@ -107,21 +107,21 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> {
               ]),
               onSave: _onSave,
             ),
-//            DecoratedFormPickerField(
-//              ctx: const ['counterparty'],
-//              name: 'counterparty',
-//              label: localization.translate('counterparty'),
-//              autofocus: true,
-//              validator: FormBuilderValidators.compose([
-//                FormBuilderValidators.required(),
-//              ]),
-//              onSave: _onSave,
-//            ),
+            DecoratedFormPickerField(
+              ctx: const ['counterparty'],
+              name: 'counterparty',
+              label: localization.translate('counterparty'),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: _onSave,
+            ),
           ]),
           Expanded(
             child: ScrollableListView(children: <Widget>[
               Lines(
-                ctx: const ['warehouse', 'inventory'],
+                ctx: const ['warehouse', 'receive'],
                 document: widget.entity,
               ),
               // workaround to give some space for dropdown

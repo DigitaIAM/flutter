@@ -256,7 +256,7 @@ class _MemoryListState extends State<MemoryList> {
   PlutoGrid buildPlutoGrid(BuildContext context, RequestState state) {
     final localization = AppLocalizations.of(context);
 
-    final List<PlutoColumn> columns = widget.schema.map((field) {
+    final List<PlutoColumn> columns = widget.schema.where((field) => field.type is! ListType).map((field) {
       PlutoColumnType type = PlutoColumnType.text();
       if (field.type is NumberType) {
         type = PlutoColumnType.number();

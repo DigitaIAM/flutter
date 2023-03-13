@@ -18,7 +18,7 @@ class WHInventory extends Entity {
 
   static final List<Field> schema = [
     const Field('date', DateType()),
-    const Field('storage', ReferenceType(['warehouse', 'storage'])),
+    const Field('storage', ReferenceType(['storage'])),
     const Field('counterparty', ReferenceType(['counterparty'])),
     const Field(
         'goods',
