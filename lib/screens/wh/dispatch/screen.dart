@@ -11,28 +11,15 @@ import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_list.dart';
 
-import 'edit.dart';
-import 'view.dart';
-
-// ['goods'] => ['warehouse','inventory'],
-//              ['warehouse','receive'],
-//              ['warehouse','transfer'],
-//              ['warehouse','dispatch']
+import 'edit_fullscreen.dart';
 
 class WHDispatch extends Entity {
   static const List<String> ctx = ['warehouse', 'dispatch', 'document'];
 
   static final List<Field> schema = [
     const Field('date', DateType()),
-    const Field(
-        'counterparty',
-        ReferenceType([
-          'counterparty'
-        ], fields: [
-          Field('tin', StringType()),
-          Field('name', StringType()),
-        ])),
-    const Field('storage', ReferenceType(['warehouse', 'storage'])),
+    const Field('counterparty', ReferenceType(['counterparty'])),
+    const Field('storage', ReferenceType(['storage'])),
     const Field(
         'goods',
         ListType([
@@ -45,10 +32,10 @@ class WHDispatch extends Entity {
               'goods'
             ], fields: [
               Field('name', StringType()),
-              Field('uom', ReferenceType(['uom'])),
+              Field('uom', ReferenceType(['uom']), path: ['qty','uom']),
             ]),
           ),
-          Field('qty', NumberType()),
+          Field('qty', NumberType(), path: ['qty','number']),
           // Field('price', NumberType()),
           // Field('cost', NumberType()),
         ]))
@@ -61,7 +48,7 @@ class WHDispatch extends Entity {
   String name() => "warehouse dispatch";
 
   @override
-  IconData icon() => Icons.output;
+  IconData icon() => Icons.inventory_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {
@@ -71,16 +58,20 @@ class WHDispatch extends Entity {
       ctx: ctx,
       schema: schema,
       list: const WHDispatchScreen(),
-      view: action == "edit"
-          ? WHDispatchEdit(
-              key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-              entity: entity,
-            )
-          : WHDispatchView(
-              key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-              entity: entity,
-              tabIndex: 0,
-            ),
+      view: WHDispatchEditFS(
+        key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+        entity: entity,
+      ),
+//       view: action == "edit"
+//           ? WHDispatchEditFS(
+//               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+//               entity: entity,
+//             )
+//           : WHDispatchView(
+//               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+//               entity: entity,
+//               tabIndex: 0,
+//             ),
     );
   }
 }
@@ -95,7 +86,7 @@ class WHDispatchScreen extends StatelessWidget {
       entityType: WHDispatch.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
-        filter: null, //state.whDispatchListState.filter,
+        filter: null, //state.WHDispatchListState.filter,
         onFilterChanged: (value) {
           // store.dispatch(FilterProducts(value));
         },
@@ -106,7 +97,7 @@ class WHDispatchScreen extends StatelessWidget {
         onPressed: () {
           context.read<UiBloc>().add(ChangeView(WHDispatch.ctx, action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip: AppLocalizations.of(context).translate("new warehouse dispatch"),
+        tooltip: AppLocalizations.of(context).translate("new warehouse inventory"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,

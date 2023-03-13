@@ -27,7 +27,7 @@ class WHDispatchEdit extends EntityHolder {
 }
 
 class _WHDispatchEditState extends State<WHDispatchEdit> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_whDispatchEdit');
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHDispatchEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   @override
@@ -69,8 +69,8 @@ class _WHDispatchEditState extends State<WHDispatchEdit> {
     return EditScaffold(
       entity: widget.entity,
       title: widget.entity.isNew
-          ? localization.translate("new warehouse dispatch")
-          : localization.translate("edit warehouse dispatch"),
+          ? localization.translate("new warehouse inventory")
+          : localization.translate("edit warehouse inventory"),
       onClose: routerBack,
       onCancel: routerBack,
       onSave: _onSave,
@@ -128,3 +128,4 @@ class _WHDispatchEditState extends State<WHDispatchEdit> {
     return widget.entity;
   }
 }
+
