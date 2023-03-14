@@ -126,7 +126,7 @@ class WHDispatchGoods extends StatefulWidget {
 }
 
 class _WHDispatchGoodsState extends State<WHDispatchGoods> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHDispatchGoodsEdit');
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_whDispatchGoodsEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});

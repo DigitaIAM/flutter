@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
@@ -18,9 +19,9 @@ class ProductionOrder extends Entity {
   static const List<String> ctx = ['production', 'order'];
 
   static final List<Field> schema = [
-    const Field('date', DateType()),
+    fDate,
     const Field('area', ReferenceType(['production', 'area'])),
-    const Field('product', ReferenceType(['product'])),
+    fProduct,
     const Field('planned', NumberType()),
     // /production/produce[order == order.id]/sum(qty) = pieces
     // /production/produce[order == order.id]/count() = boxes

@@ -9,6 +9,12 @@ class Field {
 
   const Field(this.name, this.type, {this.path, this.width = 1.0});
 
+  Field copyWith({
+    double? width,
+  }) {
+    return Field(name, type, path: path, width: width ?? this.width);
+  }
+
   dynamic resolve(Map<String, dynamic> json) {
     // print("resolve: ");
     // print(path);

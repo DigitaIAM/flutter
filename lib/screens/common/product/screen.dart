@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
@@ -16,9 +17,9 @@ class Product extends Entity {
   static const List<String> ctx = ['product'];
 
   static List<Field> schema = [
-    const Field('name', StringType()),
+    fName,
     const Field('part_number', StringType()),
-    const Field('uom', ReferenceType(['uom'])),
+    fUom,
     Field('qty', CalculatedType((MemoryItem product) async => "?"))
   ];
 

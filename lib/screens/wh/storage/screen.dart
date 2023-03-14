@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
@@ -17,7 +18,7 @@ class WHStorage extends Entity {
 
   static const List<Field> schema = [
     Field('location', ReferenceType(['warehouse', 'storage'])),
-    Field('name', StringType()),
+    fName,
     Field('code', StringType()),
   ];
 

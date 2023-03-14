@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
@@ -16,7 +17,7 @@ class Printer extends Entity {
   static const List<String> ctx = ['printer'];
 
   static const List<Field> schema = [
-    Field('name', StringType()),
+    fName,
     Field('ip', StringType()),
     Field('port', StringType()),
   ];
