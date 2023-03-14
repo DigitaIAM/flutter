@@ -164,11 +164,11 @@ class _LinesState extends State<Lines> {
     }
 
     final schema = <Field>[
-      // const Field('code', StringType()),
-      const Field('goods', ReferenceType(['goods']), width: 3.0),
-      const Field('uom', ReferenceType(['uom']), path: ['qty','uom'], width: 0.5),
-      const Field('qty', NumberType(), path: ['qty','number'], width: 1.0),
-      // const Field('storage', ReferenceType(['warehouse', 'storage'])),
+      // const Field('batch', StringType()),
+      fGoods.copyWith(width: 3.0),
+      fUomAtQty.copyWith(width: 0.5),
+      fQty.copyWith(width: 1.0),
+      // fStorage,
     ];
 
     final columns = schema.asMap();

@@ -6,6 +6,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -273,7 +274,7 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
       print("printer $ip $port");
 
       final order = await widget.order.enrich([
-        const Field("product", ReferenceType(['product']))
+        fProduct,
       ]);
 
       print("order ${order.json}");

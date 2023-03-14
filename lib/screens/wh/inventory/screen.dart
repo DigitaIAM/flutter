@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
@@ -17,25 +18,18 @@ class WHInventory extends Entity {
   static const List<String> ctx = ['warehouse', 'inventory', 'document'];
 
   static final List<Field> schema = [
-    const Field('date', DateType()),
-    const Field('storage', ReferenceType(['storage'])),
-    const Field('counterparty', ReferenceType(['counterparty'])),
+    fDate,
+    fStorage,
+    fCounterparty,
     const Field(
         'goods',
         ListType([
-          Field('storage', ReferenceType(['warehouse', 'storage'])),
+          fStorage,
           // Field('ref', ReferenceType(['goods'])),
-          Field('code', StringType()),
-          Field(
-            'goods',
-            ReferenceType([
-              'goods'
-            ], fields: [
-              Field('name', StringType()),
-              Field('uom', ReferenceType(['uom']), path: ['qty','uom']),
-            ]),
-          ),
-          Field('qty', NumberType(), path: ['qty','number']),
+          // Field('batch', StringType()),
+          fGoods,
+          fUomAtQty,
+          fQty,
           // Field('price', NumberType()),
           // Field('cost', NumberType()),
         ]))

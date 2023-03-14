@@ -1,3 +1,5 @@
+import 'package:nae/schema/schema.dart';
+
 // https://material.io/design/usability/accessibility.html#layout-typography
 const double cMinInteractiveDimension = 48.0;
 
@@ -18,3 +20,41 @@ const double cTableColumnGap = 16;
 
 // JavaScript does not support integers, use it detect web environment
 const bool cIsWeb = identical(0, 0.0);
+
+const Field fName = Field('name', StringType());
+const Field fDate = Field('date', DateType());
+
+const Field fCounterparty = Field(
+  'counterparty',
+  ReferenceType([
+    'counterparty'
+  ], fields: [
+    Field('tin', StringType()),
+    Field('name', StringType()),
+  ]),
+);
+
+const Field fStorage = Field('storage', ReferenceType(['warehouse', 'storage']));
+
+const Field fProduct = Field("product", ReferenceType(['product']));
+
+const Field fGoods = Field(
+  'goods',
+  ReferenceType([
+    'goods'
+  ], fields: [
+    fName,
+    fUom,
+    // TODO add relation between `uom` <> `qty.uom`
+  ]),
+);
+const Field fQty = Field('qty', NumberType(), path: ['qty', 'number']);
+const Field fUomAtQty = Field('uom', ReferenceType(['uom']), path: ['qty', 'uom']);
+const Field fUom = Field('uom', ReferenceType(['uom']));
+
+// TODO add relation between `qty`, `price` & `cost`
+// cost = qty * price
+// price = cost / qty
+// qty = cost / price
+const Field fPrice = Field('price', NumberType());
+const Field fCost = Field('cost', NumberType());

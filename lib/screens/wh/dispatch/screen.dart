@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
@@ -13,29 +14,26 @@ import 'package:nae/widgets/scaffold_list.dart';
 
 import 'edit_fullscreen.dart';
 
+// ['goods'] => ['warehouse','inventory'],
+//              ['warehouse','receive'],
+//              ['warehouse','transfer'],
+//              ['warehouse','dispatch']
 class WHDispatch extends Entity {
   static const List<String> ctx = ['warehouse', 'dispatch', 'document'];
 
   static final List<Field> schema = [
-    const Field('date', DateType()),
-    const Field('counterparty', ReferenceType(['counterparty'])),
-    const Field('storage', ReferenceType(['storage'])),
+    fDate,
+    fCounterparty,
+    fStorage,
     const Field(
         'goods',
         ListType([
-          Field('storage', ReferenceType(['warehouse', 'storage'])),
+          fStorage,
           // Field('ref', ReferenceType(['goods'])),
-          Field('code', StringType()),
-          Field(
-            'goods',
-            ReferenceType([
-              'goods'
-            ], fields: [
-              Field('name', StringType()),
-              Field('uom', ReferenceType(['uom']), path: ['qty','uom']),
-            ]),
-          ),
-          Field('qty', NumberType(), path: ['qty','number']),
+          // Field('batch', StringType()),
+          fGoods,
+          fUomAtQty,
+          fQty,
           // Field('price', NumberType()),
           // Field('cost', NumberType()),
         ]))
@@ -48,7 +46,7 @@ class WHDispatch extends Entity {
   String name() => "warehouse dispatch";
 
   @override
-  IconData icon() => Icons.inventory_outlined;
+  IconData icon() => Icons.output;
 
   @override
   Widget screen(String action, MemoryItem entity) {
@@ -86,7 +84,7 @@ class WHDispatchScreen extends StatelessWidget {
       entityType: WHDispatch.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
-        filter: null, //state.WHDispatchListState.filter,
+        filter: null, //state.whDispatchListState.filter,
         onFilterChanged: (value) {
           // store.dispatch(FilterProducts(value));
         },
@@ -97,7 +95,7 @@ class WHDispatchScreen extends StatelessWidget {
         onPressed: () {
           context.read<UiBloc>().add(ChangeView(WHDispatch.ctx, action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip: AppLocalizations.of(context).translate("new warehouse inventory"),
+        tooltip: AppLocalizations.of(context).translate("new warehouse dispatch"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,

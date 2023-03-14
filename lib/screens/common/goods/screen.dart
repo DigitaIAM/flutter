@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
@@ -15,11 +16,7 @@ import 'edit.dart';
 class Goods extends Entity {
   static const List<String> ctx = ['goods'];
 
-  static List<Field> schema = [
-    const Field('name', StringType()),
-    const Field('uom', ReferenceType(['uom'])),
-    Field('qty', CalculatedType((MemoryItem goods) async => "?"))
-  ];
+  static List<Field> schema = [fName, fUom, Field('qty', CalculatedType((MemoryItem goods) async => "?"))];
 
   @override
   List<String> route() => ctx;
