@@ -290,7 +290,9 @@ class _MemoryListState extends State<MemoryList> {
 
     final List<PlutoColumn> columns = widget.schema.where((field) => field.type is! ListType).map((field) {
       PlutoColumnType type = PlutoColumnType.text();
+      bool isNumber = false;
       if (field.type is NumberType) {
+        isNumber = true;
         type = PlutoColumnType.number();
       } else if (field.type is DateType) {
         type = PlutoColumnType.date();
@@ -302,6 +304,7 @@ class _MemoryListState extends State<MemoryList> {
         title: localization.translate(field.name.replaceAll('~', '')),
         field: field.name,
         type: type,
+        textAlign: isNumber ? PlutoColumnTextAlign.end : PlutoColumnTextAlign.start,
       );
     }).toList();
 
@@ -402,7 +405,7 @@ class _MemoryListState extends State<MemoryList> {
           }
           cells[field.name] = PlutoCell(value: label);
         } else {
-          cells[field.name] = PlutoCell(value: item.json[field.name] ?? "");
+          cells[field.name] = PlutoCell(value: field.resolve(item.json) ?? "");
         }
       }
       return PlutoRow(cells: cells);
