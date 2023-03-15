@@ -106,7 +106,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
 
       while (true) {
         final items = await _fetch(event, state.items.length + result.length);
-        print(items);
+        // print(items);
 
         // enrich
         final s = event.schema ?? schema ?? [];
@@ -146,6 +146,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     var query = {
       'oid': Api.instance.oid,
       'ctx': event.ctx,
+      '\$limit': 20,
       '\$skip': startIndex,
       'reverse': event.reverse,
     };

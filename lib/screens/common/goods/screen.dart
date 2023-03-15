@@ -16,7 +16,11 @@ import 'edit.dart';
 class Goods extends Entity {
   static const List<String> ctx = ['goods'];
 
-  static List<Field> schema = [fName, fUom, Field('qty', CalculatedType((MemoryItem goods) async => "?"))];
+  static List<Field> schema = [
+    fName,
+    fUom,
+    Field('qty', CalculatedType((MemoryItem goods) async => goods.balance()))
+  ];
 
   @override
   List<String> route() => ctx;
@@ -30,8 +34,9 @@ class Goods extends Entity {
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
-      key: ValueKey('__${name()}_${DateTime.now().toString()}__'),
+      key: ValueKey('__${name()}_'), // ${DateTime.now().toString()}__
       ctx: ctx,
+      schema: schema,
       list: const GoodsScreen(),
       view: GoodsEdit(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
@@ -69,7 +74,7 @@ class GoodsListBuilder extends StatelessWidget {
       ctx: Goods.ctx,
       schema: Goods.schema,
       title: (MemoryItem item) => item.name(),
-      subtitle: (MemoryItem item) => '',
+      subtitle: (MemoryItem item) => item.balance(),
       onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(Goods.ctx, entity: item)),
     );
   }

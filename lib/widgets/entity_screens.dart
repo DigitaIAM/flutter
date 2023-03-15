@@ -50,12 +50,12 @@ class EntityScreens extends StatelessWidget {
   Widget screens(BuildContext context, UiState uiState) {
     return BlocBuilder<MemoryBloc, RequestState>(
       builder: (context, state) => Row(
-          key: ValueKey('__${ctx.join('_')}_${state.updated}'),
-          children: uiState.isFullScreen ? smallScreen(context, uiState) : bigScreen(context, uiState)),
+          key: ValueKey('__${ctx.join('_')}_'), // ${state.updated}
+          children: uiState.isFullScreen ? smallScreen(context, uiState, state) : bigScreen(context, uiState, state)),
     );
   }
 
-  List<Widget> smallScreen(BuildContext context, UiState uiState) {
+  List<Widget> smallScreen(BuildContext context, UiState uiState, RequestState state) {
     print("smallScreen: ${view.anythingToShow()}");
     const previewFlex = 2;
     int listFlex = 3;
@@ -80,7 +80,7 @@ class EntityScreens extends StatelessWidget {
     }
   }
 
-  List<Widget> bigScreen(BuildContext context, UiState uiState) {
+  List<Widget> bigScreen(BuildContext context, UiState uiState, RequestState state) {
     print("bigScreen: ${view.anythingToShow()}");
     final settings = Provider.of<MySettings>(context);
 
@@ -95,6 +95,7 @@ class EntityScreens extends StatelessWidget {
     return [
       if (!(view.fullscreen && view.anythingToShow()))
         Expanded(
+          key: ValueKey('__${ctx.join('_')}_${state.updated}'),
           flex: listFlex,
           child: ClipRRect(
             child: AppBorder(

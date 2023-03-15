@@ -26,6 +26,19 @@ class MemoryItem extends Equatable {
     return json["name"] ?? "";
   }
 
+  String balance() {
+    String uomName = "";
+    final uom = json["uom"];
+    if (uom is MemoryItem) {
+      uomName = uom.name();
+    }
+    final balance = json["_balance"];
+    if (balance is Map<String, dynamic>) {
+      return "${balance["qty"] ?? ""} $uomName";
+    }
+    return "-";
+  }
+
   save() {
     // TODO?
   }
@@ -75,10 +88,9 @@ class MemoryItem extends Equatable {
         final type = field.type as CalculatedType;
 
         if (copy[name] == null) {
-          copy[name] = await type.eval(this);
+          copy[name] = await type.eval(MemoryItem(id: id, json: copy));
         }
       } else if (field.type is ReferenceType) {
-        final name = field.name;
         final type = field.type as ReferenceType;
 
         final dynamic value = field.resolve(copy); // copy[name]
