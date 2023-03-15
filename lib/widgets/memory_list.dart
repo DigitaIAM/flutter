@@ -79,6 +79,23 @@ class MemoryList extends StatefulWidget {
 class _MemoryListState extends State<MemoryList> {
   PlutoGridStateManager? stateManager;
 
+  late ScrollController _scrollController;
+  VoidCallback? listener;
+  late bool _loading;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _loading = true;
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
@@ -217,6 +234,19 @@ class _MemoryListState extends State<MemoryList> {
   }
 
   GroupedListView buildList(BuildContext context, RequestState state) {
+    _loading = false;
+    if (listener != null) {
+      _scrollController.removeListener(listener!);
+    }
+    listener = () {
+      var nextPageTrigger = _scrollController.position.maxScrollExtent - 500;
+      if (!_loading && !state.hasReachedMax && _scrollController.position.pixels > nextPageTrigger) {
+        _loading = true;
+        context.read<MemoryBloc>().add(MemoryFetch('memories', widget.ctx, schema: widget.schema));
+      }
+    };
+    _scrollController.addListener(listener!);
+
     return GroupedListView<MemoryItem, String>(
       elements: state.items,
       groupBy: (element) => element.json['date'] ?? '',
@@ -224,6 +254,8 @@ class _MemoryListState extends State<MemoryList> {
       itemComparator: (item1, item2) => item1.id.compareTo(item2.id),
       order: GroupedListOrder.ASC,
       useStickyGroupSeparators: true,
+      stickyHeaderBackgroundColor: Theme.of(context).primaryColor,
+      controller: _scrollController,
       groupSeparatorBuilder: (String value) => Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text(
