@@ -16,17 +16,20 @@ class Field {
   }
 
   dynamic resolve(Map<String, dynamic> json) {
-    // print("resolve: ");
-    // print(path);
-    // print(json);
+//     print("resolve: ");
+//     print('$path $name');
+//     print(json);
     if (path != null) {
       dynamic value = json;
 
       for (final name in path!) {
         if (value == null) {
           return null;
+        } else if (value is MemoryItem) {
+          value = value.json[name];
+        } else {
+          value = value[name];
         }
-        value = value[name];
       }
 
       return value;
@@ -36,24 +39,39 @@ class Field {
 
   void update(Map<String, dynamic> json, MemoryItem value) {
     if (path != null) {
-      var v = json;
-
-      final steps = path!;
-      final last = steps.length - 1;
-
-      // print("----");
-      for (final name in steps.sublist(0, last)) {
-        // print(name);
-        v = v[name];
-      }
-
-      // print("====");
-      // print(_path[_last]);
-
-      v[steps[last]] = value;
+//      print('update: $path $json $value');
+      _update(path!, json, value);
     } else {
       json[name] = value;
     }
+  }
+
+  void _update(List<String> steps, Map<String, dynamic> json, MemoryItem value) {
+    var v = json;
+
+    final last = steps.length - 1;
+
+//    print("----");
+    for (var i = 0; i < last; i++) {
+      var name = steps[i];
+
+//      print('$name = $v');
+
+      final next = v[name];
+
+      if (next is MemoryItem) {
+        final Map<String, dynamic> copy = Map.from(next.json);
+        _update(steps.sublist(i+1), copy, value);
+
+        v[name] = MemoryItem(id: next.id, json: copy);
+      } else {
+        v = next;
+      }
+    }
+
+//    print("==== ${steps[last]}");
+
+    v[steps[last]] = value;
   }
 }
 

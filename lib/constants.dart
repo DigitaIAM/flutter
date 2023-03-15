@@ -48,7 +48,9 @@ const Field fGoods = Field(
     // TODO add relation between `uom` <> `qty.uom`
   ]),
 );
+const Field fBatch = Field('batch', StringType(), path: ['batch', 'barcode']);
 const Field fQty = Field('qty', NumberType(), path: ['qty', 'number']);
+const Field fUomAtGoods = Field('uom', ReferenceType(['uom']), path: ['goods', 'uom']);
 const Field fUomAtQty = Field('uom', ReferenceType(['uom']), path: ['qty', 'uom']);
 const Field fUom = Field('uom', ReferenceType(['uom']));
 
