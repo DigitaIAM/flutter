@@ -56,8 +56,10 @@ class _MemoryBlocHolderState extends State<MemoryBlocHolder> {
 }
 
 class MemoryList extends StatefulWidget {
+  final String service;
   final List<String> ctx;
   final List<Field> schema;
+  final Map<String, dynamic> filter;
 
   final String Function(MemoryItem) title;
   final String Function(MemoryItem) subtitle;
@@ -70,6 +72,8 @@ class MemoryList extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.filter = const {},
+    this.service = 'memories',
   });
 
   @override
@@ -242,7 +246,7 @@ class _MemoryListState extends State<MemoryList> {
       var nextPageTrigger = _scrollController.position.maxScrollExtent - 500;
       if (!_loading && !state.hasReachedMax && _scrollController.position.pixels > nextPageTrigger) {
         _loading = true;
-        context.read<MemoryBloc>().add(MemoryFetch('memories', widget.ctx, schema: widget.schema));
+        context.read<MemoryBloc>().add(MemoryFetch(widget.service, widget.ctx, schema: widget.schema, filter: widget.filter));
       }
     };
     _scrollController.addListener(listener!);
