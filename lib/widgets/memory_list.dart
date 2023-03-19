@@ -246,7 +246,9 @@ class _MemoryListState extends State<MemoryList> {
       var nextPageTrigger = _scrollController.position.maxScrollExtent - 500;
       if (!_loading && !state.hasReachedMax && _scrollController.position.pixels > nextPageTrigger) {
         _loading = true;
-        context.read<MemoryBloc>().add(MemoryFetch(widget.service, widget.ctx, schema: widget.schema, filter: widget.filter));
+        context
+            .read<MemoryBloc>()
+            .add(MemoryFetch(widget.service, widget.ctx, schema: widget.schema, filter: widget.filter));
       }
     };
     _scrollController.addListener(listener!);
@@ -332,18 +334,27 @@ class _MemoryListState extends State<MemoryList> {
     final config = PlutoGridConfiguration.dark(
         enterKeyAction: PlutoGridEnterKeyAction.editingAndMoveRight,
         style: PlutoGridStyleConfig(
-          gridBackgroundColor: theme.canvasColor,
-          rowColor: theme.canvasColor,
-          activatedColor: theme.dataTableTheme.dataRowColor?.resolve(selected) ?? theme.primaryColor,
+          gridBackgroundColor: theme.colorScheme.background,
+          rowColor: theme.colorScheme.background,
+
+          gridBorderColor: theme.colorScheme.background,
+          borderColor: theme.colorScheme.background,
+
+          oddRowColor: theme.colorScheme.secondary.withAlpha(10),
+          evenRowColor: theme.colorScheme.secondary.withAlpha(20),
+
+          activatedColor: theme.colorScheme.secondary.withAlpha(25),
+          // activatedColor: theme.dataTableTheme.dataRowColor?.resolve(selected) ?? theme.indicatorColor,
+
           columnTextStyle: theme.textTheme.bodySmall!,
-          // const TextStyle(
+          // columnTextStyle: const TextStyle(
           //   color: Colors.black,
           //   decoration: TextDecoration.none,
           //   fontSize: 14,
           //   fontWeight: FontWeight.w600,
           // ),
           cellTextStyle: theme.textTheme.bodyMedium!,
-          // const TextStyle(
+          // cellTextStyle: const TextStyle(
           //   color: Colors.black,
           //   fontSize: 14,
           // ),
