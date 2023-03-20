@@ -17,13 +17,15 @@ import 'screen.dart';
 class WHBalanceView extends EntityHolder {
   final int tabIndex;
 
-  const WHBalanceView({super.key, required super.entity, required this.tabIndex});
+  const WHBalanceView(
+      {super.key, required super.entity, required this.tabIndex});
 
   @override
   State<WHBalanceView> createState() => _WHBalanceViewState();
 }
 
-class _WHBalanceViewState extends State<WHBalanceView> with SingleTickerProviderStateMixin {
+class _WHBalanceViewState extends State<WHBalanceView>
+    with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -32,7 +34,8 @@ class _WHBalanceViewState extends State<WHBalanceView> with SingleTickerProvider
 
     // final state = widget.viewModel.state;
     _controller = TabController(
-      vsync: this, length: 1, initialIndex: 0, // widget.isFilter ? 0 : state.WHDispatchUIState.tabIndex
+      vsync: this, length: 1,
+      initialIndex: 0, // widget.isFilter ? 0 : state.WHDispatchUIState.tabIndex
     );
     _controller.addListener(_onTabChanged);
   }
@@ -78,10 +81,10 @@ class _WHBalanceViewState extends State<WHBalanceView> with SingleTickerProvider
       body: Builder(builder: (context) {
         return Column(children: <Widget>[
           Expanded(
-            child: TabBarView(
-                controller: _controller,
-                children: <Widget>[WHTransactionsBuilder(widget.entity)] //WHDispatchOverview(doc: widget.entity), WHDispatchGoods(doc: widget.entity)]),
-            ),
+            child: TabBarView(controller: _controller, children: <Widget>[
+              WHTransactionsBuilder(widget.entity)
+            ] //WHDispatchOverview(doc: widget.entity), WHDispatchGoods(doc: widget.entity)]),
+                ),
           ),
         ]);
       }),
@@ -105,16 +108,22 @@ class WHTransactionsBuilder extends StatelessWidget {
           return rec.json['document'];
         }
       })),
-      Field('receive', CalculatedType((MemoryItem rec) async => rec.json['type'] == 'receive' ? rec.json['qty'] : '')),
-      Field('issue', CalculatedType((MemoryItem rec) async => rec.json['type'] == 'issue' ? rec.json['qty'] : '')),
+      Field(
+          'receive',
+          CalculatedType((MemoryItem rec) async =>
+              rec.json['type'] == 'receive' ? rec.json['qty'] : '')),
+      Field(
+          'issue',
+          CalculatedType((MemoryItem rec) async =>
+              rec.json['type'] == 'issue' ? rec.json['qty'] : '')),
     ];
 
 //    let goods = this.entity.
-    
+
 //    print("entity ${this.entity.toJson()}");
 
     final filter = {
-      'interval': {'from': '2022-12-01', 'till': '2023-03-30'},
+      'dates': {'from': '2022-12-01', 'till': '2023-03-30'},
       'storage': this.entity.toJson()['storage'].toString(),
       'goods': this.entity.toJson()['goods'].toString(),
       'batch_id': this.entity.toJson()['batch']['id'].toString(),
@@ -124,25 +133,26 @@ class WHTransactionsBuilder extends StatelessWidget {
     print("FILTER: ${filter}");
 
     return BlocBuilder<UiBloc, UiState>(
-      builder: (context, uiState) =>
-          MemoryBlocHolder(
-            init: (bloc) =>
-            bloc.add(MemoryFetch('inventory', const [], schema: schema, filter: filter)),
-            child: screen(context, uiState, schema, filter),
-          ),
+      builder: (context, uiState) => MemoryBlocHolder(
+        init: (bloc) => bloc.add(
+            MemoryFetch('inventory', const [], schema: schema, filter: filter)),
+        child: screen(context, uiState, schema, filter),
+      ),
     );
   }
 
-  Widget screen(BuildContext context, UiState uiState, List<Field> schema, Map<String, dynamic> filter) {
+  Widget screen(BuildContext context, UiState uiState, List<Field> schema,
+      Map<String, dynamic> filter) {
     return MemoryList(
       service: 'inventory',
       ctx: const [],
       schema: schema,
       filter: filter,
       title: (MemoryItem item) => item.name(),
-      subtitle: (MemoryItem item) => '${fQty.resolve(item.json)} ${fUom.resolve(item.json)}',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
+      subtitle: (MemoryItem item) =>
+          '${fQty.resolve(item.json)} ${fUom.resolve(item.json)}',
+      onTap: (MemoryItem item) =>
+          context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
     );
   }
 }
-
