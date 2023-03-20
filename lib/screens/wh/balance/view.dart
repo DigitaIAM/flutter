@@ -113,22 +113,16 @@ class WHTransactionsBuilder extends StatelessWidget {
 
           final Map map = Map.from(response);
 
-          print("document: ${map['document']}");
+          final id = map['document'].toString();
 
-          final ctx = map['document'].toString().split('/');
-
-          print("ctx: ${ctx}");
+          final ctx = id.split('/');
 
           final document = await Api.feathers()
-              .find(serviceName: "memories", query: {"_id": map['document'], "_uuid": rec.id, "oid": Api.instance.oid, "ctx": ctx.sublist(0, 2)});
-//            .get(serviceName: "memories", objectId: rec.id, params: {"_id": map['document'], "oid": Api.instance.oid, "ctx": ctx.sublist(0, 2)});
-//              .get(serviceName: "memories", objectId: map['document'], params: {"oid": Api.instance.oid, "ctx": ["warehouse","receive","document"]});
+              .get(serviceName: "memories", objectId: id, params: {"oid": Api.instance.oid, "ctx": ctx.sublist(0, 3)});
 
           final Map map_doc = Map.from(document);
 
-          print(map_doc);
-
-          return '';
+          return map_doc['date'].toString();
         }
       })),
       Field(
