@@ -387,7 +387,7 @@ class _MemoryListState extends State<MemoryList> {
               print('createFooter fetch ${state.hasReachedMax} ${state.status}');
               if (state.status == RequestStatus.success) {
                 print('fetch more');
-                context.read<MemoryBloc>().add(MemoryFetch('memories', widget.ctx, schema: widget.schema));
+                context.read<MemoryBloc>().add(MemoryFetch(widget.service, widget.ctx, schema: widget.schema));
               }
 
               return PlutoInfinityScrollRowsResponse(isLast: false, rows: intoRows(state, r.lastRow));

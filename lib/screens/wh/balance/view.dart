@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
@@ -12,6 +14,7 @@ import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 
+import '../../../api.dart';
 import 'screen.dart';
 
 class WHBalanceView extends EntityHolder {
@@ -103,15 +106,44 @@ class WHTransactionsBuilder extends StatelessWidget {
       Field('description', CalculatedType((MemoryItem rec) async {
         final t = rec.json['type'];
         if (t == 'open_balance' || t == 'close_balance') {
-          return 'balance';
+          return 'balance at ${rec.json['date']}';
         } else {
-          return rec.json['document'];
+          final response = await Api.feathers()
+              .get(serviceName: "memories", objectId: rec.id, params: {"oid": Api.instance.oid, "ctx": []});
+
+          final Map map = Map.from(response);
+
+          print("document: ${map['document']}");
+
+          final ctx = map['document'].toString().split('/');
+
+          print("ctx: ${ctx}");
+
+          final document = await Api.feathers()
+              .find(serviceName: "memories", query: {"_id": map['document'], "_uuid": rec.id, "oid": Api.instance.oid, "ctx": ctx.sublist(0, 2)});
+//            .get(serviceName: "memories", objectId: rec.id, params: {"_id": map['document'], "oid": Api.instance.oid, "ctx": ctx.sublist(0, 2)});
+//              .get(serviceName: "memories", objectId: map['document'], params: {"oid": Api.instance.oid, "ctx": ["warehouse","receive","document"]});
+
+          final Map map_doc = Map.from(document);
+
+          print(map_doc);
+
+          return '';
         }
       })),
       Field(
           'receive',
-          CalculatedType((MemoryItem rec) async =>
-              rec.json['type'] == 'receive' ? rec.json['qty'] : '')),
+          CalculatedType((MemoryItem rec) async {
+            switch (rec.json['type']) {
+              case 'receive':
+              case 'open_balance':
+              case 'close_balance':
+                return rec.json['qty'];
+              default:
+                return '';
+            }
+          })),
+//              == 'receive' ? rec.json['qty'] : '')),
       Field(
           'issue',
           CalculatedType((MemoryItem rec) async =>
