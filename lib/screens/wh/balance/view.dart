@@ -109,20 +109,24 @@ class WHTransactionsBuilder extends StatelessWidget {
           return 'balance at ${rec.json['date']}';
         } else {
           final response = await Api.feathers()
-              .get(serviceName: "memories", objectId: rec.id, params: {"oid": Api.instance.oid, "ctx": []});
+              .get(serviceName: "memories", objectId: rec.id, params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
 
-          final Map map = Map.from(response);
+          final Map map = response == {} ? response : Map.from(response);
 
-          final id = map['document'].toString();
+          final id = map['document'] ?? "";
 
-          final ctx = id.split('/');
+          final split = id.toString().split('/');
+
+          final ctx = split.length >= 3 ? split.sublist(0, 3) : [];
 
           final document = await Api.feathers()
-              .get(serviceName: "memories", objectId: id, params: {"oid": Api.instance.oid, "ctx": ctx.sublist(0, 3)});
+              .get(serviceName: "memories", objectId: id, params: {"oid": Api.instance.oid, "ctx": ctx}).onError((error, stackTrace) => {});
 
-          final Map map_doc = Map.from(document);
+          final Map map_doc = document == {} ? document : Map.from(document);
 
-          return map_doc['date'].toString();
+          final date = map_doc['date'] ?? "?";
+
+          return date.toString();
         }
       })),
       Field(
@@ -137,7 +141,6 @@ class WHTransactionsBuilder extends StatelessWidget {
                 return '';
             }
           })),
-//              == 'receive' ? rec.json['qty'] : '')),
       Field(
           'issue',
           CalculatedType((MemoryItem rec) async =>
