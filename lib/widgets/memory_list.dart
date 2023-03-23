@@ -299,7 +299,7 @@ class _MemoryListState extends State<MemoryList> {
       bool isNumber = false;
       if (field.type is NumberType) {
         isNumber = true;
-        type = PlutoColumnType.number();
+        type = PlutoColumnType.text();
       } else if (field.type is DateType) {
         type = PlutoColumnType.date();
       } else if (field.type is ReferenceType) {
