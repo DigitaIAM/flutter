@@ -87,6 +87,12 @@ class NetworkPrinter {
     sendCommand('TEXT $x,$y,"$font",$rotation,$mx,$my,$alignment,"$content"\r\n');
   }
 
+  void barcode(int x, int y, String barcode,
+      {String font = "1", int rotation = 0, int mx = 1, int my = 1, int alignment = 0
+      }) {
+    sendCommand('BARCODE $x,$y,"$font",$rotation,$mx,$my,$alignment,"$barcode"\r\n');
+  }
+
   void feed(int i) {
     sendCommand('FEED $i \r\n');
   }
