@@ -66,4 +66,35 @@ class Labels {
     // printer.cut();
     printer.print_();
   }
+
+  static void lines_with_barcode(NetworkPrinter printer, String id, String barcode, Map<String, String> data) {
+    printer.clear();
+    printer.codepage(name: "1251");
+    printer.direction();
+
+    printer.text(780, 50, id, font: "2", mx: 1, my: 1, rotation: 90); // alignment: 3,
+    printer.bar(750, 10, 2, 780);
+
+    printer.barcode(50, 100, barcode);
+
+    var y = 370;
+    printer.bar(5, y - 1, 740, 3);
+    y += 10;
+
+    for (final entry in data.entries) {
+      final name = entry.key;
+      final value = entry.value;
+
+      if (name.startsWith("line")) {
+        printer.bar(5, y - 1, 740, 3);
+        y += 10;
+      } else {
+        printer.text(195, y, "$name:", font: "3", mx: 1, my: 1, alignment: 3);
+        printer.text(180, y, " $value", font: "4", mx: 1, my: 1);
+        y += 50;
+      }
+    }
+
+    printer.print_();
+  }
 }
