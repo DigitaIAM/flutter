@@ -49,9 +49,9 @@ class MyApp extends StatelessWidget {
                 // theme: getThemeByName(settings.themeName),
                 supportedLocales: const [
                   Locale("en", "US"),
-                  Locale("ru", "RU"),
-                  Locale("uz", "UZ"),
-                  Locale("tr", "TR")
+                  // Locale("ru", "RU"),
+                  // Locale("uz", "UZ"),
+                  // Locale("tr", "TR")
                 ],
                 localizationsDelegates: const [
                   AppLocalizations.delegate,

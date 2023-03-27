@@ -75,7 +75,8 @@ class _LoginFormState extends State<LoginForm> {
                   // ),
                   // const SizedBox(height: 32),
                   Text(
-                    "Добро пожаловать!",
+                    // "Добро пожаловать!",
+                    "Welcome!",
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 32),
