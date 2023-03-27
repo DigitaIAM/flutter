@@ -6,7 +6,8 @@ import 'package:windows1251/windows1251.dart';
 class NetworkPrinter {
   late Socket _socket;
 
-  Future<PrintResult> connect(String host, {int port = 9100, Duration timeout = const Duration(seconds: 15)}) async {
+  Future<PrintResult> connect(String host,
+      {int port = 9100, Duration timeout = const Duration(seconds: 15)}) async {
     try {
       _socket = await Socket.connect(host, port, timeout: timeout);
       // _socket.add(_generator.reset());
@@ -74,23 +75,33 @@ class NetworkPrinter {
     String mode = 'A',
     int rotation = 0,
   }) {
-    sendCommand('QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,M2,"$content"\r\n');
+    sendCommand(
+        'QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,M2,"$content"\r\n');
   }
 
   void text(int x, int y, String content,
-      {String font = "1", int rotation = 0, int mx = 1, int my = 1, int alignment = 0
+      {String font = "1",
+      int rotation = 0,
+      int mx = 1,
+      int my = 1,
+      int alignment = 0
       // 0 : Default (Left)
       // 1 : Left
       // 2 : Center
       // 3 : Right
       }) {
-    sendCommand('TEXT $x,$y,"$font",$rotation,$mx,$my,$alignment,"$content"\r\n');
+    sendCommand(
+        'TEXT $x,$y,"$font",$rotation,$mx,$my,$alignment,"$content"\r\n');
   }
 
-  void barcode(int x, int y, String barcode,
-      {String font = "1", int rotation = 0, int mx = 1, int my = 1, int alignment = 0
-      }) {
-    sendCommand('BARCODE $x,$y,"$font",$rotation,$mx,$my,$alignment,"$barcode"\r\n');
+  void barcode_EAN13(int x, int y, String barcode,
+      {String font = "1",
+      int rotation = 0,
+      int mx = 1,
+      int my = 1,
+      int alignment = 0}) {
+    // sendCommand('BARCODE $x,$y,"EAN13",100,$mx,$my,$alignment,"$barcode"\r\n');
+    sendCommand('BARCODE $x,$y, "EAN13",100,2,0,2,2,"$barcode"\r\n');
   }
 
   void feed(int i) {
