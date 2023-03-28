@@ -95,6 +95,7 @@ dependencies:
 
   flutter_localizations:
     sdk: flutter
+  syncfusion_flutter_datagrid: ^21.1.35
 
 dev_dependencies:
   flutter_test:
