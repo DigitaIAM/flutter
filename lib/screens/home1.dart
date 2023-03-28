@@ -10,12 +10,14 @@ class HomePage1 extends StatefulWidget {
 }
 
 class Employee {
-  Employee(this.description, this.qty, this.price, this.amount, this.eDate,
-      this.series, this.sLocation);
+  Employee(this.description, this.qty, this.price, this.pDiscount, this.amount,
+      this.aDiscount, this.eDate, this.series, this.sLocation);
   final String description;
   final int qty;
   final int price;
+  final int pDiscount;
   final int amount;
+  final int aDiscount;
   final String eDate;
   final String series;
   final String sLocation;
@@ -35,26 +37,26 @@ class _HomePage1State extends State<HomePage1> {
 
   List<Employee> getEmployeeData() {
     return [
-      Employee('description text', 100, 1000, 10, '2023, 3, 27', 'Computer',
-          'www.www'),
-      Employee('description text', 100, 1000, 10, '2023, 3, 27', 'Computer',
-          'www.www'),
-      Employee('description text', 100, 1000, 10, '2023, 3, 27', 'Computer',
-          'www.www'),
-      Employee('description text', 100, 1000, 10, '2023, 3, 27', 'Computer',
-          'www.www'),
-      Employee('description text', 100, 1000, 10, '2023, 3, 27', 'Computer',
-          'www.www'),
-      Employee('description text', 100, 1000, 10, '2023, 3, 27', 'Computer',
-          'www.www'),
-      Employee('description text', 100, 1000, 10, '2023, 3, 27', 'Computer',
-          'www.www'),
-      Employee('description text', 100, 1000, 10, '2023, 3, 27', 'Computer',
-          'www.www'),
-      Employee('description text', 100, 1000, 10, '2023, 3, 27', 'Computer',
-          'www.www'),
-      Employee('description text', 100, 1000, 10, '2023, 3, 27', 'Computer',
-          'www.www')
+      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+          'Computer', 'www.www'),
+      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+          'Computer', 'www.www'),
+      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+          'Computer', 'www.www'),
+      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+          'Computer', 'www.www'),
+      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+          'Computer', 'www.www'),
+      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+          'Computer', 'www.www'),
+      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+          'Computer', 'www.www'),
+      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+          'Computer', 'www.www'),
+      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+          'Computer', 'www.www'),
+      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+          'Computer', 'www.www')
     ];
   }
 
@@ -100,12 +102,30 @@ class _HomePage1State extends State<HomePage1> {
                       overflow: TextOverflow.ellipsis,
                     ))),
             GridColumn(
+                columnName: 'pDiscount',
+                label: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    alignment: Alignment.centerRight,
+                    child: const Text(
+                      'Discount',
+                      overflow: TextOverflow.ellipsis,
+                    ))),
+            GridColumn(
                 columnName: 'amount',
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     alignment: Alignment.centerLeft,
                     child: const Text(
                       'Amount',
+                      overflow: TextOverflow.ellipsis,
+                    ))),
+            GridColumn(
+                columnName: 'aDiscount',
+                label: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    alignment: Alignment.centerLeft,
+                    child: const Text(
+                      'Discount',
                       overflow: TextOverflow.ellipsis,
                     ))),
             GridColumn(
@@ -140,13 +160,13 @@ class _HomePage1State extends State<HomePage1> {
             StackedHeaderRow(cells: [
               StackedHeaderCell(
                   // columnNames: ['id', 'name'],
-                  columnNames: ['price'],
+                  columnNames: ['price', 'pDiscount'],
                   child: Container(
                       color: const Color(0xFFF1F1F1),
                       child: const Center(child: Text('Price')))),
               StackedHeaderCell(
                   // columnNames: ['designation', 'salary'],
-                  columnNames: ['amount'],
+                  columnNames: ['amount', 'aDiscount'],
                   child: Container(
                       color: const Color(0xFFF1F1F1),
                       child: const Center(child: Text('Amount'))))
@@ -165,7 +185,11 @@ class EmployeeDataSource extends DataGridSource {
               DataGridCell<int>(columnName: 'qty', value: dataGridRow.qty),
               DataGridCell<int>(columnName: 'price', value: dataGridRow.price),
               DataGridCell<int>(
+                  columnName: 'pDiscount', value: dataGridRow.pDiscount),
+              DataGridCell<int>(
                   columnName: 'amount', value: dataGridRow.amount),
+              DataGridCell<int>(
+                  columnName: 'aDiscount', value: dataGridRow.aDiscount),
               DataGridCell<String>(
                   columnName: 'eDate', value: dataGridRow.eDate),
               DataGridCell<String>(
