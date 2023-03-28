@@ -75,6 +75,7 @@
   "registering": "registering",
   "printing": "printing",
   "warehouse receive": "warehouse receive",
+  "warehouse transfer": "warehouse transfer",
   "new warehouse receive": "new warehouse receive",
   "edit warehouse receive": "edit warehouse receive",
   "warehouse dispatch": "warehouse dispatch",
@@ -82,5 +83,8 @@
   "edit warehouse dispatch": "edit warehouse dispatch",
   "storage": "storage",
   "counterparty": "counterparty",
-  "goods": "goods"
+  "goods": "goods",
+  "stock": "stock",
+  "from": "from",
+  "into": "into"
 }

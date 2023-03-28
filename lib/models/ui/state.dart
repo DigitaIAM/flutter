@@ -16,6 +16,7 @@ import 'package:nae/screens/wh/dispatch/screen.dart';
 import 'package:nae/screens/wh/inventory/screen.dart';
 import 'package:nae/screens/wh/receive/screen.dart';
 import 'package:nae/screens/wh/storage/screen.dart';
+import 'package:nae/screens/wh/transfer/screen.dart';
 import 'package:nae/widgets/blank_screen.dart';
 
 part 'state.g.dart';
@@ -66,7 +67,7 @@ class UiState extends Equatable {
 
   final List<List<Entity>> entities = [
     [ProductionOrder()],
-    [WHBalance(), WHReceive(), WHDispatch(), WHInventory()],
+    [WHBalance(), WHReceive(), WHTransfer(), WHDispatch(), WHInventory()],
     [Product(), Goods(), Uom()],
     [WHStorage(), ProductionArea()],
     [Counterparty(), Person()],
