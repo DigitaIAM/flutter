@@ -71,18 +71,20 @@ class Labels {
   }
 
   static void lines_with_barcode(NetworkPrinter printer, String goodsName,
-      String goodsUuid, String batchId, Map<String, String> data) {
+      String goodsUuid, String goodsId, String batchId, Map<String, String> data) {
     printer.clear();
     printer.codepage(name: "1251");
     printer.direction();
 
-    printer.text(50, 50, "товар: $batchId", font: "4", mx: 1, my: 1);
+    printer.qrcode(450, 50, goodsUuid, cellWidth: 7);
 
-    printer.qrcode(310, 150, goodsUuid);
+    printer.text(780, 50, goodsId,
+        font: "2", mx: 1, my: 1, rotation: 90); // alignment: 3,
+    printer.bar(750, 10, 2, 780);
 
-    var y = 350;
-    printer.bar(5, y - 1, 740, 3);
-    y += 10;
+    var y = 370;
+//    printer.bar(5, y - 1, 740, 3);
+//    y += 10;
 
     for (final entry in data.entries) {
       final name = entry.key;
@@ -98,13 +100,9 @@ class Labels {
       }
     }
 
-    printer.bar(5, y - 1, 740, 3);
+//    printer.bar(5, y - 1, 740, 3);
 
-    y += 30;
-
-    printer.text(50, y, "партия: $batchId", font: "4", mx: 1, my: 1);
-
-    y += 70;
+    y += 50;
 
     printer.barcode_EAN13(310, y, batchId);
 
