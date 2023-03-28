@@ -327,6 +327,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
       final goods = order.json['goods'].json;
       final goodsName = goods['name'] ?? '';
       final goodsUuid = goods['_uuid'] ?? '';
+      final goodsId = goods['_id'] ?? '';
 
       final batch = order.json['batch'];
       final date = batch['date'] ?? '';
@@ -346,12 +347,13 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
         final Map<String, String> labelData = {
           "количество": "$qty $uomName",
+          "товар": "$goodsName",
           "line1": "",
           "поставщик": supplier,
           "приход от": dd,
         };
 
-        Labels.lines_with_barcode(printer, goodsName, goodsUuid, barcode, labelData);
+        Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId, barcode, labelData);
 
         return Future<PrintResult>.value(PrintResult.success);
       });
