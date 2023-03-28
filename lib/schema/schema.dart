@@ -7,12 +7,15 @@ class Field {
   final Type type;
   final double width;
 
-  const Field(this.name, this.type, {this.path, this.width = 1.0});
+  final bool editable;
+
+  const Field(this.name, this.type, {this.path, this.width = 1.0, this.editable = true});
 
   Field copyWith({
     double? width,
+    bool? editable,
   }) {
-    return Field(name, type, path: path, width: width ?? this.width);
+    return Field(name, type, path: path, width: width ?? this.width, editable: editable ?? this.editable);
   }
 
   dynamic resolve(Map<String, dynamic> json) {
@@ -27,8 +30,10 @@ class Field {
           return null;
         } else if (value is MemoryItem) {
           value = value.json[name];
-        } else {
+        } else if (value is Map) {
           value = value[name];
+        } else {
+          return null; // TODO error?
         }
       }
 
@@ -37,16 +42,17 @@ class Field {
     return json[name];
   }
 
-  void update(Map<String, dynamic> json, MemoryItem value) {
+  void update(Map<String, dynamic> json, dynamic value) {
     if (path != null) {
 //      print('update: $path $json $value');
       _update(path!, json, value);
     } else {
+//      print("json[name] = value");
       json[name] = value;
     }
   }
 
-  void _update(List<String> steps, Map<String, dynamic> json, MemoryItem value) {
+  void _update(List<String> steps, Map<String, dynamic> json, dynamic value) {
     var v = json;
 
     final last = steps.length - 1;
@@ -59,13 +65,23 @@ class Field {
 
       final next = v[name];
 
+//      print('$next');
+
       if (next is MemoryItem) {
         final Map<String, dynamic> copy = Map.from(next.json);
-        _update(steps.sublist(i+1), copy, value);
+        _update(steps.sublist(i + 1), copy, value);
 
         v[name] = MemoryItem(id: next.id, json: copy);
-      } else {
+      } else if (next is Map<String, dynamic>) {
         v = next;
+      } else if (next == null) {
+        final Map<String, dynamic> copy = {};
+        v[name] = copy;
+        v = copy;
+      } else {
+        // TODO problem in case next is not null
+        // throw const FormatException();
+        return;
       }
     }
 
