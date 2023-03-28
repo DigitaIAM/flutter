@@ -77,6 +77,8 @@ class MemoryItem extends Equatable {
   }
 
   Future<MemoryItem> enrich(List<Field> schema) async {
+    if (schema.isEmpty) return this;
+
     // TODO make configurable?
 
     final cache = Cache();
@@ -108,8 +110,12 @@ class MemoryItem extends Equatable {
                   "ctx": type.ctx,
                 });
 
-                final item = MemoryItem(id: id, json: response);
+                var item = MemoryItem(id: id, json: response);
                 cache.add(item);
+
+                item = await item.enrich(type.fields);
+                cache.add(item);
+
                 // copy[name] = item;
                 field.update(copy, item);
               }

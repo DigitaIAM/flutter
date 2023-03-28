@@ -84,5 +84,6 @@
   "warehouse inventory": "акт инвенторизации",
   "storage": "место хранения",
   "counterparty": "контрагент",
-  "goods": "товар"
+  "goods": "товар",
+  "stock": "остаток"
 }
