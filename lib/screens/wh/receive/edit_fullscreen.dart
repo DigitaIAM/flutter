@@ -300,6 +300,9 @@ class _LinesState extends State<Lines> {
                   final Map<String, dynamic> data = {};
                   column.update(data, entry?.id);
 
+                  // workaround: reset selected uom
+                  fUomAtQty.update(data, null);
+
                   patch(context, item, data);
                 },
               ),

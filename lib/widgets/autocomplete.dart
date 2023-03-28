@@ -87,7 +87,7 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
         border: const UnderlineInputBorder(),
         floatingLabelBehavior:
             widget.label?.isEmpty ?? true ? FloatingLabelBehavior.always : FloatingLabelBehavior.auto,
-        suffixIcon: isNew
+        suffixIcon: isNew && widget.editable
             ? IconButton(
                 icon: const Icon(Icons.add_box_outlined),
                 onPressed: () async {
@@ -186,6 +186,7 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
             );
           });
     } else {
+      _controller.text = widget.displayStringForOption(widget.initialValue);
       return TextField(
         readOnly: true,
         controller: _controller,
