@@ -76,9 +76,10 @@ class _HomePage1State extends State<HomePage1> {
           columns: <GridColumn>[
             GridColumn(
                 columnName: 'description',
+                width: 400,
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    alignment: Alignment.centerRight,
+                    alignment: Alignment.center,
                     child: const Text(
                       'Description',
                       overflow: TextOverflow.ellipsis,
@@ -87,7 +88,7 @@ class _HomePage1State extends State<HomePage1> {
                 columnName: 'qty',
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: const Text(
                       'Quantity',
                       overflow: TextOverflow.ellipsis,
@@ -96,7 +97,7 @@ class _HomePage1State extends State<HomePage1> {
                 columnName: 'price',
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    alignment: Alignment.centerRight,
+                    alignment: Alignment.center,
                     child: const Text(
                       'Price',
                       overflow: TextOverflow.ellipsis,
@@ -105,7 +106,7 @@ class _HomePage1State extends State<HomePage1> {
                 columnName: 'pDiscount',
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    alignment: Alignment.centerRight,
+                    alignment: Alignment.center,
                     child: const Text(
                       'Discount',
                       overflow: TextOverflow.ellipsis,
@@ -114,7 +115,7 @@ class _HomePage1State extends State<HomePage1> {
                 columnName: 'amount',
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: const Text(
                       'Amount',
                       overflow: TextOverflow.ellipsis,
@@ -123,7 +124,7 @@ class _HomePage1State extends State<HomePage1> {
                 columnName: 'aDiscount',
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: const Text(
                       'Discount',
                       overflow: TextOverflow.ellipsis,
@@ -132,7 +133,7 @@ class _HomePage1State extends State<HomePage1> {
                 columnName: 'eDate',
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: const Text(
                       'Expiry Date',
                       overflow: TextOverflow.ellipsis,
@@ -141,7 +142,7 @@ class _HomePage1State extends State<HomePage1> {
                 columnName: 'series',
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: const Text(
                       'Series',
                       overflow: TextOverflow.ellipsis,
@@ -150,7 +151,7 @@ class _HomePage1State extends State<HomePage1> {
                 columnName: 'sLocation',
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: const Text(
                       'Storage Location',
                       overflow: TextOverflow.ellipsis,
@@ -212,8 +213,8 @@ class EmployeeDataSource extends DataGridSource {
       return Container(
           alignment: (dataGridCell.columnName == 'description' ||
                   dataGridCell.columnName == 'sLocation')
-              ? Alignment.centerRight
-              : Alignment.centerLeft,
+              ? Alignment.center
+              : Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
             dataGridCell.value.toString(),
