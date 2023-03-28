@@ -21,16 +21,16 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 
 import 'screen.dart';
 
-class WHReceiveView extends EntityHolder {
+class WHTransferView extends EntityHolder {
   final int tabIndex;
 
-  const WHReceiveView({super.key, required super.entity, required this.tabIndex});
+  const WHTransferView({super.key, required super.entity, required this.tabIndex});
 
   @override
-  State<WHReceiveView> createState() => _WHReceiveViewState();
+  State<WHTransferView> createState() => _WHTransferViewState();
 }
 
-class _WHReceiveViewState extends State<WHReceiveView> with SingleTickerProviderStateMixin {
+class _WHTransferViewState extends State<WHTransferView> with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -39,7 +39,7 @@ class _WHReceiveViewState extends State<WHReceiveView> with SingleTickerProvider
 
     // final state = widget.viewModel.state;
     _controller = TabController(
-      vsync: this, length: 2, initialIndex: 0, // widget.isFilter ? 0 : state.WHReceiveUIState.tabIndex
+      vsync: this, length: 2, initialIndex: 0, // widget.isFilter ? 0 : state.WHTransferUIState.tabIndex
     );
     _controller.addListener(_onTabChanged);
   }
@@ -87,7 +87,7 @@ class _WHReceiveViewState extends State<WHReceiveView> with SingleTickerProvider
           Expanded(
             child: TabBarView(
                 controller: _controller,
-                children: <Widget>[WHReceiveOverview(doc: widget.entity), WHReceiveGoods(doc: widget.entity)]),
+                children: <Widget>[WHTransferOverview(doc: widget.entity), WHTransferGoods(doc: widget.entity)]),
           ),
         ]);
       }),
@@ -95,10 +95,10 @@ class _WHReceiveViewState extends State<WHReceiveView> with SingleTickerProvider
   }
 }
 
-class WHReceiveOverview extends StatelessWidget {
+class WHTransferOverview extends StatelessWidget {
   final MemoryItem doc;
 
-  const WHReceiveOverview({super.key, required this.doc});
+  const WHTransferOverview({super.key, required this.doc});
 
   @override
   Widget build(BuildContext context) {
@@ -116,17 +116,17 @@ class WHReceiveOverview extends StatelessWidget {
   }
 }
 
-class WHReceiveGoods extends StatefulWidget {
+class WHTransferGoods extends StatefulWidget {
   final MemoryItem doc;
 
-  const WHReceiveGoods({super.key, required this.doc});
+  const WHTransferGoods({super.key, required this.doc});
 
   @override
-  State<StatefulWidget> createState() => _WHReceiveGoodsState();
+  State<StatefulWidget> createState() => _WHTransferGoodsState();
 }
 
-class _WHReceiveGoodsState extends State<WHReceiveGoods> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveGoodsEdit');
+class _WHTransferGoodsState extends State<WHTransferGoods> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHTransferGoodsEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -229,7 +229,7 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
 
       print("printer $ip $port");
 
-      final doc = await widget.doc.enrich(WHReceive.schema);
+      final doc = await widget.doc.enrich(WHTransfer.schema);
 
       print("doc ${doc.json}");
 
@@ -254,7 +254,7 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
           'qty': qty
         }, params: {
           'oid': Api.instance.oid,
-          'ctx': ['warehouse', 'receive', 'records']
+          'ctx': ['warehouse', 'transfer', 'records']
         });
 
         setState(() => status = "printing");

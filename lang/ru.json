@@ -67,7 +67,6 @@
   "printer": "принтер",
   "customer": "заказчик",
   "label": "этикетка",
-  "people": "люди",
   "person": "человек",
   "operator": "оператор",
   "control": "контролёр",
@@ -76,6 +75,7 @@
   "registering": "регистрация в системе",
   "printing": "печать этикетки",
   "warehouse receive": "приходная накладная",
+  "warehouse transfer": "перемещение",
   "new warehouse receive": "новая приходная накладная",
   "edit warehouse receive": "редактирование приходной накладной",
   "warehouse dispatch": "расходная накладная",
@@ -85,5 +85,7 @@
   "storage": "место хранения",
   "counterparty": "контрагент",
   "goods": "товар",
-  "stock": "остаток"
+  "stock": "остаток",
+  "from": "откуда",
+  "into": "куда"
 }

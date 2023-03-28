@@ -14,35 +14,35 @@ import 'package:nae/widgets/scaffold_list.dart';
 
 import 'edit_fullscreen.dart';
 
-class WHReceive extends Entity {
-  static const List<String> ctx = ['warehouse', 'receive', 'document'];
+class WHTransfer extends Entity {
+  static const List<String> ctx = ['warehouse', 'transfer', 'document'];
 
   static final List<Field> schema = [
     fDate,
-    fCounterparty,
-    fStorage,
-    const Field(
-        'goods',
-        ListType([
-          fStorage,
-          // Field('ref', ReferenceType(['goods'])),
-          Field('batch', StringType()),
-          fGoods,
-          fUomAtQty,
-          fQty,
-          // Field('price', NumberType()),
-          // Field('cost', NumberType()),
-        ]))
+    const Field('from', ReferenceType(['warehouse', 'storage'])),
+    const Field('into', ReferenceType(['warehouse', 'storage'])),
+//    const Field(
+//        'goods',
+//        ListType([
+//          fStorage,
+//          // Field('ref', ReferenceType(['goods'])),
+//          Field('batch', StringType()),
+//          fGoods,
+//          fUomAtQty,
+//          fQty,
+//          // Field('price', NumberType()),
+//          // Field('cost', NumberType()),
+//        ]))
   ];
 
   @override
   List<String> route() => ctx;
 
   @override
-  String name() => "warehouse receive";
+  String name() => "warehouse transfer";
 
   @override
-  IconData icon() => Icons.input;
+  IconData icon() => Icons.move_down_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {
@@ -51,17 +51,17 @@ class WHReceive extends Entity {
       // _${DateTime.now().toString()}__'),
       ctx: ctx,
       schema: schema,
-      list: const WHReceiveScreen(),
-      view: WHReceiveEditFS(
+      list: const WHTransferScreen(),
+      view: WHTransferEditFS(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
         entity: entity,
       ),
 //       view: action == "edit"
-//           ? WHReceiveEditFS(
+//           ? WHTransferEditFS(
 //               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
 //               entity: entity,
 //             )
-//           : WHReceiveView(
+//           : WHTransferView(
 //               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
 //               entity: entity,
 //               tabIndex: 0,
@@ -70,17 +70,17 @@ class WHReceive extends Entity {
   }
 }
 
-class WHReceiveScreen extends StatelessWidget {
-  const WHReceiveScreen({super.key});
+class WHTransferScreen extends StatelessWidget {
+  const WHTransferScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return ScaffoldList(
-      entityType: WHReceive.ctx,
+      entityType: WHTransfer.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
-        filter: null, //state.WHReceiveListState.filter,
+        filter: null, //state.WHTransferListState.filter,
         onFilterChanged: (value) {
           // store.dispatch(FilterProducts(value));
         },
@@ -89,30 +89,30 @@ class WHReceiveScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(WHReceive.ctx, action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip: AppLocalizations.of(context).translate("new warehouse inventory"),
+        tooltip: AppLocalizations.of(context).translate("new warehouse transfer"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,
         ),
       ),
-      body: const WHReceiveListBuilder(),
+      body: const WHTransferListBuilder(),
     );
   }
 }
 
-class WHReceiveListBuilder extends StatelessWidget {
-  const WHReceiveListBuilder({super.key});
+class WHTransferListBuilder extends StatelessWidget {
+  const WHTransferListBuilder({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MemoryList(
-      ctx: WHReceive.ctx,
-      schema: WHReceive.schema,
+      ctx: WHTransfer.ctx,
+      schema: WHTransfer.schema,
       title: (MemoryItem item) => item.name(),
       subtitle: (MemoryItem item) => '',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
+      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, entity: item)),
     );
   }
 }
