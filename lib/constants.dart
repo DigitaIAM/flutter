@@ -52,6 +52,7 @@ const Field fGoods = Field(
   ]),
 );
 const Field fBatch = Field('batch', StringType(), path: ['batch', 'barcode']);
+const Field fQtySingle = Field('qty', NumberType(), path: ['qty']);
 const Field fQty = Field('qty', NumberType(), path: ['qty', 'number']);
 const Field fUomAtGoods = Field('uom', ReferenceType(['uom']), path: ['goods', 'uom']);
 const Field fUomAtQty = Field('uom', ReferenceType(['uom']), path: ['qty', 'uom']);

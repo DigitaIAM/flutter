@@ -173,14 +173,14 @@ class WHTransactionsBuilder extends StatelessWidget {
 //    print("entity ${this.entity.toJson()}");
 
     final filter = {
-      'dates': {'from': '2022-12-01', 'till': '2023-12-30'},
-      'storage': this.entity.toJson()['storage'].toString(),
-      'goods': this.entity.toJson()['goods'].toString(),
-      'batch_id': this.entity.toJson()['batch']['id'].toString(),
-      'batch_date': this.entity.toJson()['batch']['date'].toString(),
+      'dates': {'from': '2022-12-01', 'till': Utils.today()},
+      'storage': entity.toJson()['storage'].toString(),
+      'goods': entity.toJson()['goods'].toString(),
+      'batch_id': entity.toJson()['batch']['id'].toString(),
+      'batch_date': entity.toJson()['batch']['date'].toString(),
     };
 
-    print("FILTER: ${filter}");
+    print("FILTER: $filter");
 
     return BlocBuilder<UiBloc, UiState>(
       builder: (context, uiState) => MemoryBlocHolder(
@@ -198,9 +198,10 @@ class WHTransactionsBuilder extends StatelessWidget {
       ctx: const [],
       schema: schema,
       filter: filter,
-      title: (MemoryItem item) => item.name(),
+      groupByYear: false,
+      title: (MemoryItem item) => item.json['description'] ?? '',
       subtitle: (MemoryItem item) =>
-          '${fQty.resolve(item.json)} ${fUom.resolve(item.json)}',
+          '${fQtyAtData.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}',
       onTap: (MemoryItem item) =>
           context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
     );
@@ -262,26 +263,26 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
                 keyboardType: TextInputType.datetime,
                 readOnly: true,
               ),
-              DecoratedFormField(
-                name: 'customer',
-                label: localization.translate("customer"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.text,
-              ),
-              DecoratedFormField(
-                name: 'qty',
-                label: localization.translate("qty"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.number,
-              ),
+//              DecoratedFormField(
+//                name: 'customer',
+//                label: localization.translate("customer"),
+//                autofocus: true,
+//                validator: FormBuilderValidators.compose([
+//                  FormBuilderValidators.required(),
+//                ]),
+//                onSave: (context) {},
+//                keyboardType: TextInputType.text,
+//              ),
+//              DecoratedFormField(
+//                name: 'qty',
+//                label: localization.translate("qty"),
+//                autofocus: true,
+//                validator: FormBuilderValidators.compose([
+//                  FormBuilderValidators.required(),
+//                ]),
+//                onSave: (context) {},
+//                keyboardType: TextInputType.number,
+//              ),
               ElevatedButton(
                 onPressed: status == 'register' ? registerAndPrint : null,
                 style: ElevatedButton.styleFrom(
@@ -289,7 +290,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: Text(localization.translate(status)),
+                child: Text(localization.translate('print')),
               )
             ])
           ]))

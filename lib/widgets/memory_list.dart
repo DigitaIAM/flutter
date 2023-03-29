@@ -61,6 +61,8 @@ class MemoryList extends StatefulWidget {
   final List<Field> schema;
   final Map<String, dynamic> filter;
 
+  final bool groupByYear;
+
   final String Function(MemoryItem) title;
   final String Function(MemoryItem) subtitle;
   final Function(MemoryItem) onTap;
@@ -72,6 +74,7 @@ class MemoryList extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.groupByYear = true,
     this.filter = const {},
     this.service = 'memories',
   });
@@ -255,7 +258,9 @@ class _MemoryListState extends State<MemoryList> {
 
     return GroupedListView<MemoryItem, String>(
       elements: state.items,
-      groupBy: (element) => element.json['date'] ?? '',
+      groupBy: widget.groupByYear
+          ? (element) => element.json['date'] ?? ''
+          : (element) => '',
       groupComparator: (g1, g2) => g2.compareTo(g1),
       itemComparator: (item1, item2) => item1.id.compareTo(item2.id),
       order: GroupedListOrder.ASC,

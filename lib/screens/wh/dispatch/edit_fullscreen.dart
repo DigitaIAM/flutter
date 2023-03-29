@@ -166,7 +166,7 @@ class _LinesState extends State<Lines> {
     final schema = <Field>[
       // const Field('batch', StringType()),
       fGoods.copyWith(width: 3.0),
-      fUomAtQty.copyWith(width: 0.5),
+      fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
       // fStorage,
     ];
@@ -215,6 +215,25 @@ class _LinesState extends State<Lines> {
                 final headingRowColor = theme.dataTableTheme.headingRowColor;
                 final List<MemoryItem> items = List.of(state.items);
 
+                // workaround: set uom from product default one
+                for (MemoryItem item in items) {
+                  final goods = item.json['goods'];
+                  if (goods != null && goods is MemoryItem) {
+                    final uom = goods.json['uom'];
+                    if (uom != null) {
+                      final qty = item.json['qty'];
+                      if (qty == null) {
+                        item.json['qty'] = {uom: uom};
+                      } else if (qty is Map) {
+                        final uomAtLine = qty['uom'];
+                        if (uomAtLine == null || (uomAtLine is MemoryItem && uomAtLine.isEmpty)) {
+                          qty['uom'] = uom;
+                        }
+                      }
+                    }
+                  }
+                }
+
                 // TODO where to add new item?
                 if (items.where((item) => item.isEmpty).isEmpty) {
                   items.add(MemoryItem.create());
@@ -257,6 +276,7 @@ class _LinesState extends State<Lines> {
               padding: const EdgeInsets.only(right: cTableColumnGap),
               child: AutocompleteField<MemoryItem>(
                 key: ValueKey('__line_${rowIndex}_${colIndex}_'),
+                editable: column.editable,
                 initialValue: value,
                 // focusNode: _focusNode,
                 create: (text) async {
@@ -278,7 +298,10 @@ class _LinesState extends State<Lines> {
                 },
                 onItemSelected: (entry) async {
                   final Map<String, dynamic> data = {};
-                  data[column.name] = entry?.id;
+                  column.update(data, entry?.id);
+
+                  // workaround: reset selected uom
+                  fUomAtQty.update(data, null);
 
                   patch(context, item, data);
                 },
@@ -294,9 +317,9 @@ class _LinesState extends State<Lines> {
                     final Map<String, dynamic> data = {};
 
                     if (text.contains('.')) {
-                      data[column.name] = double.parse(text);
+                      column.update(data, double.parse(text));
                     } else {
-                      data[column.name] = int.parse(text);
+                      column.update(data, int.parse(text));
                     }
 
                     patch(context, item, data);
