@@ -76,8 +76,8 @@ class WHBalanceListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHBalance.ctx,
       schema: WHBalance.schema,
-      title: (MemoryItem item) => item.name(),
-      subtitle: (MemoryItem item) => '${fQty.resolve(item.json)} ${fUom.resolve(item.json)}',
+      title: (MemoryItem item) => fGoods.resolve(item.json)?.name() ?? '',
+      subtitle: (MemoryItem item) => '${fQty.resolve(item.json)} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}',
       onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
     );
   }

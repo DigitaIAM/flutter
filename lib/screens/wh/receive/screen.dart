@@ -110,8 +110,8 @@ class WHReceiveListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHReceive.ctx,
       schema: WHReceive.schema,
-      title: (MemoryItem item) => item.name(),
-      subtitle: (MemoryItem item) => '',
+      title: (MemoryItem item) => fCounterparty.resolve(item.json)?.name() ?? '',
+      subtitle: (MemoryItem item) => fStorage.resolve(item.json)?.name() ?? '',
       onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
     );
   }

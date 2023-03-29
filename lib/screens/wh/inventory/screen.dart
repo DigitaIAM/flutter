@@ -110,7 +110,7 @@ class WHInventoriesListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHInventory.ctx,
       schema: WHInventory.schema,
-      title: (MemoryItem item) => item.name(),
+      title: (MemoryItem item) => fCounterparty.resolve(item.json)?.name() ?? '',
       subtitle: (MemoryItem item) => '',
       onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHInventory.ctx, entity: item)),
     );
