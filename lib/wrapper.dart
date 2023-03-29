@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/core/my_settings.dart';
 import 'package:nae/models/ui/bloc.dart';
 // import 'package:nae/screens/home.dart';
-import 'package:nae/screens/home1.dart';
+import 'package:nae/screens/pharmacy/mainPage.dart';
 import 'package:nae/screens/login.dart';
 import 'package:provider/provider.dart';
 
@@ -42,7 +42,7 @@ class _WrapperState extends State<Wrapper> {
     if (settings.token.isEmpty) {
       return const LoginPage();
     } else {
-      return const HomePage1();
+      return const PharmanyMain();
     }
   }
 }
