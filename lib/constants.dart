@@ -36,6 +36,9 @@ const Field fCounterparty = Field(
 
 const Field fStorage = Field('storage', ReferenceType(['warehouse', 'storage']));
 
+const Field fFrom = Field('from', ReferenceType(['warehouse', 'storage']));
+const Field fInto = Field('into', ReferenceType(['warehouse', 'storage']));
+
 const Field fProduct = Field("product", ReferenceType(['product']));
 
 const Field fGoods = Field(
