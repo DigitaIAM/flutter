@@ -28,6 +28,13 @@ class _PharmanyMainState extends State<PharmanyMain> {
 
   List<Employee> _employees = <Employee>[];
 
+  ThemeMode _themeMode = ThemeMode.system;
+  void changeTheme(ThemeMode themeMode) {
+    setState(() {
+      _themeMode = themeMode;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -37,279 +44,298 @@ class _PharmanyMainState extends State<PharmanyMain> {
 
   List<Employee> getEmployeeData() {
     return [
-      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+      Employee('description text', 100, 100000, 90000, 10, 9, '3/27/23',
           'Computer', 'www.www'),
-      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+      Employee('description text', 100, 100000, 90000, 10, 9, '3/27/23',
           'Computer', 'www.www'),
-      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+      Employee('description text', 100, 100000, 90000, 10, 9, '3/27/23',
           'Computer', 'www.www'),
-      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+      Employee('description text', 100, 100000, 90000, 10, 9, '3/27/23',
           'Computer', 'www.www'),
-      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+      Employee('description text', 100, 100000, 90000, 10, 9, '3/27/23',
           'Computer', 'www.www'),
-      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+      Employee('description text', 100, 100000, 90000, 10, 9, '3/27/23',
           'Computer', 'www.www'),
-      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+      Employee('description text', 100, 100000, 90000, 10, 9, '3/27/23',
           'Computer', 'www.www'),
-      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+      Employee('description text', 100, 100000, 90000, 10, 9, '3/27/23',
           'Computer', 'www.www'),
-      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+      Employee('description text', 100, 100000, 90000, 10, 9, '3/27/23',
           'Computer', 'www.www'),
-      Employee('description text', 100, 1000, 900, 10, 9, '2023, 3, 27',
+      Employee('description text', 100, 100000, 90000, 10, 9, '3/27/23',
           'Computer', 'www.www')
     ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Pharmacy'),
-        ),
-        body: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            SizedBox(
-                width: MediaQuery.of(context).size.width * 0.7,
-                child: SfDataGridTheme(
-                  data: SfDataGridThemeData(
-                    filterIconColor: Colors.pink,
-                    filterIconHoverColor: Colors.purple,
-                  ),
-                  child: SfDataGrid(
-                      gridLinesVisibility: GridLinesVisibility.both,
-                      headerGridLinesVisibility: GridLinesVisibility.both,
-                      allowFiltering: true,
-                      source: _employeeDataSource,
-                      columnWidthMode: ColumnWidthMode.fill,
-                      selectionMode: SelectionMode.multiple,
-                      checkboxShape: const CircleBorder(),
-                      showCheckboxColumn: true,
-                      tableSummaryRows: [
-                        GridTableSummaryRow(
-                            showSummaryInRow: true,
-                            title: 'Total Price: {Sum}',
-                            columns: [
-                              const GridSummaryColumn(
-                                  name: 'Sum',
-                                  columnName: 'price',
-                                  summaryType: GridSummaryType.sum)
-                            ],
-                            position: GridTableSummaryRowPosition.bottom)
-                      ],
-                      // onQueryRowHeight: (RowHeightDetails details) {
-                      //   if (details.rowIndex == 0) {
-                      //     return 70.0;
-                      //   }
-                      //   return details.rowHeight;
-                      // },
-
-                      columns: <GridColumn>[
-                        GridColumn(
-                            // filterPopupMenuOptions: const FilterPopupMenuOptions(canShowClearFilterOption: false),
-                            columnName: 'description',
-                            // filterIconPadding: const EdgeInsets.fromLTRB(0, 0, 40, 0),
-                            width: 300,
-                            label: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'Description',
-                                  overflow: TextOverflow.ellipsis,
-                                ))),
-                        GridColumn(
-                            columnName: 'qty',
-                            label: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'Quantity',
-                                  overflow: TextOverflow.ellipsis,
-                                ))),
-                        GridColumn(
-                            columnName: 'price',
-                            label: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'Price',
-                                  overflow: TextOverflow.ellipsis,
-                                ))),
-                        GridColumn(
-                            columnName: 'pDiscount',
-                            label: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'Discount',
-                                  overflow: TextOverflow.ellipsis,
-                                ))),
-                        GridColumn(
-                            columnName: 'amount',
-                            label: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'Amount',
-                                  overflow: TextOverflow.ellipsis,
-                                ))),
-                        GridColumn(
-                            columnName: 'aDiscount',
-                            label: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'Discount',
-                                  overflow: TextOverflow.ellipsis,
-                                ))),
-                        GridColumn(
-                            columnName: 'eDate',
-                            label: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'Expiry Date',
-                                  overflow: TextOverflow.ellipsis,
-                                ))),
-                        GridColumn(
-                            columnName: 'series',
-                            label: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'Series',
-                                  overflow: TextOverflow.ellipsis,
-                                ))),
-                        GridColumn(
-                            columnName: 'sLocation',
-                            label: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'Storage Location',
-                                  overflow: TextOverflow.ellipsis,
-                                ))),
-                      ],
-                      stackedHeaderRows: <StackedHeaderRow>[
-                        StackedHeaderRow(cells: [
-                          StackedHeaderCell(
-                              columnNames: ['price', 'pDiscount'],
-                              child: Container(
-                                  color: const Color(0xFFF1F1F1),
-                                  child: const Center(child: Text('Price')))),
-                          StackedHeaderCell(
-                              columnNames: ['amount', 'aDiscount'],
-                              child: Container(
-                                  color: const Color(0xFFF1F1F1),
-                                  child: const Center(child: Text('Amount'))))
-                        ])
-                      ]),
-                )),
-            SizedBox(
-                width: MediaQuery.of(context).size.width * 0.15,
-                child: Column(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 16),
-                          child: TextFormField(
-                            decoration: const InputDecoration(
-                              border: UnderlineInputBorder(),
-                              labelText: 'Enter a search item',
-                            ),
+    return MaterialApp(
+        theme: ThemeData(primarySwatch: Colors.green),
+        darkTheme: ThemeData.dark(),
+        themeMode: _themeMode,
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+            appBar: AppBar(
+              title: const Text('Pharmacy'),
+              actions: <Widget>[
+                Padding(
+                    padding: const EdgeInsets.only(right: 10.0),
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            // backgroundColor: Colors.transparent,
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 16),
-                          child: TextFormField(
-                            decoration: const InputDecoration(
-                              border: UnderlineInputBorder(),
-                              labelText: 'Enter a search item',
-                            ),
+                          onPressed: () {
+                            changeTheme(ThemeMode.light);
+                          },
+                          child: const Icon(Icons.light_mode_rounded)),
+                    )),
+                Padding(
+                    padding: const EdgeInsets.only(right: 10.0),
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            // backgroundColor: Colors.transparent,
                           ),
+                          onPressed: () {
+                            changeTheme(ThemeMode.dark);
+                          },
+                          child: const Icon(
+                            Icons.dark_mode_rounded,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          )),
+                    )),
+              ],
+            ),
+            body: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.7,
+                    child: SfDataGridTheme(
+                      data: SfDataGridThemeData(
+                          // filterIconColor: Colors.pink,
+                          // filterIconHoverColor: Colors.purple,
+                          ),
+                      child: SfDataGrid(
+                          gridLinesVisibility: GridLinesVisibility.both,
+                          headerGridLinesVisibility: GridLinesVisibility.both,
+                          source: _employeeDataSource,
+                          columnWidthMode: ColumnWidthMode.fill,
+                          tableSummaryRows: [
+                            GridTableSummaryRow(
+                                showSummaryInRow: true,
+                                title: 'Total Price: {Sum}',
+                                columns: [
+                                  const GridSummaryColumn(
+                                      name: 'Sum',
+                                      columnName: 'price',
+                                      summaryType: GridSummaryType.sum)
+                                ],
+                                position: GridTableSummaryRowPosition.bottom)
+                          ],
+                          columns: <GridColumn>[
+                            GridColumn(
+                                columnName: 'description',
+                                width: 200,
+                                label: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      'Description',
+                                      overflow: TextOverflow.ellipsis,
+                                    ))),
+                            GridColumn(
+                                columnName: 'qty',
+                                label: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      'Quantity',
+                                      overflow: TextOverflow.ellipsis,
+                                    ))),
+                            GridColumn(
+                                columnName: 'price',
+                                label: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      'Price',
+                                      overflow: TextOverflow.ellipsis,
+                                    ))),
+                            GridColumn(
+                                columnName: 'pDiscount',
+                                label: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      'Discount',
+                                      overflow: TextOverflow.ellipsis,
+                                    ))),
+                            GridColumn(
+                                columnName: 'amount',
+                                label: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      'Amount',
+                                      overflow: TextOverflow.ellipsis,
+                                    ))),
+                            GridColumn(
+                                columnName: 'aDiscount',
+                                label: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      'Discount',
+                                      overflow: TextOverflow.ellipsis,
+                                    ))),
+                            GridColumn(
+                                columnName: 'eDate',
+                                label: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      'Expiry Date',
+                                      overflow: TextOverflow.ellipsis,
+                                    ))),
+                            GridColumn(
+                                columnName: 'series',
+                                label: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      'Series',
+                                      overflow: TextOverflow.ellipsis,
+                                    ))),
+                            GridColumn(
+                                columnName: 'sLocation',
+                                label: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      'Storage Location',
+                                      overflow: TextOverflow.ellipsis,
+                                    ))),
+                          ],
+                          stackedHeaderRows: <StackedHeaderRow>[
+                            StackedHeaderRow(cells: [
+                              StackedHeaderCell(
+                                  columnNames: ['price', 'pDiscount'],
+                                  child: const Center(child: Text('Price'))),
+                              StackedHeaderCell(
+                                  columnNames: ['amount', 'aDiscount'],
+                                  child: const Center(child: Text('Amount')))
+                            ])
+                          ]),
+                    )),
+                SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.15,
+                    child: Column(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 16),
+                              child: TextFormField(
+                                decoration: const InputDecoration(
+                                  border: UnderlineInputBorder(),
+                                  labelText: 'Enter a search item',
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 16),
+                              child: TextFormField(
+                                decoration: const InputDecoration(
+                                  border: UnderlineInputBorder(),
+                                  labelText: 'Enter a search item',
+                                ),
+                              ),
+                            ),
+                            const Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 16),
+                                child: Text.rich(
+                                  TextSpan(
+                                    text: 'Amount: ',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight
+                                            .bold), // default text style
+                                    children: <TextSpan>[
+                                      TextSpan(
+                                          text: '0.00',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color.fromARGB(
+                                                  255, 0, 0, 206))),
+                                    ],
+                                  ),
+                                )),
+                            const Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 16),
+                                child: Text.rich(
+                                  TextSpan(
+                                    text: 'Discount: ',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight
+                                            .bold), // default text style
+                                    children: <TextSpan>[
+                                      TextSpan(
+                                          text: '0.00',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color.fromARGB(
+                                                  255, 0, 0, 206))),
+                                    ],
+                                  ),
+                                )),
+                            const Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 16),
+                                child: Text.rich(
+                                  TextSpan(
+                                    text: 'Payable: ',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight
+                                            .bold), // default text style
+                                    children: <TextSpan>[
+                                      TextSpan(
+                                          text: '0.00',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color.fromARGB(
+                                                  255, 0, 0, 206))),
+                                    ],
+                                  ),
+                                )),
+                          ],
                         ),
-                        const Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 16),
-                            child: Text.rich(
-                              TextSpan(
-                                text: 'Amount: ',
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight:
-                                        FontWeight.bold), // default text style
-                                children: <TextSpan>[
-                                  TextSpan(
-                                      text: '0.00',
-                                      style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color:
-                                              Color.fromARGB(255, 0, 0, 206))),
-                                ],
-                              ),
-                            )),
-                        const Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 16),
-                            child: Text.rich(
-                              TextSpan(
-                                text: 'Discount: ',
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight:
-                                        FontWeight.bold), // default text style
-                                children: <TextSpan>[
-                                  TextSpan(
-                                      text: '0.00',
-                                      style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color:
-                                              Color.fromARGB(255, 0, 0, 206))),
-                                ],
-                              ),
-                            )),
-                        const Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 16),
-                            child: Text.rich(
-                              TextSpan(
-                                text: 'Payable: ',
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight:
-                                        FontWeight.bold), // default text style
-                                children: <TextSpan>[
-                                  TextSpan(
-                                      text: '0.00',
-                                      style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color:
-                                              Color.fromARGB(255, 0, 0, 206))),
-                                ],
-                              ),
-                            )),
                       ],
-                    ),
-                  ],
-                )),
-          ],
-        ));
+                    )),
+              ],
+            )));
   }
 }
 
