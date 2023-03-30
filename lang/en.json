@@ -73,6 +73,7 @@
   "register": "register",
   "connecting": "connecting",
   "registering": "registering",
+  "print": "print",
   "printing": "printing",
   "warehouse receive": "warehouse receive",
   "warehouse transfer": "warehouse transfer",

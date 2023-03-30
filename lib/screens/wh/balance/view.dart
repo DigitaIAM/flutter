@@ -201,7 +201,7 @@ class WHTransactionsBuilder extends StatelessWidget {
       groupByYear: false,
       title: (MemoryItem item) => item.json['description'] ?? '',
       subtitle: (MemoryItem item) =>
-          '${fQtySingle.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}',
+          '${fType.resolve(item.json)} ${fQtySingle.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}',
       onTap: (MemoryItem item) =>
           context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
     );
@@ -263,26 +263,6 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
                 keyboardType: TextInputType.datetime,
                 readOnly: true,
               ),
-//              DecoratedFormField(
-//                name: 'customer',
-//                label: localization.translate("customer"),
-//                autofocus: true,
-//                validator: FormBuilderValidators.compose([
-//                  FormBuilderValidators.required(),
-//                ]),
-//                onSave: (context) {},
-//                keyboardType: TextInputType.text,
-//              ),
-//              DecoratedFormField(
-//                name: 'qty',
-//                label: localization.translate("qty"),
-//                autofocus: true,
-//                validator: FormBuilderValidators.compose([
-//                  FormBuilderValidators.required(),
-//                ]),
-//                onSave: (context) {},
-//                keyboardType: TextInputType.number,
-//              ),
               ElevatedButton(
                 onPressed: status == 'register' ? registerAndPrint : null,
                 style: ElevatedButton.styleFrom(
@@ -325,7 +305,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
 //      print("order ${order.json}");
 
-      final operationId = widget.order.json['batch']['id'] ?? '';
+      final operationId = order.json['batch']['id'] ?? '';
 
       final operation = await Api.feathers().get(serviceName: "memories", objectId: operationId, params: {
         "oid": Api.instance.oid,
