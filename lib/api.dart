@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_feathersjs/flutter_feathersjs.dart';
 
 class Api {
-//  static const String server = "https://data.animi.dev";
+  static const String server = "https://data.animi.dev";
 
   // static const String server = "http://10.0.2.2:3030";
-  static const String server = "http://169.254.72.49:3030";
-//  static const String server = "http://localhost:3030";
+  // static const String server = "http://169.254.72.49:3030";
+  // static const String server = "http://localhost:3030";
 
   static final Api instance = Api._internal();
 
