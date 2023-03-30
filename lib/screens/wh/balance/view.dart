@@ -201,7 +201,7 @@ class WHTransactionsBuilder extends StatelessWidget {
       groupByYear: false,
       title: (MemoryItem item) => item.json['description'] ?? '',
       subtitle: (MemoryItem item) =>
-          '${fQtyAtData.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}',
+          '${fQtySingle.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}',
       onTap: (MemoryItem item) =>
           context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
     );
@@ -323,7 +323,30 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
         fProduct,
       ]);
 
-      print("order ${order.json}");
+//      print("order ${order.json}");
+
+      final operationId = widget.order.json['batch']['id'] ?? '';
+
+      final operation = await Api.feathers().get(serviceName: "memories", objectId: operationId, params: {
+        "oid": Api.instance.oid,
+        "ctx": ["warehouse","receive","document"],
+      }) ?? '';
+
+
+      final documentId = operation['document'] ?? '';
+
+      final document = await Api.feathers().get(serviceName: "memories", objectId: documentId, params: {
+        "oid": Api.instance.oid,
+        "ctx": ["warehouse","receive","document"],
+      }) ?? '';
+
+      final counterpartyId = document['counterparty'] ?? '';
+      final counterparty = await Api.feathers().get(serviceName: "memories", objectId: counterpartyId, params: {
+        "oid": Api.instance.oid,
+        "ctx": ["counterparty"],
+      }) ?? '';
+
+
 
       final goods = order.json['goods'].json;
       final goodsName = goods['name'] ?? '';
@@ -334,9 +357,9 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
       final date = batch['date'] ?? '';
       final barcode = batch['barcode'] ?? '';
 
-      final supplier = data['customer'] ?? '';
+      final supplier = counterparty['name'] ?? '';
 
-      final qty = data['qty'] ?? 0;
+      final qty = operation['qty']['number'] ?? 0;
 
       final uom = order.json['uom'].json;
       final uomName = uom['name'];

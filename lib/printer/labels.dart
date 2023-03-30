@@ -76,6 +76,10 @@ class Labels {
     printer.codepage(name: "1251");
     printer.direction();
 
+    printer.text(50, 25, "id", font: "4", mx: 1, my: 1);
+    printer.qrcode(50, 50, goodsId, cellWidth: 7);
+
+    printer.text(450, 25, "uuid", font: "4", mx: 1, my: 1);
     printer.qrcode(450, 50, goodsUuid, cellWidth: 7);
 
     printer.text(780, 50, goodsId,
