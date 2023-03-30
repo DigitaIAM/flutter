@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-class PharmanyMain extends StatefulWidget {
-  const PharmanyMain({super.key});
+class StatisticTable extends StatefulWidget {
+  const StatisticTable({super.key});
 
   @override
-  State<PharmanyMain> createState() => _PharmanyMainState();
+  State<StatisticTable> createState() => _StatisticTableState();
 }
 
 class Employee {
@@ -23,7 +23,7 @@ class Employee {
   final String sLocation;
 }
 
-class _PharmanyMainState extends State<PharmanyMain> {
+class _StatisticTableState extends State<StatisticTable> {
   late EmployeeDataSource _employeeDataSource;
 
   List<Employee> _employees = <Employee>[];
