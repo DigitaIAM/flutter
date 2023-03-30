@@ -58,6 +58,8 @@ const Field fUomAtGoods = Field('uom', ReferenceType(['uom']), path: ['goods', '
 const Field fUomAtQty = Field('uom', ReferenceType(['uom']), path: ['qty', 'uom']);
 const Field fUom = Field('uom', ReferenceType(['uom']));
 
+const Field fType = Field('type', ReferenceType(['type']));
+
 // TODO add relation between `qty`, `price` & `cost`
 // cost = qty * price
 // price = cost / qty
