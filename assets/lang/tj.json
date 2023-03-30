@@ -54,5 +54,8 @@
   "products": "products",
   "product": "product",
   "uoms": "unit of measure",
-  "uom": "UoM"
+  "uom": "UoM",
+  "stock": "stock",
+  "from": "from",
+  "into": "into"
 }
