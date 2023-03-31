@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:intl/intl.dart';
+import 'sideBar.dart';
 
 class PharmanyMain extends StatefulWidget {
   const PharmanyMain({super.key});
@@ -404,7 +405,7 @@ class _PharmanyMainState extends State<PharmanyMain> {
                           ),
                           SizedBox(
                             height: 20.0,
-                            width: MediaQuery.of(context).size.width * 0.83,
+                            width: MediaQuery.of(context).size.width * 0.8,
                             child: Center(
                               child: Container(
                                 height: 2.0,
@@ -417,7 +418,7 @@ class _PharmanyMainState extends State<PharmanyMain> {
                             children: <Widget>[
                               SizedBox(
                                   width:
-                                      MediaQuery.of(context).size.width * 0.83,
+                                      MediaQuery.of(context).size.width * 0.8,
                                   height:
                                       MediaQuery.of(context).size.height * 0.43,
                                   child: SfDataGridTheme(
@@ -556,139 +557,9 @@ class _PharmanyMainState extends State<PharmanyMain> {
                         endIndent: 0,
                         color: Colors.green,
                       ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.13,
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      dateText,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(timeText,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.green)),
-                                  ),
-                                  Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            minimumSize: const Size.fromHeight(
-                                                50), // NEW
-                                          ),
-                                          onPressed: () {
-                                            /* do something here */
-                                          },
-                                          icon: const Icon(Icons.money),
-                                          label: const Text(
-                                            "Cash",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ))),
-                                  Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            minimumSize: const Size.fromHeight(
-                                                50), // NEW
-                                          ),
-                                          onPressed: () {
-                                            /* do something here */
-                                          },
-                                          icon: const Icon(Icons.card_giftcard),
-                                          label: const Text(
-                                            "Humo",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ))),
-                                  Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            minimumSize: const Size.fromHeight(
-                                                50), // NEW
-                                          ),
-                                          onPressed: () {
-                                            /* do something here */
-                                          },
-                                          icon:
-                                              const Icon(Icons.card_membership),
-                                          label: const Text(
-                                            "UzCard",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ))),
-                                  Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            // backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-                                            minimumSize: const Size.fromHeight(
-                                                50), // NEW
-                                          ),
-                                          onPressed: () {
-                                            /* do something here */
-                                          },
-                                          icon: const Icon(Icons.other_houses),
-                                          label: const Text(
-                                            "Others",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ))),
-                                ],
-                              )),
-                          SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.13,
-                              child: Column(
-                                children: [
-                                  Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            minimumSize: const Size.fromHeight(
-                                                50), // NEW
-                                          ),
-                                          onPressed: () {
-                                            /* do something here */
-                                          },
-                                          icon: const Icon(
-                                              Icons.reset_tv_outlined),
-                                          label: const Text(
-                                            "Return",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ))),
-                                  Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            // backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-                                            minimumSize: const Size.fromHeight(
-                                                50), // NEW
-                                          ),
-                                          onPressed: () {
-                                            /* do something here */
-                                          },
-                                          icon: const Icon(Icons.exit_to_app),
-                                          label: const Text(
-                                            "Exit",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ))),
-                                ],
-                              ))
-                        ],
-                      )
+                      SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.15,
+                          child: sideBar(context))
                     ],
                   ))
                 ]))));
