@@ -34,14 +34,17 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 import 'screen.dart';
 
 class WHReceiveEditFS extends EntityHolder {
-  const WHReceiveEditFS({super.key, required super.entity}) : super(fullscreen: true);
+  const WHReceiveEditFS({super.key, required super.entity})
+      : super(fullscreen: true);
 
   @override
   State<WHReceiveEditFS> createState() => _WHReceiveEditFSState();
 }
 
-class _WHReceiveEditFSState extends State<WHReceiveEditFS> with SingleTickerProviderStateMixin {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveEditFS');
+class _WHReceiveEditFSState extends State<WHReceiveEditFS>
+    with SingleTickerProviderStateMixin {
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveEditFS');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   late TabController _controller;
@@ -51,7 +54,9 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS> with SingleTickerProv
     super.initState();
 
     _controller = TabController(
-      vsync: this, length: 2, initialIndex: 0,
+      vsync: this,
+      length: 2,
+      initialIndex: 0,
     );
   }
 
@@ -72,9 +77,8 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS> with SingleTickerProv
       // workaround
       data['_id'] = widget.entity.id;
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", WHReceive.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context.read<MemoryBloc>().add(MemorySave("memories", WHReceive.ctx,
+          MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -94,92 +98,88 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS> with SingleTickerProv
       // TODO context.read<UiBloc>().add(PreviousRoute());
     }
 
-    return BlocBuilder<UiBloc, UiState>(
-      builder: (context, uiState) {
-        if (uiState.isDesktop) {
-          return EditScaffold(
-            entity: widget.entity,
-            title: localization.translate("warehouse receive"),
-            onClose: routerBack,
-            onCancel: routerBack,
-            onSave: _onSave,
-            body: AppForm(
-              schema: WHReceive.schema,
-              formKey: _formKey,
-              focusNode: _focusNode,
-              entity: getEntity(),
-              child: Column(children: [
-                FormCard(children: <Widget>[
-                  DecoratedFormField(
-                    name: 'date',
-                    label: localization.translate("date"),
-                    autofocus: true,
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                    ]),
-                    onSave: _onSave,
-                    keyboardType: TextInputType.datetime,
-                  ),
-                  DecoratedFormPickerField(
-                    ctx: const ['warehouse', 'storage'],
-                    name: 'storage',
-                    label: localization.translate("storage"),
-                    autofocus: true,
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                    ]),
-                    onSave: _onSave,
-                  ),
-                  DecoratedFormPickerField(
-                    ctx: const ['counterparty'],
-                    name: 'counterparty',
-                    label: localization.translate('counterparty'),
-                    autofocus: true,
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                    ]),
-                    onSave: _onSave,
-                  ),
-                ]),
-                Expanded(
-                  child: ScrollableListView(children: <Widget>[
-                    Lines(
-                      ctx: const ['warehouse', 'receive'],
-                      document: widget.entity,
-                    ),
-                    // workaround to give some space for dropdown
-                    Container(height: 300)
+    return BlocBuilder<UiBloc, UiState>(builder: (context, uiState) {
+      if (uiState.isDesktop) {
+        return EditScaffold(
+          entity: widget.entity,
+          title: localization.translate("warehouse receive"),
+          onClose: routerBack,
+          onCancel: routerBack,
+          onSave: _onSave,
+          body: AppForm(
+            schema: WHReceive.schema,
+            formKey: _formKey,
+            focusNode: _focusNode,
+            entity: getEntity(),
+            child: Column(children: [
+              FormCard(children: <Widget>[
+                DecoratedFormField(
+                  name: 'date',
+                  label: localization.translate("date"),
+                  autofocus: true,
+                  validator: FormBuilderValidators.compose([
+                    FormBuilderValidators.required(),
                   ]),
-                )
-              ]),
-            ),
-          );
-        } else {
-          return ScaffoldView(
-            appBarBottom: TabBar(
-              controller: _controller,
-              isScrollable: true,
-              tabs: [
-                Tab(text: localization.translate("overview")),
-                Tab(text: localization.translate("goods")),
-              ],
-            ),
-            body: Builder(builder: (context) {
-              return Column(children: <Widget>[
-                Expanded(
-                  child: TabBarView(
-                      controller: _controller,
-                      children: <Widget>[
-                        WHReceiveOverview(doc: widget.entity),
-                        WHReceiveGoods(doc: widget.entity)
-                      ]),
+                  onSave: _onSave,
+                  keyboardType: TextInputType.datetime,
                 ),
-              ]);
-            }),
-          );
-        }
+                DecoratedFormPickerField(
+                  ctx: const ['warehouse', 'storage'],
+                  name: 'storage',
+                  label: localization.translate("storage"),
+                  autofocus: true,
+                  validator: FormBuilderValidators.compose([
+                    FormBuilderValidators.required(),
+                  ]),
+                  onSave: _onSave,
+                ),
+                DecoratedFormPickerField(
+                  ctx: const ['counterparty'],
+                  name: 'counterparty',
+                  label: localization.translate('counterparty'),
+                  autofocus: true,
+                  validator: FormBuilderValidators.compose([
+                    FormBuilderValidators.required(),
+                  ]),
+                  onSave: _onSave,
+                ),
+              ]),
+              Expanded(
+                child: ScrollableListView(children: <Widget>[
+                  Lines(
+                    ctx: const ['warehouse', 'receive'],
+                    document: widget.entity,
+                  ),
+                  // workaround to give some space for dropdown
+                  Container(height: 300)
+                ]),
+              )
+            ]),
+          ),
+        );
+      } else {
+        return ScaffoldView(
+          appBarBottom: TabBar(
+            controller: _controller,
+            isScrollable: true,
+            tabs: [
+              Tab(text: localization.translate("overview")),
+              Tab(text: localization.translate("goods")),
+            ],
+          ),
+          body: Builder(builder: (context) {
+            return Column(children: <Widget>[
+              Expanded(
+                child: TabBarView(controller: _controller, children: <Widget>[
+                  WHReceiveOverview(doc: widget.entity),
+                  WHReceiveGoods(doc: widget.entity)
+                ]),
+              ),
+            ]);
+          }),
+        );
       }
-    );
+    });
   }
 
   MemoryItem getEntity() {
@@ -259,7 +259,9 @@ class _LinesState extends State<Lines> {
           builder: (context, state) {
             switch (state.status) {
               case RequestStatus.failure:
-                return Center(child: Text(localization.translate('failed to fetch data')));
+                return Center(
+                    child:
+                        Text(localization.translate('failed to fetch data')));
               case RequestStatus.success:
                 final headingRowColor = theme.dataTableTheme.headingRowColor;
                 final List<MemoryItem> items = List.of(state.items);
@@ -275,7 +277,8 @@ class _LinesState extends State<Lines> {
                         item.json['qty'] = {uom: uom};
                       } else if (qty is Map) {
                         final uomAtLine = qty['uom'];
-                        if (uomAtLine == null || (uomAtLine is MemoryItem && uomAtLine.isEmpty)) {
+                        if (uomAtLine == null ||
+                            (uomAtLine is MemoryItem && uomAtLine.isEmpty)) {
                           qty['uom'] = uom;
                         }
                       }
@@ -294,7 +297,8 @@ class _LinesState extends State<Lines> {
                   children: [
                     TableRow(
                       children: tableHeaderColumns,
-                      decoration: BoxDecoration(color: headingRowColor?.resolve(<MaterialState>{})),
+                      decoration: BoxDecoration(
+                          color: headingRowColor?.resolve(<MaterialState>{})),
                     ),
                     for (var index = 0; index < items.length; index++)
                       buildRow(context, columns, items, index, localization)
@@ -309,8 +313,8 @@ class _LinesState extends State<Lines> {
     );
   }
 
-  TableRow buildRow(BuildContext context, Map<int, Field> columns, List<MemoryItem> items, int rowIndex,
-      AppLocalizations localization) {
+  TableRow buildRow(BuildContext context, Map<int, Field> columns,
+      List<MemoryItem> items, int rowIndex, AppLocalizations localization) {
     final item = items[rowIndex];
     return TableRow(
       key: ValueKey('__line_${rowIndex}_${item.updatedAt}__'),
@@ -337,13 +341,21 @@ class _LinesState extends State<Lines> {
                   return MemoryItem.from(response);
                 },
                 delegate: (text) async {
-                  final response = await Api.feathers()
-                      .find(serviceName: "memories", query: {"oid": Api.instance.oid, "ctx": type.ctx, "search": text});
-                  return (response['data'] ?? []).map<MemoryItem>((item) => MemoryItem.from(item)).toList();
+                  final response = await Api.feathers().find(
+                      serviceName: "memories",
+                      query: {
+                        "oid": Api.instance.oid,
+                        "ctx": type.ctx,
+                        "search": text
+                      });
+                  return (response['data'] ?? [])
+                      .map<MemoryItem>((item) => MemoryItem.from(item))
+                      .toList();
                 },
                 displayStringForOption: (item) => item?.name() ?? '',
                 itemBuilder: (context, entry) {
-                  return Text(entry.name()); // , style: Theme.of(context).textTheme.displayMedium);
+                  return Text(entry
+                      .name()); // , style: Theme.of(context).textTheme.displayMedium);
                 },
                 onItemSelected: (entry) async {
                   final Map<String, dynamic> data = {};
@@ -388,15 +400,20 @@ class _LinesState extends State<Lines> {
   void patch(BuildContext context, MemoryItem item, Map<String, dynamic> data) {
     if (item.isNew) {
       data['document'] = widget.document.id;
-      context.read<MemoryBloc>().add(MemoryCreate('memories', widget.ctx, data));
+      context
+          .read<MemoryBloc>()
+          .add(MemoryCreate('memories', widget.ctx, data));
     } else {
-      context.read<MemoryBloc>().add(MemoryPatch('memories', widget.ctx, item.id, data));
+      context
+          .read<MemoryBloc>()
+          .add(MemoryPatch('memories', widget.ctx, item.id, data));
     }
   }
 }
 
 class CustomTextField extends StatefulWidget {
-  const CustomTextField({super.key, required this.initialValue, required this.onChanged});
+  const CustomTextField(
+      {super.key, required this.initialValue, required this.onChanged});
 
   final dynamic initialValue;
   final Function(String) onChanged;
@@ -448,7 +465,11 @@ class TableHeader extends StatelessWidget {
   final bool isFirst;
   final bool isNumeric;
 
-  const TableHeader({super.key, required this.label, this.isFirst = false, this.isNumeric = false});
+  const TableHeader(
+      {super.key,
+      required this.label,
+      this.isFirst = false,
+      this.isNumeric = false});
 
   @override
   Widget build(BuildContext context) {
@@ -459,7 +480,8 @@ class TableHeader extends StatelessWidget {
         top: 0, // tableHeaderColor.isEmpty ? 0 : 8,
         bottom: 8, // tableHeaderColor.isEmpty ? 8 : 16,
         right: isNumeric ? cTableColumnGap : 0,
-        left: isFirst ? 4 : 0, // tableHeaderColor.isNotEmpty && isFirst ? 4 : 0,
+        left:
+            isFirst ? 4 : 0, // tableHeaderColor.isNotEmpty && isFirst ? 4 : 0,
       ),
       child: Text(
         label,
@@ -490,34 +512,34 @@ class WHReceiveOverview extends StatelessWidget {
     ];
 
     return BlocProvider(
-        create: (context) {
-          final bloc = MemoryBloc(schema: schema, reverse: true);
-          bloc.add(MemoryFetch(
-            'memories',
-            ctx,
-            filter: filter,
-            reverse: true,
-            loadAll: true,
-          ));
+      create: (context) {
+        final bloc = MemoryBloc(schema: schema, reverse: true);
+        bloc.add(MemoryFetch(
+          'memories',
+          ctx,
+          filter: filter,
+          reverse: true,
+          loadAll: true,
+        ));
 
-          return bloc;
-        },
-        child: ScaffoldList(
-            entityType: const ['warehouse', 'receive'],
-            appBarTitle: ListFilter(
-              filter: null, //state.WHReceiveListState.filter,
-              onFilterChanged: (value) {
-              },
-            ),
-            body: MemoryList(
-              ctx: ctx,
-              filter: filter,
-              schema: schema,
-              title: (MemoryItem item) => fGoods.resolve(item.json)?.name() ?? '',
-              subtitle: (MemoryItem item) => fQty.resolve(item.json) ?? '',
-              onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
-            )
-        ),
+        return bloc;
+      },
+      child: ScaffoldList(
+          entityType: const ['warehouse', 'receive'],
+          appBarTitle: ListFilter(
+            filter: null, //state.WHReceiveListState.filter,
+            onFilterChanged: (value) {},
+          ),
+          body: MemoryList(
+            ctx: ctx,
+            filter: filter,
+            schema: schema,
+            title: (MemoryItem item) => fGoods.resolve(item.json)?.name() ?? '',
+            subtitle: (MemoryItem item) => fQty.resolve(item.json) ?? '',
+            onTap: (MemoryItem item) => context
+                .read<UiBloc>()
+                .add(ChangeView(WHReceive.ctx, entity: item)),
+          )),
     );
   }
 }
@@ -532,7 +554,8 @@ class WHReceiveGoods extends StatefulWidget {
 }
 
 class _WHReceiveGoodsState extends State<WHReceiveGoods> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveGoodsEdit');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveGoodsEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -643,6 +666,10 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
       print("doc ${doc.json}");
 
       final goods = data['goods'] as MemoryItem;
+      final goodsName = goods.name();
+      final goodsUuid = goods.json['_uuid'] ?? '';
+      final goodsId = goods.id;
+
       final uom = data['uom'] as MemoryItem;
 
       final date = doc.json['date']!;
@@ -654,47 +681,50 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
 
       // check creating without printing
 
-//      setState(() => status = "registering");
-//      final record = await Api.feathers().create(serviceName: 'memories', data: {
-//        'document': doc.id,
-//        'goods': goods.id,
-//        'qty': qty,
-//      }, params: {
-//        'oid': Api.instance.oid,
-//        'ctx': ['warehouse', 'receive']
-//      });
-//
-//      print("record: $record");
+      //  setState(() => status = "registering");
+      //  final record = await Api.feathers().create(serviceName: 'memories', data: {
+      //    'document': doc.id,
+      //    'goods': goods.id,
+      //    'qty': qty,
+      //  }, params: {
+      //    'oid': Api.instance.oid,
+      //    'ctx': ['warehouse', 'receive']
+      //  });
+
+      //  print("record: $record");
 
       final result = await Labels.connect(ip, port, (printer) async {
         setState(() => status = "registering");
-        final record = await Api.feathers().create(serviceName: 'memories', data: {
+        final record =
+            await Api.feathers().create(serviceName: 'memories', data: {
           'document': doc.id,
           'goods': goods.id,
           'qty': qty,
         }, params: {
           'oid': Api.instance.oid,
-          'ctx': ['warehouse', 'receive', 'records']
+          'ctx': ['warehouse', 'receive']
         });
 
         print("record: $record");
 
         setState(() => status = "printing");
 
-        final id = record['_id'];
-
         final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
 
+        final qtyNumber = qty['number'] ?? '';
+        final qtyUom = uom.json['name'] ?? '';
+
         final Map<String, String> labelData = {
-          "материал": goods.name(),
+          "материал": goodsName,
           "дата": dd,
-          "количество": "$qty шт",
+          "количество": "$qtyNumber $qtyUom",
           "line1": "",
-          "поставщик": counterparty.name(),
-          // "оператор": operator.name(),
+          "поставщик": counterparty.name().toString().substring(0, 22),
         };
 
-        Labels.lines(printer, id, labelData);
+        // TODO: get batch for printing (like in stock)
+        // Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
+        //     '223033122222'.toString(), labelData);
 
         return Future<PrintResult>.value(PrintResult.success);
       });

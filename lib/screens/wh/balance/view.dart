@@ -303,30 +303,43 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
         fProduct,
       ]);
 
-//      print("order ${order.json}");
+      print("order ${order.json}");
 
       final operationId = order.json['batch']['id'] ?? '';
 
-      final operation = await Api.feathers().get(serviceName: "memories", objectId: operationId, params: {
-        "oid": Api.instance.oid,
-        "ctx": ["warehouse","receive","document"],
-      }) ?? '';
+      final operation = await Api.feathers()
+              .get(serviceName: "memories", objectId: operationId, params: {
+            "oid": Api.instance.oid,
+            "ctx": [],
+          }) ??
+          '';
 
+      // print("operation $operation");
 
       final documentId = operation['document'] ?? '';
 
-      final document = await Api.feathers().get(serviceName: "memories", objectId: documentId, params: {
-        "oid": Api.instance.oid,
-        "ctx": ["warehouse","receive","document"],
-      }) ?? '';
+      final split = documentId.toString().split('/');
+
+      final ctx = split.length >= 3 ? split.sublist(0, 3) : [];
+
+      final document = await Api.feathers()
+              .get(serviceName: "memories", objectId: documentId, params: {
+            "oid": Api.instance.oid,
+            "ctx": ctx,
+          }) ??
+          '';
+
+      // print("document $document");
 
       final counterpartyId = document['counterparty'] ?? '';
-      final counterparty = await Api.feathers().get(serviceName: "memories", objectId: counterpartyId, params: {
-        "oid": Api.instance.oid,
-        "ctx": ["counterparty"],
-      }) ?? '';
+      final counterparty = await Api.feathers()
+              .get(serviceName: "memories", objectId: counterpartyId, params: {
+            "oid": Api.instance.oid,
+            "ctx": ["counterparty"],
+          }) ??
+          '';
 
-
+      // print("counterparty $counterparty");
 
       final goods = order.json['goods'].json;
       final goodsName = goods['name'] ?? '';
@@ -334,20 +347,21 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
       final goodsId = goods['_id'] ?? '';
 
       final batch = order.json['batch'];
-      final date = batch['date'] ?? '';
-      final barcode = batch['barcode'] ?? '';
+
+      final batchDate = batch['date'] ?? '';
+      final batchBarcode = batch['barcode'] ?? '';
 
       final supplier = counterparty['name'] ?? '';
 
       final qty = operation['qty']['number'] ?? 0;
 
-      final uom = order.json['uom'].json;
-      final uomName = uom['name'];
+      final uom = goods['uom'] ?? '';
+      final uomName = uom is MemoryItem ? (uom.json['name'] ?? '') : '';
 
       final result = await Labels.connect(ip, port, (printer) async {
         setState(() => status = "printing");
 
-        final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
+        final dd = DateFormat.yMMMMd().format(DateTime.parse(batchDate));
 
         final Map<String, String> labelData = {
           "количество": "$qty $uomName",
@@ -357,7 +371,8 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
           "приход от": dd,
         };
 
-        Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId, barcode, labelData);
+        Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
+            batchBarcode, operationId, batchDate, labelData);
 
         return Future<PrintResult>.value(PrintResult.success);
       });
