@@ -70,45 +70,80 @@ class Labels {
     printer.print_();
   }
 
-  static void lines_with_barcode(NetworkPrinter printer, String goodsName,
-      String goodsUuid, String goodsId, String batchId, Map<String, String> data) {
+  static void lines_with_barcode(
+      NetworkPrinter printer,
+      String goodsName,
+      String goodsUuid,
+      String goodsId,
+      String batchBarcode,
+      String batchId,
+      String batchDate,
+      Map<String, String> data) {
     printer.clear();
     printer.codepage(name: "1251");
     printer.direction();
 
-    printer.text(50, 25, "id", font: "4", mx: 1, my: 1);
-    printer.qrcode(50, 50, goodsId, cellWidth: 7);
+    printer.qrcode(60, 50, goodsId, cellWidth: 7);
 
-    printer.text(450, 25, "uuid", font: "4", mx: 1, my: 1);
     printer.qrcode(450, 50, goodsUuid, cellWidth: 7);
+
+    printer.text(35, 50, (batchId + ' ' + batchDate),
+        font: "2", mx: 1, my: 1, rotation: 90);
+    printer.bar(50, 10, 2, 780);
 
     printer.text(780, 50, goodsId,
         font: "2", mx: 1, my: 1, rotation: 90); // alignment: 3,
     printer.bar(750, 10, 2, 780);
 
-    var y = 370;
-//    printer.bar(5, y - 1, 740, 3);
-//    y += 10;
+    var y = 350;
 
     for (final entry in data.entries) {
       final name = entry.key;
       final value = entry.value;
 
       if (name.startsWith("line")) {
-        printer.bar(5, y - 1, 740, 3);
+        printer.bar(50, y - 1, 710, 3);
         y += 10;
       } else {
-        printer.text(195, y, "$name:", font: "3", mx: 1, my: 1, alignment: 3);
-        printer.text(180, y, " $value", font: "4", mx: 1, my: 1);
-        y += 50;
+        printer.text(245, y, "$name:", font: "3", mx: 1, my: 1, alignment: 3);
+
+        if (value.length > 20) {
+          final split = value.toString().split(' ');
+          var line = '';
+          line = '$line${split[0]}';
+          var count = 0;
+          for (String str in split.getRange(1, split.length)) {
+            if (line.length + str.length <= 19) {
+              line += ' $str';
+              printer.text(230, y, " $line", font: "4", mx: 1, my: 1);
+              count++;
+              y += 30;
+            } else {
+              if (str == split.last) {
+                printer.text(230, y, " $str", font: "4", mx: 1, my: 1);
+                count++;
+              } else {
+                printer.text(230, y, " $line", font: "4", mx: 1, my: 1);
+                count++;
+                y += 30;
+                line = str;
+              }
+            }
+            if (count == 2) {
+              break;
+            }
+          }
+        } else {
+          printer.text(230, y, " $value", font: "4", mx: 1, my: 1);
+        }
+
+        y += 40;
       }
     }
 
-//    printer.bar(5, y - 1, 740, 3);
+    y += 25;
 
-    y += 50;
-
-    printer.barcode_EAN13(310, y, batchId);
+    printer.barcode_EAN13(225, y, batchBarcode);
 
     printer.print_();
   }

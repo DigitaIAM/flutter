@@ -95,12 +95,13 @@ class NetworkPrinter {
   }
 
   void barcode_EAN13(int x, int y, String barcode,
-      {int height = 200,
+      {int height = 100,
       int humanReadable = 2,
       int rotation = 0,
-      int narrow = 2,
-      int wide = 6}) {
-    sendCommand('BARCODE $x,$y, "EAN13",200,$humanReadable,$rotation,$narrow,$wide,"$barcode"\r\n');
+      int narrow = 4,
+      int wide = 2}) {
+    sendCommand(
+        'BARCODE $x,$y, "EAN13",$height,$humanReadable,$rotation,$narrow,$wide,"$barcode"\r\n');
   }
 
   void feed(int i) {
