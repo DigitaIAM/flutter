@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-import 'package:intl/intl.dart';
 import 'sideBar.dart';
+import 'checkBar.dart';
 
 class PharmanyMain extends StatefulWidget {
   const PharmanyMain({super.key});
@@ -28,12 +28,27 @@ class Employee {
 class _PharmanyMainState extends State<PharmanyMain> {
   late EmployeeDataSource _employeeDataSource;
   List<Employee> _employees = <Employee>[];
+  bool isSwitched = false;
 
   ThemeMode _themeMode = ThemeMode.system;
   void changeTheme(ThemeMode themeMode) {
     setState(() {
       _themeMode = themeMode;
     });
+  }
+
+  void toggleSwitch(bool value) {
+    if (isSwitched == false) {
+      setState(() {
+        isSwitched = true;
+        changeTheme(ThemeMode.dark);
+      });
+    } else {
+      setState(() {
+        isSwitched = false;
+        changeTheme(ThemeMode.light);
+      });
+    }
   }
 
   @override
@@ -62,8 +77,6 @@ class _PharmanyMainState extends State<PharmanyMain> {
 
   @override
   Widget build(BuildContext context) {
-    String dateText = DateFormat("MMMM, dd, yyyy").format(DateTime.now());
-    String timeText = DateFormat("hh:mm a").format(DateTime.now());
     return MaterialApp(
         theme: ThemeData(primarySwatch: Colors.green),
         darkTheme: ThemeData.dark(),
@@ -71,32 +84,23 @@ class _PharmanyMainState extends State<PharmanyMain> {
         debugShowCheckedModeBanner: false,
         home: Scaffold(
             appBar: AppBar(
-              title: const Text('Pharmacy'),
+              title: const Padding(
+                padding: EdgeInsets.only(left: 100.0),
+                child: Text(
+                  'Pharmacy',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
               actions: <Widget>[
                 Padding(
-                    padding: const EdgeInsets.only(right: 10.0),
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(),
-                          onPressed: () {
-                            changeTheme(ThemeMode.light);
-                          },
-                          child: const Icon(Icons.light_mode_rounded)),
-                    )),
-                Padding(
-                    padding: const EdgeInsets.only(right: 10.0),
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(),
-                          onPressed: () {
-                            changeTheme(ThemeMode.dark);
-                          },
-                          child: const Icon(
-                            Icons.dark_mode_rounded,
-                            color: Color.fromARGB(255, 0, 0, 0),
-                          )),
+                    padding: const EdgeInsets.only(right: 100.0),
+                    child: Switch(
+                      onChanged: toggleSwitch,
+                      value: isSwitched,
+                      activeColor: Colors.blue,
+                      activeTrackColor: Colors.blue,
+                      inactiveThumbColor: Colors.white,
+                      inactiveTrackColor: Colors.white,
                     )),
               ],
             ),
@@ -105,7 +109,7 @@ class _PharmanyMainState extends State<PharmanyMain> {
                 child: Column(children: <Widget>[
                   IntrinsicHeight(
                       child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Column(
                         children: <Widget>[
@@ -277,139 +281,26 @@ class _PharmanyMainState extends State<PharmanyMain> {
                                   ),
                                 ),
                                 const VerticalDivider(
-                                  width: 40,
+                                  width: 18,
                                   thickness: 2,
                                   indent: 0,
                                   endIndent: 0,
-                                  color: Colors.green,
+                                  color: Colors.grey,
                                 ),
                                 SizedBox(
                                     width:
                                         MediaQuery.of(context).size.width * 0.1,
-                                    height: MediaQuery.of(context).size.height *
-                                        0.45,
-                                    child: Column(
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 16),
-                                              child: TextFormField(
-                                                decoration:
-                                                    const InputDecoration(
-                                                  border:
-                                                      UnderlineInputBorder(),
-                                                  labelText:
-                                                      'Enter a search item',
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 16),
-                                              child: TextFormField(
-                                                decoration:
-                                                    const InputDecoration(
-                                                  border:
-                                                      UnderlineInputBorder(),
-                                                  labelText:
-                                                      'Enter a search item',
-                                                ),
-                                              ),
-                                            ),
-                                            const Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 16),
-                                                child: Text.rich(
-                                                  TextSpan(
-                                                    text: 'Amount: ',
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight: FontWeight
-                                                            .bold), // default text style
-                                                    children: <TextSpan>[
-                                                      TextSpan(
-                                                          text: '0.00',
-                                                          style: TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: Colors
-                                                                  .green)),
-                                                    ],
-                                                  ),
-                                                )),
-                                            const Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 16),
-                                                child: Text.rich(
-                                                  TextSpan(
-                                                    text: 'Discount: ',
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight: FontWeight
-                                                            .bold), // default text style
-                                                    children: <TextSpan>[
-                                                      TextSpan(
-                                                          text: '0.00',
-                                                          style: TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: Colors
-                                                                  .green)),
-                                                    ],
-                                                  ),
-                                                )),
-                                            const Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 16),
-                                                child: Text.rich(
-                                                  TextSpan(
-                                                    text: 'Payable: ',
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight: FontWeight
-                                                            .bold), // default text style
-                                                    children: <TextSpan>[
-                                                      TextSpan(
-                                                          text: '0.00',
-                                                          style: TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: Colors
-                                                                  .green)),
-                                                    ],
-                                                  ),
-                                                )),
-                                          ],
-                                        ),
-                                      ],
-                                    )),
+                                    child: checkBar(context))
                               ],
                             ),
                           ),
                           SizedBox(
-                            height: 20.0,
+                            height: 18.0,
                             width: MediaQuery.of(context).size.width * 0.8,
                             child: Center(
                               child: Container(
                                 height: 2.0,
-                                color: Colors.green,
+                                color: Colors.grey,
                               ),
                             ),
                           ),
@@ -551,14 +442,14 @@ class _PharmanyMainState extends State<PharmanyMain> {
                         ],
                       ),
                       const VerticalDivider(
-                        width: 20,
+                        width: 18,
                         thickness: 2,
                         indent: 0,
                         endIndent: 0,
-                        color: Colors.green,
+                        color: Colors.grey,
                       ),
                       SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.15,
+                          width: MediaQuery.of(context).size.width * 0.12,
                           child: sideBar(context))
                     ],
                   ))
