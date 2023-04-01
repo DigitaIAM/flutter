@@ -107,16 +107,6 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> {
               ]),
               onSave: _onSave,
             ),
-//            DecoratedFormPickerField(
-//              ctx: const ['counterparty'],
-//              name: 'counterparty',
-//              label: localization.translate('counterparty'),
-//              autofocus: true,
-//              validator: FormBuilderValidators.compose([
-//                FormBuilderValidators.required(),
-//              ]),
-//              onSave: _onSave,
-//            ),
           ]),
           Expanded(
             child: ScrollableListView(children: <Widget>[
@@ -164,8 +154,8 @@ class _LinesState extends State<Lines> {
     }
 
     final schema = <Field>[
-      // const Field('batch', StringType()),
       fGoods.copyWith(width: 3.0),
+      // const Field('batch', ReferenceType(['warehouse', 'receive'])),
       fUom.copyWith(width: 0.5),
       fQty.copyWith(width: 1.0),
       // fStorage,
