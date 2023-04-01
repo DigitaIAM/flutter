@@ -62,6 +62,7 @@ class MemoryList extends StatefulWidget {
   final Map<String, dynamic> filter;
 
   final bool groupByDate;
+  final bool sortByName;
 
   final String Function(MemoryItem) title;
   final String Function(MemoryItem) subtitle;
@@ -75,6 +76,7 @@ class MemoryList extends StatefulWidget {
     required this.subtitle,
     required this.onTap,
     this.groupByDate = true,
+    this.sortByName = false,
     this.filter = const {},
     this.service = 'memories',
   });
@@ -257,7 +259,7 @@ class _MemoryListState extends State<MemoryList> {
     _scrollController.addListener(listener!);
 
     return GroupedListView<MemoryItem, String>(
-      elements: state.items,
+      elements: sort(state.items, widget.sortByName),
       groupBy: widget.groupByDate ? (element) => element.json['date'] ?? '' : (element) => '',
       groupComparator: (g1, g2) => g2.compareTo(g1),
       itemComparator: (item1, item2) => item1.id.compareTo(item2.id),
@@ -399,7 +401,7 @@ class _MemoryListState extends State<MemoryList> {
   }
 
   List<PlutoRow> intoRows(RequestState state, PlutoRow? lastRow) {
-    var items = state.items;
+    var items = sort(state.items, widget.sortByName);
     if (lastRow != null) {
       final after = lastRow.cells['_memory_']?.value;
       if (after != null) {
@@ -428,6 +430,28 @@ class _MemoryListState extends State<MemoryList> {
       }
       return PlutoRow(cells: cells);
     }));
+  }
+
+  List<MemoryItem> sort(List<MemoryItem> items, bool sortByName) {
+    if (sortByName) {
+      items.sort((a, b) {
+        String la = '';
+        String lb = '';
+
+        final ga = a.json['goods'];
+        if (ga != null && ga is MemoryItem) {
+          la = ga.name();
+        }
+
+        final gb = b.json['goods'];
+        if (gb != null && gb is MemoryItem) {
+          lb = gb.name();
+        }
+
+        return la.compareTo(lb);
+      });
+    }
+    return items;
   }
 
 // Widget list(RequestState state) {
