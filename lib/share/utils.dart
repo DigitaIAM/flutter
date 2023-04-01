@@ -135,4 +135,8 @@ class Utils {
   static String today() {
     return DateFormat("yyyy-MM-dd").format(DateTime.now());
   }
+
+  static String yesterday() {
+    return DateFormat("yyyy-MM-dd").format(DateTime.now().subtract(const Duration(days: 1)));
+  }
 }

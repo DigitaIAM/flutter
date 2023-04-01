@@ -91,7 +91,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
           Expanded(
             child: TabBarView(controller: _controller, children: <Widget>[
               ProductionOrderOverview(order: widget.entity),
-              (widget.entity.json["date"] == Utils.today())
+              (widget.entity.json["date"] == Utils.today() || widget.entity.json["date"] == Utils.yesterday())
                   ? ProductionOrderProduced(order: widget.entity)
                   : ProductionOrderProducedView(order: widget.entity),
             ]),
