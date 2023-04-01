@@ -11,6 +11,7 @@ class RequestState extends Equatable {
     this.items = const <MemoryItem>[],
     this.hasReachedMax = false,
     this.saveStatus = SaveStatus.ready,
+    this.original,
     DateTime? ts,
   }) : updated = ts ?? DateTime.now();
 
@@ -24,6 +25,7 @@ class RequestState extends Equatable {
 
   final RequestStatus status;
   final List<MemoryItem> items;
+  final List<MemoryItem>? original;
   final bool hasReachedMax;
 
   final SaveStatus saveStatus;
@@ -31,12 +33,14 @@ class RequestState extends Equatable {
   RequestState copyWith({
     RequestStatus? status,
     List<MemoryItem>? items,
+    List<MemoryItem>? original,
     bool? hasReachedMax,
     SaveStatus? saveStatus,
   }) {
     return RequestState(
         status: status ?? this.status,
         items: items ?? this.items,
+        original: original ?? this.original,
         hasReachedMax: hasReachedMax ?? this.hasReachedMax,
         saveStatus: saveStatus ?? this.saveStatus);
   }

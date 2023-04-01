@@ -27,7 +27,8 @@ class SearchText extends StatelessWidget {
       height: 40,
       margin: const EdgeInsets.only(bottom: 2.0),
       decoration: BoxDecoration(
-        color: Colors.grey.shade900, // TODO Theme.of(context).appBarTheme.toolbarTextStyle?.backgroundColor,
+        // Colors.grey.shade900
+        color: Theme.of(context).secondaryHeaderColor, //appBarTheme.toolbarTextStyle?.backgroundColor,
         borderRadius: const BorderRadius.all(Radius.circular(cBorderRadius)),
       ),
       child: TextField(

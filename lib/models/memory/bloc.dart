@@ -21,6 +21,7 @@ EventTransformer<E> throttleDroppable<E>(Duration duration) {
 class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
   MemoryBloc({this.schema, this.reverse = false}) : super(RequestState()) {
     print("init RequestState");
+    on<MemorySearch>(_onSearch);
     on<MemorySave>(_onSave);
     on<MemoryFetch>(
       _onFetch,
@@ -181,6 +182,37 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     //   ..
     // }
     // throw Exception('error fetching');
+  }
+
+  Future<void> _onSearch(MemorySearch event, Emitter<RequestState> emit) async {
+    // workaround
+    print("_onSearch: ${event.query}");
+    var original = state.original ?? state.items;
+
+    final query = (event.query ?? '').trim();
+    if (query.isEmpty) {
+      return emit(state.copyWith(
+        items: original,
+        original: original,
+      ));
+    } else {
+      List<MemoryItem> list = [];
+      for (MemoryItem item in original) {
+        // workaround to cover only one use case
+        final goods = item.json['goods'];
+
+        if (goods != null && goods is MemoryItem) {
+          if (goods.name().toLowerCase().contains(query)) {
+            list.add(item);
+          }
+        }
+      }
+
+      return emit(state.copyWith(
+        items: list,
+        original: original,
+      ));
+    }
   }
 
   Future<void> _onSave(MemorySave event, Emitter<RequestState> emit) async {
