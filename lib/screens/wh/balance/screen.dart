@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/constants.dart';
+import 'package:nae/models/memory/bloc.dart';
+import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
@@ -37,13 +39,15 @@ class WHBalance extends Entity {
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
-      key: ValueKey('__${name()}_'), // ${DateTime.now().toString()}__
+      key: ValueKey('__${name()}_'),
+      // ${DateTime.now().toString()}__
       ctx: ctx,
       schema: schema,
       list: const WHBalanceScreen(),
       view: WHBalanceView(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-        entity: entity, tabIndex: 0,
+        entity: entity,
+        tabIndex: 0,
       ), // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
     );
   }
@@ -61,6 +65,7 @@ class WHBalanceScreen extends StatelessWidget {
         filter: null, //state.whBalanceListState.filter,
         onFilterChanged: (value) {
           // store.dispatch(FilterWHBalances(value));
+          context.read<MemoryBloc>().add(MemorySearch(value));
         },
       ),
       body: const WHBalanceListBuilder(),

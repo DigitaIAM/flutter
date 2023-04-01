@@ -8,10 +8,8 @@ abstract class MemoryEvent extends Equatable {
 }
 
 class MemoryFetch extends MemoryEvent {
-  MemoryFetch(this.serviceName, this.ctx, {
-    this.schema,
-    this.filter = const {}, this.loadAll = false, this.reverse = false
-  });
+  MemoryFetch(this.serviceName, this.ctx,
+      {this.schema, this.filter = const {}, this.loadAll = false, this.reverse = false});
 
   final String serviceName;
   final List<String> ctx;
@@ -92,4 +90,13 @@ class MemoryRemoved extends MemoryEvent {
   MemoryRemoved(this.item);
 
   final MemoryItem item;
+}
+
+class MemorySearch extends MemoryEvent {
+  MemorySearch(this.query);
+
+  final String? query;
+
+  @override
+  List<Object> get props => [query ?? ''];
 }
