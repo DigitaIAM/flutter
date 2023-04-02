@@ -1,3 +1,4 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -64,9 +65,11 @@ class MyApp extends StatelessWidget {
                 locale: settings.locale,
                 themeMode: ThemeMode.system,
                 // settings.theme == 0 ? ThemeMode.system : (settings.theme == 2 ? ThemeMode.light : ThemeMode.dark),
-                theme: light(),
+                // theme: light(),
+                theme: FlexThemeData.light(scheme: FlexScheme.blueWhale),
+                darkTheme: FlexThemeData.dark(scheme: FlexScheme.blueWhale),
                 // ThemeData.light(useMaterial3: true),
-                darkTheme: ThemeData.dark(useMaterial3: true),
+                // darkTheme: ThemeData.dark(useMaterial3: true),
                 home: UpgradeAlert(child: const Wrapper()),
               ));
         });
