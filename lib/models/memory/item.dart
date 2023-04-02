@@ -96,7 +96,11 @@ class MemoryItem extends Equatable {
         final type = field.type as ReferenceType;
 
         final dynamic value = field.resolve(copy); // copy[name]
-        if (value is! MemoryItem) {
+        if (value is Map) {
+          if (value is Map<String, dynamic> && value['_id'] != null) {
+            field.update(copy, MemoryItem.from(value));
+          }
+        } else if (value is! MemoryItem) {
           final String id = value ?? '';
           if (id.isNotEmpty) {
             try {
