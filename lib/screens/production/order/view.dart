@@ -268,8 +268,12 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
         return;
       }
 
-      final ip = data['printer']['ip'];
-      final port = int.parse(data['printer']['port']);
+      final printer = data['printer'];
+      if (printer == null) {
+        throw const FormatException('select printer');
+      }
+      final ip = printer.json['ip'];
+      final port = int.parse(printer.json['port']);
 
       print("printer $ip $port");
 
@@ -289,12 +293,18 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
       final label = data['label'] ?? '';
 
       final operator = data['operator'];
-      final operatorId = operator['_id'] ?? '';
-      final operatorName = operator['name'] ?? '';
+      if (operator == null) {
+        throw const FormatException('select operator');
+      }
+      final operatorId = operator.json['_id'] ?? '';
+      final operatorName = operator.json['name'] ?? '';
 
       final control = data['control'];
-      final controlId = control['_id'] ?? '';
-      final controlName = control['name'] ?? '';
+      if (control == null) {
+        throw const FormatException('select control');
+      }
+      final controlId = control.json['_id'] ?? '';
+      final controlName = control.json['name'] ?? '';
 
       final qty = data['qty'] ?? 0;
 
