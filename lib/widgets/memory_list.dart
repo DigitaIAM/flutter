@@ -421,7 +421,7 @@ class _MemoryListState extends State<MemoryList> {
           String label = '';
           final ref = item.json[field.name];
           if (ref is MemoryItem) {
-            label = ref.json['name'] ?? '';
+            label = ref.name();
           }
           cells[field.name] = PlutoCell(value: label);
         } else {

@@ -157,14 +157,14 @@ class WHTransactionsBuilder extends StatelessWidget {
 
 //    let goods = this.entity.
 
-//    print("entity ${this.entity.toJson()}");
+   // print("entity $entity");
 
     final filter = {
       'dates': {'from': '2022-12-01', 'till': Utils.today()},
-      'storage': entity.toJson()['storage'].toString(),
-      'goods': entity.toJson()['goods'].toString(),
-      'batch_id': entity.toJson()['batch']['id'].toString(),
-      'batch_date': entity.toJson()['batch']['date'].toString(),
+      'storage': entity.json['storage'].json['_uuid'],
+      'goods': entity.json['goods'].json['_uuid'],
+      'batch_id': entity.json['batch']['id'],
+      'batch_date': entity.json['batch']['date'],
     };
 
     print("FILTER: $filter");
