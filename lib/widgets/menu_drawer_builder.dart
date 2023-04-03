@@ -137,7 +137,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
         height: cBarHeight,
         child: BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
           MemoryItem? selected;
-          for (final item in state.items) {
+          for (final item in state.original) {
             if (item.id == settings.companyId) {
               selected = item;
               break;
@@ -146,7 +146,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
           return MyDropdownButton<MemoryItem>(
               value: selected,
               items: [
-                ...state.items
+                ...state.original
                     .map((company) => DropdownMenuItem<MemoryItem>(value: company, child: ItemWidget(item: company)))
                     .toList(),
               ],

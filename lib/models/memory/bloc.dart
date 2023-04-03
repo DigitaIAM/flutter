@@ -106,7 +106,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       List<MemoryItem> result = [];
 
       while (true) {
-        final items = await _fetch(event, state.items.length + result.length);
+        final items = await _fetch(event, state.original.length + result.length);
         // print(items);
 
         // enrich
@@ -132,7 +132,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
           ? state.copyWith(status: RequestStatus.success, hasReachedMax: true)
           : state.copyWith(
               status: RequestStatus.success,
-              items: List.of(state.items)..addAll(result),
+              original: List.of(state.original)..addAll(result),
               hasReachedMax: false,
             ));
     } catch (e, stacktrace) {
@@ -187,30 +187,31 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
   Future<void> _onSearch(MemorySearch event, Emitter<RequestState> emit) async {
     // workaround
     print("_onSearch: ${event.query}");
-    var original = state.original ?? state.items;
+    var original = state.original;
 
-    final query = (event.query ?? '').trim();
+    final originalQuery = (event.query ?? '').trim();
+    final query = originalQuery.toLowerCase();
     if (query.isEmpty) {
       return emit(state.copyWith(
-        items: original,
         original: original,
       ));
     } else {
-      List<MemoryItem> list = [];
+      List<MemoryItem> filtered = [];
       for (MemoryItem item in original) {
         // workaround to cover only one use case
         final goods = item.json['goods'];
 
         if (goods != null && goods is MemoryItem) {
           if (goods.name().toLowerCase().contains(query)) {
-            list.add(item);
+            filtered.add(item);
           }
         }
       }
 
       return emit(state.copyWith(
-        items: list,
         original: original,
+        filtered: filtered,
+        query: originalQuery,
       ));
     }
   }
@@ -229,7 +230,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     try {
       final saved = await _create(event.serviceName, event.ctx, event.data);
 
-      final List<MemoryItem> list = List.from(state.items);
+      final List<MemoryItem> list = List.from(state.original);
 
       // workaround: update list after save
       bool notFound = true;
@@ -248,13 +249,13 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
         }
       }
 
-      print("state: ");
-      print(state);
-      print("list: ");
-      print(list);
+      // print("state: ");
+      // print(state);
+      // print("list: ");
+      // print(list);
 
       return emit(state.copyWith(
-        items: list,
+        original: list,
         saveStatus: SaveStatus.success,
       ));
     } catch (e, stacktrace) {
@@ -291,7 +292,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     try {
       final saved = await _update(event.serviceName, event.ctx, event.data);
 
-      final List<MemoryItem> list = List.from(state.items);
+      final List<MemoryItem> list = List.from(state.original);
 
       // workaround: update list after save
       for (int i = 0; i < list.length; i++) {
@@ -304,7 +305,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       print("saved $saved");
 
       return emit(state.copyWith(
-        items: list,
+        original: list,
         saveStatus: SaveStatus.success,
       ));
     } catch (e, stacktrace) {
@@ -342,7 +343,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     try {
       final saved = await _patch(event.serviceName, event.ctx, event.id, event.data);
 
-      final List<MemoryItem> list = List.from(state.items);
+      final List<MemoryItem> list = List.from(state.original);
 
       // workaround: update list after save
       for (int i = 0; i < list.length; i++) {
@@ -353,7 +354,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       }
 
       return emit(state.copyWith(
-        items: list,
+        original: list,
         saveStatus: SaveStatus.success,
       ));
     } catch (e, stacktrace) {
@@ -391,36 +392,36 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     print(event.item.json);
 
     // workaround: search for item to avoid duplicate
-    for (var item in state.items) {
+    for (var item in state.original) {
       if (item.id == event.item.id) {
-        print("found");
+        // print("found");
         return emit(state); // TODO is it possible to emit nothing?
       }
     }
 
-    print("adding");
-    final List<MemoryItem> list = List.from(state.items);
+    // print("adding");
+    final List<MemoryItem> list = List.from(state.original);
     list.insert(0, event.item);
     return emit(state.copyWith(
-      items: list,
+      original: list,
     ));
   }
 
   Future<void> _onUpdated(MemoryUpdated event, Emitter<RequestState> emit) async {
-    print("_onUpdated");
-    print(event.item.json);
+    // print("_onUpdated");
+    // print(event.item.json);
 
-    var items = state.items;
+    var items = state.original;
     for (int i = 0; i < items.length; i++) {
       final item = items[i];
       if (item.id == event.item.id) {
-        print("found and replace");
+        // print("found and replace");
         items[i] = event.item;
       }
     }
 
     return emit(state.copyWith(
-      items: items,
+      original: items,
     ));
   }
 }
