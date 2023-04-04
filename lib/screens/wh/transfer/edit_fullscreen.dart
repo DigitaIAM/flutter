@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:intl/intl.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
@@ -11,6 +13,9 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
+import 'package:nae/models/ui/state.dart';
+import 'package:nae/printer/labels.dart';
+import 'package:nae/printer/network_printer.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
@@ -19,21 +24,41 @@ import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/autocomplete.dart';
 import 'package:nae/widgets/entity_screens.dart';
+import 'package:nae/widgets/list_filter.dart';
+import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_edit.dart';
+import 'package:nae/widgets/scaffold_list.dart';
+import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
 import 'screen.dart';
 
 class WHTransferEditFS extends EntityHolder {
-  const WHTransferEditFS({super.key, required super.entity}) : super(fullscreen: true);
+  const WHTransferEditFS({super.key, required super.entity})
+      : super(fullscreen: true);
 
   @override
   State<WHTransferEditFS> createState() => _WHTransferEditFSState();
 }
 
-class _WHTransferEditFSState extends State<WHTransferEditFS> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHTransferEditFS');
+class _WHTransferEditFSState extends State<WHTransferEditFS>
+    with SingleTickerProviderStateMixin {
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHTransferEditFS');
   final FocusScopeNode _focusNode = FocusScopeNode();
+
+  late TabController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = TabController(
+      vsync: this,
+      length: 2,
+      initialIndex: 0,
+    );
+  }
 
   @override
   void dispose() {
@@ -52,9 +77,8 @@ class _WHTransferEditFSState extends State<WHTransferEditFS> {
       // workaround
       data['_id'] = widget.entity.id;
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", WHTransfer.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context.read<MemoryBloc>().add(MemorySave("memories", WHTransfer.ctx,
+          MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -69,68 +93,96 @@ class _WHTransferEditFSState extends State<WHTransferEditFS> {
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
-    routerBack(BuildContext context) {
-      context.read<UiBloc>().add(ChangeView(WHTransfer.ctx));
-      // TODO context.read<UiBloc>().add(PreviousRoute());
-    }
+    if (widget.entity.isNew) {
+    } else {
+      routerBack(BuildContext context) {
+        context.read<UiBloc>().add(ChangeView(WHTransfer.ctx));
+        // TODO context.read<UiBloc>().add(PreviousRoute());
+      }
 
-    return EditScaffold(
-      entity: widget.entity,
-      title: localization.translate("warehouse transfer"),
-      onClose: routerBack,
-      onCancel: routerBack,
-      onSave: _onSave,
-      body: AppForm(
-        schema: WHTransfer.schema,
-        formKey: _formKey,
-        focusNode: _focusNode,
-        entity: getEntity(),
-        child: Column(children: [
-          FormCard(children: <Widget>[
-            DecoratedFormField(
-              name: 'date',
-              label: localization.translate("date"),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
+      return BlocBuilder<UiBloc, UiState>(builder: (context, uiState) {
+        if (uiState.isDesktop) {
+          return EditScaffold(
+            entity: widget.entity,
+            title: localization.translate("warehouse transfer"),
+            onClose: routerBack,
+            onCancel: routerBack,
+            onSave: _onSave,
+            body: AppForm(
+              schema: WHTransfer.schema,
+              formKey: _formKey,
+              focusNode: _focusNode,
+              entity: getEntity(),
+              child: Column(children: [
+                FormCard(children: <Widget>[
+                  DecoratedFormField(
+                    name: 'date',
+                    label: localization.translate("date"),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    onSave: _onSave,
+                    keyboardType: TextInputType.datetime,
+                  ),
+                  DecoratedFormPickerField(
+                    ctx: const ['warehouse', 'storage'],
+                    name: 'from',
+                    label: localization.translate("from"),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    onSave: _onSave,
+                  ),
+                  DecoratedFormPickerField(
+                    ctx: const ['warehouse', 'storage'],
+                    name: 'into',
+                    label: localization.translate('into'),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    onSave: _onSave,
+                  ),
+                ]),
+                Expanded(
+                  child: ScrollableListView(children: <Widget>[
+                    Lines(
+                      ctx: const ['warehouse', 'transfer'],
+                      document: widget.entity,
+                    ),
+                    // workaround to give some space for dropdown
+                    Container(height: 300)
+                  ]),
+                )
               ]),
-              onSave: _onSave,
-              keyboardType: TextInputType.datetime,
             ),
-            DecoratedFormPickerField(
-              ctx: const ['warehouse', 'storage'],
-              name: 'from',
-              label: localization.translate("from"),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-              ]),
-              onSave: _onSave,
+          );
+        } else {
+          return ScaffoldView(
+            appBarBottom: TabBar(
+              controller: _controller,
+              isScrollable: true,
+              tabs: [
+                Tab(text: localization.translate("overview")),
+                Tab(text: localization.translate("goods")),
+              ],
             ),
-            DecoratedFormPickerField(
-              ctx: const ['warehouse', 'storage'],
-              name: 'into',
-              label: localization.translate('into'),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-              ]),
-              onSave: _onSave,
-            ),
-          ]),
-          Expanded(
-            child: ScrollableListView(children: <Widget>[
-              Lines(
-                ctx: const ['warehouse', 'transfer'],
-                document: widget.entity,
-              ),
-              // workaround to give some space for dropdown
-              Container(height: 300)
-            ]),
-          )
-        ]),
-      ),
-    );
+            body: Builder(builder: (context) {
+              return Column(children: <Widget>[
+                Expanded(
+                  child: TabBarView(controller: _controller, children: <Widget>[
+                    WHTransferOverview(doc: widget.entity),
+                    WHTransferGoods(doc: widget.entity)
+                  ]),
+                ),
+              ]);
+            }),
+          );
+        }
+      });
+    }
   }
 
   MemoryItem getEntity() {
@@ -210,7 +262,9 @@ class _LinesState extends State<Lines> {
           builder: (context, state) {
             switch (state.status) {
               case RequestStatus.failure:
-                return Center(child: Text(localization.translate('failed to fetch data')));
+                return Center(
+                    child:
+                        Text(localization.translate('failed to fetch data')));
               case RequestStatus.success:
                 final headingRowColor = theme.dataTableTheme.headingRowColor;
                 final List<MemoryItem> items = List.of(state.items);
@@ -226,7 +280,8 @@ class _LinesState extends State<Lines> {
                         item.json['qty'] = {uom: uom};
                       } else if (qty is Map) {
                         final uomAtLine = qty['uom'];
-                        if (uomAtLine == null || (uomAtLine is MemoryItem && uomAtLine.isEmpty)) {
+                        if (uomAtLine == null ||
+                            (uomAtLine is MemoryItem && uomAtLine.isEmpty)) {
                           qty['uom'] = uom;
                         }
                       }
@@ -245,7 +300,8 @@ class _LinesState extends State<Lines> {
                   children: [
                     TableRow(
                       children: tableHeaderColumns,
-                      decoration: BoxDecoration(color: headingRowColor?.resolve(<MaterialState>{})),
+                      decoration: BoxDecoration(
+                          color: headingRowColor?.resolve(<MaterialState>{})),
                     ),
                     for (var index = 0; index < items.length; index++)
                       buildRow(context, columns, items, index, localization)
@@ -260,8 +316,8 @@ class _LinesState extends State<Lines> {
     );
   }
 
-  TableRow buildRow(BuildContext context, Map<int, Field> columns, List<MemoryItem> items, int rowIndex,
-      AppLocalizations localization) {
+  TableRow buildRow(BuildContext context, Map<int, Field> columns,
+      List<MemoryItem> items, int rowIndex, AppLocalizations localization) {
     final item = items[rowIndex];
     return TableRow(
       key: ValueKey('__line_${rowIndex}_${item.updatedAt}__'),
@@ -288,13 +344,21 @@ class _LinesState extends State<Lines> {
                   return MemoryItem.from(response);
                 },
                 delegate: (text) async {
-                  final response = await Api.feathers()
-                      .find(serviceName: "memories", query: {"oid": Api.instance.oid, "ctx": type.ctx, "search": text});
-                  return (response['data'] ?? []).map<MemoryItem>((item) => MemoryItem.from(item)).toList();
+                  final response = await Api.feathers().find(
+                      serviceName: "memories",
+                      query: {
+                        "oid": Api.instance.oid,
+                        "ctx": type.ctx,
+                        "search": text
+                      });
+                  return (response['data'] ?? [])
+                      .map<MemoryItem>((item) => MemoryItem.from(item))
+                      .toList();
                 },
                 displayStringForOption: (item) => item?.name() ?? '',
                 itemBuilder: (context, entry) {
-                  return Text(entry.name()); // , style: Theme.of(context).textTheme.displayMedium);
+                  return Text(entry
+                      .name()); // , style: Theme.of(context).textTheme.displayMedium);
                 },
                 onItemSelected: (entry) async {
                   final Map<String, dynamic> data = {};
@@ -339,15 +403,20 @@ class _LinesState extends State<Lines> {
   void patch(BuildContext context, MemoryItem item, Map<String, dynamic> data) {
     if (item.isNew) {
       data['document'] = widget.document.id;
-      context.read<MemoryBloc>().add(MemoryCreate('memories', widget.ctx, data));
+      context
+          .read<MemoryBloc>()
+          .add(MemoryCreate('memories', widget.ctx, data));
     } else {
-      context.read<MemoryBloc>().add(MemoryPatch('memories', widget.ctx, item.id, data));
+      context
+          .read<MemoryBloc>()
+          .add(MemoryPatch('memories', widget.ctx, item.id, data));
     }
   }
 }
 
 class CustomTextField extends StatefulWidget {
-  const CustomTextField({super.key, required this.initialValue, required this.onChanged});
+  const CustomTextField(
+      {super.key, required this.initialValue, required this.onChanged});
 
   final dynamic initialValue;
   final Function(String) onChanged;
@@ -399,7 +468,11 @@ class TableHeader extends StatelessWidget {
   final bool isFirst;
   final bool isNumeric;
 
-  const TableHeader({super.key, required this.label, this.isFirst = false, this.isNumeric = false});
+  const TableHeader(
+      {super.key,
+      required this.label,
+      this.isFirst = false,
+      this.isNumeric = false});
 
   @override
   Widget build(BuildContext context) {
@@ -410,7 +483,8 @@ class TableHeader extends StatelessWidget {
         top: 0, // tableHeaderColor.isEmpty ? 0 : 8,
         bottom: 8, // tableHeaderColor.isEmpty ? 8 : 16,
         right: isNumeric ? cTableColumnGap : 0,
-        left: isFirst ? 4 : 0, // tableHeaderColor.isNotEmpty && isFirst ? 4 : 0,
+        left:
+            isFirst ? 4 : 0, // tableHeaderColor.isNotEmpty && isFirst ? 4 : 0,
       ),
       child: Text(
         label,
@@ -418,5 +492,287 @@ class TableHeader extends StatelessWidget {
         style: theme.dataTableTheme.headingTextStyle,
       ),
     );
+  }
+}
+
+class WHTransferOverview extends StatelessWidget {
+  final MemoryItem doc;
+
+  const WHTransferOverview({super.key, required this.doc});
+
+  @override
+  Widget build(BuildContext context) {
+    print("context in WHTransferOverview: $context");
+
+    final ctx = const ['warehouse', 'transfer'];
+    final filter = {
+      'document': doc.id,
+    };
+    final schema = <Field>[
+      fGoods.copyWith(width: 3.0),
+      fUomAtQty.copyWith(width: 0.5, editable: false),
+      fQty.copyWith(width: 1.0),
+    ];
+
+    return BlocProvider(
+      create: (context) {
+        final bloc = MemoryBloc(schema: schema, reverse: true);
+        bloc.add(MemoryFetch(
+          'memories',
+          ctx,
+          filter: filter,
+          reverse: true,
+          loadAll: true,
+        ));
+
+        return bloc;
+      },
+      child: MemoryList(
+        ctx: ctx,
+        filter: filter,
+        schema: schema,
+        title: (MemoryItem item) => fGoods.resolve(item.json)?.name() ?? '',
+        subtitle: (MemoryItem item) =>
+            '${fQty.resolve(item.json) ?? ' '} ${fUomAtQty.resolve(item.json)?.name() ?? ' '}',
+        onTap: (MemoryItem item) => context
+            .read<UiBloc>()
+            .add(ChangeView(WHTransfer.ctx, entity: item)),
+      ),
+    );
+  }
+}
+
+class WHTransferGoods extends StatefulWidget {
+  final MemoryItem doc;
+
+  const WHTransferGoods({super.key, required this.doc});
+
+  @override
+  State<StatefulWidget> createState() => _WHTransferGoodsState();
+}
+
+class _WHTransferGoodsState extends State<WHTransferGoods> {
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHTransferGoodsEdit');
+  final FocusScopeNode _focusNode = FocusScopeNode();
+
+  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+
+  String status = "register";
+
+  @override
+  Widget build(BuildContext context) {
+    final localization = AppLocalizations.of(context);
+    final widgets = <Widget>[
+      AppForm(
+          entity: details,
+          formKey: _formKey,
+          focusNode: _focusNode,
+          onChanged: () {
+            _formKey.currentState!.save();
+            debugPrint("onChanged: ${_formKey.currentState!.value}");
+          },
+          child: ScrollableListView(children: <Widget>[
+            FormCard(isLast: true, children: <Widget>[
+              DecoratedFormPickerField(
+                ctx: const ['printer'],
+                name: 'printer',
+                label: localization.translate("printer"),
+                autofocus: true,
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(),
+                ]),
+                onSave: (context) {},
+              ),
+              DecoratedFormPickerField(
+                ctx: const ['goods'],
+                name: 'goods',
+                label: localization.translate("goods"),
+                autofocus: true,
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(),
+                ]),
+                onSave: (context) {},
+              ),
+              DecoratedFormPickerField(
+                ctx: const ['uom'],
+                name: 'uom',
+                label: localization.translate("uom"),
+                autofocus: true,
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(),
+                ]),
+                onSave: (context) {},
+              ),
+              DecoratedFormField(
+                name: 'qty',
+                label: localization.translate("qty"),
+                autofocus: true,
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(),
+                ]),
+                onSave: (context) {},
+                keyboardType: TextInputType.number,
+              ),
+              Container(height: 10),
+              ElevatedButton(
+                onPressed: status == 'register' ? register : null,
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(localization.translate(status)),
+              ),
+              Container(height: 10),
+              ElevatedButton(
+                onPressed: status == 'register' ? registerAndPrint : null,
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(localization.translate('and print'.toString())),
+              )
+            ])
+          ]))
+    ];
+    return ScrollableListView(
+      children: widgets,
+    );
+  }
+
+  void register() async {
+    final data = _formKey.currentState?.value;
+    if (data == null) {
+      return;
+    }
+
+    print("data $data");
+
+    final doc = await widget.doc.enrich(WHTransfer.schema);
+
+    print("doc: ${doc.json}");
+
+    final goods = data['goods'] as MemoryItem;
+
+    final uom = data['uom'] as MemoryItem;
+
+    final from = doc.json['from'].json;
+    final into = doc.json['into'].json;
+
+    final number = data['qty']!;
+
+    final qty = {'number': number, 'uom': uom.id};
+
+    final record = await Api.feathers().create(serviceName: 'memories', data: {
+      'document': doc.id,
+      'goods': goods.id,
+      'storage_from': from,
+      'storage_into': into,
+      'qty': qty,
+    }, params: {
+      'oid': Api.instance.oid,
+      'ctx': ['warehouse', 'transfer']
+    });
+
+    print("record: $record");
+  }
+
+  void registerAndPrint() async {
+    setState(() => status = "connecting");
+    try {
+      print("pressed:");
+
+      final data = _formKey.currentState?.value;
+      if (data == null) {
+        return;
+      }
+
+      print("data $data");
+
+      final printer = data['printer'] ?? '';
+      final ip = printer is MemoryItem ? (printer.json['ip'] ?? '') : '';
+      final port = printer is MemoryItem ? int.parse(printer.json['port']) : 0;
+
+      print("printer $ip $port");
+
+      final doc = await widget.doc.enrich(WHTransfer.schema);
+
+      print("doc in transfer documents: ${doc.json}");
+
+      final goods = data['goods'] as MemoryItem;
+      final goodsName = goods.name();
+      // final goodsUuid = goods.json['_uuid'] ?? '';
+      // final goodsId = goods.id;
+
+      final uom = data['uom'] as MemoryItem;
+
+      final date = doc.json['date']!;
+
+      final from = doc.json['from'].json;
+      final into = doc.json['into'].json;
+
+      final number = data['qty']!;
+
+      final qty = {'number': number, 'uom': uom.id};
+
+      final result = await Labels.connect(ip, port, (printer) async {
+        setState(() => status = "registering");
+        final record =
+            await Api.feathers().create(serviceName: 'memories', data: {
+          'document': doc.id,
+          'goods': goods.id,
+          'storage_from': from,
+          'storage_into': into,
+          'qty': qty,
+        }, params: {
+          'oid': Api.instance.oid,
+          'ctx': ['warehouse', 'transfer']
+        });
+
+        print("record: $record");
+
+        setState(() => status = "printing");
+
+        final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
+
+        final qtyNumber = qty['number'] ?? '';
+        final qtyUom = uom.json['name'] ?? '';
+
+        final Map<String, String> labelData = {
+          "материал": goodsName,
+          "дата": dd,
+          "количество": "$qtyNumber $qtyUom",
+          "line1": "",
+          "поставщик": from['name'],
+        };
+
+        // TODO: get batch for printing (like in stock)
+        // Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
+        //     '223033122222'.toString(), labelData);
+
+        return Future<PrintResult>.value(PrintResult.success);
+      });
+
+      if (result != PrintResult.success) {
+        showToast(result.msg,
+            // context: context,
+            axis: Axis.horizontal,
+            alignment: Alignment.center,
+            position: StyledToastPosition.bottom);
+      }
+    } catch (e, stacktrace) {
+      print(stacktrace);
+      showToast(e.toString(),
+          // context: context,
+          axis: Axis.horizontal,
+          alignment: Alignment.center,
+          position: StyledToastPosition.bottom);
+    } finally {
+      setState(() {
+        status = "register";
+      });
+    }
   }
 }
