@@ -55,8 +55,8 @@ class _WHTransferEditFSState extends State<WHTransferEditFS>
 
     _controller = TabController(
       vsync: this,
-      length: 2,
-      initialIndex: 0,
+      length: widget.entity.isNew ? 1 : 2,
+      initialIndex: 0, // widget.entity.isNew ? 0 : 1,
     );
   }
 
@@ -94,6 +94,24 @@ class _WHTransferEditFSState extends State<WHTransferEditFS>
     final localization = AppLocalizations.of(context);
 
     if (widget.entity.isNew) {
+      return ScaffoldView(
+        appBarBottom: TabBar(
+          controller: _controller,
+          isScrollable: true,
+          tabs: [
+            Tab(text: localization.translate("new document")),
+          ],
+        ),
+        body: Builder(builder: (context) {
+          return Column(children: <Widget>[
+            Expanded(
+              child: TabBarView(
+                  controller: _controller,
+                  children: <Widget>[WHTransferDocument(doc: widget.entity)]),
+            ),
+          ]);
+        }),
+      );
     } else {
       routerBack(BuildContext context) {
         context.read<UiBloc>().add(ChangeView(WHTransfer.ctx));
@@ -542,6 +560,119 @@ class WHTransferOverview extends StatelessWidget {
   }
 }
 
+class WHTransferDocument extends StatefulWidget {
+  final MemoryItem doc;
+
+  const WHTransferDocument({super.key, required this.doc});
+
+  @override
+  State<StatefulWidget> createState() => _WHTransferDocumentState();
+}
+
+class _WHTransferDocumentState extends State<WHTransferDocument> {
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHTransferDocumentEdit');
+  final FocusScopeNode _focusNode = FocusScopeNode();
+
+  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+
+  String status = "register";
+
+  @override
+  Widget build(BuildContext context) {
+    final localization = AppLocalizations.of(context);
+    final widgets = <Widget>[
+      AppForm(
+          entity: details,
+          formKey: _formKey,
+          focusNode: _focusNode,
+          onChanged: () {
+            _formKey.currentState!.save();
+            debugPrint("onChanged: ${_formKey.currentState!.value}");
+          },
+          child: ScrollableListView(children: <Widget>[
+            FormCard(isLast: true, children: <Widget>[
+              DecoratedFormField(
+                name: 'date',
+                label: localization.translate("date"),
+                autofocus: true,
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(),
+                ]),
+                onSave: (context) {},
+                keyboardType: TextInputType.datetime,
+              ),
+              DecoratedFormPickerField(
+                ctx: const ['warehouse', 'storage'],
+                name: 'from',
+                label: localization.translate("from"),
+                autofocus: true,
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(),
+                ]),
+                onSave: (context) {},
+              ),
+              DecoratedFormPickerField(
+                ctx: const ['warehouse', 'storage'],
+                name: 'into',
+                label: localization.translate('into'),
+                autofocus: true,
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(),
+                ]),
+                onSave: (context) {},
+              ),
+              Container(height: 10),
+              ElevatedButton(
+                onPressed: status == 'register'
+                    ? () => registerDocument(context)
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(localization.translate(status)),
+              ),
+            ])
+          ]))
+    ];
+    return ScrollableListView(
+      children: widgets,
+    );
+  }
+
+  Future<dynamic> registerDocument(BuildContext context) async {
+    final data = _formKey.currentState?.value;
+
+    // print("data type ${data.runtimeType}");
+
+    if (data == null) {
+      return;
+    }
+
+    print("data $data");
+
+    final date = data['date'] ?? '';
+    final from = data['from'] as MemoryItem;
+    final into = data['into'] as MemoryItem;
+
+    final record = await Api.feathers().create(serviceName: 'memories', data: {
+      'date': date,
+      'from': from.id,
+      'into': into.id,
+    }, params: {
+      'oid': Api.instance.oid,
+      'ctx': ['warehouse', 'transfer', 'document']
+    });
+
+    print("record: $record");
+
+    context.read<UiBloc>().add(ChangeView(WHTransfer.ctx,
+        action: 'edit', entity: MemoryItem.from(record)));
+  }
+}
+
 class WHTransferGoods extends StatefulWidget {
   final MemoryItem doc;
 
@@ -616,7 +747,7 @@ class _WHTransferGoodsState extends State<WHTransferGoods> {
               ),
               Container(height: 10),
               ElevatedButton(
-                onPressed: status == 'register' ? register : null,
+                onPressed: status == 'register' ? registerGoods : null,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -642,7 +773,7 @@ class _WHTransferGoodsState extends State<WHTransferGoods> {
     );
   }
 
-  void register() async {
+  void registerGoods() async {
     final data = _formKey.currentState?.value;
     if (data == null) {
       return;

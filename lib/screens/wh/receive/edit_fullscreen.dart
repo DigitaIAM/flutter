@@ -94,6 +94,7 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS>
     final localization = AppLocalizations.of(context);
 
     if (widget.entity.isNew) {
+      return Container();
     } else {
       routerBack(BuildContext context) {
         context.read<UiBloc>().add(ChangeView(WHReceive.ctx));
