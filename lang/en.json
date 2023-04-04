@@ -71,6 +71,7 @@
   "operator": "operator",
   "control": "control",
   "register": "register",
+  "and print": "and print",
   "connecting": "connecting",
   "registering": "registering",
   "print": "print",

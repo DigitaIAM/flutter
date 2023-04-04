@@ -93,93 +93,96 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS>
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
-    routerBack(BuildContext context) {
-      context.read<UiBloc>().add(ChangeView(WHReceive.ctx));
-      // TODO context.read<UiBloc>().add(PreviousRoute());
-    }
-
-    return BlocBuilder<UiBloc, UiState>(builder: (context, uiState) {
-      if (uiState.isDesktop) {
-        return EditScaffold(
-          entity: widget.entity,
-          title: localization.translate("warehouse receive"),
-          onClose: routerBack,
-          onCancel: routerBack,
-          onSave: _onSave,
-          body: AppForm(
-            schema: WHReceive.schema,
-            formKey: _formKey,
-            focusNode: _focusNode,
-            entity: getEntity(),
-            child: Column(children: [
-              FormCard(children: <Widget>[
-                DecoratedFormField(
-                  name: 'date',
-                  label: localization.translate("date"),
-                  autofocus: true,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(),
-                  ]),
-                  onSave: _onSave,
-                  keyboardType: TextInputType.datetime,
-                ),
-                DecoratedFormPickerField(
-                  ctx: const ['warehouse', 'storage'],
-                  name: 'storage',
-                  label: localization.translate("storage"),
-                  autofocus: true,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(),
-                  ]),
-                  onSave: _onSave,
-                ),
-                DecoratedFormPickerField(
-                  ctx: const ['counterparty'],
-                  name: 'counterparty',
-                  label: localization.translate('counterparty'),
-                  autofocus: true,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(),
-                  ]),
-                  onSave: _onSave,
-                ),
-              ]),
-              Expanded(
-                child: ScrollableListView(children: <Widget>[
-                  Lines(
-                    ctx: const ['warehouse', 'receive'],
-                    document: widget.entity,
-                  ),
-                  // workaround to give some space for dropdown
-                  Container(height: 300)
-                ]),
-              )
-            ]),
-          ),
-        );
-      } else {
-        return ScaffoldView(
-          appBarBottom: TabBar(
-            controller: _controller,
-            isScrollable: true,
-            tabs: [
-              Tab(text: localization.translate("overview")),
-              Tab(text: localization.translate("goods")),
-            ],
-          ),
-          body: Builder(builder: (context) {
-            return Column(children: <Widget>[
-              Expanded(
-                child: TabBarView(controller: _controller, children: <Widget>[
-                  WHReceiveOverview(doc: widget.entity),
-                  WHReceiveGoods(doc: widget.entity)
-                ]),
-              ),
-            ]);
-          }),
-        );
+    if (widget.entity.isNew) {
+    } else {
+      routerBack(BuildContext context) {
+        context.read<UiBloc>().add(ChangeView(WHReceive.ctx));
+        // TODO context.read<UiBloc>().add(PreviousRoute());
       }
-    });
+
+      return BlocBuilder<UiBloc, UiState>(builder: (context, uiState) {
+        if (uiState.isDesktop) {
+          return EditScaffold(
+            entity: widget.entity,
+            title: localization.translate("warehouse receive"),
+            onClose: routerBack,
+            onCancel: routerBack,
+            onSave: _onSave,
+            body: AppForm(
+              schema: WHReceive.schema,
+              formKey: _formKey,
+              focusNode: _focusNode,
+              entity: getEntity(),
+              child: Column(children: [
+                FormCard(children: <Widget>[
+                  DecoratedFormField(
+                    name: 'date',
+                    label: localization.translate("date"),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    onSave: _onSave,
+                    keyboardType: TextInputType.datetime,
+                  ),
+                  DecoratedFormPickerField(
+                    ctx: const ['warehouse', 'storage'],
+                    name: 'storage',
+                    label: localization.translate("storage"),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    onSave: _onSave,
+                  ),
+                  DecoratedFormPickerField(
+                    ctx: const ['counterparty'],
+                    name: 'counterparty',
+                    label: localization.translate('counterparty'),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    onSave: _onSave,
+                  ),
+                ]),
+                Expanded(
+                  child: ScrollableListView(children: <Widget>[
+                    Lines(
+                      ctx: const ['warehouse', 'receive'],
+                      document: widget.entity,
+                    ),
+                    // workaround to give some space for dropdown
+                    Container(height: 300)
+                  ]),
+                )
+              ]),
+            ),
+          );
+        } else {
+          return ScaffoldView(
+            appBarBottom: TabBar(
+              controller: _controller,
+              isScrollable: true,
+              tabs: [
+                Tab(text: localization.translate("overview")),
+                Tab(text: localization.translate("goods")),
+              ],
+            ),
+            body: Builder(builder: (context) {
+              return Column(children: <Widget>[
+                Expanded(
+                  child: TabBarView(controller: _controller, children: <Widget>[
+                    WHReceiveOverview(doc: widget.entity),
+                    WHReceiveGoods(doc: widget.entity)
+                  ]),
+                ),
+              ]);
+            }),
+          );
+        }
+      });
+    }
   }
 
   MemoryItem getEntity() {
@@ -535,7 +538,8 @@ class WHReceiveOverview extends StatelessWidget {
             filter: filter,
             schema: schema,
             title: (MemoryItem item) => fGoods.resolve(item.json)?.name() ?? '',
-            subtitle: (MemoryItem item) => fQty.resolve(item.json) ?? '',
+            subtitle: (MemoryItem item) =>
+                '${fQty.resolve(item.json) ?? ' '} ${fUomAtQty.resolve(item.json)?.name() ?? ' '}',
             onTap: (MemoryItem item) => context
                 .read<UiBloc>()
                 .add(ChangeView(WHReceive.ctx, entity: item)),
@@ -663,7 +667,7 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
 
       final doc = await widget.doc.enrich(WHReceive.schema);
 
-      print("doc ${doc.json}");
+      print("doc in receive documents: ${doc.json}");
 
       final goods = data['goods'] as MemoryItem;
       final goodsName = goods.name();
@@ -719,7 +723,7 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
           "дата": dd,
           "количество": "$qtyNumber $qtyUom",
           "line1": "",
-          "поставщик": counterparty.name().toString().substring(0, 22),
+          "поставщик": counterparty.name().toString(),
         };
 
         // TODO: get batch for printing (like in stock)

@@ -99,7 +99,10 @@ class Labels {
 
     for (final entry in data.entries) {
       final name = entry.key;
-      final value = entry.value;
+      // workaround for cut the string off
+      final value = (name.startsWith("поставщик") && entry.value.length > 22)
+          ? entry.value.substring(0, 22)
+          : entry.value;
 
       if (name.startsWith("line")) {
         printer.bar(50, y - 1, 710, 3);
