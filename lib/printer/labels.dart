@@ -100,7 +100,7 @@ class Labels {
     for (final entry in data.entries) {
       final name = entry.key;
       // workaround for cut the string off
-      final value = (name.startsWith("поставщик") && entry.value.length > 22)
+      final value = (entry.value.length > 22)
           ? entry.value.substring(0, 22)
           : entry.value;
 
