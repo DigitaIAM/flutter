@@ -89,9 +89,11 @@ class WHTransferScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx,
+              action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip: AppLocalizations.of(context).translate("new warehouse transfer"),
+        tooltip:
+            AppLocalizations.of(context).translate("new warehouse transfer"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,
@@ -112,7 +114,8 @@ class WHTransferListBuilder extends StatelessWidget {
       schema: WHTransfer.schema,
       title: (MemoryItem item) => fFrom.resolve(item.json)?.name() ?? '',
       subtitle: (MemoryItem item) => fInto.resolve(item.json)?.name() ?? '',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, entity: item)),
+      onTap: (MemoryItem item) =>
+          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, entity: item)),
 //          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, entity: item)),
     );
   }

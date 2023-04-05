@@ -750,6 +750,7 @@ class _WHTransferGoodsRegistrationState
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     final widgets = <Widget>[
       AppForm(
           entity: details,
@@ -784,50 +785,69 @@ class _WHTransferGoodsRegistrationState
                 onSave: (context) {},
               ),
               const SizedBox(height: 10),
-              DecoratedFormPickerField(
-                creatable: false,
-                ctx: const ['uom'],
-                name: 'uom',
-                label: localization.translate("uom"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(
-                      errorText: "выберите единицу измерения"),
-                ]),
-                onSave: (context) {},
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: DecoratedFormPickerField(
+                      creatable: false,
+                      ctx: const ['uom'],
+                      name: 'uom',
+                      label: localization.translate("uom"),
+                      autofocus: true,
+                      validator: FormBuilderValidators.compose([
+                        FormBuilderValidators.required(
+                            errorText: "выберите единицу измерения"),
+                      ]),
+                      onSave: (context) {},
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: DecoratedFormField(
+                      name: 'qty',
+                      label: localization.translate("qty"),
+                      autofocus: true,
+                      validator: FormBuilderValidators.compose([
+                        FormBuilderValidators.required(),
+                      ]),
+                      onSave: (context) {},
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              DecoratedFormField(
-                name: 'qty',
-                label: localization.translate("qty"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: status == 'register' ? registerGoods : null,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+            ]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                FloatingActionButton(
+                  heroTag: 'product_fab',
+                  backgroundColor: theme.primaryColorDark,
+                  onPressed: () {
+                    status == 'register' ? registerGoods() : null;
+                  },
+                  tooltip: localization.translate('and print'.toString()),
+                  child: Icon(
+                    Icons.add,
+                    color: theme.primaryColorLight,
                   ),
                 ),
-                child: Text(localization.translate(status)),
-              ),
-              Container(height: 10),
-              ElevatedButton(
-                onPressed: status == 'register' ? registerAndPrint : null,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                FloatingActionButton(
+                  heroTag: 'product_fab',
+                  backgroundColor: theme.primaryColorDark,
+                  onPressed: () {
+                    status == 'register' ? registerAndPrint() : null;
+                  },
+                  tooltip: localization.translate('and print'.toString()),
+                  child: Icon(
+                    Icons.print,
+                    color: theme.primaryColorLight,
                   ),
                 ),
-                child: Text(localization.translate('and print'.toString())),
-              )
-            ])
+              ],
+            ),
           ]))
     ];
     return ScrollableListView(
