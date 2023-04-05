@@ -24,10 +24,9 @@ import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/autocomplete.dart';
 import 'package:nae/widgets/entity_screens.dart';
-import 'package:nae/widgets/list_filter.dart';
+import 'package:nae/widgets/list_divider.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_edit.dart';
-import 'package:nae/widgets/scaffold_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
@@ -55,14 +54,15 @@ class _WHTransferEditFSState extends State<WHTransferEditFS>
 
     _controller = TabController(
       vsync: this,
-      length: widget.entity.isNew ? 1 : 2,
-      initialIndex: 0, // widget.entity.isNew ? 0 : 1,
+      length: widget.entity.isNew ? 1 : 3,
+      initialIndex: widget.entity.isNew ? 0 : 1,
     );
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
+    _controller.dispose();
 
     super.dispose();
   }
@@ -105,9 +105,9 @@ class _WHTransferEditFSState extends State<WHTransferEditFS>
         body: Builder(builder: (context) {
           return Column(children: <Widget>[
             Expanded(
-              child: TabBarView(
-                  controller: _controller,
-                  children: <Widget>[WHTransferDocument(doc: widget.entity)]),
+              child: TabBarView(controller: _controller, children: <Widget>[
+                WHTransferDocumentCreation(doc: widget.entity)
+              ]),
             ),
           ]);
         }),
@@ -183,16 +183,18 @@ class _WHTransferEditFSState extends State<WHTransferEditFS>
               controller: _controller,
               isScrollable: true,
               tabs: [
-                Tab(text: localization.translate("overview")),
                 Tab(text: localization.translate("goods")),
+                Tab(text: localization.translate("overview")),
+                Tab(text: localization.translate("registration")),
               ],
             ),
             body: Builder(builder: (context) {
               return Column(children: <Widget>[
                 Expanded(
                   child: TabBarView(controller: _controller, children: <Widget>[
+                    WHTransferGoods(doc: widget.entity),
                     WHTransferOverview(doc: widget.entity),
-                    WHTransferGoods(doc: widget.entity)
+                    WHTransferGoodsRegistration(doc: widget.entity)
                   ]),
                 ),
               ]);
@@ -522,6 +524,58 @@ class WHTransferOverview extends StatelessWidget {
   Widget build(BuildContext context) {
     print("context in WHTransferOverview: $context");
 
+    final localization = AppLocalizations.of(context);
+
+    final ctx = const ['warehouse', 'transfer'];
+    final filter = {
+      'document': doc.id,
+    };
+    final schema = <Field>[
+      fGoods.copyWith(width: 3.0),
+      fUomAtQty.copyWith(width: 0.5, editable: false),
+      fQty.copyWith(width: 1.0),
+    ];
+
+    return BlocProvider(
+      create: (context) {
+        final bloc = MemoryBloc(schema: schema, reverse: true);
+        bloc.add(MemoryFetch(
+          'memories',
+          ctx,
+          filter: filter,
+          reverse: true,
+          loadAll: true,
+        ));
+
+        return bloc;
+      },
+      child: Column(children: <Widget>[
+        ListDivider(),
+        ListTile(
+          title: Text(doc.json['date']),
+          subtitle: Text(localization.translate("date")),
+        ),
+        ListTile(
+          title: Text(doc.json['from'].name()),
+          subtitle: Text(localization.translate("from")),
+        ),
+        ListTile(
+          title: Text(doc.json['into'].name()),
+          subtitle: Text(localization.translate("into")),
+        ),
+        ListDivider(),
+      ]),
+    );
+  }
+}
+
+class WHTransferGoods extends StatelessWidget {
+  final MemoryItem doc;
+
+  const WHTransferGoods({super.key, required this.doc});
+
+  @override
+  Widget build(BuildContext context) {
     final ctx = const ['warehouse', 'transfer'];
     final filter = {
       'document': doc.id,
@@ -560,18 +614,19 @@ class WHTransferOverview extends StatelessWidget {
   }
 }
 
-class WHTransferDocument extends StatefulWidget {
+class WHTransferDocumentCreation extends StatefulWidget {
   final MemoryItem doc;
 
-  const WHTransferDocument({super.key, required this.doc});
+  const WHTransferDocumentCreation({super.key, required this.doc});
 
   @override
-  State<StatefulWidget> createState() => _WHTransferDocumentState();
+  State<StatefulWidget> createState() => _WHTransferDocumentCreationState();
 }
 
-class _WHTransferDocumentState extends State<WHTransferDocument> {
+class _WHTransferDocumentCreationState
+    extends State<WHTransferDocumentCreation> {
   final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_WHTransferDocumentEdit');
+      GlobalKey<FormBuilderState>(debugLabel: '_WHTransferDocumentCreation');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -673,18 +728,19 @@ class _WHTransferDocumentState extends State<WHTransferDocument> {
   }
 }
 
-class WHTransferGoods extends StatefulWidget {
+class WHTransferGoodsRegistration extends StatefulWidget {
   final MemoryItem doc;
 
-  const WHTransferGoods({super.key, required this.doc});
+  const WHTransferGoodsRegistration({super.key, required this.doc});
 
   @override
-  State<StatefulWidget> createState() => _WHTransferGoodsState();
+  State<StatefulWidget> createState() => _WHTransferGoodsRegistrationState();
 }
 
-class _WHTransferGoodsState extends State<WHTransferGoods> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_WHTransferGoodsEdit');
+class _WHTransferGoodsRegistrationState
+    extends State<WHTransferGoodsRegistration> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(
+      debugLabel: '_WHTransferGoodsRegistrationEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -706,35 +762,41 @@ class _WHTransferGoodsState extends State<WHTransferGoods> {
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
               DecoratedFormPickerField(
+                creatable: false,
                 ctx: const ['printer'],
                 name: 'printer',
                 label: localization.translate("printer"),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
+                  // FormBuilderValidators.required(),
                 ]),
                 onSave: (context) {},
               ),
+              const SizedBox(height: 10),
               DecoratedFormPickerField(
                 ctx: const ['goods'],
                 name: 'goods',
                 label: localization.translate("goods"),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
+                  FormBuilderValidators.required(errorText: "выберите товар"),
                 ]),
                 onSave: (context) {},
               ),
+              const SizedBox(height: 10),
               DecoratedFormPickerField(
+                creatable: false,
                 ctx: const ['uom'],
                 name: 'uom',
                 label: localization.translate("uom"),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
+                  FormBuilderValidators.required(
+                      errorText: "выберите единицу измерения"),
                 ]),
                 onSave: (context) {},
               ),
+              const SizedBox(height: 10),
               DecoratedFormField(
                 name: 'qty',
                 label: localization.translate("qty"),
@@ -745,7 +807,7 @@ class _WHTransferGoodsState extends State<WHTransferGoods> {
                 onSave: (context) {},
                 keyboardType: TextInputType.number,
               ),
-              Container(height: 10),
+              const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: status == 'register' ? registerGoods : null,
                 style: ElevatedButton.styleFrom(
@@ -774,72 +836,19 @@ class _WHTransferGoodsState extends State<WHTransferGoods> {
   }
 
   void registerGoods() async {
-    final data = _formKey.currentState?.value;
-    if (data == null) {
-      return;
-    }
-
-    print("data $data");
-
-    final doc = await widget.doc.enrich(WHTransfer.schema);
-
-    print("doc: ${doc.json}");
-
-    final goods = data['goods'] as MemoryItem;
-
-    final uom = data['uom'] as MemoryItem;
-
-    final from = doc.json['from'].json;
-    final into = doc.json['into'].json;
-
-    final number = data['qty']!;
-
-    final qty = {'number': number, 'uom': uom.id};
-
-    final record = await Api.feathers().create(serviceName: 'memories', data: {
-      'document': doc.id,
-      'goods': goods.id,
-      'storage_from': from,
-      'storage_into': into,
-      'qty': qty,
-    }, params: {
-      'oid': Api.instance.oid,
-      'ctx': ['warehouse', 'transfer']
-    });
-
-    print("record: $record");
-  }
-
-  void registerAndPrint() async {
-    setState(() => status = "connecting");
-    try {
-      print("pressed:");
-
-      final data = _formKey.currentState?.value;
-      if (data == null) {
-        return;
-      }
+    final state = _formKey.currentState;
+    if (state != null && state.saveAndValidate()) {
+      final data = state.value;
 
       print("data $data");
 
-      final printer = data['printer'] ?? '';
-      final ip = printer is MemoryItem ? (printer.json['ip'] ?? '') : '';
-      final port = printer is MemoryItem ? int.parse(printer.json['port']) : 0;
-
-      print("printer $ip $port");
-
       final doc = await widget.doc.enrich(WHTransfer.schema);
 
-      print("doc in transfer documents: ${doc.json}");
+      print("doc: ${doc.json}");
 
       final goods = data['goods'] as MemoryItem;
-      final goodsName = goods.name();
-      // final goodsUuid = goods.json['_uuid'] ?? '';
-      // final goodsId = goods.id;
 
       final uom = data['uom'] as MemoryItem;
-
-      final date = doc.json['date']!;
 
       final from = doc.json['from'].json;
       final into = doc.json['into'].json;
@@ -848,50 +857,112 @@ class _WHTransferGoodsState extends State<WHTransferGoods> {
 
       final qty = {'number': number, 'uom': uom.id};
 
-      final result = await Labels.connect(ip, port, (printer) async {
-        setState(() => status = "registering");
-        final record =
-            await Api.feathers().create(serviceName: 'memories', data: {
-          'document': doc.id,
-          'goods': goods.id,
-          'storage_from': from,
-          'storage_into': into,
-          'qty': qty,
-        }, params: {
-          'oid': Api.instance.oid,
-          'ctx': ['warehouse', 'transfer']
-        });
-
-        print("record: $record");
-
-        setState(() => status = "printing");
-
-        final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
-
-        final qtyNumber = qty['number'] ?? '';
-        final qtyUom = uom.json['name'] ?? '';
-
-        final Map<String, String> labelData = {
-          "материал": goodsName,
-          "дата": dd,
-          "количество": "$qtyNumber $qtyUom",
-          "line1": "",
-          "поставщик": from['name'],
-        };
-
-        // TODO: get batch for printing (like in stock)
-        // Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
-        //     '223033122222'.toString(), labelData);
-
-        return Future<PrintResult>.value(PrintResult.success);
+      final record =
+          await Api.feathers().create(serviceName: 'memories', data: {
+        'document': doc.id,
+        'goods': goods.id,
+        'storage_from': from,
+        'storage_into': into,
+        'qty': qty,
+      }, params: {
+        'oid': Api.instance.oid,
+        'ctx': ['warehouse', 'transfer']
       });
 
-      if (result != PrintResult.success) {
-        showToast(result.msg,
-            // context: context,
-            axis: Axis.horizontal,
-            alignment: Alignment.center,
-            position: StyledToastPosition.bottom);
+      print("record: $record");
+    } else {
+      debugPrint(_formKey.currentState?.value.toString());
+      debugPrint('validation failed');
+    }
+  }
+
+  void registerAndPrint() async {
+    setState(() => status = "connecting");
+    try {
+      print("pressed:");
+
+      final state = _formKey.currentState;
+      if (state != null && state.saveAndValidate()) {
+        final data = _formKey.currentState?.value;
+        if (data == null) {
+          return;
+        }
+
+        print("data $data");
+
+        final printer = data['printer'] ?? '';
+        final ip = printer is MemoryItem ? (printer.json['ip'] ?? '') : '';
+        final port =
+            printer is MemoryItem ? int.parse(printer.json['port']) : 0;
+
+        print("printer $ip $port");
+
+        final doc = await widget.doc.enrich(WHTransfer.schema);
+
+        print("doc in transfer documents: ${doc.json}");
+
+        final goods = data['goods'] as MemoryItem;
+        final goodsName = goods.name();
+
+        final uom = data['uom'] as MemoryItem;
+
+        final date = doc.json['date']!;
+
+        final from = doc.json['from'].json;
+        final into = doc.json['into'].json;
+
+        final number = data['qty']!;
+
+        final qty = {'number': number, 'uom': uom.id};
+
+        final result = await Labels.connect(ip, port, (printer) async {
+          setState(() => status = "registering");
+          final record =
+              await Api.feathers().create(serviceName: 'memories', data: {
+            'document': doc.id,
+            'goods': goods.id,
+            'storage_from': from,
+            'storage_into': into,
+            'qty': qty,
+          }, params: {
+            'oid': Api.instance.oid,
+            'ctx': ['warehouse', 'transfer']
+          });
+
+          print("record: $record");
+
+          setState(() => status = "printing");
+
+          final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
+
+          final qtyNumber = qty['number'] ?? '';
+          final qtyUom = uom.json['name'] ?? '';
+
+          final Map<String, String> labelData = {
+            "материал": goodsName,
+            "дата": dd,
+            "количество": "$qtyNumber $qtyUom",
+            "line1": "",
+            "поставщик": from['name'],
+          };
+
+          // TODO: get batch for printing (like in stock)
+          // Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
+          //     '223033122222'.toString(), labelData);
+
+          return Future<PrintResult>.value(PrintResult.success);
+        });
+
+        if (result != PrintResult.success) {
+          showToast(result.msg,
+              // context: context,
+              axis: Axis.horizontal,
+              alignment: Alignment.center,
+              position: StyledToastPosition.bottom);
+        }
+      } else {
+        debugPrint(_formKey.currentState?.value.toString());
+        debugPrint('validation failed');
       }
     } catch (e, stacktrace) {
       print(stacktrace);
