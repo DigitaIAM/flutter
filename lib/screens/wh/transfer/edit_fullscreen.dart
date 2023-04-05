@@ -751,6 +751,7 @@ class _WHTransferGoodsRegistrationState
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    var count = 0;
     final widgets = <Widget>[
       AppForm(
           entity: details,
@@ -758,7 +759,15 @@ class _WHTransferGoodsRegistrationState
           focusNode: _focusNode,
           onChanged: () {
             _formKey.currentState!.save();
-            debugPrint("onChanged: ${_formKey.currentState!.value}");
+            final value = _formKey.currentState!.value;
+            debugPrint("onChanged: $value");
+            if (value['goods'] is MemoryItem && value['uom'] is MemoryItem) {
+              if (value['goods'].json['uom'] != value['uom'].id) {
+                debugPrint("WRONG UOM");
+                count++;
+                _formKey.currentState!.reset();
+              }
+            }
           },
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
@@ -785,39 +794,41 @@ class _WHTransferGoodsRegistrationState
                 onSave: (context) {},
               ),
               const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: DecoratedFormPickerField(
-                      creatable: false,
-                      ctx: const ['uom'],
-                      name: 'uom',
-                      label: localization.translate("uom"),
-                      autofocus: true,
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(
-                            errorText: "выберите единицу измерения"),
-                      ]),
-                      onSave: (context) {},
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: DecoratedFormField(
-                      name: 'qty',
-                      label: localization.translate("qty"),
-                      autofocus: true,
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(),
-                      ]),
-                      onSave: (context) {},
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                ],
-              ),
+              qtyUom(context, count),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //   children: [
+              //     Expanded(
+              //       flex: 1,
+              //       child: DecoratedFormPickerField(
+              //         creatable: false,
+              //         ctx: const ['uom'],
+              //         name: 'uom',
+              //         label: localization.translate("uom"),
+              //         autofocus: true,
+              //         validator: FormBuilderValidators.compose([
+              //           FormBuilderValidators.required(
+              //               errorText: "выберите значение"),
+              //         ]),
+              //         onSave: (context) {},
+              //       ),
+              //     ),
+              //     const SizedBox(width: 5),
+              //     Expanded(
+              //       flex: 1,
+              //       child: DecoratedFormField(
+              //         name: 'qty',
+              //         label: localization.translate("qty"),
+              //         autofocus: true,
+              //         validator: FormBuilderValidators.compose([
+              //           FormBuilderValidators.required(),
+              //         ]),
+              //         onSave: (context) {},
+              //         keyboardType: TextInputType.number,
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ]),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -852,6 +863,55 @@ class _WHTransferGoodsRegistrationState
     ];
     return ScrollableListView(
       children: widgets,
+    );
+  }
+
+  Row qtyUom(BuildContext context, int count) {
+    final localization = AppLocalizations.of(context);
+    var children = <Widget>[];
+
+    final uom = Expanded(
+      flex: 1,
+      child: DecoratedFormPickerField(
+        creatable: false,
+        ctx: const ['uom'],
+        name: 'uom',
+        label: localization.translate("uom"),
+        autofocus: true,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(errorText: "выберите значение"),
+        ]),
+        onSave: (context) {
+          final x = _formKey.currentState;
+          print("QTY_UOM: $x");
+        },
+      ),
+    );
+
+    final box = const SizedBox(width: 5);
+
+    final qty = Expanded(
+      flex: 1,
+      child: DecoratedFormField(
+        name: 'qty',
+        label: localization.translate("qty"),
+        autofocus: true,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(),
+        ]),
+        onSave: (context) {},
+        keyboardType: TextInputType.number,
+      ),
+    );
+
+    for (int i = 0; i <= count; i++) {
+      children.add(uom);
+      children.add(box);
+      children.add(qty);
+    }
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: children,
     );
   }
 
