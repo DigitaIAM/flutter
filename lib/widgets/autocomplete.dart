@@ -135,7 +135,7 @@ class _AutocompleteFieldState<T extends Object>
             return TextField(
               controller: fieldTextEditingController,
               focusNode: fieldFocusNode,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              // style: const TextStyle(fontWeight: FontWeight.normal),
               decoration: inputDecoration,
             );
           },

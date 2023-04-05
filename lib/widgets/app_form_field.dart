@@ -62,21 +62,24 @@ class _DecoratedFormFieldState extends State<DecoratedFormField> {
       // }
 
       inputDecoration = InputDecoration(
-          labelText: widget.label ?? '',
-          // hintText: widget.hint ?? '',
-          // border: OutlineInputBorder(
-          //   borderRadius: BorderRadius.circular(8),
-          // ),
-          // suffixIcon: suffixIcon,
-          floatingLabelBehavior:
-              (widget.label ?? '').isEmpty ? FloatingLabelBehavior.always : FloatingLabelBehavior.auto);
+        labelText: widget.label ?? '',
+        border: const UnderlineInputBorder(),
+        // hintText: widget.hint ?? '',
+        // border: OutlineInputBorder(
+        //   borderRadius: BorderRadius.circular(8),
+        // ),
+        floatingLabelBehavior: widget.label?.isEmpty ?? true
+            ? FloatingLabelBehavior.always
+            : FloatingLabelBehavior.auto,
+        // suffixIcon: suffixIcon,
+      );
     }
 
     return FormBuilderTextField(
         name: widget.name,
         // decoration: InputDecoration(labelText: AppLocalizations.of(context).translate("label")),
         decoration: inputDecoration!,
-        style: Theme.of(context).textTheme.bodyMedium,
+        // style: Theme.of(context).textTheme.bodyMedium,
         readOnly: widget.readOnly,
         validator: widget.validator,
         // autovalidateMode: AutovalidateMode.onUserInteraction,
