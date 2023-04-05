@@ -18,6 +18,7 @@ class DecoratedFormPickerField extends StatefulWidget {
     this.maxLines = 1,
     this.decoration,
     required this.onSave,
+    this.creatable = true,
   });
 
   final List<String> ctx;
@@ -26,7 +27,7 @@ class DecoratedFormPickerField extends StatefulWidget {
 
   final FocusNode? focusNode;
   final bool autofocus;
-  final FormFieldValidator<String> validator;
+  final FormFieldValidator<MemoryItem> validator;
 
   final bool expands;
   final int minLines;
@@ -35,14 +36,16 @@ class DecoratedFormPickerField extends StatefulWidget {
   final InputDecoration? decoration;
   final Function(BuildContext)? onSave;
 
+  final bool creatable;
+
   @override
-  State<DecoratedFormPickerField> createState() => _DecoratedFormPickerFieldState();
+  State<DecoratedFormPickerField> createState() =>
+      _DecoratedFormPickerFieldState();
 }
 
 class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
   @override
   Widget build(BuildContext context) {
-    final label = widget.label ?? '';
     // InputDecoration inputDecoration = widget.decoration ??
     // InputDecoration inputDecoration = InputDecoration(
     //     labelText: label,
@@ -50,31 +53,66 @@ class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
 
     return FormBuilderField<MemoryItem>(
       name: widget.name,
-      onChanged: (val) => debugPrint(val.toString()),
+      validator: widget.validator,
+      onChanged: (val) => debugPrint("onChanged $val"),
       builder: (FormFieldState field) {
-        return AutocompleteField<MemoryItem>(
-          label: widget.label,
-          initialValue: field.value,
-          create: (text) async {
-            final response = await Api.feathers().create(
-                serviceName: "memories", data: {'name': text}, params: {"oid": Api.instance.oid, "ctx": widget.ctx});
-            print("response: $response");
-            return MemoryItem.from(response);
-          },
-          delegate: (text) async {
-            final response = await Api.feathers()
-                .find(serviceName: "memories", query: {"oid": Api.instance.oid, "ctx": widget.ctx, "search": text});
-            return (response['data'] ?? []).map<MemoryItem>((item) => MemoryItem.from(item)).toList();
-          },
-          displayStringForOption: (item) => item?.name() ?? '',
-          itemBuilder: (context, entry) {
-            return Text(entry.name(), style: Theme.of(context).textTheme.labelMedium);
-          },
-          onItemSelected: (entry) {
-            print('onItemSelected $entry');
-            field.didChange(entry);
-          },
-          // decoration: inputDecoration,
+        return Column(
+          children: [
+            AutocompleteField<MemoryItem>(
+              label: widget.label,
+              initialValue: field.value,
+              creatable: widget.creatable,
+              create: (text) async {
+                final response = await Api.feathers().create(
+                    serviceName: "memories",
+                    data: {'name': text},
+                    params: {"oid": Api.instance.oid, "ctx": widget.ctx});
+                // print("response: $response");
+                return MemoryItem.from(response);
+              },
+              delegate: (text) async {
+                if (field.value != null && field.value.name() != text) {
+                  field.didChange(null);
+                }
+                final response = await Api.feathers().find(
+                    serviceName: "memories",
+                    query: {
+                      "oid": Api.instance.oid,
+                      "ctx": widget.ctx,
+                      "search": text
+                    });
+                return (response['data'] ?? [])
+                    .map<MemoryItem>((item) => MemoryItem.from(item))
+                    .toList();
+              },
+              displayStringForOption: (item) => item?.name() ?? '',
+              itemBuilder: (context, entry) {
+                return Text(entry.name(),
+                    style: Theme.of(context).textTheme.labelMedium);
+              },
+              onItemSelected: (entry) {
+                // print('onItemSelected $entry');
+                field.didChange(entry);
+              },
+              // decoration: inputDecoration,
+            ),
+            if (field.hasError)
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, top: 10),
+                    child: Text(
+                      field.errorText!,
+                      style: TextStyle(
+                          fontStyle: FontStyle.normal,
+                          fontSize: 13,
+                          color: Colors.red[700],
+                          height: 0.5),
+                    ),
+                  ),
+                ],
+              )
+          ],
         );
       },
     );

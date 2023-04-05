@@ -15,12 +15,14 @@ class AutocompleteField<T extends Object> extends StatefulWidget {
     this.focusNode,
     this.decoration,
     this.keyboardType = TextInputType.text,
+    this.creatable = true,
     this.editable = true,
   });
 
   final String? label;
   final T? initialValue;
 
+  final bool creatable;
   final bool editable;
 
   final InputDecoration? decoration;
@@ -39,17 +41,23 @@ class AutocompleteField<T extends Object> extends StatefulWidget {
   State<StatefulWidget> createState() => _AutocompleteFieldState<T>();
 }
 
-class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<T>> {
+class _AutocompleteFieldState<T extends Object>
+    extends State<AutocompleteField<T>> {
   late TextEditingController _controller;
   late FocusNode _focusNode;
 
   late InputDecoration inputDecoration;
 
+  late T? selected;
+
   @override
   void initState() {
     super.initState();
 
-    _controller = TextEditingController(text: widget.displayStringForOption(widget.initialValue));
+    selected = widget.initialValue;
+
+    _controller = TextEditingController(
+        text: widget.displayStringForOption(widget.initialValue));
     _controller.addListener(() {
       update();
     });
@@ -57,8 +65,9 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(() {
       if (!_focusNode.hasFocus) {
-        if (_controller.text.isEmpty) {
-          widget.onItemSelected(null);
+        if (selected == null ||
+            _controller.text != widget.displayStringForOption(selected)) {
+          updateSelection(null);
         }
         // widget.onItemSelected(selection);
       }
@@ -73,6 +82,16 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
     super.dispose();
   }
 
+  void updateSelection(T? selection) {
+    // print('Selected: $selection');
+    if (selection == null) {
+      _controller.text = '';
+      // _controller.text = widget.displayStringForOption(selected);
+    }
+    selected = selection;
+    widget.onItemSelected(selection);
+  }
+
   void update() {
     final text = _controller.text;
     final initial = widget.displayStringForOption(widget.initialValue);
@@ -85,14 +104,15 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
       inputDecoration = InputDecoration(
         labelText: widget.label,
         border: const UnderlineInputBorder(),
-        floatingLabelBehavior:
-            widget.label?.isEmpty ?? true ? FloatingLabelBehavior.always : FloatingLabelBehavior.auto,
-        suffixIcon: isNew && widget.editable
+        floatingLabelBehavior: widget.label?.isEmpty ?? true
+            ? FloatingLabelBehavior.always
+            : FloatingLabelBehavior.auto,
+        suffixIcon: isNew && widget.editable && widget.creatable
             ? IconButton(
                 icon: const Icon(Icons.add_box_outlined),
                 onPressed: () async {
                   final item = await widget.create(text);
-                  widget.onItemSelected(item);
+                  updateSelection(item);
                 })
             : null,
       );
@@ -107,13 +127,11 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
       return RawAutocomplete<T>(
           textEditingController: _controller,
           focusNode: _focusNode,
-          onSelected: (T selection) {
-            print('Selected: $selection');
-            widget.onItemSelected(selection);
-          },
+          onSelected: updateSelection,
           fieldViewBuilder: (BuildContext context,
               TextEditingController fieldTextEditingController,
-              FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
+              FocusNode fieldFocusNode,
+              VoidCallback onFieldSubmitted) {
             return TextField(
               controller: fieldTextEditingController,
               focusNode: fieldFocusNode,
@@ -134,13 +152,13 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
               child: Material(
                 elevation: 4.0,
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                      maxHeight: 200, maxWidth: 600),
+                  constraints:
+                      const BoxConstraints(maxHeight: 200, maxWidth: 600),
                   // color: theme.cardColor,
                   // width: 300,
                   // constraints: const BoxConstraints(maxHeight: 270),
                   child: ListView.builder(
-                    // primary: true,
+                      // primary: true,
                       padding: EdgeInsets.zero,
                       shrinkWrap: true,
                       itemCount: options.length,
@@ -152,22 +170,22 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
                             onSelected(option);
                           },
                           child: Builder(builder: (BuildContext context) {
-                            final highlightedIndex = AutocompleteHighlightedOption
-                                .of(context);
+                            final highlightedIndex =
+                                AutocompleteHighlightedOption.of(context);
                             final highlight = highlightedIndex == index;
                             if (highlight) {
-                              SchedulerBinding.instance.addPostFrameCallback((
-                                  Duration timeStamp) {
-                                Scrollable.ensureVisible(
-                                    context, alignment: 0.5);
+                              SchedulerBinding.instance
+                                  .addPostFrameCallback((Duration timeStamp) {
+                                Scrollable.ensureVisible(context,
+                                    alignment: 0.5);
                               });
                             }
 
                             return Container(
                               // theme.primaryColorDark : theme.primaryColorLight,
-                              color: highlight ? Theme
-                                  .of(context)
-                                  .focusColor : null,
+                              color: highlight
+                                  ? Theme.of(context).focusColor
+                                  : null,
                               padding: const EdgeInsets.all(16.0),
                               child: widget.itemBuilder(context, option),
                               // ListTile(
@@ -193,7 +211,6 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
 //        focusNode: fieldFocusNode,
         style: const TextStyle(fontWeight: FontWeight.bold),
         decoration: inputDecoration,
-
       );
     }
   }

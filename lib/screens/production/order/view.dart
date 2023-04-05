@@ -28,13 +28,15 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 class ProductionOrderView extends EntityHolder {
   final int tabIndex;
 
-  const ProductionOrderView({super.key, required super.entity, required this.tabIndex});
+  const ProductionOrderView(
+      {super.key, required super.entity, required this.tabIndex});
 
   @override
   State<ProductionOrderView> createState() => _ProductionOrderViewState();
 }
 
-class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTickerProviderStateMixin {
+class _ProductionOrderViewState extends State<ProductionOrderView>
+    with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -43,7 +45,10 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
 
     // final state = widget.viewModel.state;
     _controller = TabController(
-        vsync: this, length: 2, initialIndex: 0 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
+        vsync: this,
+        length: 2,
+        initialIndex:
+            0 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
         );
     _controller.addListener(_onTabChanged);
   }
@@ -91,7 +96,8 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
           Expanded(
             child: TabBarView(controller: _controller, children: <Widget>[
               ProductionOrderOverview(order: widget.entity),
-              (widget.entity.json["date"] == Utils.today() || widget.entity.json["date"] == Utils.yesterday())
+              (widget.entity.json["date"] == Utils.today() ||
+                      widget.entity.json["date"] == Utils.yesterday())
                   ? ProductionOrderProduced(order: widget.entity)
                   : ProductionOrderProducedView(order: widget.entity),
             ]),
@@ -114,8 +120,10 @@ class ProductionOrderOverview extends StatelessWidget {
       EntityHeader(pairs: [
         // Pair(localization.translate("production order"), memoryItem.json['date'])
         Pair(localization.translate("plan"), order.json['planned'] ?? '-'),
-        Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
-        Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
+        Pair(localization.translate("produced"),
+            order.json['produced']?['piece'] ?? '-'),
+        Pair(localization.translate("boxes"),
+            order.json['produced']?['box'] ?? '-'),
       ]),
       ListDivider(),
       ListTile(
@@ -149,7 +157,8 @@ class ProductionOrderProduced extends StatefulWidget {
 }
 
 class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_productionOrderProducedEdit');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_productionOrderProducedEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -310,7 +319,8 @@ class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
 
       final result = await Labels.connect(ip, port, (printer) async {
         setState(() => status = "registering");
-        final record = await Api.feathers().create(serviceName: 'memories', data: {
+        final record =
+            await Api.feathers().create(serviceName: 'memories', data: {
           'order': orderId,
           'date': date,
           'operator': operatorId,
@@ -382,7 +392,9 @@ class ProductionOrderProducedView extends StatelessWidget {
       }))
     ];
     return BlocProvider(
-      create: (context) => MemoryBloc()..add(MemoryFetch('memories', ctx, schema: schema, filter: {'order': order.id})),
+      create: (context) => MemoryBloc()
+        ..add(MemoryFetch('memories', ctx,
+            schema: schema, filter: {'order': order.id})),
       child: MemoryList(
         ctx: ctx,
         schema: schema,
