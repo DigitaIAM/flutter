@@ -62,6 +62,7 @@
   "uom": "UoM",
   "boxes": "boxes",
   "area": "area",
+  "qty": "qty",
   "qty in box": "qty in box",
   "printer": "printer",
   "customer": "customer",
