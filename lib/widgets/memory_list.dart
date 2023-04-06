@@ -10,6 +10,7 @@ import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/icon_text.dart';
+import 'package:nae/widgets/swipe_action.dart';
 import 'package:overflow_view/overflow_view.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 
@@ -292,23 +293,31 @@ class _MemoryListState extends State<MemoryList> {
         ),
       ),
       itemBuilder: (context, item) {
-        return Card(
-          elevation: 2.0,
-          margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
-          child: ListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-            // leading: const Icon(Icons.account_circle),
-            title: Text(widget.title(item)),
-            subtitle: Text(widget.subtitle(item)),
-            trailing: const Icon(Icons.arrow_forward),
-            onTap: () {
-              widget.onTap(item);
-            },
+        return SwipeActionWidget(
+          onDismissed: (action) => onDismissed(context, action),
+          // key: key,
+          child: Card(
+            elevation: 2.0,
+            margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+            child: ListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+              // leading: const Icon(Icons.account_circle),
+              title: Text(widget.title(item)),
+              subtitle: Text(widget.subtitle(item)),
+              trailing: const Icon(Icons.arrow_forward),
+              onTap: () {
+                widget.onTap(item);
+              },
+            ),
           ),
         );
       },
     );
+  }
+
+  void onDismissed(BuildContext context, SwipeAction action) {
+    print("onDismissed: $action");
   }
 
   PlutoGrid buildPlutoGrid(BuildContext context, RequestState state) {
