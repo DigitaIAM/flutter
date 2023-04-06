@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
@@ -51,6 +52,7 @@ class PrinterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return ScaffoldList(
       entityType: Printer.ctx,
       appBarTitle: ListFilter(
@@ -59,6 +61,19 @@ class PrinterScreen extends StatelessWidget {
         onFilterChanged: (value) {
           // store.dispatch(FilterProducts(value));
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'product_fab',
+        backgroundColor: theme.primaryColorDark,
+        onPressed: () {
+          context.read<UiBloc>().add(ChangeView(Printer.ctx,
+              action: 'edit', entity: MemoryItem.create()));
+        },
+        tooltip: AppLocalizations.of(context).translate("new printer"),
+        child: Icon(
+          Icons.add,
+          color: theme.primaryColorLight,
+        ),
       ),
       body: const UomListBuilder(),
     );
@@ -75,7 +90,8 @@ class UomListBuilder extends StatelessWidget {
       schema: Printer.schema,
       title: (MemoryItem item) => item.name(),
       subtitle: (MemoryItem item) => '${item.json['ip']}:${item.json['port']}',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(Printer.ctx, entity: item)),
+      onTap: (MemoryItem item) =>
+          context.read<UiBloc>().add(ChangeView(Printer.ctx, entity: item)),
     );
   }
 }
