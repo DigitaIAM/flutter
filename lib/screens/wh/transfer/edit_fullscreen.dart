@@ -746,27 +746,63 @@ class _WHTransferGoodsRegistrationState
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
 
   String status = "register";
+  int numberOfQuantities = 1;
 
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    var count = 0;
+
     final widgets = <Widget>[
       AppForm(
           entity: details,
           formKey: _formKey,
           focusNode: _focusNode,
           onChanged: () {
-            _formKey.currentState!.save();
-            final value = _formKey.currentState!.value;
+            final state = _formKey.currentState;
+            if (state == null) {
+              return;
+            }
+            state.save();
+            final value = state.value;
             debugPrint("onChanged: $value");
-            if (value['goods'] is MemoryItem && value['uom'] is MemoryItem) {
-              if (value['goods'].json['uom'] != value['uom'].id) {
-                debugPrint("WRONG UOM");
-                count++;
-                _formKey.currentState!.reset();
+
+            final goods = value['goods'];
+            if (goods is MemoryItem) {
+              final baseUom = goods.json['uom'];
+
+              var firstEmpty = -1;
+              var found = false;
+              var newNumber = numberOfQuantities;
+              for (var index = 0; index < numberOfQuantities; index++) {
+                // TODO fix removal
+                // if (found) {
+                //   state.fields['uom_$index']
+                //       ?.setValue(null, populateForm: false);
+                //   state.fields['qty_$index']
+                //       ?.setValue(null, populateForm: false);
+                // }
+                if (!found && baseUom == value['uom_$index']?.id) {
+                  newNumber = index + 1;
+                  found = true;
+                }
+                if (firstEmpty == -1 && value['uom_$index'] == null) {
+                  firstEmpty = index;
+                }
               }
+              if (!found) {
+                if (firstEmpty == -1) {
+                  newNumber += 1;
+                } else {
+                  newNumber = firstEmpty + 1;
+                }
+              }
+
+              // print("number_of_qties $number_of_qties $newNumber $firstEmpty");
+
+              setState(() {
+                numberOfQuantities = newNumber;
+              });
             }
           },
           child: ScrollableListView(children: <Widget>[
@@ -794,41 +830,7 @@ class _WHTransferGoodsRegistrationState
                 onSave: (context) {},
               ),
               const SizedBox(height: 10),
-              qtyUom(context, count),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //   children: [
-              //     Expanded(
-              //       flex: 1,
-              //       child: DecoratedFormPickerField(
-              //         creatable: false,
-              //         ctx: const ['uom'],
-              //         name: 'uom',
-              //         label: localization.translate("uom"),
-              //         autofocus: true,
-              //         validator: FormBuilderValidators.compose([
-              //           FormBuilderValidators.required(
-              //               errorText: "выберите значение"),
-              //         ]),
-              //         onSave: (context) {},
-              //       ),
-              //     ),
-              //     const SizedBox(width: 5),
-              //     Expanded(
-              //       flex: 1,
-              //       child: DecoratedFormField(
-              //         name: 'qty',
-              //         label: localization.translate("qty"),
-              //         autofocus: true,
-              //         validator: FormBuilderValidators.compose([
-              //           FormBuilderValidators.required(),
-              //         ]),
-              //         onSave: (context) {},
-              //         keyboardType: TextInputType.number,
-              //       ),
-              //     ),
-              //   ],
-              // ),
+              ...qtyUom(context),
             ]),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -866,53 +868,51 @@ class _WHTransferGoodsRegistrationState
     );
   }
 
-  Row qtyUom(BuildContext context, int count) {
+  List<Widget> qtyUom(BuildContext context) {
     final localization = AppLocalizations.of(context);
     var children = <Widget>[];
 
-    final uom = Expanded(
-      flex: 1,
-      child: DecoratedFormPickerField(
-        creatable: false,
-        ctx: const ['uom'],
-        name: 'uom',
-        label: localization.translate("uom"),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(errorText: "выберите значение"),
-        ]),
-        onSave: (context) {
-          final x = _formKey.currentState;
-          print("QTY_UOM: $x");
-        },
-      ),
-    );
+    for (var index = 0; index < numberOfQuantities; index++) {
+      final uom = Expanded(
+        flex: 1,
+        child: DecoratedFormPickerField(
+          creatable: false,
+          ctx: const ['uom'],
+          name: 'uom_$index',
+          label: localization.translate("uom"),
+          autofocus: true,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(errorText: "выберите значение"),
+          ]),
+          onSave: (context) {},
+        ),
+      );
 
-    final box = const SizedBox(width: 5);
+      final qty = Expanded(
+        flex: 1,
+        child: DecoratedFormField(
+          name: 'qty_$index',
+          label: localization.translate("qty"),
+          autofocus: true,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(),
+          ]),
+          onSave: (context) {},
+          keyboardType: TextInputType.number,
+        ),
+      );
 
-    final qty = Expanded(
-      flex: 1,
-      child: DecoratedFormField(
-        name: 'qty',
-        label: localization.translate("qty"),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-        keyboardType: TextInputType.number,
-      ),
-    );
-
-    for (int i = 0; i <= count; i++) {
-      children.add(uom);
-      children.add(box);
-      children.add(qty);
+      children.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [uom, const SizedBox(width: 5), qty],
+        ),
+      );
+      children.add(const SizedBox(height: 10));
     }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: children,
-    );
+    // ;
+
+    return children;
   }
 
   void registerGoods() async {
@@ -927,15 +927,39 @@ class _WHTransferGoodsRegistrationState
       print("doc: ${doc.json}");
 
       final goods = data['goods'] as MemoryItem;
-
-      final uom = data['uom'] as MemoryItem;
+      final baseUomId = goods.json['uom'] as String;
 
       final from = doc.json['from'].json;
       final into = doc.json['into'].json;
 
-      final number = data['qty']!;
+      final quantity = {}; // 'number': number, 'uom': uom.id
+      var currentQty = quantity;
+      for (var index = 0; index < numberOfQuantities; index++) {
+        final uom = data['uom_$index'] as MemoryItem?;
+        if (uom == null) {
+          // TODO report error? or raised by saveAndValidate?
+          return;
+        }
 
-      final qty = {'number': number, 'uom': uom.id};
+        final qty = data['qty_$index'];
+
+        if (index > 0) {
+          final newQty = {
+            'number': qty,
+            'uom': uom.id,
+            'in': currentQty['uom']
+          };
+          currentQty['uom'] = newQty;
+          currentQty = newQty;
+        } else {
+          currentQty['number'] = qty;
+          currentQty['uom'] = uom.id;
+        }
+
+        if (baseUomId != null && baseUomId == data['uom_$index']?.id) {
+          break;
+        }
+      }
 
       final record =
           await Api.feathers().create(serviceName: 'memories', data: {
@@ -943,7 +967,7 @@ class _WHTransferGoodsRegistrationState
         'goods': goods.id,
         'storage_from': from,
         'storage_into': into,
-        'qty': qty,
+        'qty': quantity,
       }, params: {
         'oid': Api.instance.oid,
         'ctx': ['warehouse', 'transfer']
