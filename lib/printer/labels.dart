@@ -83,11 +83,11 @@ class Labels {
     printer.codepage(name: "1251");
     printer.direction();
 
-    printer.qrcode(60, 50, goodsId, cellWidth: 7);
+    printer.qrcode(60, 50, batchId, cellWidth: 7);
 
     printer.qrcode(450, 50, goodsUuid, cellWidth: 7);
 
-    printer.text(35, 50, (batchId + ' ' + batchDate),
+    printer.text(35, 50, ('$batchId $batchDate'),
         font: "2", mx: 1, my: 1, rotation: 90);
     printer.bar(50, 10, 2, 780);
 
@@ -110,35 +110,35 @@ class Labels {
       } else {
         printer.text(245, y, "$name:", font: "3", mx: 1, my: 1, alignment: 3);
 
-        if (value.length > 20) {
-          final split = value.toString().split(' ');
-          var line = '';
-          line = '$line${split[0]}';
-          var count = 0;
-          for (String str in split.getRange(1, split.length)) {
-            if (line.length + str.length <= 19) {
-              line += ' $str';
-              printer.text(230, y, " $line", font: "4", mx: 1, my: 1);
-              count++;
-              y += 30;
-            } else {
-              if (str == split.last) {
-                printer.text(230, y, " $str", font: "4", mx: 1, my: 1);
-                count++;
-              } else {
-                printer.text(230, y, " $line", font: "4", mx: 1, my: 1);
-                count++;
-                y += 30;
-                line = str;
-              }
-            }
-            if (count == 2) {
-              break;
-            }
-          }
-        } else {
-          printer.text(230, y, " $value", font: "4", mx: 1, my: 1);
-        }
+        // if (value.length > 20) {
+        //   final split = value.toString().split(' ');
+        //   var line = '';
+        //   line = '$line${split[0]}';
+        //   var count = 0;
+        //   for (String str in split.getRange(1, split.length)) {
+        //     if (line.length + str.length <= 19) {
+        //       line += ' $str';
+        //       printer.text(230, y, " $line", font: "4", mx: 1, my: 1);
+        //       count++;
+        //       y += 30;
+        //     } else {
+        //       if (str == split.last) {
+        //         printer.text(230, y, " $str", font: "4", mx: 1, my: 1);
+        //         count++;
+        //       } else {
+        //         printer.text(230, y, " $line", font: "4", mx: 1, my: 1);
+        //         count++;
+        //         y += 30;
+        //         line = str;
+        //       }
+        //     }
+        //     if (count == 2) {
+        //       break;
+        //     }
+        //   }
+        // } else {
+        printer.text(230, y, " $value", font: "4", mx: 1, my: 1);
+        // }
 
         y += 40;
       }

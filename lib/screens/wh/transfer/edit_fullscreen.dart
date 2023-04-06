@@ -536,6 +536,15 @@ class WHTransferOverview extends StatelessWidget {
       fQty.copyWith(width: 1.0),
     ];
 
+    // print("WHTransferOverview doc: $doc");
+
+    final from = doc.json['from'] is MemoryItem
+        ? doc.json['from'].name()
+        : doc.json['from'];
+    final into = doc.json['into'] is MemoryItem
+        ? doc.json['into'].name()
+        : doc.json['into'];
+
     return BlocProvider(
       create: (context) {
         final bloc = MemoryBloc(schema: schema, reverse: true);
@@ -556,11 +565,11 @@ class WHTransferOverview extends StatelessWidget {
           subtitle: Text(localization.translate("date")),
         ),
         ListTile(
-          title: Text(doc.json['from'].name()),
+          title: Text(from),
           subtitle: Text(localization.translate("from")),
         ),
         ListTile(
-          title: Text(doc.json['into'].name()),
+          title: Text(into),
           subtitle: Text(localization.translate("into")),
         ),
         ListDivider(),
@@ -839,9 +848,9 @@ class _WHTransferGoodsRegistrationState
                   heroTag: 'product_fab',
                   backgroundColor: theme.primaryColorDark,
                   onPressed: () {
-                    status == 'register' ? registerGoods() : null;
+                    status == 'register' ? registerAndPrint(false) : null;
                   },
-                  tooltip: localization.translate('and print'.toString()),
+                  tooltip: localization.translate('register'.toString()),
                   child: Icon(
                     Icons.add,
                     color: theme.primaryColorLight,
@@ -851,7 +860,7 @@ class _WHTransferGoodsRegistrationState
                   heroTag: 'product_fab',
                   backgroundColor: theme.primaryColorDark,
                   onPressed: () {
-                    status == 'register' ? registerAndPrint() : null;
+                    status == 'register' ? registerAndPrint(true) : null;
                   },
                   tooltip: localization.translate('and print'.toString()),
                   child: Icon(
@@ -915,72 +924,7 @@ class _WHTransferGoodsRegistrationState
     return children;
   }
 
-  void registerGoods() async {
-    final state = _formKey.currentState;
-    if (state != null && state.saveAndValidate()) {
-      final data = state.value;
-
-      print("data $data");
-
-      final doc = await widget.doc.enrich(WHTransfer.schema);
-
-      print("doc: ${doc.json}");
-
-      final goods = data['goods'] as MemoryItem;
-      final baseUomId = goods.json['uom'] as String;
-
-      final from = doc.json['from'].json;
-      final into = doc.json['into'].json;
-
-      final quantity = {}; // 'number': number, 'uom': uom.id
-      var currentQty = quantity;
-      for (var index = 0; index < numberOfQuantities; index++) {
-        final uom = data['uom_$index'] as MemoryItem?;
-        if (uom == null) {
-          // TODO report error? or raised by saveAndValidate?
-          return;
-        }
-
-        final qty = data['qty_$index'];
-
-        if (index > 0) {
-          final newQty = {
-            'number': qty,
-            'uom': uom.id,
-            'in': currentQty['uom']
-          };
-          currentQty['uom'] = newQty;
-          currentQty = newQty;
-        } else {
-          currentQty['number'] = qty;
-          currentQty['uom'] = uom.id;
-        }
-
-        if (baseUomId != null && baseUomId == data['uom_$index']?.id) {
-          break;
-        }
-      }
-
-      final record =
-          await Api.feathers().create(serviceName: 'memories', data: {
-        'document': doc.id,
-        'goods': goods.id,
-        'storage_from': from,
-        'storage_into': into,
-        'qty': quantity,
-      }, params: {
-        'oid': Api.instance.oid,
-        'ctx': ['warehouse', 'transfer']
-      });
-
-      print("record: $record");
-    } else {
-      debugPrint(_formKey.currentState?.value.toString());
-      debugPrint('validation failed');
-    }
-  }
-
-  void registerAndPrint() async {
+  void registerAndPrint(bool isPrinting) async {
     setState(() => status = "connecting");
     try {
       print("pressed:");
@@ -994,75 +938,118 @@ class _WHTransferGoodsRegistrationState
 
         print("data $data");
 
-        final printer = data['printer'] ?? '';
-        final ip = printer is MemoryItem ? (printer.json['ip'] ?? '') : '';
-        final port =
-            printer is MemoryItem ? int.parse(printer.json['port']) : 0;
-
-        print("printer $ip $port");
-
         final doc = await widget.doc.enrich(WHTransfer.schema);
 
         print("doc in transfer documents: ${doc.json}");
 
         final goods = data['goods'] as MemoryItem;
-        final goodsName = goods.name();
-
-        final uom = data['uom'] as MemoryItem;
+        final baseUomId = goods.json['uom'] as String;
 
         final date = doc.json['date']!;
 
         final from = doc.json['from'].json;
         final into = doc.json['into'].json;
 
-        final number = data['qty']!;
+        final quantity = {}; // 'number': number, 'uom': uom.id
+        var currentQty = quantity;
+        for (var index = 0; index < numberOfQuantities; index++) {
+          final uom = data['uom_$index'] as MemoryItem?;
+          if (uom == null) {
+            // TODO report error? or raised by saveAndValidate?
+            return;
+          }
 
-        final qty = {'number': number, 'uom': uom.id};
+          final qty = data['qty_$index'];
 
-        final result = await Labels.connect(ip, port, (printer) async {
-          setState(() => status = "registering");
-          final record =
-              await Api.feathers().create(serviceName: 'memories', data: {
-            'document': doc.id,
-            'goods': goods.id,
-            'storage_from': from,
-            'storage_into': into,
-            'qty': qty,
-          }, params: {
-            'oid': Api.instance.oid,
-            'ctx': ['warehouse', 'transfer']
-          });
+          if (index > 0) {
+            final newQty = {
+              'number': qty,
+              'uom': uom.id,
+              'in': currentQty['uom']
+            };
+            currentQty['uom'] = newQty;
+            currentQty = newQty;
+          } else {
+            currentQty['number'] = qty;
+            currentQty['uom'] = uom.id;
+          }
 
-          print("record: $record");
+          if (baseUomId != null && baseUomId == data['uom_$index']?.id) {
+            break;
+          }
+        }
 
-          setState(() => status = "printing");
-
-          final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
-
-          final qtyNumber = qty['number'] ?? '';
-          final qtyUom = uom.json['name'] ?? '';
-
-          final Map<String, String> labelData = {
-            "материал": goodsName,
-            "дата": dd,
-            "количество": "$qtyNumber $qtyUom",
-            "line1": "",
-            "поставщик": from['name'],
-          };
-
-          // TODO: get batch for printing (like in stock)
-          // Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
-          //     '223033122222'.toString(), labelData);
-
-          return Future<PrintResult>.value(PrintResult.success);
+        final record =
+            await Api.feathers().create(serviceName: 'memories', data: {
+          'document': doc.id,
+          'goods': goods.id,
+          'storage_from': from,
+          'storage_into': into,
+          'qty': quantity,
+        }, params: {
+          'oid': Api.instance.oid,
+          'ctx': ['warehouse', 'transfer']
         });
 
-        if (result != PrintResult.success) {
-          showToast(result.msg,
-              // context: context,
-              axis: Axis.horizontal,
-              alignment: Alignment.center,
-              position: StyledToastPosition.bottom);
+        debugPrint("record: $record");
+
+        if (isPrinting) {
+          final goodsName = goods.name();
+          final goodsUuid = goods.json['_uuid'] ?? '';
+          final goodsId = goods.id;
+
+          final printer = data['printer'] ?? '';
+          final ip = printer is MemoryItem ? (printer.json['ip'] ?? '') : '';
+          final port =
+              printer is MemoryItem ? int.parse(printer.json['port']) : 0;
+
+          debugPrint("printer $ip $port");
+
+          final result = await Labels.connect(ip, port, (printer) async {
+            setState(() => status = "registering");
+
+            setState(() => status = "printing");
+
+            final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
+
+            final batchBarcode = record['batch']['barcode'] ?? '';
+            final batchId = record['batch']['_uuid'] ?? '';
+            final batchDate = record['batch']['date'] ?? '';
+
+            var qtyUom = '';
+
+            for (var index = 0; index < numberOfQuantities; index++) {
+              final uom = data['uom_$index'] ?? '';
+              final uomName = uom is MemoryItem ? uom.name() : uom;
+              final qty = data['qty_$index'] ?? '';
+
+              qtyUom = '$qtyUom$qty $uomName\n';
+            }
+
+            // debugPrint('QTYUOM: $qtyUom');
+
+            final Map<String, String> labelData = {
+              "материал": goodsName,
+              "дата": dd,
+              "количество": qtyUom,
+              "line1": "",
+              "поставщик": from['name'],
+            };
+
+            // TODO: place length check and line break from lines_with_barcode to this function
+            Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
+                batchBarcode, batchId, batchDate, labelData);
+
+            return Future<PrintResult>.value(PrintResult.success);
+          });
+
+          if (result != PrintResult.success) {
+            showToast(result.msg,
+                // context: context,
+                axis: Axis.horizontal,
+                alignment: Alignment.center,
+                position: StyledToastPosition.bottom);
+          }
         }
       } else {
         debugPrint(_formKey.currentState?.value.toString());
