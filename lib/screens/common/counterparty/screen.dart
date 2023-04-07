@@ -71,9 +71,11 @@ class CounterpartyListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: Counterparty.ctx,
       schema: Counterparty.schema,
-      title: (MemoryItem item) => item.name(),
-      subtitle: (MemoryItem item) => '',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(Counterparty.ctx, entity: item)),
+      title: (MemoryItem item) => Text(item.name()),
+      subtitle: (MemoryItem item) => const Text(''),
+      onTap: (MemoryItem item) => context
+          .read<UiBloc>()
+          .add(ChangeView(Counterparty.ctx, entity: item)),
     );
   }
 }

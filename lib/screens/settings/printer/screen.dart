@@ -88,8 +88,9 @@ class UomListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: Printer.ctx,
       schema: Printer.schema,
-      title: (MemoryItem item) => item.name(),
-      subtitle: (MemoryItem item) => '${item.json['ip']}:${item.json['port']}',
+      title: (MemoryItem item) => Text(item.name()),
+      subtitle: (MemoryItem item) =>
+          Text('${item.json['ip']}:${item.json['port']}'),
       onTap: (MemoryItem item) =>
           context.read<UiBloc>().add(ChangeView(Printer.ctx, entity: item)),
     );

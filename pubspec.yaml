@@ -100,6 +100,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_slidable: ^2.0.0
+  modal_bottom_sheet: ^3.0.0-pre
 
 dev_dependencies:
   flutter_test:

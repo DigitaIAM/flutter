@@ -86,8 +86,8 @@ class UomListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: Uom.ctx,
       schema: Uom.schema,
-      title: (MemoryItem item) => item.name(),
-      subtitle: (MemoryItem item) => '',
+      title: (MemoryItem item) => Text(item.name()),
+      subtitle: (MemoryItem item) => const Text(''),
       onTap: (MemoryItem item) =>
           context.read<UiBloc>().add(ChangeView(Uom.ctx, entity: item)),
     );

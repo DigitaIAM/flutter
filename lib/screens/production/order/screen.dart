@@ -87,7 +87,8 @@ class ProductionOrderScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx,
+              action: 'edit', entity: MemoryItem.create()));
         },
         tooltip: AppLocalizations.of(context).translate("new production order"),
         child: Icon(
@@ -108,9 +109,13 @@ class ProductionOrdersListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: ProductionOrder.ctx,
       schema: ProductionOrder.schema,
-      title: (MemoryItem item) => '${item.json['area']?.name()}\n${item.json['product']?.name()}',
-      subtitle: (MemoryItem item) => 'план: ${item.json['planned']} шт\nвыработка: ${item.json['produced~']}',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, entity: item)),
+      title: (MemoryItem item) =>
+          Text('${item.json['area']?.name()}\n${item.json['product']?.name()}'),
+      subtitle: (MemoryItem item) => Text(
+          'план: ${item.json['planned']} шт\nвыработка: ${item.json['produced~']}'),
+      onTap: (MemoryItem item) => context
+          .read<UiBloc>()
+          .add(ChangeView(ProductionOrder.ctx, entity: item)),
     );
   }
 }

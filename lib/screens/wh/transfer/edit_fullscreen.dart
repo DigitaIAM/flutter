@@ -1,9 +1,11 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:intl/intl.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
@@ -16,6 +18,7 @@ import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
+import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
@@ -29,6 +32,7 @@ import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_edit.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
+import 'package:nae/widgets/swipe_action.dart';
 
 import 'screen.dart';
 
@@ -612,14 +616,112 @@ class WHTransferGoods extends StatelessWidget {
         ctx: ctx,
         filter: filter,
         schema: schema,
-        title: (MemoryItem item) => fGoods.resolve(item.json)?.name() ?? '',
-        subtitle: (MemoryItem item) =>
-            '${fQty.resolve(item.json) ?? ' '} ${fUomAtQty.resolve(item.json)?.name() ?? ' '}',
+        title: (MemoryItem item) {
+          final text = fGoods.resolve(item.json)?.name() ?? '';
+
+          TextStyle? style;
+
+          if (item.json['_status'] == 'deleted') {
+            style = const TextStyle(
+              decoration: TextDecoration.lineThrough,
+            );
+          }
+          return Text(text, style: style);
+        },
+        subtitle: (MemoryItem item) {
+          final text =
+              '${fQty.resolve(item.json) ?? ' '} ${fUomAtQty.resolve(item.json)?.name() ?? ' '}';
+
+          TextStyle? style;
+
+          if (item.json['_status'] == 'deleted') {
+            style = const TextStyle(
+              decoration: TextDecoration.lineThrough,
+            );
+          }
+          return Text(text, style: style);
+        },
         onTap: (MemoryItem item) => context
             .read<UiBloc>()
             .add(ChangeView(WHTransfer.ctx, entity: item)),
+        actions: [
+          ItemAction(
+            label: 'delete',
+            icon: Icons.delete_outline,
+            onPressed: (context, item) => deleteItem(context, item),
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.red,
+          ),
+          ItemAction(
+            label: 'print',
+            icon: Icons.print_outlined,
+            onPressed: (context, item) => drawPrinterList(context, item),
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.blue,
+          ),
+        ],
       ),
     );
+  }
+
+  void deleteItem(BuildContext context, MemoryItem item) async {
+    const ctx = ['warehouse', 'transfer'];
+    final status = item.json['_status'] == 'deleted' ? 'restored' : 'deleted';
+    final Map<String, dynamic> data = {'_status': status};
+    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, item.id, data));
+  }
+
+  Future drawPrinterList(BuildContext context, MemoryItem item) async {
+    final list = await getPrinters(item);
+
+    return showMaterialModalBottomSheet(
+      context: context,
+      builder: (context) => SingleChildScrollView(
+        controller: ModalScrollController.of(context),
+        child: list,
+      ),
+    );
+  }
+
+  Future<Widget> getPrinters(MemoryItem item) async {
+    final response = await Api.feathers().find(serviceName: "memories", query: {
+      "oid": Api.instance.oid,
+      "ctx": const ['printer'],
+    });
+
+    print("printers ${response.runtimeType} ${response}");
+
+    final printers = response['data'];
+
+    final children = <Widget>[];
+
+    children.add(Text("Choose the printer"));
+
+    if (printers is List) {
+      for (var printer in printers) {
+        final ip = (printer['ip'] ?? '').toString();
+        final port = int.parse(printer['port'] ?? '0');
+        children.add(ListTile(
+            title: Text(printer['name'] ?? ''),
+            onTap: () => printPreparation(ip, port, item)));
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: children,
+    );
+  }
+
+  void printPreparation(String ip, int port, MemoryItem item) async {
+    print("printPreparation: ${item.json}");
+
+    final _doc = await doc.enrich(WHTransfer.schema);
+
+    final result = await Labels.connect(ip, port, (printer) async {
+      return await printing(printer, _doc, item, 1, (newStatus) => {});
+    });
   }
 }
 
@@ -845,10 +947,10 @@ class _WHTransferGoodsRegistrationState
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 FloatingActionButton(
-                  heroTag: 'product_fab',
+                  heroTag: 'product_register',
                   backgroundColor: theme.primaryColorDark,
                   onPressed: () {
-                    status == 'register' ? registerAndPrint(false) : null;
+                    status == 'register' ? registerPreparation() : null;
                   },
                   tooltip: localization.translate('register'.toString()),
                   child: Icon(
@@ -857,10 +959,10 @@ class _WHTransferGoodsRegistrationState
                   ),
                 ),
                 FloatingActionButton(
-                  heroTag: 'product_fab',
+                  heroTag: 'product_register_and_print',
                   backgroundColor: theme.primaryColorDark,
                   onPressed: () {
-                    status == 'register' ? registerAndPrint(true) : null;
+                    status == 'register' ? registerAndPrintPreparation() : null;
                   },
                   tooltip: localization.translate('and print'.toString()),
                   child: Icon(
@@ -924,139 +1026,72 @@ class _WHTransferGoodsRegistrationState
     return children;
   }
 
-  void registerAndPrint(bool isPrinting) async {
+  void registerAndPrintPreparation() {
+    final state = _formKey.currentState;
+    if (state == null) {
+      // TODO raise error instead
+      return;
+    }
+    if (state.saveAndValidate()) {
+      final data = state.value;
+
+      // TODO
+      final ip = "";
+      final port = 0;
+
+      registerAndPrint(ip, port, data);
+    }
+  }
+
+  void registerPreparation() async {
+    final state = _formKey.currentState;
+    if (state == null) {
+      // TODO raise error instead
+      return;
+    }
+    if (state.saveAndValidate()) {
+      final data = state.value;
+
+      // TODO understand is it required
+      final doc = await widget.doc.enrich(WHTransfer.schema);
+
+      await register(
+          doc, data, numberOfQuantities, (newStatus) => status = newStatus);
+    }
+  }
+
+  void registerAndPrint(String ip, int port, Map<String, dynamic> data,
+      {MemoryItem? item}) async {
     setState(() => status = "connecting");
+
     try {
-      print("pressed:");
-
-      final state = _formKey.currentState;
-      if (state != null && state.saveAndValidate()) {
-        final data = _formKey.currentState?.value;
-        if (data == null) {
-          return;
-        }
-
-        print("data $data");
-
+      final result = await Labels.connect(ip, port, (printer) async {
+        // TODO understand is it required
         final doc = await widget.doc.enrich(WHTransfer.schema);
+        final record = item ??
+            await register(doc, data, numberOfQuantities,
+                (newStatus) => status = newStatus);
 
-        print("doc in transfer documents: ${doc.json}");
+        print("registerAndPrint record: $record");
 
-        final goods = data['goods'] as MemoryItem;
-        final baseUomId = goods.json['uom'] as String;
-
-        final date = doc.json['date']!;
-
-        final from = doc.json['from'].json;
-        final into = doc.json['into'].json;
-
-        final quantity = {}; // 'number': number, 'uom': uom.id
-        var currentQty = quantity;
-        for (var index = 0; index < numberOfQuantities; index++) {
-          final uom = data['uom_$index'] as MemoryItem?;
-          if (uom == null) {
-            // TODO report error? or raised by saveAndValidate?
-            return;
-          }
-
-          final qty = data['qty_$index'];
-
-          if (index > 0) {
-            final newQty = {
-              'number': qty,
-              'uom': uom.id,
-              'in': currentQty['uom']
-            };
-            currentQty['uom'] = newQty;
-            currentQty = newQty;
-          } else {
-            currentQty['number'] = qty;
-            currentQty['uom'] = uom.id;
-          }
-
-          if (baseUomId != null && baseUomId == data['uom_$index']?.id) {
-            break;
-          }
+        if (record.isEmpty || record.isNew) {
+          return PrintResult.registrationFailed;
         }
 
-        final record =
-            await Api.feathers().create(serviceName: 'memories', data: {
-          'document': doc.id,
-          'goods': goods.id,
-          'storage_from': from,
-          'storage_into': into,
-          'qty': quantity,
-        }, params: {
-          'oid': Api.instance.oid,
-          'ctx': ['warehouse', 'transfer']
-        });
+        return await printing(printer, doc, record, numberOfQuantities,
+            (newStatus) => status = newStatus);
+      });
 
-        debugPrint("record: $record");
-
-        if (isPrinting) {
-          final goodsName = goods.name();
-          final goodsUuid = goods.json['_uuid'] ?? '';
-          final goodsId = goods.id;
-
-          final printer = data['printer'] ?? '';
-          final ip = printer is MemoryItem ? (printer.json['ip'] ?? '') : '';
-          final port =
-              printer is MemoryItem ? int.parse(printer.json['port']) : 0;
-
-          debugPrint("printer $ip $port");
-
-          final result = await Labels.connect(ip, port, (printer) async {
-            setState(() => status = "registering");
-
-            setState(() => status = "printing");
-
-            final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
-
-            final batchBarcode = record['batch']['barcode'] ?? '';
-            final batchId = record['batch']['_uuid'] ?? '';
-            final batchDate = record['batch']['date'] ?? '';
-
-            var qtyUom = '';
-
-            for (var index = 0; index < numberOfQuantities; index++) {
-              final uom = data['uom_$index'] ?? '';
-              final uomName = uom is MemoryItem ? uom.name() : uom;
-              final qty = data['qty_$index'] ?? '';
-
-              qtyUom = '$qtyUom$qty $uomName\n';
-            }
-
-            // debugPrint('QTYUOM: $qtyUom');
-
-            final Map<String, String> labelData = {
-              "материал": goodsName,
-              "дата": dd,
-              "количество": qtyUom,
-              "line1": "",
-              "поставщик": from['name'],
-            };
-
-            // TODO: place length check and line break from lines_with_barcode to this function
-            Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
-                batchBarcode, batchId, batchDate, labelData);
-
-            return Future<PrintResult>.value(PrintResult.success);
-          });
-
-          if (result != PrintResult.success) {
-            showToast(result.msg,
-                // context: context,
-                axis: Axis.horizontal,
-                alignment: Alignment.center,
-                position: StyledToastPosition.bottom);
-          }
-        }
-      } else {
-        debugPrint(_formKey.currentState?.value.toString());
-        debugPrint('validation failed');
+      if (result != PrintResult.success) {
+        showToast(result.msg,
+            // context: context,
+            axis: Axis.horizontal,
+            alignment: Alignment.center,
+            position: StyledToastPosition.bottom);
       }
-    } catch (e, stacktrace) {
-      print(stacktrace);
+    } catch (e) {
+      // , stacktrace
+      // print(stacktrace);
       showToast(e.toString(),
           // context: context,
           axis: Axis.horizontal,

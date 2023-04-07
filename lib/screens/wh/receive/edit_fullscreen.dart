@@ -539,8 +539,8 @@ class WHReceiveOverview extends StatelessWidget {
             filter: filter,
             schema: schema,
             title: (MemoryItem item) => fGoods.resolve(item.json)?.name() ?? '',
-            subtitle: (MemoryItem item) =>
-                '${fQty.resolve(item.json) ?? ' '} ${fUomAtQty.resolve(item.json)?.name() ?? ' '}',
+            subtitle: (MemoryItem item) => Text(
+                '${fQty.resolve(item.json) ?? ' '} ${fUomAtQty.resolve(item.json)?.name() ?? ' '}'),
             onTap: (MemoryItem item) => context
                 .read<UiBloc>()
                 .add(ChangeView(WHReceive.ctx, entity: item)),

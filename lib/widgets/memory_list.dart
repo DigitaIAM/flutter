@@ -65,9 +65,11 @@ class MemoryList extends StatefulWidget {
   final bool groupByDate;
   final bool sortByName;
 
-  final String Function(MemoryItem) title;
-  final String Function(MemoryItem) subtitle;
+  final Widget Function(MemoryItem) title;
+  final Widget Function(MemoryItem) subtitle;
   final Function(MemoryItem) onTap;
+
+  final List<ItemAction> actions;
 
   const MemoryList({
     super.key,
@@ -80,6 +82,7 @@ class MemoryList extends StatefulWidget {
     this.sortByName = false,
     this.filter = const {},
     this.service = 'memories',
+    this.actions = const [],
   });
 
   @override
@@ -293,31 +296,35 @@ class _MemoryListState extends State<MemoryList> {
         ),
       ),
       itemBuilder: (context, item) {
+        if (widget.actions.isEmpty) {
+          return card(item);
+        }
         return SwipeActionWidget(
-          onDismissed: (action) => onDismissed(context, action),
+          item: item,
+          actions: widget.actions,
           // key: key,
-          child: Card(
-            elevation: 2.0,
-            margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
-            child: ListTile(
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-              // leading: const Icon(Icons.account_circle),
-              title: Text(widget.title(item)),
-              subtitle: Text(widget.subtitle(item)),
-              trailing: const Icon(Icons.arrow_forward),
-              onTap: () {
-                widget.onTap(item);
-              },
-            ),
-          ),
+          child: card(item),
         );
       },
     );
   }
 
-  void onDismissed(BuildContext context, SwipeAction action) {
-    print("onDismissed: $action");
+  Widget card(MemoryItem item) {
+    return Card(
+      elevation: 2.0,
+      margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+      child: ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+        // leading: const Icon(Icons.account_circle),
+        title: widget.title(item),
+        subtitle: widget.subtitle(item),
+        trailing: const Icon(Icons.arrow_forward),
+        onTap: () {
+          widget.onTap(item);
+        },
+      ),
+    );
   }
 
   PlutoGrid buildPlutoGrid(BuildContext context, RequestState state) {

@@ -73,9 +73,10 @@ class GoodsListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: Goods.ctx,
       schema: Goods.schema,
-      title: (MemoryItem item) => item.name(),
-      subtitle: (MemoryItem item) => item.balance(),
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(Goods.ctx, entity: item)),
+      title: (MemoryItem item) => Text(item.name()),
+      subtitle: (MemoryItem item) => Text(item.balance()),
+      onTap: (MemoryItem item) =>
+          context.read<UiBloc>().add(ChangeView(Goods.ctx, entity: item)),
     );
   }
 }

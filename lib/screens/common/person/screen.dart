@@ -71,9 +71,10 @@ class PersonListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: Person.ctx,
       schema: Person.schema,
-      title: (MemoryItem item) => item.name(),
-      subtitle: (MemoryItem item) => '',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(Person.ctx, entity: item)),
+      title: (MemoryItem item) => Text(item.name()),
+      subtitle: (MemoryItem item) => const Text(''),
+      onTap: (MemoryItem item) =>
+          context.read<UiBloc>().add(ChangeView(Person.ctx, entity: item)),
     );
   }
 }
