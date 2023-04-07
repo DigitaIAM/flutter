@@ -1,18 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:nae/models/memory/item.dart';
 
-enum SwipeAction { print, delete }
+class ItemAction {
+  final String? label;
+  final IconData icon;
+  final Color? foregroundColor;
+  final Color? backgroundColor;
+
+  final void Function(BuildContext context, MemoryItem item) onPressed;
+
+  ItemAction({
+    required this.onPressed,
+    this.label,
+    required this.icon,
+    this.foregroundColor,
+    this.backgroundColor,
+  });
+}
 
 class SwipeActionWidget<T> extends StatelessWidget {
+  final MemoryItem item;
   final Widget child;
-  final Function(SwipeAction action) onDismissed;
+  final List<ItemAction> actions;
 
   const SwipeActionWidget({
     super.key,
+    required this.item,
     required this.child,
-    required this.onDismissed,
-    //   Key? key,
-    // }) : super(key: key);
+    required this.actions,
   });
 
   @override
@@ -20,19 +36,18 @@ class SwipeActionWidget<T> extends StatelessWidget {
         key: const ValueKey(0),
         startActionPane: ActionPane(
           motion: const ScrollMotion(),
+          // dismissible: DismissiblePane(
+          //     onDismissed: () => this.onDismissed(SwipeAction.print)),
           children: [
-            SlidableAction(
-                onPressed: onDismissed(SwipeAction.delete),
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                icon: Icons.delete,
-                label: 'delete'),
-            SlidableAction(
-                onPressed: onDismissed(SwipeAction.print),
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                icon: Icons.print,
-                label: 'print'),
+            ...actions.map((action) {
+              return SlidableAction(
+                onPressed: (context) => action.onPressed(context, item),
+                foregroundColor: action.foregroundColor ?? Colors.white,
+                backgroundColor: action.backgroundColor ?? Colors.blue,
+                icon: action.icon,
+                label: action.label,
+              );
+            })
           ],
         ),
         child: child,

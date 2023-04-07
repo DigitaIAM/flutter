@@ -127,6 +127,7 @@ class PrintResult {
   static const ticketEmpty = PrintResult._internal(4);
   static const printInProgress = PrintResult._internal(5);
   static const scanInProgress = PrintResult._internal(6);
+  static const registrationFailed = PrintResult._internal(7);
 
   String get msg {
     if (value == PrintResult.success.value) {
@@ -141,6 +142,8 @@ class PrintResult {
       return 'Error. Another print in progress';
     } else if (value == PrintResult.scanInProgress.value) {
       return 'Error. Printer scanning in progress';
+    } else if (value == PrintResult.registrationFailed.value) {
+      return 'Error. Data registration failed';
     } else {
       return 'Unknown error';
     }

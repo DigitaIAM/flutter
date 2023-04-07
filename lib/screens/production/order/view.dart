@@ -398,8 +398,8 @@ class ProductionOrderProducedView extends StatelessWidget {
       child: MemoryList(
         ctx: ctx,
         schema: schema,
-        title: (MemoryItem item) => item.json['qty'],
-        subtitle: (MemoryItem item) => item.id.split('T').last,
+        title: (MemoryItem item) => Text(item.json['qty']),
+        subtitle: (MemoryItem item) => Text(item.id.split('T').last),
         onTap: (MemoryItem item) => {},
       ),
     );

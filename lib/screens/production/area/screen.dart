@@ -71,9 +71,11 @@ class ProductionAreaListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: ProductionArea.ctx,
       schema: ProductionArea.schema,
-      title: (MemoryItem item) => item.name(),
-      subtitle: (MemoryItem item) => '',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(ProductionArea.ctx, entity: item)),
+      title: (MemoryItem item) => Text(item.name()),
+      subtitle: (MemoryItem item) => const Text(''),
+      onTap: (MemoryItem item) => context
+          .read<UiBloc>()
+          .add(ChangeView(ProductionArea.ctx, entity: item)),
     );
   }
 }
