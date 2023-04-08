@@ -595,7 +595,7 @@ class WHTransferGoods extends StatelessWidget {
     };
     final schema = <Field>[
       fGoods.copyWith(width: 3.0),
-      fUomAtQty.copyWith(width: 0.5, editable: false),
+      // fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
     ];
 
@@ -629,8 +629,23 @@ class WHTransferGoods extends StatelessWidget {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-          final text =
-              '${fQty.resolve(item.json) ?? ' '} ${fUomAtQty.resolve(item.json)?.name() ?? ' '}';
+          print("item.json ${item.json}");
+
+          var text = '';
+
+          var qty = item.json['qty'] ?? '';
+
+          while (qty is Map) {
+            final uom = qty['uom'];
+            if (uom is Map) {
+              if (uom['in'] != null) {
+                text = '$text${qty['number']} ${uom['in']['name']} по ';
+              } else {
+                text = '$text${qty['number']} ${uom['name']} ';
+              }
+            }
+            qty = qty['uom'];
+          }
 
           TextStyle? style;
 
@@ -720,7 +735,7 @@ class WHTransferGoods extends StatelessWidget {
     final _doc = await doc.enrich(WHTransfer.schema);
 
     final result = await Labels.connect(ip, port, (printer) async {
-      return await printing(printer, _doc, item, 1, (newStatus) => {});
+      return await printing(printer, _doc, item, (newStatus) => {});
     });
   }
 }
@@ -1035,9 +1050,15 @@ class _WHTransferGoodsRegistrationState
     if (state.saveAndValidate()) {
       final data = state.value;
 
-      // TODO
-      final ip = "";
-      final port = 0;
+      // print("registerAndPrintPreparation $data");
+
+      final printer = data['printer'];
+      if (printer == null) {
+        throw const FormatException('select printer');
+      }
+
+      final ip = printer.json['ip'];
+      final port = int.parse(printer.json['port']);
 
       registerAndPrint(ip, port, data);
     }
@@ -1078,8 +1099,8 @@ class _WHTransferGoodsRegistrationState
           return PrintResult.registrationFailed;
         }
 
-        return await printing(printer, doc, record, numberOfQuantities,
-            (newStatus) => status = newStatus);
+        return await printing(
+            printer, doc, record, (newStatus) => status = newStatus);
       });
 
       if (result != PrintResult.success) {
