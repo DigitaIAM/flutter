@@ -34,6 +34,7 @@ class _WHTransferGoodsRegistrationState
 
   String status = "register";
   int numberOfQuantities = 1;
+  String registered = '';
 
   @override
   Widget build(BuildContext context) {
@@ -125,29 +126,36 @@ class _WHTransferGoodsRegistrationState
                 FloatingActionButton(
                   heroTag: 'product_register',
                   backgroundColor: theme.primaryColorDark,
-                  onPressed: () {
-                    status == 'register' ? registerPreparation() : null;
-                  },
+                  onPressed: status == 'register' ? registerPreparation : null,
                   tooltip: localization.translate('register'.toString()),
-                  child: Icon(
-                    Icons.add,
-                    color: theme.primaryColorLight,
-                  ),
+                  child: registered == 'register'
+                      ? const Icon(Icons.done)
+                      : Icon(
+                          Icons.add,
+                          color: theme.primaryColorLight,
+                        ),
                 ),
                 FloatingActionButton(
                   heroTag: 'product_register_and_print',
                   backgroundColor: theme.primaryColorDark,
-                  onPressed: () {
-                    status == 'register' ? registerAndPrintPreparation() : null;
-                  },
+                  onPressed:
+                      status == 'register' ? registerAndPrintPreparation : null,
                   tooltip: localization.translate('and print'.toString()),
-                  child: Icon(
-                    Icons.print,
-                    color: theme.primaryColorLight,
-                  ),
+                  child: registered == 'registerAndPrint'
+                      ? const Icon(Icons.done)
+                      : Icon(
+                          Icons.print,
+                          color: theme.primaryColorLight,
+                        ),
                 ),
               ],
             ),
+            if (status != 'register')
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Text(status),
+                  ]),
           ]))
     ];
     return ScrollableListView(
@@ -202,7 +210,24 @@ class _WHTransferGoodsRegistrationState
     return children;
   }
 
-  void registerAndPrintPreparation() {
+  void resetDone() {
+    setState(() => {registered = ''});
+  }
+
+  void done(String type) {
+    setState(() => {registered = type});
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() => {registered = ''});
+    });
+  }
+
+  void setStatus(String newStatus) {
+    setState(() => status = newStatus);
+  }
+
+  void registerAndPrintPreparation() async {
+    resetDone();
+
     final state = _formKey.currentState;
     if (state == null) {
       // TODO raise error instead
@@ -221,11 +246,13 @@ class _WHTransferGoodsRegistrationState
       final ip = printer.json['ip'];
       final port = int.parse(printer.json['port']);
 
-      registerAndPrint(ip, port, data);
+      await registerAndPrint(ip, port, data);
     }
   }
 
   void registerPreparation() async {
+    resetDone();
+
     final state = _formKey.currentState;
     if (state == null) {
       // TODO raise error instead
@@ -237,22 +264,36 @@ class _WHTransferGoodsRegistrationState
       // TODO understand is it required
       final doc = await widget.doc.enrich(WHTransfer.schema);
 
-      await register(
-          doc, data, numberOfQuantities, (newStatus) => status = newStatus);
+      try {
+        final result = await register(doc, data, numberOfQuantities, setStatus);
+
+        if (!(result.isNew || result.isEmpty)) {
+          done('register');
+        }
+      } finally {
+        setStatus("register");
+      }
     }
   }
 
-  void registerAndPrint(String ip, int port, Map<String, dynamic> data,
+  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data,
       {MemoryItem? item}) async {
-    setState(() => status = "connecting");
+    resetDone();
+
+    setStatus("connecting");
 
     try {
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(WHTransfer.schema);
-        final record = item ??
-            await register(doc, data, numberOfQuantities,
-                (newStatus) => status = newStatus);
+        final record =
+            item ?? await register(doc, data, numberOfQuantities, setStatus);
+
+        if (item == null) {
+          if (!(record.isEmpty || record.isNew)) {
+            done('registerAndPrint');
+          }
+        }
 
         print("registerAndPrint record: $record");
 
@@ -260,8 +301,7 @@ class _WHTransferGoodsRegistrationState
           return PrintResult.registrationFailed;
         }
 
-        return await printing(
-            printer, doc, record, (newStatus) => status = newStatus);
+        return await printing(printer, doc, record, setStatus);
       });
 
       if (result != PrintResult.success) {
@@ -280,9 +320,7 @@ class _WHTransferGoodsRegistrationState
           alignment: Alignment.center,
           position: StyledToastPosition.bottom);
     } finally {
-      setState(() {
-        status = "register";
-      });
+      setStatus("register");
     }
   }
 }
