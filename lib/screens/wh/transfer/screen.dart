@@ -12,7 +12,7 @@ import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_list.dart';
 
-import 'edit_fullscreen.dart';
+import 'edit_fullscreen/edit_fullscreen.dart';
 
 class WHTransfer extends Entity {
   static const List<String> ctx = ['warehouse', 'transfer', 'document'];
