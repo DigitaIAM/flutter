@@ -16,8 +16,8 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data,
     final goods = data['goods'] as MemoryItem;
     final baseUomId = goods.json['uom'] as String;
 
-    final from = doc.json['from'].json;
-    final into = doc.json['into'].json;
+    final from = doc.json['from'] as MemoryItem;
+    final into = doc.json['into'] as MemoryItem;
 
     final quantity = {}; // 'number': number, 'uom': uom.id
     var currentQty = quantity;
@@ -48,8 +48,8 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data,
         await Api.feathers().create(serviceName: 'memories', data: {
       'document': doc.id,
       'goods': goods.id,
-      'storage_from': from,
-      'storage_into': into,
+      'storage_from': from.id,
+      'storage_into': into.id,
       'qty': quantity,
     }, params: {
       'oid': Api.instance.oid,
@@ -66,15 +66,12 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data,
   }
 }
 
-Future<PrintResult> printing(
-    NetworkPrinter printer,
-    MemoryItem doc,
-    MemoryItem record,
-    int numberOfQuantities,
-    void Function(String) onStatusChange) async {
+Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
+    MemoryItem record, void Function(String) onStatusChange) async {
   onStatusChange("printing");
 
-  print("printing $record");
+  print("printing doc $doc");
+  print("printing record $record");
 
   final goods = record.json['goods'] as MemoryItem;
   final goodsName = goods.name();
@@ -92,21 +89,20 @@ Future<PrintResult> printing(
 
   var qtyUom = '';
 
-  for (var index = 0; index < numberOfQuantities; index++) {
-    final uom = record['uom_$index'] ?? '';
-    final uomName = uom is MemoryItem ? uom.name() : uom;
-    final qty = record['qty_$index'] ?? '';
-
-    qtyUom = '$qtyUom$qty $uomName\n';
-  }
   // TODO fix code above like this: (structure of qty is different now)
-  // for (var index = 0; index < numberOfQuantities; index++) {
-  //   final qty = record.json['qty']['number'];
-  //   final uom = record.json['uom'];
-  //   final uomName = uom is MemoryItem ? uom.json['in'] : uom;
-  //
-  //   qtyUom = '$qtyUom$qty $uomName\n';
-  // }
+  var qty = record.json['qty'] ?? '';
+
+  while (qty is Map) {
+    final uom = qty['uom'];
+    if (uom is Map) {
+      if (uom['in'] != null) {
+        qtyUom = '$qtyUom${qty['number']} ${uom['in']['name']}\nпо ';
+      } else {
+        qtyUom = '$qtyUom${qty['number']} ${uom['name']} ';
+      }
+    }
+    qty = qty['uom'];
+  }
 
   print('QTYUOM: $qtyUom');
 
