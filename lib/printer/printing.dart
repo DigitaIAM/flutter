@@ -73,13 +73,15 @@ Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
   print("printing doc $doc");
   print("printing record $record");
 
-  final goods = record.json['goods'] as MemoryItem;
-  final goodsName = goods.name();
-  final goodsUuid = goods.json['_uuid'] ?? '';
-  final goodsId = goods.id;
+  final goods = record.json['goods'];
+  final goodsName = goods is MemoryItem ? goods.name() : (goods['name'] ?? '');
+  final goodsUuid = goods is MemoryItem
+      ? (goods.json['_uuid'] ?? '')
+      : (goods['_uuid'] ?? '');
+  final goodsId = goods is MemoryItem ? goods.id : (goods['_id'] ?? '');
 
   final date = doc.json['date']!;
-  final from = doc.json['from'].json;
+  final from = doc.json['from'] as MemoryItem;
 
   final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
 
@@ -89,7 +91,6 @@ Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
 
   var qtyUom = '';
 
-  // TODO fix code above like this: (structure of qty is different now)
   var qty = record.json['qty'] ?? '';
 
   while (qty is Map) {
@@ -111,7 +112,7 @@ Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
     "дата": dd,
     "количество": qtyUom,
     "line1": "",
-    "поставщик": from['name'],
+    "поставщик": from.name(),
   };
 
   // TODO: place length check and line break from lines_with_barcode to this function
