@@ -71,7 +71,7 @@ class WHTransferGoods extends StatelessWidget {
           while (qty is Map) {
             final uom = qty['uom'];
             if (uom is Map) {
-              if (uom['in'] != null) {
+              if (uom['in'] is Map) {
                 text = '$text${qty['number']} ${uom['in']['name']} по ';
               } else {
                 text = '$text${qty['number']} ${uom['name']} ';
