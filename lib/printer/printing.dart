@@ -3,21 +3,33 @@ import 'package:nae/api.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
+import 'package:nae/utils/date.dart';
 
-Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data,
-    int numberOfQuantities, void Function(String) onStatusChange) async {
+Future<MemoryItem> register(
+    MemoryItem doc,
+    Map<String, dynamic> data,
+    int numberOfQuantities,
+    List ctx,
+    void Function(String) onStatusChange) async {
   onStatusChange("registering");
 
   if (!data.isEmpty) {
     print("data $data");
 
-    print("doc in transfer documents: ${doc.json}");
+    print("doc in fn register: ${doc}");
 
     final goods = data['goods'] as MemoryItem;
     final baseUomId = goods.json['uom'] as String;
 
-    final from = doc.json['from'] as MemoryItem;
-    final into = doc.json['into'] as MemoryItem;
+    final from = ctx == const ['warehouse', 'transfer']
+        ? doc.json['from'] as MemoryItem
+        : doc.json['counterparty'] as MemoryItem;
+
+    final into = ctx == const ['warehouse', 'transfer']
+        ? doc.json['into'] as MemoryItem
+        : doc.json['storage'] as MemoryItem;
+
+    // final into = doc.json['into'] as MemoryItem;
 
     final quantity = {}; // 'number': number, 'uom': uom.id
     var currentQty = quantity;
@@ -53,11 +65,11 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data,
       'qty': quantity,
     }, params: {
       'oid': Api.instance.oid,
-      'ctx': ['warehouse', 'transfer']
+      'ctx': ctx
     });
 
     final result = MemoryItem.from(response);
-    print("result: $result");
+    print("register result: $result");
 
     return result;
   } else {
@@ -81,9 +93,11 @@ Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
   final goodsId = goods is MemoryItem ? goods.id : (goods['_id'] ?? '');
 
   final date = doc.json['date']!;
-  final from = doc.json['from'] as MemoryItem;
+  final from = doc.json['from'] == null
+      ? doc.json['counterparty'] as MemoryItem
+      : doc.json['from'] as MemoryItem;
 
-  final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
+  final dd = DT.format(date);
 
   final batchBarcode = record.json['batch']['barcode'] ?? '';
   final batchId = record.json['batch']['_uuid'] ?? '';

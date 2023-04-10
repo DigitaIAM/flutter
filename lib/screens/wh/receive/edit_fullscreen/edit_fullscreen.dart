@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:intl/intl.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
@@ -14,9 +12,11 @@ import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
-import 'package:nae/printer/labels.dart';
-import 'package:nae/printer/network_printer.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/receive/edit_fullscreen/document_creation.dart';
+import 'package:nae/screens/wh/receive/edit_fullscreen/goods.dart';
+import 'package:nae/screens/wh/receive/edit_fullscreen/goods_registration.dart';
+import 'package:nae/screens/wh/receive/edit_fullscreen/overview.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
@@ -24,14 +24,11 @@ import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/autocomplete.dart';
 import 'package:nae/widgets/entity_screens.dart';
-import 'package:nae/widgets/list_filter.dart';
-import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_edit.dart';
-import 'package:nae/widgets/scaffold_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
-import 'screen.dart';
+import '../screen.dart';
 
 class WHReceiveEditFS extends EntityHolder {
   const WHReceiveEditFS({super.key, required super.entity})
@@ -55,14 +52,15 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS>
 
     _controller = TabController(
       vsync: this,
-      length: 2,
-      initialIndex: 0,
+      length: widget.entity.isNew ? 1 : 3,
+      initialIndex: widget.entity.isNew ? 0 : 1,
     );
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
+    _controller.dispose();
 
     super.dispose();
   }
@@ -94,7 +92,24 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS>
     final localization = AppLocalizations.of(context);
 
     if (widget.entity.isNew) {
-      return Container();
+      return ScaffoldView(
+        appBarBottom: TabBar(
+          controller: _controller,
+          isScrollable: true,
+          tabs: [
+            Tab(text: localization.translate("new document")),
+          ],
+        ),
+        body: Builder(builder: (context) {
+          return Column(children: <Widget>[
+            Expanded(
+              child: TabBarView(controller: _controller, children: <Widget>[
+                WHReceiveDocumentCreation(doc: widget.entity)
+              ]),
+            ),
+          ]);
+        }),
+      );
     } else {
       routerBack(BuildContext context) {
         context.read<UiBloc>().add(ChangeView(WHReceive.ctx));
@@ -162,20 +177,23 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS>
           );
         } else {
           return ScaffoldView(
+            title: localization.translate("warehouse receive"),
             appBarBottom: TabBar(
               controller: _controller,
               isScrollable: true,
               tabs: [
-                Tab(text: localization.translate("overview")),
                 Tab(text: localization.translate("goods")),
+                Tab(text: localization.translate("overview")),
+                Tab(text: localization.translate("registration")),
               ],
             ),
             body: Builder(builder: (context) {
               return Column(children: <Widget>[
                 Expanded(
                   child: TabBarView(controller: _controller, children: <Widget>[
+                    WHReceiveGoods(doc: widget.entity),
                     WHReceiveOverview(doc: widget.entity),
-                    WHReceiveGoods(doc: widget.entity)
+                    WHReceiveGoodsRegistration(doc: widget.entity)
                   ]),
                 ),
               ]);
@@ -493,265 +511,5 @@ class TableHeader extends StatelessWidget {
         style: theme.dataTableTheme.headingTextStyle,
       ),
     );
-  }
-}
-
-class WHReceiveOverview extends StatelessWidget {
-  final MemoryItem doc;
-
-  const WHReceiveOverview({super.key, required this.doc});
-
-  @override
-  Widget build(BuildContext context) {
-    print("context in WHReceiveOverview: $context");
-
-    final ctx = const ['warehouse', 'receive'];
-    final filter = {
-      'document': doc.id,
-    };
-    final schema = <Field>[
-      fGoods.copyWith(width: 3.0),
-      fUomAtQty.copyWith(width: 0.5, editable: false),
-      fQty.copyWith(width: 1.0),
-    ];
-
-    return BlocProvider(
-      create: (context) {
-        final bloc = MemoryBloc(schema: schema, reverse: true);
-        bloc.add(MemoryFetch(
-          'memories',
-          ctx,
-          filter: filter,
-          reverse: true,
-          loadAll: true,
-        ));
-
-        return bloc;
-      },
-      child: ScaffoldList(
-          entityType: const ['warehouse', 'receive'],
-          appBarTitle: ListFilter(
-            filter: null, //state.WHReceiveListState.filter,
-            onFilterChanged: (value) {},
-          ),
-          body: MemoryList(
-            ctx: ctx,
-            filter: filter,
-            schema: schema,
-            title: (MemoryItem item) => fGoods.resolve(item.json)?.name() ?? '',
-            subtitle: (MemoryItem item) => Text(
-                '${fQty.resolve(item.json) ?? ' '} ${fUomAtQty.resolve(item.json)?.name() ?? ' '}'),
-            onTap: (MemoryItem item) => context
-                .read<UiBloc>()
-                .add(ChangeView(WHReceive.ctx, entity: item)),
-          )),
-    );
-  }
-}
-
-class WHReceiveGoods extends StatefulWidget {
-  final MemoryItem doc;
-
-  const WHReceiveGoods({super.key, required this.doc});
-
-  @override
-  State<StatefulWidget> createState() => _WHReceiveGoodsState();
-}
-
-class _WHReceiveGoodsState extends State<WHReceiveGoods> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveGoodsEdit');
-  final FocusScopeNode _focusNode = FocusScopeNode();
-
-  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
-
-  String status = "register";
-
-  @override
-  Widget build(BuildContext context) {
-    final localization = AppLocalizations.of(context);
-    final widgets = <Widget>[
-      AppForm(
-          entity: details,
-          formKey: _formKey,
-          focusNode: _focusNode,
-          onChanged: () {
-            _formKey.currentState!.save();
-            debugPrint("onChanged: ${_formKey.currentState!.value}");
-          },
-          child: ScrollableListView(children: <Widget>[
-            FormCard(isLast: true, children: <Widget>[
-              DecoratedFormPickerField(
-                ctx: const ['printer'],
-                name: 'printer',
-                label: localization.translate("printer"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-              ),
-//              DecoratedFormPickerField(
-//                ctx: const ['warehouse', 'storage'],
-//                name: 'storage',
-//                label: localization.translate("storage"),
-//                autofocus: true,
-//                validator: FormBuilderValidators.compose([
-//                  FormBuilderValidators.required(),
-//                ]),
-//                onSave: (context) {},
-//              ),
-              DecoratedFormPickerField(
-                ctx: const ['goods'],
-                name: 'goods',
-                label: localization.translate("goods"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-              ),
-              DecoratedFormPickerField(
-                ctx: const ['uom'],
-                name: 'uom',
-                label: localization.translate("uom"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-              ),
-              DecoratedFormField(
-                name: 'qty',
-                label: localization.translate("qty"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.number,
-              ),
-              ElevatedButton(
-                onPressed: status == 'register' ? registerAndPrint : null,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Text(localization.translate(status)),
-              )
-            ])
-          ]))
-    ];
-    return ScrollableListView(
-      children: widgets,
-    );
-  }
-
-  void registerAndPrint() async {
-    setState(() => status = "connecting");
-    try {
-      print("pressed:");
-
-      final data = _formKey.currentState?.value;
-      if (data == null) {
-        return;
-      }
-
-      print("data $data");
-
-      final printer = data['printer'] ?? '';
-      final ip = printer is MemoryItem ? (printer.json['ip'] ?? '') : '';
-      final port = printer is MemoryItem ? int.parse(printer.json['port']) : 0;
-
-      print("printer $ip $port");
-
-      final doc = await widget.doc.enrich(WHReceive.schema);
-
-      print("doc in receive documents: ${doc.json}");
-
-      final goods = data['goods'] as MemoryItem;
-      final goodsName = goods.name();
-      final goodsUuid = goods.json['_uuid'] ?? '';
-      final goodsId = goods.id;
-
-      final uom = data['uom'] as MemoryItem;
-
-      final date = doc.json['date']!;
-      final counterparty = doc.json['counterparty'];
-
-      final number = data['qty']!;
-
-      final qty = {'number': number, 'uom': uom.id};
-
-      // check creating without printing
-
-      //  setState(() => status = "registering");
-      //  final record = await Api.feathers().create(serviceName: 'memories', data: {
-      //    'document': doc.id,
-      //    'goods': goods.id,
-      //    'qty': qty,
-      //  }, params: {
-      //    'oid': Api.instance.oid,
-      //    'ctx': ['warehouse', 'receive']
-      //  });
-
-      //  print("record: $record");
-
-      final result = await Labels.connect(ip, port, (printer) async {
-        setState(() => status = "registering");
-        final record =
-            await Api.feathers().create(serviceName: 'memories', data: {
-          'document': doc.id,
-          'goods': goods.id,
-          'qty': qty,
-        }, params: {
-          'oid': Api.instance.oid,
-          'ctx': ['warehouse', 'receive']
-        });
-
-        print("record: $record");
-
-        setState(() => status = "printing");
-
-        final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
-
-        final qtyNumber = qty['number'] ?? '';
-        final qtyUom = uom.json['name'] ?? '';
-
-        final Map<String, String> labelData = {
-          "материал": goodsName,
-          "дата": dd,
-          "количество": "$qtyNumber $qtyUom",
-          "line1": "",
-          "поставщик": counterparty.name().toString(),
-        };
-
-        // TODO: get batch for printing (like in stock)
-        // Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
-        //     '223033122222'.toString(), labelData);
-
-        return Future<PrintResult>.value(PrintResult.success);
-      });
-
-      if (result != PrintResult.success) {
-        showToast(result.msg,
-            // context: context,
-            axis: Axis.horizontal,
-            alignment: Alignment.center,
-            position: StyledToastPosition.bottom);
-      }
-    } catch (e, stacktrace) {
-      print(stacktrace);
-      showToast(e.toString(),
-          // context: context,
-          axis: Axis.horizontal,
-          alignment: Alignment.center,
-          position: StyledToastPosition.bottom);
-    } finally {
-      setState(() {
-        status = "register";
-      });
-    }
   }
 }
