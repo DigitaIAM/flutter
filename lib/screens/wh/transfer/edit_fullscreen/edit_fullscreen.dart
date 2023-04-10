@@ -176,6 +176,7 @@ class _WHTransferEditFSState extends State<WHTransferEditFS>
           );
         } else {
           return ScaffoldView(
+            title: localization.translate("warehouse transfer"),
             appBarBottom: TabBar(
               controller: _controller,
               isScrollable: true,

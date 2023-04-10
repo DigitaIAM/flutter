@@ -6,7 +6,7 @@ import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/schema/schema.dart';
-import 'package:nae/widgets/list_divider.dart';
+import 'package:nae/utils/date.dart';
 
 class WHTransferOverview extends StatelessWidget {
   final MemoryItem doc;
@@ -33,10 +33,10 @@ class WHTransferOverview extends StatelessWidget {
 
     final from = doc.json['from'] is MemoryItem
         ? doc.json['from'].name()
-        : doc.json['from'];
+        : doc.json['from']['name'] ?? '';
     final into = doc.json['into'] is MemoryItem
         ? doc.json['into'].name()
-        : doc.json['into'];
+        : doc.json['into']['name'] ?? '';
 
     return BlocProvider(
       create: (context) {
@@ -52,21 +52,55 @@ class WHTransferOverview extends StatelessWidget {
         return bloc;
       },
       child: Column(children: <Widget>[
-        ListDivider(),
-        ListTile(
-          title: Text(doc.json['date']),
-          subtitle: Text(localization.translate("date")),
+        KeyValue(
+          label: localization.translate("date"),
+          value: DT.format(doc.json['date']),
+          icon: const Icon(Icons.calendar_month),
         ),
-        ListTile(
-          title: Text(from),
-          subtitle: Text(localization.translate("from")),
+        KeyValue(
+          label: localization.translate("from"),
+          value: from,
+          icon: const Icon(Icons.output),
         ),
-        ListTile(
-          title: Text(into),
-          subtitle: Text(localization.translate("into")),
+        KeyValue(
+          label: localization.translate("into"),
+          value: into,
+          icon: const Icon(Icons.input),
         ),
-        ListDivider(),
       ]),
+    );
+  }
+}
+
+class KeyValue extends StatelessWidget {
+  final String label;
+  final String value;
+  final Icon icon;
+
+  const KeyValue(
+      {super.key,
+      required this.label,
+      required this.value,
+      required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      initialValue: value,
+      decoration: InputDecoration(
+        // icon: icon,
+        labelText: label,
+        // labelStyle: const TextStyle(
+        //   color: Color(0xFF6200EE),
+        // ),
+        // helperText: 'Helper text',
+        // suffixIcon: const Icon(
+        //   Icons.check_circle,
+        // ),
+        // enabledBorder: const UnderlineInputBorder(
+        //   borderSide: BorderSide(color: Color(0xFF6200EE)),
+        // ),
+      ),
     );
   }
 }

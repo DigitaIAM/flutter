@@ -81,8 +81,9 @@ class WHBalanceListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHBalance.ctx,
       schema: WHBalance.schema,
+      groupByDate: false,
       sortByName: true,
-      title: (MemoryItem item) => fGoods.resolve(item.json)?.name() ?? '',
+      title: (MemoryItem item) => Text(fGoods.resolve(item.json)?.name() ?? ''),
       subtitle: (MemoryItem item) => Text(
           '${fQty.resolve(item.json)} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}'),
       onTap: (MemoryItem item) =>

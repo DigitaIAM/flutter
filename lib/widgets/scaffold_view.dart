@@ -9,18 +9,18 @@ class ScaffoldView extends StatelessWidget {
   // final BaseEntity entity;
   final PreferredSizeWidget? appBarBottom;
   final Widget body;
+  final String title;
 
   const ScaffoldView({
     super.key,
     required this.body,
     // required this.entity,
     this.appBarBottom,
+    this.title = "",
   });
 
   @override
   Widget build(BuildContext context) {
-    String appBarTitle = "";
-
     Widget leading = IconButton(
       icon: const Icon(Icons.close),
       onPressed: () {
@@ -36,8 +36,8 @@ class ScaffoldView extends StatelessWidget {
           automaticallyImplyLeading: uiState.isMobile,
           centerTitle: false,
           title: CopyToClipboard(
-            value: appBarTitle,
-            child: Text(appBarTitle),
+            value: title,
+            child: Text(title),
           ),
           bottom: appBarBottom,
         ),

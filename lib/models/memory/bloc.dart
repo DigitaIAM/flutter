@@ -96,9 +96,11 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
 
   Future<void> _onFetch(MemoryFetch event, Emitter<RequestState> emit) async {
     // print('_onFetching ${state.hasReachedMax}');
-    if (state.hasReachedMax) return;
+    final newState = event.reset ? RequestState(query: state.query) : state;
+
+    if (newState.hasReachedMax) return;
     try {
-      if (state.status == RequestStatus.loading) {
+      if (newState.status == RequestStatus.loading) {
         // reset cache
         Cache().clear();
       }
@@ -106,7 +108,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       List<MemoryItem> result = [];
 
       while (true) {
-        final items = await _fetch(event, state.original.length + result.length);
+        final items =
+            await _fetch(event, newState.original.length + result.length);
         // print(items);
 
         // enrich
@@ -129,17 +132,18 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       }
 
       emit(result.isEmpty
-          ? state.copyWith(status: RequestStatus.success, hasReachedMax: true)
-          : state.copyWith(
+          ? newState.copyWith(
+              status: RequestStatus.success, hasReachedMax: true)
+          : newState.copyWith(
               status: RequestStatus.success,
-              original: List.of(state.original)..addAll(result),
+              original: List.of(newState.original)..addAll(result),
               hasReachedMax: false,
             ));
     } catch (e, stacktrace) {
       print("ERROR _onFetched:");
       print(e);
       print(stacktrace);
-      emit(state.copyWith(status: RequestStatus.failure));
+      emit(newState.copyWith(status: RequestStatus.failure));
     }
   }
 
@@ -157,7 +161,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       query['filter'] = filter;
     }
 
-    final response = await Api.feathers().find(serviceName: event.serviceName, query: query);
+    final response =
+        await Api.feathers().find(serviceName: event.serviceName, query: query);
 
     List<MemoryItem> list = [];
 
@@ -220,9 +225,13 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     print("_onSave: ${event.data.id}");
     print(event.data.json);
     if (event.data.isNew) {
-      return _onCreate(MemoryCreate(event.serviceName, event.ctx, event.data.toJson()), emit);
+      return _onCreate(
+          MemoryCreate(event.serviceName, event.ctx, event.data.toJson()),
+          emit);
     } else {
-      return _onUpdate(MemoryUpdate(event.serviceName, event.ctx, event.data.toJson()), emit);
+      return _onUpdate(
+          MemoryUpdate(event.serviceName, event.ctx, event.data.toJson()),
+          emit);
     }
   }
 
@@ -266,12 +275,14 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
   }
 
-  Future<MemoryItem> _create(String serviceName, List<String> ctx, Map<String, dynamic> data) async {
+  Future<MemoryItem> _create(
+      String serviceName, List<String> ctx, Map<String, dynamic> data) async {
     var params = {
       "oid": Api.instance.oid,
       "ctx": ctx,
     };
-    final response = await Api.feathers().create(serviceName: serviceName, data: data, params: params);
+    final response = await Api.feathers()
+        .create(serviceName: serviceName, data: data, params: params);
     print("update response:");
     print(response);
 
@@ -316,13 +327,15 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
   }
 
-  Future<MemoryItem> _update(String serviceName, List<String> ctx, Map<String, dynamic> data) async {
+  Future<MemoryItem> _update(
+      String serviceName, List<String> ctx, Map<String, dynamic> data) async {
     var params = {
       "oid": Api.instance.oid,
       "ctx": ctx,
     };
     final id = data["_id"] as String;
-    final response = await Api.feathers().update(serviceName: serviceName, objectId: id, data: data, params: params);
+    final response = await Api.feathers().update(
+        serviceName: serviceName, objectId: id, data: data, params: params);
     print("update response:");
     print(response);
 
@@ -341,7 +354,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
 
   Future<void> _onPatch(MemoryPatch event, Emitter<RequestState> emit) async {
     try {
-      final saved = await _patch(event.serviceName, event.ctx, event.id, event.data);
+      final saved =
+          await _patch(event.serviceName, event.ctx, event.id, event.data);
 
       final List<MemoryItem> list = List.from(state.original);
 
@@ -365,12 +379,14 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
   }
 
-  Future<MemoryItem> _patch(String serviceName, List<String> ctx, String id, Map<String, dynamic> data) async {
+  Future<MemoryItem> _patch(String serviceName, List<String> ctx, String id,
+      Map<String, dynamic> data) async {
     var params = {
       "oid": Api.instance.oid,
       "ctx": ctx,
     };
-    final response = await Api.feathers().patch(serviceName: serviceName, objectId: id, data: data, params: params);
+    final response = await Api.feathers().patch(
+        serviceName: serviceName, objectId: id, data: data, params: params);
     print("patch response:");
     print(response);
 
@@ -387,7 +403,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     return item;
   }
 
-  Future<void> _onCreated(MemoryCreated event, Emitter<RequestState> emit) async {
+  Future<void> _onCreated(
+      MemoryCreated event, Emitter<RequestState> emit) async {
     print("_onCreated");
     print(event.item.json);
 
@@ -407,7 +424,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     ));
   }
 
-  Future<void> _onUpdated(MemoryUpdated event, Emitter<RequestState> emit) async {
+  Future<void> _onUpdated(
+      MemoryUpdated event, Emitter<RequestState> emit) async {
     // print("_onUpdated");
     // print(event.item.json);
 

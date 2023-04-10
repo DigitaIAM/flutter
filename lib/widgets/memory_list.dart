@@ -67,7 +67,7 @@ class MemoryList extends StatefulWidget {
 
   final Widget Function(MemoryItem) title;
   final Widget Function(MemoryItem) subtitle;
-  final Function(MemoryItem) onTap;
+  final Function(MemoryItem)? onTap;
 
   final List<ItemAction> actions;
 
@@ -77,7 +77,7 @@ class MemoryList extends StatefulWidget {
     required this.schema,
     required this.title,
     required this.subtitle,
-    required this.onTap,
+    this.onTap,
     this.groupByDate = true,
     this.sortByName = false,
     this.filter = const {},
@@ -116,9 +116,23 @@ class _MemoryListState extends State<MemoryList> {
 
     final List<String> actions = [];
 
+    final refreshBloc = context.read<MemoryBloc>();
+
     return BlocBuilder<UiBloc, UiState>(
       builder: (_, uiState) => RefreshIndicator(
-        onRefresh: () => Future<void>(() => {}), // widget.onRefreshed(context),
+        onRefresh: () async {
+          refreshBloc.add(MemoryFetch(
+            widget.service,
+            widget.ctx,
+            schema: widget.schema,
+            filter: widget.filter,
+            reset: true,
+          ));
+
+          await Future.delayed(
+            const Duration(seconds: 1),
+          );
+        }, // widget.onRefreshed(context),
         child: Column(children: [
           AnimatedContainer(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -259,7 +273,7 @@ class _MemoryListState extends State<MemoryList> {
     });
   }
 
-  GroupedListView buildList(BuildContext context, RequestState state) {
+  Widget buildList(BuildContext context, RequestState state) {
     _loading = false;
     if (listener != null) {
       _scrollController.removeListener(listener!);
@@ -276,37 +290,57 @@ class _MemoryListState extends State<MemoryList> {
     };
     _scrollController.addListener(listener!);
 
-    return GroupedListView<MemoryItem, String>(
-      elements: sort(state.items, widget.sortByName),
-      groupBy: widget.groupByDate
-          ? (element) => element.json['date'] ?? ''
-          : (element) => '',
-      groupComparator: (g1, g2) => g2.compareTo(g1),
-      itemComparator: (item1, item2) => item1.id.compareTo(item2.id),
-      order: GroupedListOrder.ASC,
-      useStickyGroupSeparators: true,
-      stickyHeaderBackgroundColor: Theme.of(context).primaryColor,
-      controller: _scrollController,
-      groupSeparatorBuilder: (String value) => Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          value,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    final items = sort(state.items, widget.sortByName);
+    if (widget.groupByDate) {
+      return GroupedListView<MemoryItem, String>(
+        elements: items,
+        groupBy: widget.groupByDate
+            ? (element) => element.json['date'] ?? ''
+            : (element) => '',
+        groupComparator: (g1, g2) => g2.compareTo(g1),
+        itemComparator: (item1, item2) => item1.id.compareTo(item2.id),
+        order: GroupedListOrder.ASC,
+        useStickyGroupSeparators: true,
+        stickyHeaderBackgroundColor: Theme.of(context).primaryColor,
+        controller: _scrollController,
+        groupSeparatorBuilder: (String value) => Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
         ),
-      ),
-      itemBuilder: (context, item) {
-        if (widget.actions.isEmpty) {
-          return card(item);
-        }
-        return SwipeActionWidget(
-          item: item,
-          actions: widget.actions,
-          // key: key,
-          child: card(item),
-        );
-      },
-    );
+        itemBuilder: (context, item) {
+          if (widget.actions.isEmpty) {
+            return card(item);
+          }
+          return SwipeActionWidget(
+            item: item,
+            actions: widget.actions,
+            // key: key,
+            child: card(item),
+          );
+        },
+      );
+    } else {
+      return ListView.builder(
+        itemCount: items.length,
+        controller: _scrollController,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          if (widget.actions.isEmpty) {
+            return card(item);
+          }
+          return SwipeActionWidget(
+            item: item,
+            actions: widget.actions,
+            // key: key,
+            child: card(item),
+          );
+        },
+      );
+    }
   }
 
   Widget card(MemoryItem item) {
@@ -319,9 +353,9 @@ class _MemoryListState extends State<MemoryList> {
         // leading: const Icon(Icons.account_circle),
         title: widget.title(item),
         subtitle: widget.subtitle(item),
-        trailing: const Icon(Icons.arrow_forward),
+        trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
         onTap: () {
-          widget.onTap(item);
+          widget.onTap?.call(item);
         },
       ),
     );
@@ -415,7 +449,7 @@ class _MemoryListState extends State<MemoryList> {
         onSelected: (PlutoGridOnSelectedEvent event) {
           final item = event.row?.cells["_memory_"]?.value;
           if (item is MemoryItem) {
-            widget.onTap(item);
+            widget.onTap?.call(item);
           }
         },
         mode: PlutoGridMode.select,
