@@ -9,18 +9,18 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
-import 'package:nae/screens/wh/transfer/screen.dart';
+import 'package:nae/screens/wh/receive/screen.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
 
-class WHTransferGoods extends StatelessWidget {
+class WHReceiveGoods extends StatelessWidget {
   final MemoryItem doc;
 
-  const WHTransferGoods({super.key, required this.doc});
+  const WHReceiveGoods({super.key, required this.doc});
 
   @override
   Widget build(BuildContext context) {
-    final ctx = const ['warehouse', 'transfer'];
+    final ctx = const ['warehouse', 'receive'];
     final filter = {
       'document': doc.id,
     };
@@ -87,9 +87,8 @@ class WHTransferGoods extends StatelessWidget {
           }
           return Text(text, style: style);
         },
-        // onTap: (MemoryItem item) => context
-        //     .read<UiBloc>()
-        //     .add(ChangeView(WHTransfer.ctx, entity: item)),
+        // onTap: (MemoryItem item) =>
+        // context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
         actions: [
           ItemAction(
             label: 'delete',
@@ -111,7 +110,7 @@ class WHTransferGoods extends StatelessWidget {
   }
 
   void deleteItem(BuildContext context, MemoryItem item) async {
-    const ctx = ['warehouse', 'transfer'];
+    const ctx = ['warehouse', 'receive'];
     final status = item.json['_status'] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {'_status': status};
     context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, item.id, data));
@@ -163,7 +162,7 @@ class WHTransferGoods extends StatelessWidget {
   void printPreparation(String ip, int port, MemoryItem item) async {
     print("printPreparation: ${item.json}");
 
-    final _doc = await doc.enrich(WHTransfer.schema);
+    final _doc = await doc.enrich(WHReceive.schema);
 
     final result = await Labels.connect(ip, port, (printer) async {
       return await printing(printer, _doc, item, (newStatus) => {});

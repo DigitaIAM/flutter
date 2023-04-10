@@ -12,7 +12,7 @@ import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_list.dart';
 
-import 'edit_fullscreen.dart';
+import 'edit_fullscreen/edit_fullscreen.dart';
 
 class WHReceive extends Entity {
   static const List<String> ctx = ['warehouse', 'receive', 'document'];
@@ -89,9 +89,11 @@ class WHReceiveScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(WHReceive.ctx, action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(WHReceive.ctx,
+              action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip: AppLocalizations.of(context).translate("new warehouse inventory"),
+        tooltip:
+            AppLocalizations.of(context).translate("new warehouse inventory"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,
@@ -110,9 +112,12 @@ class WHReceiveListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHReceive.ctx,
       schema: WHReceive.schema,
-      title: (MemoryItem item) => fCounterparty.resolve(item.json)?.name() ?? '',
-      subtitle: (MemoryItem item) => fStorage.resolve(item.json)?.name() ?? '',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
+      title: (MemoryItem item) =>
+          Text(fCounterparty.resolve(item.json)?.name() ?? ''),
+      subtitle: (MemoryItem item) =>
+          Text(fStorage.resolve(item.json)?.name() ?? ''),
+      onTap: (MemoryItem item) =>
+          context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
     );
   }
 }

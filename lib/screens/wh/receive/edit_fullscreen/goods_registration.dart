@@ -7,7 +7,7 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/printer/printing.dart';
-import 'package:nae/screens/wh/transfer/screen.dart';
+import 'package:nae/screens/wh/receive/screen.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
@@ -15,24 +15,24 @@ import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
-class WHTransferGoodsRegistration extends StatefulWidget {
+class WHReceiveGoodsRegistration extends StatefulWidget {
   final MemoryItem doc;
 
-  const WHTransferGoodsRegistration({super.key, required this.doc});
+  const WHReceiveGoodsRegistration({super.key, required this.doc});
 
   @override
-  State<StatefulWidget> createState() => _WHTransferGoodsRegistrationState();
+  State<StatefulWidget> createState() => _WHReceiveGoodsRegistrationState();
 }
 
-class _WHTransferGoodsRegistrationState
-    extends State<WHTransferGoodsRegistration> {
+class _WHReceiveGoodsRegistrationState
+    extends State<WHReceiveGoodsRegistration> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(
-      debugLabel: '_WHTransferGoodsRegistrationEdit');
+      debugLabel: '_WHReceiveGoodsRegistrationEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
 
-  static const ctx = ['warehouse', 'transfer'];
+  static const ctx = ['warehouse', 'receive'];
 
   String status = "register";
   int numberOfQuantities = 1;
@@ -264,11 +264,13 @@ class _WHTransferGoodsRegistrationState
       final data = state.value;
 
       // TODO understand is it required
-      final doc = await widget.doc.enrich(WHTransfer.schema);
+      final doc = await widget.doc.enrich(WHReceive.schema);
 
       try {
         final result =
             await register(doc, data, numberOfQuantities, ctx, setStatus);
+
+        print("receive register result: $result");
 
         if (!(result.isNew || result.isEmpty)) {
           done('register');
@@ -288,7 +290,7 @@ class _WHTransferGoodsRegistrationState
     try {
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
-        final doc = await widget.doc.enrich(WHTransfer.schema);
+        final doc = await widget.doc.enrich(WHReceive.schema);
         final record = item ??
             await register(doc, data, numberOfQuantities, ctx, setStatus);
 
