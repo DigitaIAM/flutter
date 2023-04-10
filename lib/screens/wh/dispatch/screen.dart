@@ -12,7 +12,7 @@ import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_list.dart';
 
-import 'edit_fullscreen.dart';
+import 'edit_fullscreen/edit_fullscreen.dart';
 
 // ['goods'] => ['warehouse','inventory'],
 //              ['warehouse','receive'],
@@ -93,9 +93,11 @@ class WHDispatchScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(WHDispatch.ctx, action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(WHDispatch.ctx,
+              action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip: AppLocalizations.of(context).translate("new warehouse dispatch"),
+        tooltip:
+            AppLocalizations.of(context).translate("new warehouse dispatch"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,
@@ -114,9 +116,12 @@ class WHDispatchListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHDispatch.ctx,
       schema: WHDispatch.schema,
-      title: (MemoryItem item) => fStorage.resolve(item.json)?.name() ?? '',
-      subtitle: (MemoryItem item) => fCounterparty.resolve(item.json)?.name() ?? '',
-      onTap: (MemoryItem item) => context.read<UiBloc>().add(ChangeView(WHDispatch.ctx, entity: item)),
+      title: (MemoryItem item) =>
+          Text(fStorage.resolve(item.json)?.name() ?? ''),
+      subtitle: (MemoryItem item) =>
+          Text(fCounterparty.resolve(item.json)?.name() ?? ''),
+      onTap: (MemoryItem item) =>
+          context.read<UiBloc>().add(ChangeView(WHDispatch.ctx, entity: item)),
     );
   }
 }

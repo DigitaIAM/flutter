@@ -21,15 +21,19 @@ Future<MemoryItem> register(
     final goods = data['goods'] as MemoryItem;
     final baseUomId = goods.json['uom'] as String;
 
-    final from = ctx == const ['warehouse', 'transfer']
-        ? doc.json['from'] as MemoryItem
-        : doc.json['counterparty'] as MemoryItem;
+    MemoryItem from;
+    MemoryItem into;
 
-    final into = ctx == const ['warehouse', 'transfer']
-        ? doc.json['into'] as MemoryItem
-        : doc.json['storage'] as MemoryItem;
-
-    // final into = doc.json['into'] as MemoryItem;
+    if (ctx == const ['warehouse', 'transfer']) {
+      from = doc.json['from'];
+      into = doc.json['into'];
+    } else if (ctx == const ['warehouse', 'dispatch']) {
+      from = doc.json['storage'];
+      into = doc.json['counterparty'];
+    } else {
+      from = doc.json['counterparty'];
+      into = doc.json['storage'];
+    }
 
     final quantity = {}; // 'number': number, 'uom': uom.id
     var currentQty = quantity;

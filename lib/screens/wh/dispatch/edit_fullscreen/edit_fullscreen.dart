@@ -11,7 +11,12 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
+import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/dispatch/edit_fullscreen/document_creation.dart';
+import 'package:nae/screens/wh/dispatch/edit_fullscreen/goods.dart';
+import 'package:nae/screens/wh/dispatch/edit_fullscreen/goods_registration.dart';
+import 'package:nae/screens/wh/dispatch/edit_fullscreen/overview.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
@@ -20,24 +25,42 @@ import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/autocomplete.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/scaffold_edit.dart';
+import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
-import 'screen.dart';
+import '../screen.dart';
 
 class WHDispatchEditFS extends EntityHolder {
-  const WHDispatchEditFS({super.key, required super.entity}) : super(fullscreen: true);
+  const WHDispatchEditFS({super.key, required super.entity})
+      : super(fullscreen: true);
 
   @override
   State<WHDispatchEditFS> createState() => _WHDispatchEditFSState();
 }
 
-class _WHDispatchEditFSState extends State<WHDispatchEditFS> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHDispatchEditFS');
+class _WHDispatchEditFSState extends State<WHDispatchEditFS>
+    with SingleTickerProviderStateMixin {
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHDispatchEditFS');
   final FocusScopeNode _focusNode = FocusScopeNode();
+
+  late TabController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = TabController(
+      vsync: this,
+      length: widget.entity.isNew ? 1 : 3,
+      initialIndex: widget.entity.isNew ? 0 : 1,
+    );
+  }
 
   @override
   void dispose() {
     _focusNode.dispose();
+    _controller.dispose();
 
     super.dispose();
   }
@@ -52,9 +75,8 @@ class _WHDispatchEditFSState extends State<WHDispatchEditFS> {
       // workaround
       data['_id'] = widget.entity.id;
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", WHDispatch.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context.read<MemoryBloc>().add(MemorySave("memories", WHDispatch.ctx,
+          MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -69,68 +91,117 @@ class _WHDispatchEditFSState extends State<WHDispatchEditFS> {
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
-    routerBack(BuildContext context) {
-      context.read<UiBloc>().add(ChangeView(WHDispatch.ctx));
-      // TODO context.read<UiBloc>().add(PreviousRoute());
-    }
+    if (widget.entity.isNew) {
+      return ScaffoldView(
+        appBarBottom: TabBar(
+          controller: _controller,
+          isScrollable: true,
+          tabs: [
+            Tab(text: localization.translate("new document")),
+          ],
+        ),
+        body: Builder(builder: (context) {
+          return Column(children: <Widget>[
+            Expanded(
+              child: TabBarView(controller: _controller, children: <Widget>[
+                WHDispatchDocumentCreation(doc: widget.entity)
+              ]),
+            ),
+          ]);
+        }),
+      );
+    } else {
+      routerBack(BuildContext context) {
+        context.read<UiBloc>().add(ChangeView(WHDispatch.ctx));
+        // TODO context.read<UiBloc>().add(PreviousRoute());
+      }
 
-    return EditScaffold(
-      entity: widget.entity,
-      title: localization.translate("warehouse dispatch"),
-      onClose: routerBack,
-      onCancel: routerBack,
-      onSave: _onSave,
-      body: AppForm(
-        schema: WHDispatch.schema,
-        formKey: _formKey,
-        focusNode: _focusNode,
-        entity: getEntity(),
-        child: Column(children: [
-          FormCard(children: <Widget>[
-            DecoratedFormField(
-              name: 'date',
-              label: localization.translate("date"),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
+      return BlocBuilder<UiBloc, UiState>(builder: (context, uiState) {
+        if (uiState.isDesktop) {
+          return EditScaffold(
+            entity: widget.entity,
+            title: localization.translate("warehouse dispatch"),
+            onClose: routerBack,
+            onCancel: routerBack,
+            onSave: _onSave,
+            body: AppForm(
+              schema: WHDispatch.schema,
+              formKey: _formKey,
+              focusNode: _focusNode,
+              entity: getEntity(),
+              child: Column(children: [
+                FormCard(children: <Widget>[
+                  DecoratedFormField(
+                    name: 'date',
+                    label: localization.translate("date"),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    onSave: _onSave,
+                    keyboardType: TextInputType.datetime,
+                  ),
+                  DecoratedFormPickerField(
+                    ctx: const ['warehouse', 'storage'],
+                    name: 'storage',
+                    label: localization.translate("storage"),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    onSave: _onSave,
+                  ),
+                  DecoratedFormPickerField(
+                    ctx: const ['counterparty'],
+                    name: 'counterparty',
+                    label: localization.translate('counterparty'),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    onSave: _onSave,
+                  ),
+                ]),
+                Expanded(
+                  child: ScrollableListView(children: <Widget>[
+                    Lines(
+                      ctx: const ['warehouse', 'dispatch'],
+                      document: widget.entity,
+                    ),
+                    // workaround to give some space for dropdown
+                    Container(height: 300)
+                  ]),
+                )
               ]),
-              onSave: _onSave,
-              keyboardType: TextInputType.datetime,
             ),
-            DecoratedFormPickerField(
-              ctx: const ['warehouse', 'storage'],
-              name: 'storage',
-              label: localization.translate("storage"),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-              ]),
-              onSave: _onSave,
+          );
+        } else {
+          return ScaffoldView(
+            title: localization.translate("warehouse dispatch"),
+            appBarBottom: TabBar(
+              controller: _controller,
+              isScrollable: true,
+              tabs: [
+                Tab(text: localization.translate("goods")),
+                Tab(text: localization.translate("overview")),
+                Tab(text: localization.translate("registration")),
+              ],
             ),
-            DecoratedFormPickerField(
-              ctx: const ['counterparty'],
-              name: 'counterparty',
-              label: localization.translate('counterparty'),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-              ]),
-              onSave: _onSave,
-            ),
-          ]),
-          Expanded(
-            child: ScrollableListView(children: <Widget>[
-              Lines(
-                ctx: const ['warehouse', 'dispatch'],
-                document: widget.entity,
-              ),
-              // workaround to give some space for dropdown
-              Container(height: 300)
-            ]),
-          )
-        ]),
-      ),
-    );
+            body: Builder(builder: (context) {
+              return Column(children: <Widget>[
+                Expanded(
+                  child: TabBarView(controller: _controller, children: <Widget>[
+                    WHDispatchGoods(doc: widget.entity),
+                    WHDispatchOverview(doc: widget.entity),
+                    WHDispatchGoodsRegistration(doc: widget.entity)
+                  ]),
+                ),
+              ]);
+            }),
+          );
+        }
+      });
+    }
   }
 
   MemoryItem getEntity() {
@@ -210,7 +281,9 @@ class _LinesState extends State<Lines> {
           builder: (context, state) {
             switch (state.status) {
               case RequestStatus.failure:
-                return Center(child: Text(localization.translate('failed to fetch data')));
+                return Center(
+                    child:
+                        Text(localization.translate('failed to fetch data')));
               case RequestStatus.success:
                 final headingRowColor = theme.dataTableTheme.headingRowColor;
                 final List<MemoryItem> items = List.of(state.items);
@@ -226,7 +299,8 @@ class _LinesState extends State<Lines> {
                         item.json['qty'] = {uom: uom};
                       } else if (qty is Map) {
                         final uomAtLine = qty['uom'];
-                        if (uomAtLine == null || (uomAtLine is MemoryItem && uomAtLine.isEmpty)) {
+                        if (uomAtLine == null ||
+                            (uomAtLine is MemoryItem && uomAtLine.isEmpty)) {
                           qty['uom'] = uom;
                         }
                       }
@@ -245,7 +319,8 @@ class _LinesState extends State<Lines> {
                   children: [
                     TableRow(
                       children: tableHeaderColumns,
-                      decoration: BoxDecoration(color: headingRowColor?.resolve(<MaterialState>{})),
+                      decoration: BoxDecoration(
+                          color: headingRowColor?.resolve(<MaterialState>{})),
                     ),
                     for (var index = 0; index < items.length; index++)
                       buildRow(context, columns, items, index, localization)
@@ -260,8 +335,8 @@ class _LinesState extends State<Lines> {
     );
   }
 
-  TableRow buildRow(BuildContext context, Map<int, Field> columns, List<MemoryItem> items, int rowIndex,
-      AppLocalizations localization) {
+  TableRow buildRow(BuildContext context, Map<int, Field> columns,
+      List<MemoryItem> items, int rowIndex, AppLocalizations localization) {
     final item = items[rowIndex];
     return TableRow(
       key: ValueKey('__line_${rowIndex}_${item.updatedAt}__'),
@@ -288,13 +363,21 @@ class _LinesState extends State<Lines> {
                   return MemoryItem.from(response);
                 },
                 delegate: (text) async {
-                  final response = await Api.feathers()
-                      .find(serviceName: "memories", query: {"oid": Api.instance.oid, "ctx": type.ctx, "search": text});
-                  return (response['data'] ?? []).map<MemoryItem>((item) => MemoryItem.from(item)).toList();
+                  final response = await Api.feathers().find(
+                      serviceName: "memories",
+                      query: {
+                        "oid": Api.instance.oid,
+                        "ctx": type.ctx,
+                        "search": text
+                      });
+                  return (response['data'] ?? [])
+                      .map<MemoryItem>((item) => MemoryItem.from(item))
+                      .toList();
                 },
                 displayStringForOption: (item) => item?.name() ?? '',
                 itemBuilder: (context, entry) {
-                  return Text(entry.name()); // , style: Theme.of(context).textTheme.displayMedium);
+                  return Text(entry
+                      .name()); // , style: Theme.of(context).textTheme.displayMedium);
                 },
                 onItemSelected: (entry) async {
                   final Map<String, dynamic> data = {};
@@ -339,15 +422,20 @@ class _LinesState extends State<Lines> {
   void patch(BuildContext context, MemoryItem item, Map<String, dynamic> data) {
     if (item.isNew) {
       data['document'] = widget.document.id;
-      context.read<MemoryBloc>().add(MemoryCreate('memories', widget.ctx, data));
+      context
+          .read<MemoryBloc>()
+          .add(MemoryCreate('memories', widget.ctx, data));
     } else {
-      context.read<MemoryBloc>().add(MemoryPatch('memories', widget.ctx, item.id, data));
+      context
+          .read<MemoryBloc>()
+          .add(MemoryPatch('memories', widget.ctx, item.id, data));
     }
   }
 }
 
 class CustomTextField extends StatefulWidget {
-  const CustomTextField({super.key, required this.initialValue, required this.onChanged});
+  const CustomTextField(
+      {super.key, required this.initialValue, required this.onChanged});
 
   final dynamic initialValue;
   final Function(String) onChanged;
@@ -399,7 +487,11 @@ class TableHeader extends StatelessWidget {
   final bool isFirst;
   final bool isNumeric;
 
-  const TableHeader({super.key, required this.label, this.isFirst = false, this.isNumeric = false});
+  const TableHeader(
+      {super.key,
+      required this.label,
+      this.isFirst = false,
+      this.isNumeric = false});
 
   @override
   Widget build(BuildContext context) {
@@ -410,7 +502,8 @@ class TableHeader extends StatelessWidget {
         top: 0, // tableHeaderColor.isEmpty ? 0 : 8,
         bottom: 8, // tableHeaderColor.isEmpty ? 8 : 16,
         right: isNumeric ? cTableColumnGap : 0,
-        left: isFirst ? 4 : 0, // tableHeaderColor.isNotEmpty && isFirst ? 4 : 0,
+        left:
+            isFirst ? 4 : 0, // tableHeaderColor.isNotEmpty && isFirst ? 4 : 0,
       ),
       child: Text(
         label,
