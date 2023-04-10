@@ -61,6 +61,7 @@ class _WHTransferDocumentCreationState
               DecoratedFormPickerField(
                 ctx: const ['warehouse', 'storage'],
                 name: 'from',
+                creatable: false,
                 label: localization.translate("from"),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
@@ -71,6 +72,7 @@ class _WHTransferDocumentCreationState
               DecoratedFormPickerField(
                 ctx: const ['warehouse', 'storage'],
                 name: 'into',
+                creatable: false,
                 label: localization.translate('into'),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([

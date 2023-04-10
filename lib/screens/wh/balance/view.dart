@@ -197,11 +197,11 @@ class WHTransactionsBuilder extends StatelessWidget {
       schema: schema,
       filter: filter,
       groupByDate: false,
-      title: (MemoryItem item) => item.json['description'] ?? '',
+      title: (MemoryItem item) => Text(item.json['description'] ?? ''),
       subtitle: (MemoryItem item) => Text(
           '${fType.resolve(item.json)} ${fQtySingle.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}'),
-      onTap: (MemoryItem item) =>
-          context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
+      // onTap: (MemoryItem item) =>
+      //     context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
     );
   }
 }

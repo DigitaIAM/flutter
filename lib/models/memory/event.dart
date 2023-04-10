@@ -8,8 +8,15 @@ abstract class MemoryEvent extends Equatable {
 }
 
 class MemoryFetch extends MemoryEvent {
-  MemoryFetch(this.serviceName, this.ctx,
-      {this.schema, this.filter = const {}, this.loadAll = false, this.reverse = false});
+  MemoryFetch(
+    this.serviceName,
+    this.ctx, {
+    this.schema,
+    this.filter = const {},
+    this.loadAll = false,
+    this.reverse = false,
+    this.reset = false,
+  });
 
   final String serviceName;
   final List<String> ctx;
@@ -17,6 +24,7 @@ class MemoryFetch extends MemoryEvent {
   final Map<String, dynamic> filter;
   final bool reverse;
   final bool loadAll;
+  final bool reset;
 }
 
 class MemoryRequest extends MemoryEvent {
