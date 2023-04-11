@@ -31,7 +31,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
 
     // final state = widget.viewModel.state;
     _controller = TabController(
-        vsync: this, length: 3, initialIndex: 0 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
+        vsync: this, length: 4, initialIndex: 1 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
         );
     _controller.addListener(_onTabChanged);
   }
@@ -65,22 +65,29 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
+    final date = widget.entity.json["date"];
+    final area = widget.entity.json["area"];
+
+    final editable = date == Utils.today() || date == Utils.yesterday() || area.json['type'] == 'roll';
+
     return ScaffoldView(
       appBarBottom: TabBar(
         controller: _controller,
         isScrollable: true,
         tabs: [
+          Tab(text: localization.translate("list")),
           Tab(text: localization.translate("overview")),
           Tab(text: localization.translate("production")),
-          Tab(text: localization.translate("material")),
+          Tab(text: localization.translate("raw material")),
         ],
       ),
       body: Builder(builder: (context) {
         return Column(children: <Widget>[
           Expanded(
             child: TabBarView(controller: _controller, children: <Widget>[
+              POProducedView(order: widget.entity),
               ProductionOrderOverview(order: widget.entity),
-              ...((widget.entity.json["date"] == Utils.today() || widget.entity.json["date"] == Utils.yesterday())
+              ...(editable
                   ? [
                       POProducedEdit(order: widget.entity),
                       GoodsRegistration(

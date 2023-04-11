@@ -8,6 +8,7 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
+import 'package:nae/schema/schema.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/app_form.dart';
@@ -23,6 +24,113 @@ class POProducedEdit extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => _POProducedEditState();
+
+  static void printing(
+    NetworkPrinter printer,
+    MemoryItem? orderDoc,
+    MemoryItem doc,
+    void Function(String) updateStatus,
+  ) async {
+    updateStatus("printing");
+
+    final record = await doc.enrich([
+      fControl,
+      const Field('order', ReferenceType(['production', 'order'])),
+    ]);
+
+    MemoryItem orderItem;
+    if (orderDoc == null) {
+      orderItem = doc.json['order'];
+    } else {
+      orderItem = orderDoc;
+    }
+
+    final order = await orderItem.enrich([
+      fArea,
+      fProduct,
+      fOperator,
+    ]);
+
+    final area = order.json['area'];
+
+    String type = '';
+    if (area.json['type'] == 'roll') {
+      type = 'roll';
+    } else if (area.json['type'] == 'final') {
+      type = 'final';
+    } else {
+      type = 'boxed';
+    }
+
+    final date = record.json['date'];
+    final dd = DT.format(date);
+
+    final product = order.json['product'].json;
+    final productName = product['name'] ?? '';
+    final partNumber = product['part_number'] ?? '';
+
+    final operator = order.json['operator'];
+    if (operator == null) {
+      throw const FormatException('operator is not selected');
+    }
+    final operatorName = operator.label();
+
+    final control = record.json['control'];
+    if (control == null) {
+      throw const FormatException('control is not selected');
+    }
+    final controlName = control.label();
+
+    final qty = record.json['qty'] ?? '';
+
+    final Map<String, String> labelData;
+    if (type == 'roll') {
+      final material = record.json['material'] ?? '';
+      final thickness = record.json['thickness'] ?? '';
+      final length = record.json['length'] ?? '';
+
+      labelData = {
+        "продукция": productName,
+        "артикул": "$partNumber$thickness",
+        "сырьё": "$material",
+        "дата": dd,
+        "line1": "",
+        "вес": "$qty кг",
+        "длина": "$length м",
+        "line2": "",
+        "оператор": operatorName,
+        "проверил": controlName,
+      };
+    } else if (type == 'boxed') {
+      labelData = {
+        "продукция": productName,
+        "артикул": partNumber,
+        "дата": dd,
+        "количество": "$qty шт",
+        "line1": "",
+        "оператор": operatorName,
+        "проверил": controlName,
+      };
+    } else {
+      final customer = record.json['customer'] ?? order.json['customer'] ?? '';
+      final label = record.json['label'] ?? order.json['label'] ?? '';
+
+      labelData = {
+        "продукция": productName,
+        "артикул": partNumber,
+        "дата": dd,
+        "количество": "$qty шт",
+        "line1": "",
+        "оператор": operatorName,
+        "проверил": controlName,
+        "line2": "",
+        "этикетка": label,
+        "заказчик": customer,
+      };
+    }
+
+    Labels.lines(printer, record.id, labelData);
+  }
 }
 
 class _POProducedEditState extends State<POProducedEdit> {
@@ -307,7 +415,12 @@ class _POProducedEditState extends State<POProducedEdit> {
           'ctx': ['production', 'produce']
         });
 
-        printing(printer, record);
+        POProducedEdit.printing(
+          printer,
+          widget.order,
+          record,
+          (String newStatus) => setState(() => status = newStatus),
+        );
 
         return Future<PrintResult>.value(PrintResult.success);
       });
@@ -331,99 +444,5 @@ class _POProducedEditState extends State<POProducedEdit> {
         status = "register";
       });
     }
-  }
-
-  void printing(NetworkPrinter printer, MemoryItem doc) async {
-    setState(() => status = "printing");
-
-    final order = await widget.order.enrich([
-      fArea,
-      fProduct,
-      fOperator,
-    ]);
-
-    final record = await doc.enrich([
-      fControl,
-    ]);
-
-    final area = order.json['area'];
-
-    String type = '';
-    if (area.json['type'] == 'roll') {
-      type = 'roll';
-    } else if (area.json['type'] == 'final') {
-      type = 'final';
-    } else {
-      type = 'boxed';
-    }
-
-    final date = record.json['date'];
-    final dd = DT.format(date);
-
-    final product = order.json['product'].json;
-    final productName = product['name'] ?? '';
-    final partNumber = product['part_number'] ?? '';
-
-    final operator = order.json['operator'];
-    if (operator == null) {
-      throw const FormatException('operator is not selected');
-    }
-    final operatorName = operator.label();
-
-    final control = record.json['control'];
-    if (control == null) {
-      throw const FormatException('control is not selected');
-    }
-    final controlName = control.label();
-
-    final qty = record.json['qty'] ?? '';
-
-    final Map<String, String> labelData;
-    if (type == 'roll') {
-      final material = record.json['material'] ?? '';
-      final thickness = record.json['thickness'] ?? '';
-      final length = record.json['length'] ?? '';
-
-      labelData = {
-        "продукция": productName,
-        "артикул": "$partNumber$thickness",
-        "сырьё": "$material",
-        "дата": dd,
-        "line1": "",
-        "вес": "$qty кг",
-        "длина": "$length м",
-        "line2": "",
-        "оператор": operatorName,
-        "проверил": controlName,
-      };
-    } else if (type == 'boxed') {
-      labelData = {
-        "продукция": productName,
-        "артикул": partNumber,
-        "дата": dd,
-        "количество": "$qty шт",
-        "line1": "",
-        "оператор": operatorName,
-        "проверил": controlName,
-      };
-    } else {
-      final customer = record.json['customer'] ?? order.json['customer'] ?? '';
-      final label = record.json['label'] ?? order.json['label'] ?? '';
-
-      labelData = {
-        "продукция": productName,
-        "артикул": partNumber,
-        "дата": dd,
-        "количество": "$qty шт",
-        "line1": "",
-        "оператор": operatorName,
-        "проверил": controlName,
-        "line2": "",
-        "этикетка": label,
-        "заказчик": customer,
-      };
-    }
-
-    Labels.lines(printer, record.id, labelData);
   }
 }
