@@ -96,6 +96,16 @@ class _ProductEditState extends State<ProductEdit> {
               onSave: _onSave,
               keyboardType: TextInputType.text,
             ),
+            DecoratedFormField(
+              name: 'type',
+              label: localization.translate("type"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                // FormBuilderValidators.required(),
+              ]),
+              onSave: _onSave,
+              keyboardType: TextInputType.text,
+            ),
             DecoratedFormPickerField(
               ctx: const ['uom'],
               name: 'uom',
