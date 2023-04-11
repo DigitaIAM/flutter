@@ -86,6 +86,16 @@ class _ProductionAreaEditState extends State<ProductionAreaEdit> {
               onSave: _onSave,
               keyboardType: TextInputType.text,
             ),
+            DecoratedFormField(
+              name: 'type',
+              label: localization.translate("type"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                // FormBuilderValidators.required(),
+              ]),
+              onSave: _onSave,
+              keyboardType: TextInputType.text,
+            ),
           ])
         ]),
       ),

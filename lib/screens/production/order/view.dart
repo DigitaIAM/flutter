@@ -1,42 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:intl/intl.dart';
-import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
-import 'package:nae/constants.dart';
-import 'package:nae/models/memory/bloc.dart';
-import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
-import 'package:nae/printer/labels.dart';
-import 'package:nae/printer/network_printer.dart';
-import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/production/order/widgets/ProducedEdit.dart';
+import 'package:nae/screens/production/order/widgets/ProducedView.dart';
+import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/share/utils.dart';
-import 'package:nae/widgets/app_form.dart';
-import 'package:nae/widgets/app_form_card.dart';
-import 'package:nae/widgets/app_form_field.dart';
-import 'package:nae/widgets/app_form_picker_field.dart';
+import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/entity_header.dart';
 import 'package:nae/widgets/entity_screens.dart';
+import 'package:nae/widgets/key_value.dart';
 import 'package:nae/widgets/list_divider.dart';
-import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
 class ProductionOrderView extends EntityHolder {
   final int tabIndex;
 
-  const ProductionOrderView(
-      {super.key, required super.entity, required this.tabIndex});
+  const ProductionOrderView({super.key, required super.entity, required this.tabIndex});
 
   @override
   State<ProductionOrderView> createState() => _ProductionOrderViewState();
 }
 
-class _ProductionOrderViewState extends State<ProductionOrderView>
-    with SingleTickerProviderStateMixin {
+class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -45,10 +31,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
 
     // final state = widget.viewModel.state;
     _controller = TabController(
-        vsync: this,
-        length: 2,
-        initialIndex:
-            0 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
+        vsync: this, length: 3, initialIndex: 0 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
         );
     _controller.addListener(_onTabChanged);
   }
@@ -89,6 +72,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
         tabs: [
           Tab(text: localization.translate("overview")),
           Tab(text: localization.translate("production")),
+          Tab(text: localization.translate("material")),
         ],
       ),
       body: Builder(builder: (context) {
@@ -96,10 +80,25 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
           Expanded(
             child: TabBarView(controller: _controller, children: <Widget>[
               ProductionOrderOverview(order: widget.entity),
-              (widget.entity.json["date"] == Utils.today() ||
-                      widget.entity.json["date"] == Utils.yesterday())
-                  ? ProductionOrderProduced(order: widget.entity)
-                  : ProductionOrderProducedView(order: widget.entity),
+              ...((widget.entity.json["date"] == Utils.today() || widget.entity.json["date"] == Utils.yesterday())
+                  ? [
+                      POProducedEdit(order: widget.entity),
+                      GoodsRegistration(
+                        ctx: const ['warehouse', 'issue'],
+                        doc: widget.entity,
+                        enablePrinting: false,
+                        allowGoodsCreation: false,
+                      ),
+                    ]
+                  : [
+                      POProducedView(order: widget.entity),
+                      GoodsRegistration(
+                        ctx: const ['warehouse', 'issue'],
+                        doc: widget.entity,
+                        enablePrinting: false,
+                        allowGoodsCreation: false,
+                      ),
+                    ]),
             ]),
           ),
         ]);
@@ -116,292 +115,46 @@ class ProductionOrderOverview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
+
+    String? operatorName;
+    final operator = order.json['operator'];
+    if (operator is MemoryItem) {
+      operatorName = operator.name();
+    }
+
     final widgets = <Widget>[
       EntityHeader(pairs: [
         // Pair(localization.translate("production order"), memoryItem.json['date'])
         Pair(localization.translate("plan"), order.json['planned'] ?? '-'),
-        Pair(localization.translate("produced"),
-            order.json['produced']?['piece'] ?? '-'),
-        Pair(localization.translate("boxes"),
-            order.json['produced']?['box'] ?? '-'),
+        Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
+        Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
       ]),
       ListDivider(),
-      ListTile(
-        title: Text(order.json['product'].name()),
-        subtitle: Text(localization.translate("product")),
+      KeyValue(
+        label: localization.translate("product"),
+        value: order.json['product'].name(),
+        icon: const Icon(Icons.question_mark),
       ),
-      ListTile(
-        title: Text(order.json['area'].name()),
-        subtitle: Text(localization.translate("area")),
+      KeyValue(
+        label: localization.translate("area"),
+        value: order.json['area'].name(),
+        icon: const Icon(Icons.question_mark),
       ),
-      ListTile(
-        title: Text(order.json['date']),
-        subtitle: Text(localization.translate("date")),
+      KeyValue(
+        label: localization.translate("operator"),
+        value: operatorName ?? ' ',
+        icon: const Icon(Icons.question_mark),
+      ),
+      KeyValue(
+        label: localization.translate("date"),
+        value: DT.format(order.json['date']),
+        icon: const Icon(Icons.question_mark),
       ),
       ListDivider(),
     ];
 
     return ScrollableListView(
       children: widgets,
-    );
-  }
-}
-
-class ProductionOrderProduced extends StatefulWidget {
-  final MemoryItem order;
-
-  const ProductionOrderProduced({super.key, required this.order});
-
-  @override
-  State<StatefulWidget> createState() => _ProductionOrderProducedState();
-}
-
-class _ProductionOrderProducedState extends State<ProductionOrderProduced> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_productionOrderProducedEdit');
-  final FocusScopeNode _focusNode = FocusScopeNode();
-
-  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
-
-  String status = "register";
-
-  @override
-  Widget build(BuildContext context) {
-    final localization = AppLocalizations.of(context);
-    final widgets = <Widget>[
-      AppForm(
-          entity: details,
-          formKey: _formKey,
-          focusNode: _focusNode,
-          onChanged: () {
-            _formKey.currentState!.save();
-            debugPrint("onChanged: ${_formKey.currentState!.value}");
-          },
-          child: ScrollableListView(children: <Widget>[
-            FormCard(isLast: true, children: <Widget>[
-              DecoratedFormPickerField(
-                ctx: const ['printer'],
-                name: 'printer',
-                label: localization.translate("printer"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-              ),
-              DecoratedFormField(
-                name: 'date',
-                label: localization.translate("date"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.datetime,
-                readOnly: true,
-              ),
-              DecoratedFormField(
-                name: 'customer',
-                label: localization.translate("customer"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.text,
-              ),
-              DecoratedFormField(
-                name: 'label',
-                label: localization.translate("label"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.text,
-              ),
-              DecoratedFormPickerField(
-                ctx: const ['person'],
-                name: 'operator',
-                label: localization.translate("operator"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-              ),
-              DecoratedFormPickerField(
-                ctx: const ['person'],
-                name: 'control',
-                label: localization.translate("control"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-              ),
-              DecoratedFormField(
-                name: 'qty',
-                label: localization.translate("qty in box"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-                keyboardType: TextInputType.number,
-              ),
-              ElevatedButton(
-                onPressed: status == 'register' ? registerAndPrint : null,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Text(localization.translate(status)),
-              )
-            ])
-          ]))
-    ];
-    return ScrollableListView(
-      children: widgets,
-    );
-  }
-
-  void registerAndPrint() async {
-    setState(() => status = "connecting");
-    try {
-      print("pressed:");
-
-      final data = _formKey.currentState?.value;
-      if (data == null) {
-        return;
-      }
-
-      final printer = data['printer'];
-      if (printer == null) {
-        throw const FormatException('select printer');
-      }
-      final ip = printer.json['ip'];
-      final port = int.parse(printer.json['port']);
-
-      print("printer $ip $port");
-
-      final order = await widget.order.enrich([
-        fProduct,
-      ]);
-
-      print("order ${order.json}");
-
-      final orderId = order.id;
-      final product = order.json['product'].json;
-      final productName = product['name'] ?? '';
-      final partNumber = product['part_number'] ?? '';
-
-      final date = data['date'] ?? '';
-      final customer = data['customer'] ?? '';
-      final label = data['label'] ?? '';
-
-      final operator = data['operator'];
-      if (operator == null) {
-        throw const FormatException('select operator');
-      }
-      final operatorId = operator.json['_id'] ?? '';
-      final operatorName = operator.json['name'] ?? '';
-
-      final control = data['control'];
-      if (control == null) {
-        throw const FormatException('select control');
-      }
-      final controlId = control.json['_id'] ?? '';
-      final controlName = control.json['name'] ?? '';
-
-      final qty = data['qty'] ?? 0;
-
-      final result = await Labels.connect(ip, port, (printer) async {
-        setState(() => status = "registering");
-        final record =
-            await Api.feathers().create(serviceName: 'memories', data: {
-          'order': orderId,
-          'date': date,
-          'operator': operatorId,
-          'control': controlId,
-          'qty': qty
-        }, params: {
-          'oid': Api.instance.oid,
-          'ctx': ['production', 'produce']
-        });
-
-        setState(() => status = "printing");
-
-        final id = record['_id'];
-
-        final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
-
-        final Map<String, String> labelData = {
-          "продукция": productName,
-          "артикул": partNumber,
-          "дата": dd,
-          "количество": "$qty шт",
-          "line1": "",
-          "оператор": operatorName,
-          "проверил": controlName,
-          "line2": "",
-          "этикетка": label,
-          "заказчик": customer,
-        };
-
-        Labels.lines(printer, id, labelData);
-
-        return Future<PrintResult>.value(PrintResult.success);
-      });
-
-      if (result != PrintResult.success) {
-        showToast(result.msg,
-            // context: context,
-            axis: Axis.horizontal,
-            alignment: Alignment.center,
-            position: StyledToastPosition.bottom);
-      }
-    } catch (e, stacktrace) {
-      print(stacktrace);
-      showToast(e.toString(),
-          // context: context,
-          axis: Axis.horizontal,
-          alignment: Alignment.center,
-          position: StyledToastPosition.bottom);
-    } finally {
-      setState(() {
-        status = "register";
-      });
-    }
-  }
-}
-
-class ProductionOrderProducedView extends StatelessWidget {
-  final MemoryItem order;
-
-  const ProductionOrderProducedView({super.key, required this.order});
-
-  @override
-  Widget build(BuildContext context) {
-    final ctx = ['production', 'produce'];
-    final schema = [
-      const Field('qty', NumberType()),
-      Field('code', CalculatedType((MemoryItem bag) async {
-        return bag.id.split('T').last;
-      }))
-    ];
-    return BlocProvider(
-      create: (context) => MemoryBloc()
-        ..add(MemoryFetch('memories', ctx,
-            schema: schema, filter: {'order': order.id})),
-      child: MemoryList(
-        ctx: ctx,
-        schema: schema,
-        title: (MemoryItem item) => Text(item.json['qty']),
-        subtitle: (MemoryItem item) => Text(item.id.split('T').last),
-        onTap: (MemoryItem item) => {},
-      ),
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/utils/date.dart';
+import 'package:nae/widgets/key_value.dart';
 
 class WHReceiveOverview extends StatelessWidget {
   final MemoryItem doc;
@@ -34,9 +35,7 @@ class WHReceiveOverview extends StatelessWidget {
     final counterparty = doc.json['counterparty'] is MemoryItem
         ? doc.json['counterparty'].name()
         : doc.json['counterparty']['name'] ?? '';
-    final storage = doc.json['storage'] is MemoryItem
-        ? doc.json['storage'].name()
-        : doc.json['storage']['name'] ?? '';
+    final storage = doc.json['storage'] is MemoryItem ? doc.json['storage'].name() : doc.json['storage']['name'] ?? '';
 
     return BlocProvider(
       create: (context) {
@@ -68,39 +67,6 @@ class WHReceiveOverview extends StatelessWidget {
           icon: const Icon(Icons.input),
         ),
       ]),
-    );
-  }
-}
-
-class KeyValue extends StatelessWidget {
-  final String label;
-  final String value;
-  final Icon icon;
-
-  const KeyValue(
-      {super.key,
-      required this.label,
-      required this.value,
-      required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      initialValue: value,
-      decoration: InputDecoration(
-        // icon: icon,
-        labelText: label,
-        // labelStyle: const TextStyle(
-        //   color: Color(0xFF6200EE),
-        // ),
-        // helperText: 'Helper text',
-        // suffixIcon: const Icon(
-        //   Icons.check_circle,
-        // ),
-        // enabledBorder: const UnderlineInputBorder(
-        //   borderSide: BorderSide(color: Color(0xFF6200EE)),
-        // ),
-      ),
     );
   }
 }

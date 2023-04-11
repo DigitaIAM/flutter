@@ -113,6 +113,16 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
               onSave: _onSave,
               // keyboardType: TextInputType.text,
             ),
+            DecoratedFormPickerField(
+              ctx: const ['person'],
+              name: 'operator',
+              label: localization.translate("operator"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: (context) {},
+            ),
             DecoratedFormField(
               name: 'planned',
               label: localization.translate("planned qty"),

@@ -15,24 +15,29 @@ import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
-class WHTransferGoodsRegistration extends StatefulWidget {
+class GoodsRegistration extends StatefulWidget {
+  final List<String> ctx;
   final MemoryItem doc;
+  final bool enablePrinting;
+  final bool allowGoodsCreation;
 
-  const WHTransferGoodsRegistration({super.key, required this.doc});
+  const GoodsRegistration({
+    super.key,
+    required this.ctx,
+    required this.doc,
+    this.enablePrinting = true,
+    this.allowGoodsCreation = true,
+  });
 
   @override
-  State<StatefulWidget> createState() => _WHTransferGoodsRegistrationState();
+  State<StatefulWidget> createState() => _GoodsRegistrationState();
 }
 
-class _WHTransferGoodsRegistrationState
-    extends State<WHTransferGoodsRegistration> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(
-      debugLabel: '_WHTransferGoodsRegistrationEdit');
+class _GoodsRegistrationState extends State<GoodsRegistration> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsRegistrationEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
-
-  static const ctx = ['warehouse', 'transfer'];
 
   String status = "register";
   int numberOfQuantities = 1;
@@ -55,7 +60,7 @@ class _WHTransferGoodsRegistrationState
             }
             state.save();
             final value = state.value;
-            debugPrint("onChanged: $value");
+            // debugPrint("onChanged: $value");
 
             final goods = value['goods'];
             if (goods is MemoryItem) {
@@ -97,22 +102,27 @@ class _WHTransferGoodsRegistrationState
           },
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
-              DecoratedFormPickerField(
-                creatable: false,
-                ctx: const ['printer'],
-                name: 'printer',
-                label: localization.translate("printer"),
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  // FormBuilderValidators.required(),
-                ]),
-                onSave: (context) {},
-              ),
+              ...(widget.enablePrinting
+                  ? [
+                      DecoratedFormPickerField(
+                        creatable: false,
+                        ctx: const ['printer'],
+                        name: 'printer',
+                        label: localization.translate("printer"),
+                        autofocus: true,
+                        validator: FormBuilderValidators.compose([
+                          // FormBuilderValidators.required(),
+                        ]),
+                        onSave: (context) {},
+                      )
+                    ]
+                  : []),
               const SizedBox(height: 10),
               DecoratedFormPickerField(
                 ctx: const ['goods'],
                 name: 'goods',
                 label: localization.translate("goods"),
+                creatable: widget.allowGoodsCreation,
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(errorText: "выберите товар"),
@@ -122,42 +132,40 @@ class _WHTransferGoodsRegistrationState
               const SizedBox(height: 10),
               ...qtyUom(context),
             ]),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                FloatingActionButton(
-                  heroTag: 'product_register',
-                  backgroundColor: theme.primaryColorDark,
-                  onPressed: status == 'register' ? registerPreparation : null,
-                  tooltip: localization.translate('register'.toString()),
-                  child: registered == 'register'
-                      ? const Icon(Icons.done)
-                      : Icon(
-                          Icons.add,
-                          color: theme.primaryColorLight,
-                        ),
-                ),
-                FloatingActionButton(
-                  heroTag: 'product_register_and_print',
-                  backgroundColor: theme.primaryColorDark,
-                  onPressed:
-                      status == 'register' ? registerAndPrintPreparation : null,
-                  tooltip: localization.translate('and print'.toString()),
-                  child: registered == 'registerAndPrint'
-                      ? const Icon(Icons.done)
-                      : Icon(
-                          Icons.print,
-                          color: theme.primaryColorLight,
-                        ),
-                ),
-              ],
-            ),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+              FloatingActionButton(
+                heroTag: 'product_register',
+                backgroundColor: theme.primaryColorDark,
+                onPressed: status == 'register' ? registerPreparation : null,
+                tooltip: localization.translate('register'.toString()),
+                child: registered == 'register'
+                    ? const Icon(Icons.done)
+                    : Icon(
+                        Icons.add,
+                        color: theme.primaryColorLight,
+                      ),
+              ),
+              ...(widget.enablePrinting
+                  ? [
+                      FloatingActionButton(
+                        heroTag: 'product_register_and_print',
+                        backgroundColor: theme.primaryColorDark,
+                        onPressed: status == 'register' ? registerAndPrintPreparation : null,
+                        tooltip: localization.translate('and print'.toString()),
+                        child: registered == 'registerAndPrint'
+                            ? const Icon(Icons.done)
+                            : Icon(
+                                Icons.print,
+                                color: theme.primaryColorLight,
+                              ),
+                      )
+                    ]
+                  : []),
+            ]),
             if (status != 'register')
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Text(status),
-                  ]),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                Text(status),
+              ]),
           ]))
     ];
     return ScrollableListView(
@@ -267,8 +275,7 @@ class _WHTransferGoodsRegistrationState
       final doc = await widget.doc.enrich(WHTransfer.schema);
 
       try {
-        final result =
-            await register(doc, data, numberOfQuantities, ctx, setStatus);
+        final result = await register(doc, data, numberOfQuantities, widget.ctx, setStatus);
 
         if (!(result.isNew || result.isEmpty)) {
           done('register');
@@ -279,8 +286,7 @@ class _WHTransferGoodsRegistrationState
     }
   }
 
-  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data,
-      {MemoryItem? item}) async {
+  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data, {MemoryItem? item}) async {
     resetDone();
 
     setStatus("connecting");
@@ -289,8 +295,7 @@ class _WHTransferGoodsRegistrationState
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(WHTransfer.schema);
-        final record = item ??
-            await register(doc, data, numberOfQuantities, ctx, setStatus);
+        final record = item ?? await register(doc, data, numberOfQuantities, widget.ctx, setStatus);
 
         if (item == null) {
           if (!(record.isEmpty || record.isNew)) {

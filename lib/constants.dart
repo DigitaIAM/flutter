@@ -35,9 +35,13 @@ const Field fCounterparty = Field(
 );
 
 const Field fStorage = Field('storage', ReferenceType(['warehouse', 'storage']));
+const Field fArea = Field('area', ReferenceType(['production', 'area']));
 
 const Field fFrom = Field('from', ReferenceType(['warehouse', 'storage']));
 const Field fInto = Field('into', ReferenceType(['warehouse', 'storage']));
+
+const Field fOperator = Field("operator", ReferenceType(['person']));
+const Field fControl = Field("control", ReferenceType(['person']));
 
 const Field fProduct = Field("product", ReferenceType(['product']));
 
