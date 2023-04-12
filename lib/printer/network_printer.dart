@@ -6,10 +6,10 @@ import 'package:windows1251/windows1251.dart';
 class NetworkPrinter {
   late Socket _socket;
 
-  Future<PrintResult> connect(String host,
-      {int port = 9100, Duration timeout = const Duration(seconds: 15)}) async {
+  Future<PrintResult> connect(String host, {int port = 9100, Duration timeout = const Duration(seconds: 5)}) async {
     try {
       _socket = await Socket.connect(host, port, timeout: timeout);
+      // _socket.setOption(SocketOption.tcpNoDelay, true);
       // _socket.add(_generator.reset());
       return Future<PrintResult>.value(PrintResult.success);
     } catch (e) {
@@ -25,9 +25,22 @@ class NetworkPrinter {
     }
   }
 
+  Future done() async {
+    return await _socket.done;
+  }
+
+  Future flush() {
+    return _socket.flush();
+  }
+
+  Future close() {
+    return _socket.close();
+  }
+
   Future sendCommand(String command) async {
-    // final List<int> com = utf8.encode(command);
+    // print(command);
     final com = windows1251.encode(command);
+    // print("$com");
     _socket.add(com);
   }
 
@@ -75,33 +88,37 @@ class NetworkPrinter {
     String mode = 'A',
     int rotation = 0,
   }) {
-    sendCommand(
-        'QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,M2,"$content"\r\n');
+    sendCommand('QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,M2,"$content"\r\n');
   }
 
-  void text(int x, int y, String content,
-      {String font = "1",
-      int rotation = 0,
-      int mx = 1,
-      int my = 1,
-      int alignment = 0
-      // 0 : Default (Left)
-      // 1 : Left
-      // 2 : Center
-      // 3 : Right
-      }) {
-    sendCommand(
-        'TEXT $x,$y,"$font",$rotation,$mx,$my,$alignment,"$content"\r\n');
+  void text(
+    int x,
+    int y,
+    String content, {
+    String font = "1",
+    int rotation = 0,
+    int mx = 1,
+    int my = 1,
+    int alignment = 0,
+    // 0 : Default (Left)
+    // 1 : Left
+    // 2 : Center
+    // 3 : Right
+  }) {
+    sendCommand('TEXT $x,$y,"$font",$rotation,$mx,$my,$alignment,"$content"\r\n');
   }
 
-  void barcode_EAN13(int x, int y, String barcode,
-      {int height = 100,
-      int humanReadable = 2,
-      int rotation = 0,
-      int narrow = 4,
-      int wide = 2}) {
-    sendCommand(
-        'BARCODE $x,$y, "EAN13",$height,$humanReadable,$rotation,$narrow,$wide,"$barcode"\r\n');
+  void barcode_EAN13(
+    int x,
+    int y,
+    String barcode, {
+    int height = 100,
+    int humanReadable = 2,
+    int rotation = 0,
+    int narrow = 4,
+    int wide = 2,
+  }) {
+    sendCommand('BARCODE $x,$y, "EAN13",$height,$humanReadable,$rotation,$narrow,$wide,"$barcode"\r\n');
   }
 
   void feed(int i) {

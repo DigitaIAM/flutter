@@ -92,6 +92,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
               keyboardType: TextInputType.datetime,
             ),
             DecoratedFormPickerField(
+              creatable: false,
               ctx: const ['production', 'area'],
               name: 'area',
               label: localization.translate('area'),
@@ -103,6 +104,18 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
               // keyboardType: TextInputType.text,
             ),
             DecoratedFormPickerField(
+              creatable: false,
+              ctx: const ['person'],
+              name: 'operator',
+              label: localization.translate("operator"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: (context) {},
+            ),
+            DecoratedFormPickerField(
+              creatable: false,
               ctx: const ['product'],
               name: 'product',
               label: localization.translate("product"),
@@ -113,15 +126,25 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
               onSave: _onSave,
               // keyboardType: TextInputType.text,
             ),
-            DecoratedFormPickerField(
-              ctx: const ['person'],
-              name: 'operator',
-              label: localization.translate("operator"),
+            DecoratedFormField(
+              name: 'material',
+              label: localization.translate("material"),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
               ]),
               onSave: (context) {},
+              keyboardType: TextInputType.text,
+            ),
+            DecoratedFormField(
+              name: 'thickness',
+              label: localization.translate("thickness"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: (context) {},
+              keyboardType: TextInputType.text,
             ),
             DecoratedFormField(
               name: 'planned',

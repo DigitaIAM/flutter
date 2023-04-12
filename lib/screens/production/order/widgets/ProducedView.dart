@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nae/api.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/printer/labels.dart';
+import 'package:nae/printer/network_printer.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
@@ -32,7 +35,7 @@ class POProducedView extends StatelessWidget {
         ctx: ctx,
         schema: schema,
         filter: filter,
-        title: (MemoryItem item) => Text(item.json['qty']),
+        title: (MemoryItem item) => Text(item.json['qty'].toString()),
         subtitle: (MemoryItem item) => Text(item.id.split('T').last),
         // onTap: (MemoryItem item) => {},
         actions: [
@@ -92,7 +95,21 @@ class POProducedView extends StatelessWidget {
       for (var printer in printers) {
         children.add(ListTile(
           title: Text(printer['name'] ?? ''),
-          onTap: () => POProducedEdit.printing(printer, order, doc, (newStatus) {}),
+          onTap: () async {
+            final ip = printer['ip'];
+            final port = int.parse(printer['port']);
+
+            final result = await Labels.connect(
+                ip, port, (printer) async => POProducedEdit.printing(printer, order, doc, (newStatus) {}));
+
+            if (result != PrintResult.success) {
+              showToast(result.msg,
+                  // context: context,
+                  axis: Axis.horizontal,
+                  alignment: Alignment.center,
+                  position: StyledToastPosition.bottom);
+            }
+          },
         ));
       }
     }

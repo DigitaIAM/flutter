@@ -25,7 +25,7 @@ class POProducedEdit extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _POProducedEditState();
 
-  static void printing(
+  static Future<PrintResult> printing(
     NetworkPrinter printer,
     MemoryItem? orderDoc,
     MemoryItem doc,
@@ -69,25 +69,27 @@ class POProducedEdit extends StatefulWidget {
     final productName = product['name'] ?? '';
     final partNumber = product['part_number'] ?? '';
 
-    final operator = order.json['operator'];
+    final operator = order.json['operator'] as MemoryItem?;
     if (operator == null) {
       throw const FormatException('operator is not selected');
     }
-    final operatorName = operator.label();
+    final operatorName = operator.name();
 
-    final control = record.json['control'];
+    final control = record.json['control'] as MemoryItem?;
     if (control == null) {
       throw const FormatException('control is not selected');
     }
-    final controlName = control.label();
+    final controlName = control.name();
 
     final qty = record.json['qty'] ?? '';
 
     final Map<String, String> labelData;
     if (type == 'roll') {
-      final material = record.json['material'] ?? '';
-      final thickness = record.json['thickness'] ?? '';
+      final material = record.json['material'] ?? order.json['material'] ?? '';
+      var thickness = record.json['thickness'] ?? order.json['thickness'] ?? '';
       final length = record.json['length'] ?? '';
+
+      thickness = "$thickness".replaceAll(".", "");
 
       labelData = {
         "продукция": productName,
@@ -130,6 +132,8 @@ class POProducedEdit extends StatefulWidget {
     }
 
     Labels.lines(printer, record.id, labelData);
+
+    return PrintResult.success;
   }
 }
 
@@ -169,6 +173,7 @@ class _POProducedEditState extends State<POProducedEdit> {
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
               DecoratedFormPickerField(
+                creatable: false,
                 ctx: const ['printer'],
                 name: 'printer',
                 label: localization.translate("printer"),
@@ -210,6 +215,7 @@ class _POProducedEditState extends State<POProducedEdit> {
   List<Widget> rollForm(AppLocalizations localization) {
     return [
       DecoratedFormPickerField(
+        creatable: false,
         ctx: const ['person'],
         name: 'control',
         label: localization.translate("control"),
@@ -218,26 +224,6 @@ class _POProducedEditState extends State<POProducedEdit> {
           FormBuilderValidators.required(),
         ]),
         onSave: (context) {},
-      ),
-      DecoratedFormField(
-        name: 'material',
-        label: localization.translate("material"),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-        keyboardType: TextInputType.text,
-      ),
-      DecoratedFormField(
-        name: 'thickness',
-        label: localization.translate("thickness"),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-        keyboardType: TextInputType.text,
       ),
       DecoratedFormField(
         name: 'length',
@@ -265,6 +251,7 @@ class _POProducedEditState extends State<POProducedEdit> {
   List<Widget> boxedForm(AppLocalizations localization) {
     return [
       DecoratedFormPickerField(
+        creatable: false,
         ctx: const ['person'],
         name: 'control',
         label: localization.translate("control"),
@@ -310,6 +297,7 @@ class _POProducedEditState extends State<POProducedEdit> {
         keyboardType: TextInputType.text,
       ),
       DecoratedFormPickerField(
+        creatable: false,
         ctx: const ['person'],
         name: 'control',
         label: localization.translate("control"),
@@ -362,16 +350,17 @@ class _POProducedEditState extends State<POProducedEdit> {
 
       final date = data['date'] ?? '';
 
-      final operator = order.json['operator'];
-      if (operator == null) {
-        throw const FormatException('operator is not selected');
-      }
+      // final operator = order.json['operator'];
+      // if (operator == null) {
+      //   throw const FormatException('operator is not selected');
+      // }
 
       final control = data['control'];
       if (control == null) {
         throw const FormatException('select control');
       }
-      final controlId = control.id();
+      print("control $control");
+      final controlId = control.id;
 
       final qty = data['qty'] ?? 0;
 
@@ -410,19 +399,19 @@ class _POProducedEditState extends State<POProducedEdit> {
 
       final result = await Labels.connect(ip, port, (printer) async {
         setState(() => status = "registering");
-        final record = await Api.feathers().create(serviceName: 'memories', data: recordData, params: {
+        final response = await Api.feathers().create(serviceName: 'memories', data: recordData, params: {
           'oid': Api.instance.oid,
           'ctx': ['production', 'produce']
         });
 
-        POProducedEdit.printing(
+        final record = MemoryItem.from(response);
+
+        return await POProducedEdit.printing(
           printer,
           widget.order,
           record,
           (String newStatus) => setState(() => status = newStatus),
         );
-
-        return Future<PrintResult>.value(PrintResult.success);
       });
 
       if (result != PrintResult.success) {
