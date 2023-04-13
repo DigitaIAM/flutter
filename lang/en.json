@@ -63,6 +63,7 @@
   "boxes": "boxes",
   "area": "area",
   "qty": "qty",
+  "planned qty": "planned qty",
   "qty in box": "qty in box",
   "printer": "printer",
   "customer": "customer",
@@ -91,5 +92,9 @@
   "stock": "stock",
   "from": "from",
   "into": "into",
-  "raw material": "raw material"
+  "raw material": "raw material",
+  "notes": "notes",
+  "thickness": "thickness",
+  "length": "length",
+  "weight": "weight"
 }

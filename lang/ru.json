@@ -64,6 +64,7 @@
   "boxes": "коробки",
   "area": "участок",
   "qty": "количество",
+  "planned qty": "план колво",
   "qty in box": "колво в коробке",
   "printer": "принтер",
   "customer": "заказчик",
@@ -92,5 +93,9 @@
   "stock": "остаток",
   "from": "откуда",
   "into": "куда",
-  "raw material": "сырьё"
+  "raw material": "сырьё",
+  "notes": "заметки",
+  "thickness": "толщина",
+  "length": "длина",
+  "weight": "вес"
 }

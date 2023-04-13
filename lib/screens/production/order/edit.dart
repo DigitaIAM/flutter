@@ -133,10 +133,10 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
             ),
             DecoratedFormField(
               name: 'material',
-              label: localization.translate("material"),
+              label: localization.translate("raw material"),
               autofocus: true,
               validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
+                // FormBuilderValidators.required(),
               ]),
               onSave: (context) {},
               keyboardType: TextInputType.text,
@@ -146,7 +146,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
               label: localization.translate("thickness"),
               autofocus: true,
               validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
+                // FormBuilderValidators.required(),
               ]),
               onSave: (context) {},
               keyboardType: TextInputType.text,
