@@ -86,6 +86,7 @@ class POProducedEdit extends StatefulWidget {
 
     final Map<String, String> labelData;
     if (type == 'roll') {
+      final notes = record.json['notes'] ?? '';
       final material = record.json['material'] ?? order.json['material'] ?? '';
       var thickness = record.json['thickness'] ?? order.json['thickness'] ?? '';
       final length = record.json['length'] ?? '';
@@ -95,7 +96,7 @@ class POProducedEdit extends StatefulWidget {
       labelData = {
         "продукция": productName,
         "артикул": "$partNumber$thickness",
-        "сырьё": "$material",
+        "сырьё": "$material $notes",
         "дата": dd,
         "line1": "",
         "вес": "$qty кг",
@@ -215,6 +216,16 @@ class _POProducedEditState extends State<POProducedEdit> {
 
   List<Widget> rollForm(AppLocalizations localization) {
     return [
+      DecoratedFormField(
+        name: 'notes',
+        label: localization.translate("notes"),
+        autofocus: true,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(),
+        ]),
+        onSave: (context) {},
+        keyboardType: TextInputType.number,
+      ),
       DecoratedFormPickerField(
         creatable: false,
         ctx: const ['person'],

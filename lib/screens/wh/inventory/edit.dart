@@ -44,9 +44,8 @@ class _WHInventoryEditState extends State<WHInventoryEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", WHInventory.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context.read<MemoryBloc>().add(
+          MemorySave("memories", WHInventory.ctx, WHInventory.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');

@@ -46,7 +46,7 @@ class _WHReceiveEditState extends State<WHReceiveEdit> {
 
       context
           .read<MemoryBloc>()
-          .add(MemorySave("memories", WHReceive.ctx, MemoryItem(id: widget.entity.id, json: data)));
+          .add(MemorySave("memories", WHReceive.ctx, WHReceive.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');

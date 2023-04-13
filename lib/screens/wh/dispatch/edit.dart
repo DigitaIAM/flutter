@@ -46,7 +46,7 @@ class _WHDispatchEditState extends State<WHDispatchEdit> {
 
       context
           .read<MemoryBloc>()
-          .add(MemorySave("memories", WHDispatch.ctx, MemoryItem(id: widget.entity.id, json: data)));
+          .add(MemorySave("memories", WHDispatch.ctx, WHDispatch.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');

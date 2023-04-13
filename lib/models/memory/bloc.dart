@@ -231,7 +231,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
   Future<void> _onCreate(MemoryCreate event, Emitter<RequestState> emit) async {
     try {
       var saved = await _create(event.serviceName, event.ctx, event.data);
-      saved = await saved.enrich(event.schema ?? schema ?? []);
+      saved = await saved.enrich(event.schema); // ?? schema ?? []);
       print("schema $schema");
       print("saved $saved");
 
@@ -292,7 +292,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
   Future<void> _onUpdate(MemoryUpdate event, Emitter<RequestState> emit) async {
     try {
       var saved = await _update(event.serviceName, event.ctx, event.data);
-      saved = await saved.enrich(event.schema ?? schema ?? []);
+      saved = await saved.enrich(event.schema); // ?? schema ?? []);
       print("saved $saved");
 
       final List<MemoryItem> list = List.from(state.original);
@@ -344,7 +344,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
   Future<void> _onPatch(MemoryPatch event, Emitter<RequestState> emit) async {
     try {
       var saved = await _patch(event.serviceName, event.ctx, event.id, event.data);
-      saved = await saved.enrich(event.schema ?? schema ?? []);
+      saved = await saved.enrich(event.schema); // ?? schema ?? []);
       print("saved $saved");
 
       final List<MemoryItem> list = List.from(state.original);

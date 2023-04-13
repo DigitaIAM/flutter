@@ -46,7 +46,7 @@ class _WHTransferEditState extends State<WHTransferEdit> {
 
       context
           .read<MemoryBloc>()
-          .add(MemorySave("memories", WHTransfer.ctx, MemoryItem(id: widget.entity.id, json: data)));
+          .add(MemorySave("memories", WHTransfer.ctx, WHTransfer.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
