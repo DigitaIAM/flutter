@@ -171,7 +171,7 @@ class WHTransactionsBuilder extends StatelessWidget {
     // print("entity $entity");
 
     final filter = {
-      'dates': {'from': '2022-12-01', 'till': Utils.today()},
+      'dates': {'from': '2022-01-01', 'till': Utils.today()},
       'storage': entity.json['storage'].json['_uuid'],
       'goods': entity.json['goods'].json['_uuid'],
       'batch_id': entity.json['batch']['id'],
