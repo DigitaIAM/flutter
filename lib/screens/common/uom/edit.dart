@@ -25,8 +25,7 @@ class UomEdit extends EntityHolder {
 }
 
 class _UomEditState extends State<UomEdit> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_uomEdit');
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_uomEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   @override
@@ -43,8 +42,9 @@ class _UomEditState extends State<UomEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      context.read<MemoryBloc>().add(MemorySave(
-          "memories", Uom.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context
+          .read<MemoryBloc>()
+          .add(MemorySave("memories", Uom.ctx, Uom.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -66,9 +66,7 @@ class _UomEditState extends State<UomEdit> {
 
     return EditScaffold(
       entity: widget.entity,
-      title: widget.entity.isNew
-          ? localization.translate("new uom")
-          : localization.translate("edit uom"),
+      title: widget.entity.isNew ? localization.translate("new uom") : localization.translate("edit uom"),
       onClose: (context) {
         context.read<UiBloc>().add(ChangeView(Uom.ctx));
       },

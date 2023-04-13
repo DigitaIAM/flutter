@@ -30,7 +30,8 @@ class POProducedView extends StatelessWidget {
     ];
     final filter = {'order': order.id};
     return BlocProvider(
-      create: (context) => MemoryBloc()..add(MemoryFetch('memories', ctx, schema: schema, filter: filter)),
+      create: (context) =>
+          MemoryBloc(schema: schema)..add(MemoryFetch('memories', ctx, schema: schema, filter: filter)),
       child: MemoryList(
         ctx: ctx,
         schema: schema,
@@ -62,7 +63,8 @@ class POProducedView extends StatelessWidget {
     const ctx = ['warehouse', 'transfer'];
     final status = item.json['_status'] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {'_status': status};
-    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, item.id, data));
+    // TODO fix schema
+    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
 
   Future chooseAndPrint(BuildContext context, MemoryItem doc) async {

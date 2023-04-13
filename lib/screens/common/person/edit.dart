@@ -43,7 +43,9 @@ class _PersonEditState extends State<PersonEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      context.read<MemoryBloc>().add(MemorySave("memories", Person.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context
+          .read<MemoryBloc>()
+          .add(MemorySave("memories", Person.ctx, Person.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');

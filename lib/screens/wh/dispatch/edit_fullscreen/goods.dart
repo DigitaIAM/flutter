@@ -114,7 +114,8 @@ class WHDispatchGoods extends StatelessWidget {
   void deleteItem(BuildContext context, MemoryItem item) async {
     final status = item.json['_status'] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {'_status': status};
-    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, item.id, data));
+    // TODO fix schema
+    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
 
   Future drawPrinterList(BuildContext context, MemoryItem item) async {
@@ -147,9 +148,7 @@ class WHDispatchGoods extends StatelessWidget {
       for (var printer in printers) {
         final ip = (printer['ip'] ?? '').toString();
         final port = int.parse(printer['port'] ?? '0');
-        children.add(ListTile(
-            title: Text(printer['name'] ?? ''),
-            onTap: () => printPreparation(ip, port, item)));
+        children.add(ListTile(title: Text(printer['name'] ?? ''), onTap: () => printPreparation(ip, port, item)));
       }
     }
 

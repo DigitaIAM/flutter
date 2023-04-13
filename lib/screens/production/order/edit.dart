@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:intl/intl.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
-import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
+import 'package:nae/widgets/app_form_date_field.dart';
 import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/entity_screens.dart';
@@ -40,13 +41,16 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   void _onSave(BuildContext context) {
     final state = _formKey.currentState;
     if (state != null && state.saveAndValidate()) {
+      print("state ${state.value}");
       final Map<String, dynamic> data = Map.from(state.value);
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", ProductionOrder.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      // workaround
+      data['date'] = DateFormat("yyyy-MM-dd").format(data["date"]);
+
+      context.read<MemoryBloc>().add(MemorySave(
+          "memories", ProductionOrder.ctx, ProductionOrder.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -74,6 +78,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
       onClose: routerBack,
       onCancel: routerBack,
       onSave: _onSave,
+      afterSave: (context, entity) => context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, entity: entity)),
       body: AppForm(
         schema: ProductionOrder.schema,
         formKey: _formKey,
@@ -81,7 +86,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
         entity: getEntity(),
         child: ScrollableListView(children: <Widget>[
           FormCard(isLast: true, children: <Widget>[
-            DecoratedFormField(
+            DateField(
               name: 'date',
               label: localization.translate("date"),
               autofocus: true,
@@ -165,7 +170,11 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   MemoryItem getEntity() {
     if (widget.entity.isNew && widget.entity.json["date"] == null) {
       final json = Map.of(widget.entity.json);
-      json["date"] = Utils.today();
+      json["date"] = DateTime.now(); // Utils.today();
+      return MemoryItem(id: widget.entity.id, json: json);
+    } else {
+      final json = Map.of(widget.entity.json);
+      json["date"] = DateTime.parse(json["date"]); //DateFormat("yyyy-MM-dd").format(json["date"]);
       return MemoryItem(id: widget.entity.id, json: json);
     }
     return widget.entity;

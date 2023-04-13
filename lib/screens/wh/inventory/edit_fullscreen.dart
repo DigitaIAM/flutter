@@ -52,9 +52,8 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> {
       // workaround
       data['_id'] = widget.entity.id;
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", WHInventory.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context.read<MemoryBloc>().add(
+          MemorySave("memories", WHInventory.ctx, WHInventory.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -112,6 +111,7 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> {
             child: ScrollableListView(children: <Widget>[
               Lines(
                 ctx: const ['warehouse', 'inventory'],
+                schema: const [], // TODO
                 document: widget.entity,
               ),
               // workaround to give some space for dropdown
@@ -135,9 +135,10 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> {
 
 class Lines extends StatefulWidget {
   final List<String> ctx;
+  final List<Field> schema;
   final MemoryItem document;
 
-  const Lines({super.key, required this.document, required this.ctx});
+  const Lines({super.key, required this.document, required this.ctx, required this.schema});
 
   @override
   State<Lines> createState() => _LinesState();
@@ -306,9 +307,9 @@ class _LinesState extends State<Lines> {
   void patch(BuildContext context, MemoryItem item, Map<String, dynamic> data) {
     if (item.isNew) {
       data['document'] = widget.document.id;
-      context.read<MemoryBloc>().add(MemoryCreate('memories', widget.ctx, data));
+      context.read<MemoryBloc>().add(MemoryCreate('memories', widget.ctx, widget.schema, data));
     } else {
-      context.read<MemoryBloc>().add(MemoryPatch('memories', widget.ctx, item.id, data));
+      context.read<MemoryBloc>().add(MemoryPatch('memories', widget.ctx, widget.schema, item.id, data));
     }
   }
 }

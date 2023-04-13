@@ -43,7 +43,9 @@ class _ProductEditState extends State<ProductEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      context.read<MemoryBloc>().add(MemorySave("memories", Product.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context
+          .read<MemoryBloc>()
+          .add(MemorySave("memories", Product.ctx, Product.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');

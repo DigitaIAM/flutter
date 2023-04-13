@@ -62,7 +62,8 @@ class POProducedEdit extends StatefulWidget {
       type = 'boxed';
     }
 
-    final date = record.json['date'];
+    // TODO think how to select date
+    final date = order.json['date'] ?? record.json['date'] ?? '';
     final dd = DT.format(date);
 
     final product = order.json['product'].json;

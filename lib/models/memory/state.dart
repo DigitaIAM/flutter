@@ -12,6 +12,7 @@ class RequestState extends Equatable {
     this.filtered = const <MemoryItem>[],
     this.query,
     this.hasReachedMax = false,
+    this.saved,
     this.saveStatus = SaveStatus.ready,
     DateTime? ts,
   }) : updated = ts ?? DateTime.now();
@@ -32,6 +33,7 @@ class RequestState extends Equatable {
 
   final bool hasReachedMax;
 
+  final MemoryItem? saved;
   final SaveStatus saveStatus;
 
   List<MemoryItem> get items => (query == null || query!.trim().isEmpty) ? original : filtered;
@@ -42,15 +44,18 @@ class RequestState extends Equatable {
     List<MemoryItem>? filtered,
     String? query,
     bool? hasReachedMax,
+    MemoryItem? saved,
     SaveStatus? saveStatus,
   }) {
     return RequestState(
-        status: status ?? this.status,
-        original: original ?? this.original,
-        filtered: filtered ?? original ?? this.original,
-        query: query,
-        hasReachedMax: hasReachedMax ?? this.hasReachedMax,
-        saveStatus: saveStatus ?? this.saveStatus);
+      status: status ?? this.status,
+      original: original ?? this.original,
+      filtered: filtered ?? original ?? this.original,
+      query: query,
+      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+      saved: saved ?? this.saved,
+      saveStatus: saveStatus ?? this.saveStatus,
+    );
   }
 
   @override

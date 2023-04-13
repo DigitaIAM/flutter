@@ -11,21 +11,25 @@ import 'package:nae/widgets/save_cancel_buttons.dart';
 import '../models/ui/state.dart';
 
 class EditScaffold extends StatelessWidget {
-  const EditScaffold(
-      {super.key,
-      required this.entity,
-      required this.title,
-      required this.body,
-      this.saveLabel,
-      required this.onSave,
-      required this.onCancel,
-      required this.onClose});
+  const EditScaffold({
+    super.key,
+    required this.entity,
+    required this.title,
+    required this.body,
+    this.saveLabel,
+    this.afterSave,
+    required this.onSave,
+    required this.onCancel,
+    required this.onClose,
+  });
 
   final MemoryItem entity;
   final String title;
   final Widget body;
 
   final String? saveLabel;
+
+  final Function(BuildContext, MemoryItem)? afterSave;
 
   final Function(BuildContext)? onSave;
   final Function(BuildContext)? onCancel;
@@ -40,7 +44,11 @@ class EditScaffold extends StatelessWidget {
     return BlocListener<MemoryBloc, RequestState>(
       listener: (context, state) {
         if (state.saveStatus == SaveStatus.success) {
-          onClose(context);
+          if (afterSave != null && state.saved != null) {
+            afterSave?.call(context, state.saved!);
+          } else {
+            onClose(context);
+          }
         } else if (state.saveStatus == SaveStatus.failure) {}
       },
       child: WillPopScope(

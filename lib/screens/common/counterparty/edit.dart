@@ -43,9 +43,8 @@ class _CounterpartyEditState extends State<CounterpartyEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", Counterparty.ctx, MemoryItem(id: widget.entity.id, json: data)));
+      context.read<MemoryBloc>().add(
+          MemorySave("memories", Counterparty.ctx, Counterparty.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');

@@ -36,18 +36,20 @@ class MemoryRequest extends MemoryEvent {
 }
 
 class MemorySave extends MemoryEvent {
-  MemorySave(this.serviceName, this.ctx, this.data);
+  MemorySave(this.serviceName, this.ctx, this.schema, this.data);
 
   final String serviceName;
   final List<String> ctx;
+  final List<Field> schema;
   final MemoryItem data;
 }
 
 class MemoryCreate extends MemoryEvent {
-  MemoryCreate(this.serviceName, this.ctx, this.data);
+  MemoryCreate(this.serviceName, this.ctx, this.schema, this.data);
 
   final String serviceName;
   final List<String> ctx;
+  final List<Field> schema;
   final Map<String, dynamic> data;
 }
 
@@ -58,10 +60,11 @@ class MemoryCreated extends MemoryEvent {
 }
 
 class MemoryUpdate extends MemoryEvent {
-  MemoryUpdate(this.serviceName, this.ctx, this.data);
+  MemoryUpdate(this.serviceName, this.ctx, this.schema, this.data);
 
   final String serviceName;
   final List<String> ctx;
+  final List<Field> schema;
   final Map<String, dynamic> data;
 }
 
@@ -72,10 +75,11 @@ class MemoryUpdated extends MemoryEvent {
 }
 
 class MemoryPatch extends MemoryEvent {
-  MemoryPatch(this.serviceName, this.ctx, this.id, this.data);
+  MemoryPatch(this.serviceName, this.ctx, this.schema, this.id, this.data);
 
   final String serviceName;
   final List<String> ctx;
+  final List<Field> schema;
   final String id;
   final Map<String, dynamic> data;
 }

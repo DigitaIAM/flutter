@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:intl/intl.dart';
 
-class DecoratedFormField extends StatefulWidget {
-  const DecoratedFormField({
+class DateField extends StatefulWidget {
+  const DateField({
     super.key,
     required this.name,
     this.label,
@@ -36,10 +37,10 @@ class DecoratedFormField extends StatefulWidget {
   final Function(BuildContext)? onSave;
 
   @override
-  State<DecoratedFormField> createState() => _DecoratedFormFieldState();
+  State<DateField> createState() => _DateFieldState();
 }
 
-class _DecoratedFormFieldState extends State<DecoratedFormField> {
+class _DateFieldState extends State<DateField> {
   // bool _showClear = true;
 
   @override
@@ -74,26 +75,32 @@ class _DecoratedFormFieldState extends State<DecoratedFormField> {
       );
     }
 
-    return FormBuilderTextField(
+    return FormBuilderDateTimePicker(
       name: widget.name,
       // decoration: InputDecoration(labelText: AppLocalizations.of(context).translate("label")),
       decoration: inputDecoration!,
-      // style: Theme.of(context).textTheme.bodyMedium,
-      readOnly: widget.readOnly,
-      validator: widget.validator,
-      // autovalidateMode: AutovalidateMode.onUserInteraction,
+
+      format: DateFormat.yMMMMd('ru'),
+      valueTransformer: (text) {
+        print('valueTransformer $text');
+        return text;
+      },
+
+      // initialValue: DateTime.now(),
+      initialEntryMode: DatePickerEntryMode.calendar,
+      inputType: InputType.date,
 
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       keyboardType: widget.keyboardType,
       textInputAction: TextInputAction.next,
-      onEditingComplete: () {
-        print("onEditingComplete");
-      },
-      onSubmitted: (value) {
-        print("onSubmitted");
-        print(value);
-      },
+      // onEditingComplete: () {
+      //   print("onEditingComplete");
+      // },
+      // onSubmitted: (value) {
+      //   print("onSubmitted");
+      //   print(value);
+      // },
     );
   }
 }

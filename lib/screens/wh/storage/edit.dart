@@ -45,7 +45,7 @@ class _WHStorageEditState extends State<WHStorageEdit> {
 
       context
           .read<MemoryBloc>()
-          .add(MemorySave("memories", WHStorage.ctx, MemoryItem(id: widget.entity.id, json: data)));
+          .add(MemorySave("memories", WHStorage.ctx, WHStorage.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
