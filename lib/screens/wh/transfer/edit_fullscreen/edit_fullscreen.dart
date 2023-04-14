@@ -30,14 +30,17 @@ import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
 class WHTransferEditFS extends EntityHolder {
-  const WHTransferEditFS({super.key, required super.entity}) : super(fullscreen: true);
+  const WHTransferEditFS({super.key, required super.entity})
+      : super(fullscreen: true);
 
   @override
   State<WHTransferEditFS> createState() => _WHTransferEditFSState();
 }
 
-class _WHTransferEditFSState extends State<WHTransferEditFS> with SingleTickerProviderStateMixin {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHTransferEditFS');
+class _WHTransferEditFSState extends State<WHTransferEditFS>
+    with SingleTickerProviderStateMixin {
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHTransferEditFS');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   late TabController _controller;
@@ -71,9 +74,8 @@ class _WHTransferEditFSState extends State<WHTransferEditFS> with SingleTickerPr
       // workaround
       data['_id'] = widget.entity.id;
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", WHTransfer.ctx, WHTransfer.schema, MemoryItem(id: widget.entity.id, json: data)));
+      context.read<MemoryBloc>().add(MemorySave("memories", WHTransfer.ctx,
+          WHTransfer.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -102,7 +104,9 @@ class _WHTransferEditFSState extends State<WHTransferEditFS> with SingleTickerPr
             Expanded(
               child: TabBarView(
                 controller: _controller,
-                children: <Widget>[WHTransferDocumentCreation(doc: widget.entity)],
+                children: <Widget>[
+                  WHTransferDocumentCreation(doc: widget.entity)
+                ],
               ),
             ),
           ]);
@@ -192,7 +196,10 @@ class _WHTransferEditFSState extends State<WHTransferEditFS> with SingleTickerPr
                   child: TabBarView(controller: _controller, children: <Widget>[
                     WHTransferGoods(doc: widget.entity),
                     WHTransferOverview(doc: widget.entity),
-                    GoodsRegistration(ctx: const ['warehouse', 'transfer'], doc: widget.entity)
+                    GoodsRegistration(
+                        ctx: const ['warehouse', 'transfer'],
+                        doc: widget.entity,
+                        schema: WHTransfer.schema)
                   ]),
                 ),
               ]);
@@ -218,7 +225,11 @@ class Lines extends StatefulWidget {
   final List<Field> schema;
   final MemoryItem document;
 
-  const Lines({super.key, required this.document, required this.ctx, required this.schema});
+  const Lines(
+      {super.key,
+      required this.document,
+      required this.ctx,
+      required this.schema});
 
   @override
   State<Lines> createState() => _LinesState();
@@ -281,7 +292,9 @@ class _LinesState extends State<Lines> {
           builder: (context, state) {
             switch (state.status) {
               case RequestStatus.failure:
-                return Center(child: Text(localization.translate('failed to fetch data')));
+                return Center(
+                    child:
+                        Text(localization.translate('failed to fetch data')));
               case RequestStatus.success:
                 final headingRowColor = theme.dataTableTheme.headingRowColor;
                 final List<MemoryItem> items = List.of(state.items);
@@ -297,7 +310,8 @@ class _LinesState extends State<Lines> {
                         item.json['qty'] = {uom: uom};
                       } else if (qty is Map) {
                         final uomAtLine = qty['uom'];
-                        if (uomAtLine == null || (uomAtLine is MemoryItem && uomAtLine.isEmpty)) {
+                        if (uomAtLine == null ||
+                            (uomAtLine is MemoryItem && uomAtLine.isEmpty)) {
                           qty['uom'] = uom;
                         }
                       }
@@ -316,7 +330,8 @@ class _LinesState extends State<Lines> {
                   children: [
                     TableRow(
                       children: tableHeaderColumns,
-                      decoration: BoxDecoration(color: headingRowColor?.resolve(<MaterialState>{})),
+                      decoration: BoxDecoration(
+                          color: headingRowColor?.resolve(<MaterialState>{})),
                     ),
                     for (var index = 0; index < items.length; index++)
                       buildRow(context, columns, items, index, localization)
@@ -331,8 +346,8 @@ class _LinesState extends State<Lines> {
     );
   }
 
-  TableRow buildRow(BuildContext context, Map<int, Field> columns, List<MemoryItem> items, int rowIndex,
-      AppLocalizations localization) {
+  TableRow buildRow(BuildContext context, Map<int, Field> columns,
+      List<MemoryItem> items, int rowIndex, AppLocalizations localization) {
     final item = items[rowIndex];
     return TableRow(
       key: ValueKey('__line_${rowIndex}_${item.updatedAt}__'),
@@ -359,13 +374,21 @@ class _LinesState extends State<Lines> {
                   return MemoryItem.from(response);
                 },
                 delegate: (text) async {
-                  final response = await Api.feathers()
-                      .find(serviceName: "memories", query: {"oid": Api.instance.oid, "ctx": type.ctx, "search": text});
-                  return (response['data'] ?? []).map<MemoryItem>((item) => MemoryItem.from(item)).toList();
+                  final response = await Api.feathers().find(
+                      serviceName: "memories",
+                      query: {
+                        "oid": Api.instance.oid,
+                        "ctx": type.ctx,
+                        "search": text
+                      });
+                  return (response['data'] ?? [])
+                      .map<MemoryItem>((item) => MemoryItem.from(item))
+                      .toList();
                 },
                 displayStringForOption: (item) => item?.name() ?? '',
                 itemBuilder: (context, entry) {
-                  return Text(entry.name()); // , style: Theme.of(context).textTheme.displayMedium);
+                  return Text(entry
+                      .name()); // , style: Theme.of(context).textTheme.displayMedium);
                 },
                 onItemSelected: (entry) async {
                   final Map<String, dynamic> data = {};
@@ -410,15 +433,19 @@ class _LinesState extends State<Lines> {
   void patch(BuildContext context, MemoryItem item, Map<String, dynamic> data) {
     if (item.isNew) {
       data['document'] = widget.document.id;
-      context.read<MemoryBloc>().add(MemoryCreate('memories', widget.ctx, widget.schema, data));
+      context
+          .read<MemoryBloc>()
+          .add(MemoryCreate('memories', widget.ctx, widget.schema, data));
     } else {
-      context.read<MemoryBloc>().add(MemoryPatch('memories', widget.ctx, widget.schema, item.id, data));
+      context.read<MemoryBloc>().add(
+          MemoryPatch('memories', widget.ctx, widget.schema, item.id, data));
     }
   }
 }
 
 class CustomTextField extends StatefulWidget {
-  const CustomTextField({super.key, required this.initialValue, required this.onChanged});
+  const CustomTextField(
+      {super.key, required this.initialValue, required this.onChanged});
 
   final dynamic initialValue;
   final Function(String) onChanged;
@@ -470,7 +497,11 @@ class TableHeader extends StatelessWidget {
   final bool isFirst;
   final bool isNumeric;
 
-  const TableHeader({super.key, required this.label, this.isFirst = false, this.isNumeric = false});
+  const TableHeader(
+      {super.key,
+      required this.label,
+      this.isFirst = false,
+      this.isNumeric = false});
 
   @override
   Widget build(BuildContext context) {
@@ -481,7 +512,8 @@ class TableHeader extends StatelessWidget {
         top: 0, // tableHeaderColor.isEmpty ? 0 : 8,
         bottom: 8, // tableHeaderColor.isEmpty ? 8 : 16,
         right: isNumeric ? cTableColumnGap : 0,
-        left: isFirst ? 4 : 0, // tableHeaderColor.isNotEmpty && isFirst ? 4 : 0,
+        left:
+            isFirst ? 4 : 0, // tableHeaderColor.isNotEmpty && isFirst ? 4 : 0,
       ),
       child: Text(
         label,

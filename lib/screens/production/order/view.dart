@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/screens/production/order/screen.dart';
 import 'package:nae/screens/production/order/widgets/ProducedEdit.dart';
 import 'package:nae/screens/production/order/widgets/ProducedView.dart';
 import 'package:nae/screens/wh/goods_registration.dart';
@@ -16,13 +17,15 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 class ProductionOrderView extends EntityHolder {
   final int tabIndex;
 
-  const ProductionOrderView({super.key, required super.entity, required this.tabIndex});
+  const ProductionOrderView(
+      {super.key, required super.entity, required this.tabIndex});
 
   @override
   State<ProductionOrderView> createState() => _ProductionOrderViewState();
 }
 
-class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTickerProviderStateMixin {
+class _ProductionOrderViewState extends State<ProductionOrderView>
+    with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -31,7 +34,10 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
 
     // final state = widget.viewModel.state;
     _controller = TabController(
-        vsync: this, length: 4, initialIndex: 1 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
+        vsync: this,
+        length: 4,
+        initialIndex:
+            1 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
         );
     _controller.addListener(_onTabChanged);
   }
@@ -68,7 +74,9 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
     final date = widget.entity.json["date"];
     final area = widget.entity.json["area"];
 
-    final editable = date == Utils.today() || date == Utils.yesterday() || area.json['type'] == 'roll';
+    final editable = date == Utils.today() ||
+        date == Utils.yesterday() ||
+        area.json['type'] == 'roll';
 
     return ScaffoldView(
       appBarBottom: TabBar(
@@ -93,6 +101,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
                       GoodsRegistration(
                         ctx: const ['warehouse', 'issue'],
                         doc: widget.entity,
+                        schema: ProductionOrder.schema,
                         enablePrinting: false,
                         allowGoodsCreation: false,
                       ),
@@ -102,6 +111,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
                       GoodsRegistration(
                         ctx: const ['warehouse', 'issue'],
                         doc: widget.entity,
+                        schema: ProductionOrder.schema,
                         enablePrinting: false,
                         allowGoodsCreation: false,
                       ),
@@ -133,8 +143,10 @@ class ProductionOrderOverview extends StatelessWidget {
       EntityHeader(pairs: [
         // Pair(localization.translate("production order"), memoryItem.json['date'])
         Pair(localization.translate("plan"), order.json['planned'] ?? '-'),
-        Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
-        Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
+        Pair(localization.translate("produced"),
+            order.json['produced']?['piece'] ?? '-'),
+        Pair(localization.translate("boxes"),
+            order.json['produced']?['box'] ?? '-'),
       ]),
       ListDivider(),
       KeyValue(
