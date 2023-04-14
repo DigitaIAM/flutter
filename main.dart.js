@@ -107318,7 +107318,7 @@ s=t.p
 return A.bO(A.a([A.bM(A.x7(A.a([new A.a7R(r,null),new A.MK(r,null)],s),q),1,null)],s),B.v,B.p,B.t)},
 $S:53}
 A.a7R.prototype={
-u(a){var s=null,r=A.a([new A.cm("description",s,new A.or(new A.aLN()),1,!0),new A.cm("receive",s,new A.or(new A.aLO()),1,!0),new A.cm("issue",s,new A.or(new A.aLP()),1,!0)],t.a),q=t.N,p=this.c.b,o=J.a7(p),n=A.A(["dates",A.A(["from","2022-12-01","till",A.fN("yyyy-MM-dd",s).cP(new A.aC(Date.now(),!1))],q,q),"storage",J.O(J.qe(o.i(p,"storage")),"_uuid"),"goods",J.O(J.qe(o.i(p,"goods")),"_uuid"),"batch_id",J.O(o.i(p,"batch"),"id"),"batch_date",J.O(o.i(p,"batch"),"date")],q,t.z)
+u(a){var s=null,r=A.a([new A.cm("description",s,new A.or(new A.aLN()),1,!0),new A.cm("receive",s,new A.or(new A.aLO()),1,!0),new A.cm("issue",s,new A.or(new A.aLP()),1,!0)],t.a),q=t.N,p=this.c.b,o=J.a7(p),n=A.A(["dates",A.A(["from","2022-01-01","till",A.fN("yyyy-MM-dd",s).cP(new A.aC(Date.now(),!1))],q,q),"storage",J.O(J.qe(o.i(p,"storage")),"_uuid"),"goods",J.O(J.qe(o.i(p,"goods")),"_uuid"),"batch_id",J.O(o.i(p,"batch"),"id"),"batch_date",J.O(o.i(p,"batch"),"date")],q,t.z)
 A.ar("FILTER: "+n.l(0))
 return A.f8(new A.aLQ(this,r,n),t.g,t.hN)},
 a8P(a,b,c,d,e){return A.hD(B.bA,B.aw,e,!1,null,d,"inventory",!1,new A.aLR(this),new A.aLS())}}
