@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/entity.dart';
+import 'package:nae/screens/common/category/screen.dart';
 import 'package:nae/screens/common/counterparty/screen.dart';
 import 'package:nae/screens/common/goods/screen.dart';
 import 'package:nae/screens/common/person/screen.dart';
@@ -68,7 +69,7 @@ class UiState extends Equatable {
   final List<List<Entity>> entities = [
     [ProductionOrder()],
     [WHBalance(), WHReceive(), WHTransfer(), WHDispatch(), WHInventory()],
-    [Product(), Goods(), Uom()],
+    [Product(), Goods(), Category(), Uom()],
     [WHStorage(), ProductionArea()],
     [Counterparty(), Person()],
     [Printer()],
