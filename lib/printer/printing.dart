@@ -60,10 +60,13 @@ Future<MemoryItem> register(
       }
     }
 
+    final category = data['category'] as MemoryItem?;
+
     final response =
         await Api.feathers().create(serviceName: 'memories', data: {
       'document': doc.id,
       'goods': goods.id,
+      'category': category?.id,
       'storage_from': from.id,
       'storage_into': into.id,
       'qty': quantity,
