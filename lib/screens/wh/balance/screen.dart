@@ -7,6 +7,7 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/models/ui/event.dart';
+import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
@@ -22,7 +23,7 @@ class WHBalance extends Entity {
     fStorage,
     fBatch,
     fGoods,
-    fQty,
+    // fQty,
     fUomAtGoods,
     // Field('qty', CalculatedType((MemoryItem goods) async => goods.balance()))
   ];
@@ -68,13 +69,57 @@ class WHBalanceScreen extends StatelessWidget {
           context.read<MemoryBloc>().add(MemorySearch(value));
         },
       ),
-      body: const WHBalanceListBuilder(),
+      body: BlocBuilder<UiBloc, UiState>(
+        builder: (context, state) {
+          // print("state.action ${state.action}");
+          return state.action.startsWith('category:')
+              ? WHBalanceListBuilder(action: state.action)
+              : const GoodsCategoriesBuilder();
+        },
+      ),
+      // const GoodsCategoriesBuilder(),
     );
   }
 }
 
 class WHBalanceListBuilder extends StatelessWidget {
-  const WHBalanceListBuilder({super.key});
+  final String action;
+
+  const WHBalanceListBuilder({super.key, required this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    final id = action.replaceAll("category:", "");
+
+    return MemoryList(
+      ctx: WHBalance.ctx,
+      schema: WHBalance.schema,
+      preprocess: (cats) {
+        for (final cat in cats) {
+          if (cat.id == id) {
+            final List<MemoryItem> list = [];
+            for (final item in cat.json["_list"]) {
+              list.add(MemoryItem.from(item));
+            }
+            return list;
+          }
+        }
+        return [];
+      },
+      groupByDate: false,
+      sortByName: true,
+      title: (MemoryItem item) => Text(fGoods.resolve(item.json)?.name() ?? ''),
+      subtitle: (MemoryItem item) => Text(
+        '${fQty.resolve(item.json)} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}',
+      ),
+      onTap: (MemoryItem item) =>
+          context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
+    );
+  }
+}
+
+class GoodsCategoriesBuilder extends StatelessWidget {
+  const GoodsCategoriesBuilder({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -83,11 +128,11 @@ class WHBalanceListBuilder extends StatelessWidget {
       schema: WHBalance.schema,
       groupByDate: false,
       sortByName: true,
-      title: (MemoryItem item) => Text(fGoods.resolve(item.json)?.name() ?? ''),
-      subtitle: (MemoryItem item) => Text(
-          '${fQty.resolve(item.json)} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}'),
-      onTap: (MemoryItem item) =>
-          context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
+      title: (MemoryItem item) => Text(fName.resolve(item.json) ?? ''),
+      subtitle: (MemoryItem item) => const Text(''),
+      onTap: (MemoryItem item) => context
+          .read<UiBloc>()
+          .add(ChangeView(WHBalance.ctx, action: 'category:${item.id}')),
     );
   }
 }

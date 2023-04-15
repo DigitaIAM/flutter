@@ -40,10 +40,27 @@ class Field {
           return null; // TODO error?
         }
       }
-
-      return value;
+      return enrich(value);
     }
-    return json[name];
+    return enrich(json[name]);
+  }
+
+  dynamic enrich(dynamic v) {
+    if (type is ReferenceType) {
+      if (v is MemoryItem) {
+        return v;
+      } else if (v is Map<String, dynamic>) {
+        return MemoryItem.from(v);
+      } else if (v is String) {
+        print("String");
+        return v;
+      } else {
+        print("?");
+        return v; // TODO raise error?
+      }
+    } else {
+      return v;
+    }
   }
 
   void update(Map<String, dynamic> json, dynamic value) {

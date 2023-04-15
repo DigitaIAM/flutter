@@ -34,7 +34,8 @@ const Field fCounterparty = Field(
   ]),
 );
 
-const Field fStorage = Field('storage', ReferenceType(['warehouse', 'storage']));
+const Field fStorage =
+    Field('storage', ReferenceType(['warehouse', 'storage']));
 const Field fArea = Field('area', ReferenceType(['production', 'area']));
 
 const Field fFrom = Field('from', ReferenceType(['warehouse', 'storage']));
@@ -55,11 +56,14 @@ const Field fGoods = Field(
     // TODO add relation between `uom` <> `qty.uom`
   ]),
 );
+const Field fCategory = Field("category", ReferenceType(['goods', 'category']));
 const Field fBatch = Field('batch', StringType(), path: ['batch', 'barcode']);
 const Field fQtySingle = Field('qty', NumberType(), path: ['qty']);
 const Field fQty = Field('qty', NumberType(), path: ['qty', 'number']);
-const Field fUomAtGoods = Field('uom', ReferenceType(['uom']), path: ['goods', 'uom']);
-const Field fUomAtQty = Field('uom', ReferenceType(['uom']), path: ['qty', 'uom']);
+const Field fUomAtGoods =
+    Field('uom', ReferenceType(['uom']), path: ['goods', 'uom']);
+const Field fUomAtQty =
+    Field('uom', ReferenceType(['uom']), path: ['qty', 'uom']);
 const Field fUom = Field('uom', ReferenceType(['uom']));
 
 const Field fType = Field('type', ReferenceType(['type']));
