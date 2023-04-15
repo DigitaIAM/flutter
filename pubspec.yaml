@@ -17,7 +17,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.0.16+19
+version: 0.0.17+20
 
 environment:
   sdk: '>=2.18.5 <3.0.0'
@@ -38,16 +38,16 @@ dependencies:
   provider: ^6.0.5
   path_provider: ^2.0.14
   shared_preferences: ^2.1.0
-  intl: ^0.17.0
+  intl: ^0.18.0
   uuid: ^3.0.7
   confirm_dialog: ^1.0.1
   flutter_spinkit: ^5.1.0
   select_dialog: ^2.0.0
   flutter_multi_formatter: ^2.10.2
   permission_handler: ^10.2.0
-  data_table_2: ^2.3.12
+  data_table_2: ^2.4.2
   prompt_dialog: ^1.0.10
-  timeago: ^3.3.0
+  timeago: ^3.4.0
   country_icons: ^2.0.2
 
   #flutter_feathersjs: ^4.0.5+1
@@ -77,7 +77,7 @@ dependencies:
   adaptive_breakpoints: ^0.1.6
   #dual_screen: ^1.0.3
   side_navigation: ^1.0.4
-  pluto_grid: ^5.4.9
+  pluto_grid: ^6.0.4
   grouped_list: ^5.1.2
   dropdown_search: ^5.0.6
   #reactive_forms: ^14.2.0
@@ -102,6 +102,9 @@ dependencies:
   flutter_slidable: ^2.0.0
   modal_bottom_sheet: ^3.0.0-pre
 
+dependency_overrides:
+  intl: ^0.18.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -114,7 +117,7 @@ dev_dependencies:
   flutter_lints: ^2.0.1
 
   build_runner: ^2.3.3
-  copy_with_extension_gen: ^5.0.0
+  copy_with_extension_gen: ^5.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
