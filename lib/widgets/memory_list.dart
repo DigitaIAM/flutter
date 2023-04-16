@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grouped_list/grouped_list.dart';
@@ -95,19 +97,25 @@ class _MemoryListState extends State<MemoryList> {
 
   late ScrollController _scrollController;
   VoidCallback? listener;
-  late bool _loading;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _loading = true;
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void loadMore(RequestState state) {
+    if (!state.hasReachedMax) {
+      context
+          .read<MemoryBloc>()
+          .add(MemoryFetch(widget.service, widget.ctx, schema: widget.schema, filter: widget.filter));
+    }
   }
 
   @override
@@ -242,37 +250,41 @@ class _MemoryListState extends State<MemoryList> {
   Widget listOrTable(UiState uiState) {
     final localization = AppLocalizations.of(context);
 
-    return BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
-      switch (state.status) {
-        case RequestStatus.failure:
-          return Center(child: Text(localization.translate('failed to fetch data')));
-        case RequestStatus.success:
-          if (state.items.isEmpty) {
-            return Center(child: Text(localization.translate('nothing yet')));
-          }
-          if (uiState.isMobile) {
-            return buildList(context, state);
-          } else {
-            return buildPlutoGrid(context, state);
-          }
-        case RequestStatus.loading:
-          return const Center(child: CircularProgressIndicator());
-      }
-    });
+    return BlocBuilder<MemoryBloc, RequestState>(
+      buildWhen: (o, n) {
+        if (uiState.isMobile) {
+          return true;
+        }
+        return o.status != n.status;
+      },
+      builder: (context, state) {
+        switch (state.status) {
+          case RequestStatus.failure:
+            return Center(child: Text(localization.translate('failed to fetch data')));
+          case RequestStatus.success:
+            if (state.items.isEmpty) {
+              return Center(child: Text(localization.translate('nothing yet')));
+            }
+            if (uiState.isMobile) {
+              return buildList(context, state);
+            } else {
+              return buildPlutoGrid(context, state);
+            }
+          case RequestStatus.initiate:
+            return const Center(child: CircularProgressIndicator());
+        }
+      },
+    );
   }
 
   Widget buildList(BuildContext context, RequestState state) {
-    _loading = false;
     if (listener != null) {
       _scrollController.removeListener(listener!);
     }
     listener = () {
       var nextPageTrigger = _scrollController.position.maxScrollExtent - 500;
-      if (!_loading && !state.hasReachedMax && _scrollController.position.pixels > nextPageTrigger) {
-        _loading = true;
-        context
-            .read<MemoryBloc>()
-            .add(MemoryFetch(widget.service, widget.ctx, schema: widget.schema, filter: widget.filter));
+      if (_scrollController.position.pixels > nextPageTrigger) {
+        loadMore(state);
       }
     };
     _scrollController.addListener(listener!);
@@ -371,9 +383,9 @@ class _MemoryListState extends State<MemoryList> {
     final theme = Theme.of(context);
     final DataTableThemeData dataTableTheme = DataTableTheme.of(context);
 
-    final Set<MaterialState> selected = <MaterialState>{
-      MaterialState.selected,
-    };
+    // final Set<MaterialState> selected = <MaterialState>{
+    //   MaterialState.selected,
+    // };
 
     final MaterialStateProperty<Color?>? effectiveDataRowColor =
         dataTableTheme.dataRowColor ?? theme.dataTableTheme.dataRowColor;
@@ -394,8 +406,8 @@ class _MemoryListState extends State<MemoryList> {
           gridBorderColor: theme.colorScheme.background,
           borderColor: theme.colorScheme.background,
 
-          oddRowColor: theme.colorScheme.secondary.withAlpha(10),
-          evenRowColor: theme.colorScheme.secondary.withAlpha(20),
+          oddRowColor: theme.colorScheme.secondary.withAlpha(5),
+          evenRowColor: theme.colorScheme.secondary.withAlpha(15),
 
           activatedColor: theme.colorScheme.secondary.withAlpha(25),
           // activatedColor: theme.dataTableTheme.dataRowColor?.resolve(selected) ?? theme.indicatorColor,
@@ -412,41 +424,41 @@ class _MemoryListState extends State<MemoryList> {
           //   color: Colors.black,
           //   fontSize: 14,
           // ),
+          menuBackgroundColor: theme.colorScheme.background,
+          // theme.dropdownMenuTheme.menuStyle?.backgroundColor?.resolve(<MaterialState>{}) ?? Colors.white,
         ));
 
     return PlutoGrid(
-        key: UniqueKey(),
-        columns: columns,
-        rows: intoRows(state, null),
-        // columnGroups: columnGroups,
-        configuration: config,
-        onLoaded: (PlutoGridOnLoadedEvent event) {
-          stateManager = event.stateManager;
-          // stateManager.setShowColumnFilter(true);
-          stateManager?.setSelectingMode(PlutoGridSelectingMode.row);
-        },
-        onChanged: (PlutoGridOnChangedEvent event) {
-          print(event);
-        },
-        onSelected: (PlutoGridOnSelectedEvent event) {
-          final item = event.row?.cells["_memory_"]?.value;
-          if (item is MemoryItem) {
-            widget.onTap?.call(item);
-          }
-        },
-        mode: PlutoGridMode.select,
-        createFooter: (stateManager) => PlutoInfinityScrollRows(
-            initialFetch: true,
-            fetch: (r) async {
-              print('createFooter fetch ${state.hasReachedMax} ${state.status}');
-              if (state.status == RequestStatus.success) {
-                print('fetch more');
-                context.read<MemoryBloc>().add(MemoryFetch(widget.service, widget.ctx, schema: widget.schema));
-              }
-
-              return PlutoInfinityScrollRowsResponse(isLast: false, rows: intoRows(state, r.lastRow));
-            },
-            stateManager: stateManager));
+      key: ValueKey('__${state.query}_${state.created.toString()}__'),
+      columns: columns,
+      rows: intoRows(state, null),
+      // columnGroups: columnGroups,
+      configuration: config,
+      onLoaded: (PlutoGridOnLoadedEvent event) {
+        stateManager = event.stateManager;
+        // stateManager.setShowColumnFilter(true);
+        stateManager?.setSelectingMode(PlutoGridSelectingMode.row);
+        // stateManager?.setShowColumnFilter(true);
+      },
+      onChanged: (PlutoGridOnChangedEvent event) {
+        print(event);
+      },
+      onSelected: (PlutoGridOnSelectedEvent event) {
+        final item = event.row?.cells["_memory_"]?.value;
+        if (item is MemoryItem) {
+          widget.onTap?.call(item);
+        }
+      },
+      mode: PlutoGridMode.select,
+      createFooter: (stateManager) => InfinityScroll(
+        intoRows: intoRows,
+        initialFetch: false,
+        fetchWithSorting: false,
+        fetchWithFiltering: false,
+        fetch: (r) => loadMore(state),
+        stateManager: stateManager,
+      ),
+    );
   }
 
   List<PlutoRow> intoRows(RequestState state, PlutoRow? lastRow) {
@@ -477,7 +489,7 @@ class _MemoryListState extends State<MemoryList> {
           cells[field.name] = PlutoCell(value: field.resolve(item.json) ?? "");
         }
       }
-      return PlutoRow(cells: cells);
+      return PlutoRow(key: ValueKey('__${item.id}'), cells: cells);
     }));
   }
 
@@ -633,4 +645,142 @@ class _MemoryListState extends State<MemoryList> {
 //     ],
 //   );
 // }
+}
+
+class InfinityScroll extends StatefulWidget {
+  const InfinityScroll({
+    required this.intoRows,
+    this.initialFetch = true,
+    this.fetchWithSorting = true,
+    this.fetchWithFiltering = true,
+    required this.fetch,
+    required this.stateManager,
+    super.key,
+  });
+
+  final bool initialFetch;
+
+  final bool fetchWithSorting;
+  final bool fetchWithFiltering;
+
+  final void Function(PlutoInfinityScrollRowsRequest) fetch;
+
+  final PlutoGridStateManager stateManager;
+
+  final List<PlutoRow> Function(RequestState state, PlutoRow? lastRow) intoRows;
+
+  @override
+  State<InfinityScroll> createState() => _InfinityScrollState();
+}
+
+class _InfinityScrollState extends State<InfinityScroll> {
+  late final StreamSubscription<PlutoGridEvent> _events;
+
+  bool _isFetching = false;
+
+  bool _isLast = false;
+
+  PlutoGridStateManager get stateManager => widget.stateManager;
+
+  ScrollController get scroll => stateManager.scroll.bodyRowsVertical!;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.fetchWithSorting) {
+      stateManager.setSortOnlyEvent(true);
+    }
+
+    if (widget.fetchWithFiltering) {
+      stateManager.setFilterOnlyEvent(true);
+    }
+
+    _events = stateManager.eventManager!.listener(_eventListener);
+
+    scroll.addListener(_scrollListener);
+
+    if (widget.initialFetch) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        _update(null);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    scroll.removeListener(_scrollListener);
+
+    _events.cancel();
+
+    super.dispose();
+  }
+
+  void _eventListener(PlutoGridEvent event) {
+    if (event is PlutoGridCannotMoveCurrentCellEvent && event.direction.isDown && !_isFetching) {
+      _update(stateManager.refRows.last);
+    } else if (event is PlutoGridChangeColumnSortEvent) {
+      _update(null);
+    } else if (event is PlutoGridSetColumnFilterEvent) {
+      _update(null);
+    }
+  }
+
+  void _scrollListener() {
+    if (scroll.offset == scroll.position.maxScrollExtent && !_isFetching) {
+      _update(stateManager.refRows.last);
+    }
+  }
+
+  void _update(PlutoRow? lastRow) {
+    if (lastRow == null) _isLast = false;
+
+    if (_isLast) return;
+
+    _isFetching = true;
+
+    stateManager.setShowLoading(
+      true,
+      level: PlutoGridLoadingLevel.rows,
+      // lastRow == null ? PlutoGridLoadingLevel.rows : PlutoGridLoadingLevel.rowsBottomCircular,
+    );
+
+    final request = PlutoInfinityScrollRowsRequest(
+      lastRow: lastRow,
+      sortColumn: stateManager.getSortedColumn,
+      filterRows: stateManager.filterRows,
+    );
+
+    widget.fetch(request);
+  }
+
+  void fetched(PlutoInfinityScrollRowsResponse response) {
+    // if (lastRow == null) {
+    //   scroll.jumpTo(0);
+    //   stateManager.removeAllRows(notify: false);
+    // }
+
+    stateManager.appendRows(response.rows);
+
+    stateManager.setShowLoading(false);
+
+    _isFetching = false;
+
+    _isLast = response.isLast;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<MemoryBloc, RequestState>(
+      listener: (context, state) {
+        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          fetched(PlutoInfinityScrollRowsResponse(
+            isLast: state.hasReachedMax,
+            rows: widget.intoRows(state, stateManager.refRows.last),
+          ));
+        });
+      },
+      child: const SizedBox.shrink(),
+    );
+  }
 }

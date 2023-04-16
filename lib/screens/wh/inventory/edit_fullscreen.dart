@@ -223,7 +223,7 @@ class _LinesState extends State<Lines> {
                       buildRow(context, columns, items, index, localization)
                   ],
                 );
-              case RequestStatus.loading:
+              case RequestStatus.initiate:
                 return const Center(child: CircularProgressIndicator());
             }
           },

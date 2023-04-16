@@ -1,13 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:nae/models/memory/item.dart';
 
-enum RequestStatus { loading, success, failure }
+enum RequestStatus { initiate, success, failure }
 
 enum SaveStatus { ready, saving, success, failure }
 
 class RequestState extends Equatable {
-  RequestState({
-    this.status = RequestStatus.loading,
+  RequestState(
+    this.created, {
+    this.status = RequestStatus.initiate,
     this.original = const <MemoryItem>[],
     this.filtered = const <MemoryItem>[],
     this.query,
@@ -17,12 +18,11 @@ class RequestState extends Equatable {
     DateTime? ts,
   }) : updated = ts ?? DateTime.now();
 
-  RequestState.loading() : this();
+  // RequestState.loading() : this(DateTime.now());
+  // RequestState.success(List<MemoryItem> items) : this(DateTime.now(), status: RequestStatus.success, original: items);
+  // RequestState.failure() : this(DateTime.now(), status: RequestStatus.failure);
 
-  RequestState.success(List<MemoryItem> items) : this(status: RequestStatus.success, original: items);
-
-  RequestState.failure() : this(status: RequestStatus.failure);
-
+  final DateTime created;
   final DateTime updated;
 
   final RequestStatus status;
@@ -48,6 +48,7 @@ class RequestState extends Equatable {
     SaveStatus? saveStatus,
   }) {
     return RequestState(
+      created,
       status: status ?? this.status,
       original: original ?? this.original,
       filtered: filtered ?? original ?? this.original,

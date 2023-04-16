@@ -49,6 +49,7 @@ class EntityScreens extends StatelessWidget {
 
   Widget screens(BuildContext context, UiState uiState) {
     return BlocBuilder<MemoryBloc, RequestState>(
+      buildWhen: (o, n) => o.status != n.status,
       builder: (context, state) => Row(
           key: ValueKey('__${ctx.join('_')}_'), // ${state.updated}
           children: uiState.isFullScreen ? smallScreen(context, uiState, state) : bigScreen(context, uiState, state)),
