@@ -24,7 +24,8 @@ IconData? getActionIcon(String action) {
 }
 
 class MemoryBlocHolder extends StatefulWidget {
-  const MemoryBlocHolder({super.key, this.schema, this.init, required this.child});
+  const MemoryBlocHolder(
+      {super.key, this.schema, this.init, required this.child});
 
   final List<Field>? schema;
   final Function(MemoryBloc bloc)? init;
@@ -64,6 +65,7 @@ class MemoryList extends StatefulWidget {
   final List<String> ctx;
   final List<Field> schema;
   final Map<String, dynamic> filter;
+  List<MemoryItem> Function(List<MemoryItem>)? preprocess = (items) => items;
 
   final bool groupByDate;
   final bool sortByName;
@@ -74,7 +76,7 @@ class MemoryList extends StatefulWidget {
 
   final List<ItemAction> actions;
 
-  const MemoryList({
+  MemoryList({
     super.key,
     required this.ctx,
     required this.schema,
@@ -86,6 +88,7 @@ class MemoryList extends StatefulWidget {
     this.filter = const {},
     this.service = 'memories',
     this.actions = const [],
+    this.preprocess,
   });
 
   @override
@@ -112,9 +115,8 @@ class _MemoryListState extends State<MemoryList> {
 
   void loadMore(RequestState state) {
     if (!state.hasReachedMax) {
-      context
-          .read<MemoryBloc>()
-          .add(MemoryFetch(widget.service, widget.ctx, schema: widget.schema, filter: widget.filter));
+      context.read<MemoryBloc>().add(MemoryFetch(widget.service, widget.ctx,
+          schema: widget.schema, filter: widget.filter));
     }
   }
 
@@ -156,7 +158,9 @@ class _MemoryListState extends State<MemoryList> {
               curve: Curves.easeInOutCubic,
               child: Row(children: [
                 if (uiState.isDesktop) ...[
-                  const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text("")
+                  const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Text("")
                       // isList
                       //   ? '($countSelected)'
                       //   : localization.countSelected
@@ -172,7 +176,8 @@ class _MemoryListState extends State<MemoryList> {
                                 (action) => OutlinedButton(
                                   child: IconText(
                                     icon: getActionIcon(action),
-                                    text: AppLocalizations.of(context).translate(action),
+                                    text: AppLocalizations.of(context)
+                                        .translate(action),
                                   ),
                                   onPressed: () {
                                     // handleEntitiesActions(entities, action);
@@ -184,7 +189,8 @@ class _MemoryListState extends State<MemoryList> {
                           builder: (context, remaining) {
                             return PopupMenuButton<String>(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
                                   child: Row(
                                     children: [
                                       Text(
@@ -195,8 +201,10 @@ class _MemoryListState extends State<MemoryList> {
                                       const SizedBox(width: 4),
                                       Icon(
                                         Icons.arrow_drop_down,
-                                        color: theme.textTheme.bodySmall?.color ??
-                                            Colors.white, // enableDarkMode ? Colors.white : Colors.black
+                                        color: theme
+                                                .textTheme.bodySmall?.color ??
+                                            Colors
+                                                .white, // enableDarkMode ? Colors.white : Colors.black
                                       ),
                                     ],
                                   ),
@@ -206,12 +214,18 @@ class _MemoryListState extends State<MemoryList> {
                                   // widget.onClearMultiselect();
                                 },
                                 itemBuilder: (BuildContext context) {
-                                  return actions.toList().sublist(actions.length - remaining).map((action) {
+                                  return actions
+                                      .toList()
+                                      .sublist(actions.length - remaining)
+                                      .map((action) {
                                     return PopupMenuItem<String>(
                                       value: action,
                                       child: Row(
                                         children: <Widget>[
-                                          Icon(getActionIcon(action), color: Theme.of(context).colorScheme.secondary),
+                                          Icon(getActionIcon(action),
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary),
                                           const SizedBox(width: 16.0),
                                           Text(localization.translate(action)),
                                         ],
@@ -260,7 +274,8 @@ class _MemoryListState extends State<MemoryList> {
       builder: (context, state) {
         switch (state.status) {
           case RequestStatus.failure:
-            return Center(child: Text(localization.translate('failed to fetch data')));
+            return Center(
+                child: Text(localization.translate('failed to fetch data')));
           case RequestStatus.success:
             if (state.items.isEmpty) {
               return Center(child: Text(localization.translate('nothing yet')));
@@ -293,7 +308,9 @@ class _MemoryListState extends State<MemoryList> {
     if (widget.groupByDate) {
       return GroupedListView<MemoryItem, String>(
         elements: items,
-        groupBy: widget.groupByDate ? (element) => element.json['date'] ?? '' : (element) => '',
+        groupBy: widget.groupByDate
+            ? (element) => element.json['date'] ?? ''
+            : (element) => '',
         groupComparator: (g1, g2) => g2.compareTo(g1),
         itemComparator: (item1, item2) => item1.id.compareTo(item2.id),
         order: GroupedListOrder.ASC,
@@ -345,7 +362,8 @@ class _MemoryListState extends State<MemoryList> {
       elevation: 2.0,
       margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
         // leading: const Icon(Icons.account_circle),
         title: widget.title(item),
         subtitle: widget.subtitle(item),
@@ -360,7 +378,8 @@ class _MemoryListState extends State<MemoryList> {
   PlutoGrid buildPlutoGrid(BuildContext context, RequestState state) {
     final localization = AppLocalizations.of(context);
 
-    final List<PlutoColumn> columns = widget.schema.where((field) => field.type is! ListType).map((field) {
+    final List<PlutoColumn> columns =
+        widget.schema.where((field) => field.type is! ListType).map((field) {
       PlutoColumnType type = PlutoColumnType.text();
       bool isNumber = false;
       if (field.type is NumberType) {
@@ -376,7 +395,8 @@ class _MemoryListState extends State<MemoryList> {
         title: localization.translate(field.name.replaceAll('~', '')),
         field: field.name,
         type: type,
-        textAlign: isNumber ? PlutoColumnTextAlign.end : PlutoColumnTextAlign.start,
+        textAlign:
+            isNumber ? PlutoColumnTextAlign.end : PlutoColumnTextAlign.start,
       );
     }).toList();
 
@@ -494,8 +514,9 @@ class _MemoryListState extends State<MemoryList> {
   }
 
   List<MemoryItem> sort(List<MemoryItem> items, bool sortByName) {
+    final List<MemoryItem> localItems = widget.preprocess?.call(items) ?? items;
     if (sortByName) {
-      items.sort((a, b) {
+      localItems.sort((a, b) {
         String la = '';
         String lb = '';
 
@@ -512,7 +533,7 @@ class _MemoryListState extends State<MemoryList> {
         return la.compareTo(lb);
       });
     }
-    return items;
+    return localItems;
   }
 
 // Widget list(RequestState state) {
@@ -717,7 +738,9 @@ class _InfinityScrollState extends State<InfinityScroll> {
   }
 
   void _eventListener(PlutoGridEvent event) {
-    if (event is PlutoGridCannotMoveCurrentCellEvent && event.direction.isDown && !_isFetching) {
+    if (event is PlutoGridCannotMoveCurrentCellEvent &&
+        event.direction.isDown &&
+        !_isFetching) {
       _update(stateManager.refRows.last);
     } else if (event is PlutoGridChangeColumnSortEvent) {
       _update(null);

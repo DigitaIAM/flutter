@@ -89,7 +89,7 @@ class WHBalanceListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final id = action.replaceAll("category:", "");
+    var id = action.replaceAll("category:", "");
 
     return MemoryList(
       ctx: WHBalance.ctx,
