@@ -89,31 +89,25 @@ class WHBalanceListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var id = action.replaceAll("category:", "");
+    // var id = filters.last.replaceAll("category:", "");
+
+    // ket > 'category'
+    // value > 'categoryId'
 
     return MemoryList(
       ctx: WHBalance.ctx,
       schema: WHBalance.schema,
-      preprocess: (cats) {
-        for (final cat in cats) {
-          if (cat.id == id) {
-            final List<MemoryItem> list = [];
-            for (final item in cat.json["_list"]) {
-              list.add(MemoryItem.from(item));
-            }
-            return list;
-          }
-        }
-        return [];
-      },
-      groupByDate: false,
+      // filter: filters,
+      groupBy: '',
       sortByName: true,
       title: (MemoryItem item) => Text(fGoods.resolve(item.json)?.name() ?? ''),
       subtitle: (MemoryItem item) => Text(
         '${fQty.resolve(item.json)} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}',
       ),
-      onTap: (MemoryItem item) =>
-          context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
+      onTap: (MemoryItem item) => context
+          .read<UiBloc>()
+          // .add(ChangeView(WHBalance.ctx, entity: item, filters: [])),
+          .add(ChangeView(WHBalance.ctx, entity: item)),
     );
   }
 }
@@ -126,7 +120,7 @@ class GoodsCategoriesBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHBalance.ctx,
       schema: WHBalance.schema,
-      groupByDate: false,
+      groupBy: 'category',
       sortByName: true,
       title: (MemoryItem item) => Text(fName.resolve(item.json) ?? ''),
       subtitle: (MemoryItem item) => const Text(''),
