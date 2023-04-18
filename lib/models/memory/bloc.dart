@@ -157,6 +157,16 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       'reverse': event.reverse,
     };
 
+    final limit = event.limit;
+    if (limit != null) {
+      query['\$limit'] = limit;
+    }
+
+    final search = event.search;
+    if (search != null && search.isNotEmpty) {
+      query['search'] = search;
+    }
+
     final filter = event.filter;
     if (filter.isNotEmpty) {
       query['filter'] = filter;

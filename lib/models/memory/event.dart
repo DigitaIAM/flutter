@@ -12,6 +12,8 @@ class MemoryFetch extends MemoryEvent {
     this.serviceName,
     this.ctx, {
     this.schema,
+    this.limit,
+    this.search,
     this.filter = const {},
     this.loadAll = false,
     this.reverse = false,
@@ -21,6 +23,8 @@ class MemoryFetch extends MemoryEvent {
   final String serviceName;
   final List<String> ctx;
   final List<Field>? schema;
+  final int? limit;
+  final String? search;
   final Map<String, dynamic> filter;
   final bool reverse;
   final bool loadAll;

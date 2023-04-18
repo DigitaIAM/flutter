@@ -63,6 +63,9 @@ class MemoryList extends StatefulWidget {
   final String service;
   final List<String> ctx;
   final List<Field> schema;
+
+  final int? limit;
+  final String? search;
   final Map<String, dynamic> filter;
 
   final bool groupByDate;
@@ -83,6 +86,8 @@ class MemoryList extends StatefulWidget {
     this.onTap,
     this.groupByDate = true,
     this.sortByName = false,
+    this.limit,
+    this.search,
     this.filter = const {},
     this.service = 'memories',
     this.actions = const [],
@@ -97,6 +102,7 @@ class _MemoryListState extends State<MemoryList> {
 
   late ScrollController _scrollController;
   VoidCallback? listener;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -110,11 +116,23 @@ class _MemoryListState extends State<MemoryList> {
     super.dispose();
   }
 
-  void loadMore(RequestState state) {
+  void loadMore(UiState uiState, RequestState state) {
+    // print("loadMore ${state.hasReachedMax} $isLoading");
     if (!state.hasReachedMax) {
-      context
-          .read<MemoryBloc>()
-          .add(MemoryFetch(widget.service, widget.ctx, schema: widget.schema, filter: widget.filter));
+      if (uiState.isMobile) {
+        if (isLoading) {
+          return;
+        }
+        isLoading = true;
+      }
+      context.read<MemoryBloc>().add(MemoryFetch(
+            widget.service,
+            widget.ctx,
+            schema: widget.schema,
+            limit: widget.limit,
+            search: widget.search,
+            filter: widget.filter,
+          ));
     }
   }
 
@@ -130,10 +148,13 @@ class _MemoryListState extends State<MemoryList> {
     return BlocBuilder<UiBloc, UiState>(
       builder: (_, uiState) => RefreshIndicator(
         onRefresh: () async {
+          // print("onRefresh");
           refreshBloc.add(MemoryFetch(
             widget.service,
             widget.ctx,
             schema: widget.schema,
+            limit: widget.limit,
+            search: widget.search,
             filter: widget.filter,
             reset: true,
           ));
@@ -252,12 +273,14 @@ class _MemoryListState extends State<MemoryList> {
 
     return BlocBuilder<MemoryBloc, RequestState>(
       buildWhen: (o, n) {
+        isLoading = false;
         if (uiState.isMobile) {
           return true;
         }
         return o.status != n.status;
       },
       builder: (context, state) {
+        // print("builder ${state.status}");
         switch (state.status) {
           case RequestStatus.failure:
             return Center(child: Text(localization.translate('failed to fetch data')));
@@ -266,25 +289,32 @@ class _MemoryListState extends State<MemoryList> {
               return Center(child: Text(localization.translate('nothing yet')));
             }
             if (uiState.isMobile) {
-              return buildList(context, state);
+              return buildList(context, uiState, state);
             } else {
-              return buildPlutoGrid(context, state);
+              return buildPlutoGrid(context, uiState, state);
             }
           case RequestStatus.initiate:
-            return const Center(child: CircularProgressIndicator());
+            if (uiState.isMobile) {
+              // trigger initial load
+              loadMore(uiState, state);
+              return const Center(child: CircularProgressIndicator());
+            } else {
+              // PlutoGrid trigger initial load
+              return buildPlutoGrid(context, uiState, state);
+            }
         }
       },
     );
   }
 
-  Widget buildList(BuildContext context, RequestState state) {
+  Widget buildList(BuildContext context, UiState uiState, RequestState state) {
     if (listener != null) {
       _scrollController.removeListener(listener!);
     }
     listener = () {
       var nextPageTrigger = _scrollController.position.maxScrollExtent - 500;
       if (_scrollController.position.pixels > nextPageTrigger) {
-        loadMore(state);
+        loadMore(uiState, state);
       }
     };
     _scrollController.addListener(listener!);
@@ -357,7 +387,7 @@ class _MemoryListState extends State<MemoryList> {
     );
   }
 
-  PlutoGrid buildPlutoGrid(BuildContext context, RequestState state) {
+  PlutoGrid buildPlutoGrid(BuildContext context, UiState uiState, RequestState state) {
     final localization = AppLocalizations.of(context);
 
     final List<PlutoColumn> columns = widget.schema.where((field) => field.type is! ListType).map((field) {
@@ -452,10 +482,10 @@ class _MemoryListState extends State<MemoryList> {
       mode: PlutoGridMode.select,
       createFooter: (stateManager) => InfinityScroll(
         intoRows: intoRows,
-        initialFetch: false,
+        initialFetch: true,
         fetchWithSorting: false,
         fetchWithFiltering: false,
-        fetch: (r) => loadMore(state),
+        fetch: (r) => loadMore(uiState, state),
         stateManager: stateManager,
       ),
     );
@@ -751,6 +781,7 @@ class _InfinityScrollState extends State<InfinityScroll> {
       filterRows: stateManager.filterRows,
     );
 
+    print("fetch");
     widget.fetch(request);
   }
 
@@ -774,9 +805,10 @@ class _InfinityScrollState extends State<InfinityScroll> {
     return BlocListener<MemoryBloc, RequestState>(
       listener: (context, state) {
         WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          final rows = stateManager.refRows;
           fetched(PlutoInfinityScrollRowsResponse(
             isLast: state.hasReachedMax,
-            rows: widget.intoRows(state, stateManager.refRows.last),
+            rows: widget.intoRows(state, rows.isNotEmpty ? rows.last : null),
           ));
         });
       },

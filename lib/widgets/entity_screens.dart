@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/core/my_settings.dart';
 import 'package:nae/models/memory/bloc.dart';
-import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
@@ -41,7 +40,8 @@ class EntityScreens extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<UiBloc, UiState>(
       builder: (context, uiState) => MemoryBlocHolder(
-        init: (bloc) => ctx.isNotEmpty ? bloc.add(MemoryFetch("memories", ctx, schema: schema)) : null,
+        // initial load trigger at list widgets
+        // init: (bloc) => ctx.isNotEmpty ? bloc.add(MemoryFetch("memories", ctx, schema: schema)) : null,
         child: screens(context, uiState),
       ),
     );
