@@ -67,7 +67,7 @@ class MemoryList extends StatefulWidget {
   final Map<String, dynamic> filter;
   List<MemoryItem> Function(List<MemoryItem>)? preprocess = (items) => items;
 
-  final bool groupByDate;
+  final String groupBy;
   final bool sortByName;
 
   final Widget Function(MemoryItem) title;
@@ -83,7 +83,7 @@ class MemoryList extends StatefulWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
-    this.groupByDate = true,
+    this.groupBy = "date",
     this.sortByName = false,
     this.filter = const {},
     this.service = 'memories',
@@ -305,12 +305,10 @@ class _MemoryListState extends State<MemoryList> {
     _scrollController.addListener(listener!);
 
     final items = sort(state.items, widget.sortByName);
-    if (widget.groupByDate) {
+    if (widget.groupBy != '') {
       return GroupedListView<MemoryItem, String>(
         elements: items,
-        groupBy: widget.groupByDate
-            ? (element) => element.json['date'] ?? ''
-            : (element) => '',
+        groupBy: (element) => groupBy(context, widget.groupBy, element.json),
         groupComparator: (g1, g2) => g2.compareTo(g1),
         itemComparator: (item1, item2) => item1.id.compareTo(item2.id),
         order: GroupedListOrder.ASC,
@@ -354,6 +352,18 @@ class _MemoryListState extends State<MemoryList> {
           );
         },
       );
+    }
+  }
+
+  dynamic groupBy(BuildContext context, String filter, Map element) {
+    final localization = AppLocalizations.of(context);
+
+    if (filter == 'date') {
+      return element['date'] ?? '';
+    } else if (filter == 'category') {
+      return localization.translate(element['_category']) ?? '';
+    } else {
+      return '';
     }
   }
 

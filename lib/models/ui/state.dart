@@ -51,6 +51,7 @@ class UiState extends Equatable {
   final List<String> currentRoute;
   final String action;
   final MemoryItem entity;
+  // final List<> filters;
 
   // final String entityId;
 

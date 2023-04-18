@@ -196,7 +196,7 @@ class WHTransactionsBuilder extends StatelessWidget {
       ctx: const [],
       schema: schema,
       filter: filter,
-      groupByDate: false,
+      groupBy: '',
       title: (MemoryItem item) => Text(item.json['description'] ?? ''),
       subtitle: (MemoryItem item) => Text(
           '${fType.resolve(item.json)} ${fQtySingle.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}'),
