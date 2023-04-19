@@ -237,7 +237,11 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     if (event.data.isNew) {
       return _onCreate(MemoryCreate(event.serviceName, event.ctx, event.schema, event.data.toJson()), emit);
     } else {
-      return _onUpdate(MemoryUpdate(event.serviceName, event.ctx, event.schema, event.data.toJson()), emit);
+      return _onPatch(
+        MemoryPatch(event.serviceName, event.ctx, event.schema, event.data.id, event.data.toJson()),
+        emit,
+      );
+      // return _onUpdate(MemoryUpdate(event.serviceName, event.ctx, event.schema, event.data.toJson()), emit);
     }
   }
 
