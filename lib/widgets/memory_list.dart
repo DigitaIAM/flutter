@@ -70,7 +70,7 @@ class MemoryList extends StatefulWidget {
   final Map<String, dynamic> filter;
   List<MemoryItem> Function(List<MemoryItem>)? preprocess = (items) => items;
 
-  final String groupBy;
+  final String Function(MemoryItem)? groupBy;
   final bool sortByName;
 
   final Widget Function(MemoryItem) title;
@@ -86,7 +86,7 @@ class MemoryList extends StatefulWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
-    this.groupBy = "date",
+    this.groupBy,
     this.sortByName = false,
     this.limit,
     this.search,
@@ -336,12 +336,13 @@ class _MemoryListState extends State<MemoryList> {
     _scrollController.addListener(listener!);
 
     final items = sort(state.items, widget.sortByName);
-    if (widget.groupBy != '') {
+    if (widget.groupBy != null) {
       return GroupedListView<MemoryItem, String>(
         elements: items,
-        groupBy: (element) => groupBy(context, widget.groupBy, element.json),
+        groupBy: widget.groupBy!,
         groupComparator: (g1, g2) => g2.compareTo(g1),
-        itemComparator: (item1, item2) => item1.id.compareTo(item2.id),
+        itemComparator: (item1, item2) =>
+            item1.name().toLowerCase().compareTo(item2.name().toLowerCase()),
         order: GroupedListOrder.ASC,
         useStickyGroupSeparators: true,
         stickyHeaderBackgroundColor: Theme.of(context).primaryColor,

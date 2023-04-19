@@ -32,7 +32,7 @@ class UiState extends Equatable {
     this.action = 'view',
     this.entity = const MemoryItem(id: '', json: {}),
     // this.entityId = '',
-
+    this.filters = const [],
     this.isDesktop = true,
     this.isMenuVisible = true,
     this.isMenuCollapsed = false,
@@ -51,7 +51,7 @@ class UiState extends Equatable {
   final List<String> currentRoute;
   final String action;
   final MemoryItem entity;
-  // final List<> filters;
+  final List<Pair> filters;
 
   // final String entityId;
 

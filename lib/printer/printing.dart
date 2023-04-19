@@ -25,14 +25,26 @@ Future<MemoryItem> register(
     MemoryItem into;
 
     if (ctx == const ['warehouse', 'transfer']) {
-      from = doc.json['from'];
-      into = doc.json['into'];
+      from = doc.json['from'] is MemoryItem
+          ? doc.json['from']
+          : MemoryItem.from(doc.json['from']);
+      into = doc.json['into'] is MemoryItem
+          ? doc.json['into']
+          : MemoryItem.from(doc.json['into']);
     } else if (ctx == const ['warehouse', 'dispatch']) {
-      from = doc.json['storage'];
-      into = doc.json['counterparty'];
+      from = doc.json['storage'] is MemoryItem
+          ? doc.json['storage']
+          : MemoryItem.from(doc.json['storage']);
+      into = doc.json['counterparty'] is MemoryItem
+          ? doc.json['counterparty']
+          : MemoryItem.from(doc.json['counterparty']);
     } else {
-      from = doc.json['counterparty'];
-      into = doc.json['storage'];
+      from = doc.json['counterparty'] is MemoryItem
+          ? doc.json['counterparty']
+          : MemoryItem.from(doc.json['counterparty']);
+      into = doc.json['storage'] is MemoryItem
+          ? doc.json['storage']
+          : MemoryItem.from(doc.json['storage']);
     }
 
     final quantity = {}; // 'number': number, 'uom': uom.id

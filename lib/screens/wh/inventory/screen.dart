@@ -112,6 +112,7 @@ class WHInventoriesListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHInventory.ctx,
       schema: WHInventory.schema,
+      groupBy: (element) => element.json['date'] ?? '',
       title: (MemoryItem item) =>
           fCounterparty.resolve(item.json)?.name() ?? '',
       subtitle: (MemoryItem item) => const Text(''),

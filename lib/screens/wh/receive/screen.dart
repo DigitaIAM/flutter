@@ -112,6 +112,7 @@ class WHReceiveListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHReceive.ctx,
       schema: WHReceive.schema,
+      groupBy: (element) => element.json['date'] ?? '',
       title: (MemoryItem item) =>
           Text(fCounterparty.resolve(item.json)?.name() ?? ''),
       subtitle: (MemoryItem item) =>
