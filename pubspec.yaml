@@ -38,7 +38,7 @@ dependencies:
   provider: ^6.0.5
   path_provider: ^2.0.14
   shared_preferences: ^2.1.0
-  intl: ^0.18.0
+  intl: ^0.18.1
   uuid: ^3.0.7
   confirm_dialog: ^1.0.1
   flutter_spinkit: ^5.1.0
@@ -66,7 +66,7 @@ dependencies:
   flutter_bloc: ^8.1.2
   stream_transform: ^2.1.0
 
-  flex_color_scheme: ^7.0.1
+  flex_color_scheme: ^7.0.3
 
   loading_indicator: ^3.1.0
 
@@ -99,12 +99,12 @@ dependencies:
 
   flutter_localizations:
     sdk: flutter
-  flutter_slidable: ^2.0.0
+  flutter_slidable: ^3.0.0
   modal_bottom_sheet: ^3.0.0-pre
 
 dependency_overrides:
-  intl: ^0.18.0
-  
+  intl: ^0.18.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
