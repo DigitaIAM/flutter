@@ -13,8 +13,7 @@ class MemoryItem extends Equatable {
 
   get uuid => json['_uuid'];
 
-  MemoryItem.clone(MemoryItem item)
-      : this(id: item.id, json: jsonDecode(jsonEncode(item.json)));
+  MemoryItem.clone(MemoryItem item) : this(id: item.id, json: jsonDecode(jsonEncode(item.json)));
 
   MemoryItem clone() {
     return MemoryItem.clone(this);
@@ -112,8 +111,7 @@ class MemoryItem extends Equatable {
                 // copy[name] = cached;
                 field.update(copy, cached);
               } else {
-                final response = await Api.feathers()
-                    .get(serviceName: "memories", objectId: id, params: {
+                final response = await Api.feathers().get(serviceName: "memories", objectId: id, params: {
                   "oid": Api.instance.oid,
                   "ctx": type.ctx,
                 });
@@ -144,8 +142,9 @@ class MemoryItem extends Equatable {
 
   static create() => const MemoryItem(id: 'new', json: {});
 
-  static MemoryItem from(Map<String, dynamic> json) =>
-      MemoryItem(id: json['_id'], json: json);
+  static empty() => const MemoryItem(id: 'empty', json: {});
+
+  static MemoryItem from(Map<String, dynamic> json) => MemoryItem(id: json['_id'], json: json);
 }
 
 class Holder {

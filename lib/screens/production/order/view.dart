@@ -4,6 +4,7 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/screens/production/order/screen.dart';
 import 'package:nae/screens/production/order/widgets/ProducedEdit.dart';
 import 'package:nae/screens/production/order/widgets/ProducedView.dart';
+import 'package:nae/screens/wh/goods_dispatch.dart';
 import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/utils/date.dart';
@@ -17,15 +18,13 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 class ProductionOrderView extends EntityHolder {
   final int tabIndex;
 
-  const ProductionOrderView(
-      {super.key, required super.entity, required this.tabIndex});
+  const ProductionOrderView({super.key, required super.entity, required this.tabIndex});
 
   @override
   State<ProductionOrderView> createState() => _ProductionOrderViewState();
 }
 
-class _ProductionOrderViewState extends State<ProductionOrderView>
-    with SingleTickerProviderStateMixin {
+class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -34,10 +33,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
 
     // final state = widget.viewModel.state;
     _controller = TabController(
-        vsync: this,
-        length: 4,
-        initialIndex:
-            1 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
+        vsync: this, length: 6, initialIndex: 2 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
         );
     _controller.addListener(_onTabChanged);
   }
@@ -74,19 +70,19 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
     final date = widget.entity.json["date"];
     final area = widget.entity.json["area"];
 
-    final editable = date == Utils.today() ||
-        date == Utils.yesterday() ||
-        area.json['type'] == 'roll';
+    final editable = date == Utils.today() || date == Utils.yesterday() || area.json['type'] == 'roll';
 
     return ScaffoldView(
       appBarBottom: TabBar(
         controller: _controller,
         isScrollable: true,
         tabs: [
-          Tab(text: localization.translate("list")),
+          Tab(text: localization.translate("raw material")),
+          Tab(text: localization.translate("products")),
           Tab(text: localization.translate("overview")),
           Tab(text: localization.translate("production")),
-          Tab(text: localization.translate("raw material")),
+          Tab(text: localization.translate("used raw material")),
+          Tab(text: localization.translate("generated raw material")),
         ],
       ),
       body: Builder(builder: (context) {
@@ -94,28 +90,29 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
           Expanded(
             child: TabBarView(controller: _controller, children: <Widget>[
               POProducedView(order: widget.entity),
+              POProducedView(order: widget.entity),
               ProductionOrderOverview(order: widget.entity),
               ...(editable
                   ? [
                       POProducedEdit(order: widget.entity),
-                      GoodsRegistration(
-                        ctx: const ['warehouse', 'issue'],
-                        doc: widget.entity,
-                        schema: ProductionOrder.schema,
-                        enablePrinting: false,
-                        allowGoodsCreation: false,
-                      ),
                     ]
                   : [
                       POProducedView(order: widget.entity),
-                      GoodsRegistration(
-                        ctx: const ['warehouse', 'issue'],
-                        doc: widget.entity,
-                        schema: ProductionOrder.schema,
-                        enablePrinting: false,
-                        allowGoodsCreation: false,
-                      ),
                     ]),
+              GoodsDispatch(
+                ctx: const ['production', 'material', 'used'],
+                doc: widget.entity,
+                schema: ProductionOrder.schema,
+                enablePrinting: false,
+                allowGoodsCreation: false,
+              ),
+              GoodsRegistration(
+                ctx: const ['production', 'material', 'produced'],
+                doc: widget.entity,
+                schema: ProductionOrder.schema,
+                enablePrinting: true,
+                allowGoodsCreation: false,
+              ),
             ]),
           ),
         ]);
@@ -143,10 +140,8 @@ class ProductionOrderOverview extends StatelessWidget {
       EntityHeader(pairs: [
         // Pair(localization.translate("production order"), memoryItem.json['date'])
         Pair(localization.translate("plan"), order.json['planned'] ?? '-'),
-        Pair(localization.translate("produced"),
-            order.json['produced']?['piece'] ?? '-'),
-        Pair(localization.translate("boxes"),
-            order.json['produced']?['box'] ?? '-'),
+        Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
+        Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
       ]),
       ListDivider(),
       KeyValue(
@@ -154,6 +149,7 @@ class ProductionOrderOverview extends StatelessWidget {
         value: order.json['product'].name(),
         icon: const Icon(Icons.question_mark),
       ),
+      ...additional(context),
       KeyValue(
         label: localization.translate("area"),
         value: order.json['area'].name(),
@@ -175,5 +171,21 @@ class ProductionOrderOverview extends StatelessWidget {
     return ScrollableListView(
       children: widgets,
     );
+  }
+
+  List<Widget> additional(BuildContext context) {
+    final product = order.json['product'] ?? MemoryItem.empty;
+    if ((product.json['type'] ?? '') == 'roll') {
+      final localization = AppLocalizations.of(context);
+
+      return [
+        KeyValue(
+          label: localization.translate("thickness"),
+          value: order.json['thickness'] ?? '',
+          icon: const Icon(Icons.question_mark),
+        ),
+      ];
+    }
+    return [];
   }
 }

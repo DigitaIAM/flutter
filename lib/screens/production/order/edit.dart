@@ -50,7 +50,14 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
       data['date'] = DateFormat("yyyy-MM-dd").format(data["date"]);
 
       context.read<MemoryBloc>().add(MemorySave(
-          "memories", ProductionOrder.ctx, ProductionOrder.schema, MemoryItem(id: widget.entity.id, json: data)));
+            "memories",
+            ProductionOrder.ctx,
+            ProductionOrder.schema,
+            MemoryItem(
+              id: widget.entity.id,
+              json: data,
+            ),
+          ));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -131,26 +138,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
               onSave: _onSave,
               // keyboardType: TextInputType.text,
             ),
-            DecoratedFormField(
-              name: 'material',
-              label: localization.translate("raw material"),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                // FormBuilderValidators.required(),
-              ]),
-              onSave: (context) {},
-              keyboardType: TextInputType.text,
-            ),
-            DecoratedFormField(
-              name: 'thickness',
-              label: localization.translate("thickness"),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                // FormBuilderValidators.required(),
-              ]),
-              onSave: (context) {},
-              keyboardType: TextInputType.text,
-            ),
+            ...additional(context),
             DecoratedFormField(
               name: 'planned',
               label: localization.translate("planned qty"),
@@ -178,5 +166,38 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
       return MemoryItem(id: widget.entity.id, json: json);
     }
     return widget.entity;
+  }
+
+  List<Widget> additional(BuildContext context) {
+    final value = _formKey.currentState?.value;
+    if (value != null) {
+      final product = value['product'] ?? MemoryItem.empty;
+      if ((product.json['type'] ?? '') == 'roll') {
+        final localization = AppLocalizations.of(context);
+        return [
+          DecoratedFormField(
+            name: 'material',
+            label: localization.translate("raw material"),
+            autofocus: true,
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(),
+            ]),
+            onSave: (context) {},
+            keyboardType: TextInputType.text,
+          ),
+          DecoratedFormField(
+            name: 'thickness',
+            label: localization.translate("thickness"),
+            autofocus: true,
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(),
+            ]),
+            onSave: (context) {},
+            keyboardType: TextInputType.text,
+          ),
+        ];
+      }
+    }
+    return [];
   }
 }

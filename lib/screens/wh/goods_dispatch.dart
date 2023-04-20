@@ -15,14 +15,14 @@ import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
-class GoodsRegistration extends StatefulWidget {
+class GoodsDispatch extends StatefulWidget {
   final List<String> ctx;
   final MemoryItem doc;
   final List<Field> schema;
   final bool enablePrinting;
   final bool allowGoodsCreation;
 
-  const GoodsRegistration({
+  const GoodsDispatch({
     super.key,
     required this.ctx,
     required this.doc,
@@ -32,11 +32,11 @@ class GoodsRegistration extends StatefulWidget {
   });
 
   @override
-  State<StatefulWidget> createState() => _GoodsRegistrationState();
+  State<StatefulWidget> createState() => _GoodsDispatchState();
 }
 
-class _GoodsRegistrationState extends State<GoodsRegistration> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsRegistrationEdit');
+class _GoodsDispatchState extends State<GoodsDispatch> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsDispatchEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -143,7 +143,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
                 ]),
                 onSave: (context) {},
               ),
-              // const SizedBox(height: 10),
+              const SizedBox(height: 10),
               // DecoratedFormPickerField(
               //   ctx: const ['goods', 'category'],
               //   name: 'category',
@@ -155,7 +155,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
               //   ]),
               //   onSave: (context) {},
               // ),
-              const SizedBox(height: 10),
+              // const SizedBox(height: 10),
               ...qtyUom(context),
             ]),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
