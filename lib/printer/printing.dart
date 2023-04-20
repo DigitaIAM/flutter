@@ -1,15 +1,10 @@
-import 'package:intl/intl.dart';
 import 'package:nae/api.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/utils/date.dart';
 
-Future<MemoryItem> register(
-    MemoryItem doc,
-    Map<String, dynamic> data,
-    int numberOfQuantities,
-    List ctx,
+Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numberOfQuantities, List ctx,
     void Function(String) onStatusChange) async {
   onStatusChange("registering");
 
@@ -25,26 +20,29 @@ Future<MemoryItem> register(
     MemoryItem into;
 
     if (ctx == const ['warehouse', 'transfer']) {
-      from = doc.json['from'] is MemoryItem
-          ? doc.json['from']
-          : MemoryItem.from(doc.json['from']);
-      into = doc.json['into'] is MemoryItem
-          ? doc.json['into']
-          : MemoryItem.from(doc.json['into']);
+      final f = doc.json['from'];
+      final i = doc.json['into'];
+
+      from = f is MemoryItem ? f : MemoryItem.from(f);
+      into = i is MemoryItem ? i : MemoryItem.from(i);
     } else if (ctx == const ['warehouse', 'dispatch']) {
-      from = doc.json['storage'] is MemoryItem
-          ? doc.json['storage']
-          : MemoryItem.from(doc.json['storage']);
-      into = doc.json['counterparty'] is MemoryItem
-          ? doc.json['counterparty']
-          : MemoryItem.from(doc.json['counterparty']);
+      final storage = doc.json['storage'];
+      from = storage is MemoryItem ? storage : MemoryItem.from(storage);
+
+      final counterparty = doc.json['counterparty'];
+      into = counterparty is MemoryItem ? counterparty : MemoryItem.from(counterparty);
+    } else if (ctx == const ['production', 'material', 'produced']) {
+      final area = doc.json['area'];
+      from = area is MemoryItem ? area : MemoryItem.from(area);
+
+      final storage = data['storage'];
+      into = storage is MemoryItem ? storage : MemoryItem.from(storage);
     } else {
-      from = doc.json['counterparty'] is MemoryItem
-          ? doc.json['counterparty']
-          : MemoryItem.from(doc.json['counterparty']);
-      into = doc.json['storage'] is MemoryItem
-          ? doc.json['storage']
-          : MemoryItem.from(doc.json['storage']);
+      final counterparty = doc.json['counterparty'];
+      from = counterparty is MemoryItem ? counterparty : MemoryItem.from(counterparty);
+
+      final storage = doc.json['storage'];
+      into = storage is MemoryItem ? storage : MemoryItem.from(storage);
     }
 
     final quantity = {}; // 'number': number, 'uom': uom.id
@@ -74,8 +72,7 @@ Future<MemoryItem> register(
 
     final category = data['category'] as MemoryItem?;
 
-    final response =
-        await Api.feathers().create(serviceName: 'memories', data: {
+    final response = await Api.feathers().create(serviceName: 'memories', data: {
       'document': doc.id,
       'goods': goods.id,
       'category': category?.id,
@@ -97,8 +94,8 @@ Future<MemoryItem> register(
   }
 }
 
-Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
-    MemoryItem record, void Function(String) onStatusChange) async {
+Future<PrintResult> printing(
+    NetworkPrinter printer, MemoryItem doc, MemoryItem record, void Function(String) onStatusChange) async {
   onStatusChange("printing");
 
   print("printing doc $doc");
@@ -106,21 +103,23 @@ Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
 
   final goods = record.json['goods'];
   final goodsName = goods is MemoryItem ? goods.name() : (goods['name'] ?? '');
-  final goodsUuid = goods is MemoryItem
-      ? (goods.json['_uuid'] ?? '')
-      : (goods['_uuid'] ?? '');
+  final goodsUuid = goods is MemoryItem ? (goods.json['_uuid'] ?? '') : (goods['_uuid'] ?? '');
   final goodsId = goods is MemoryItem ? goods.id : (goods['_id'] ?? '');
 
   final date = doc.json['date']!;
-  final from = doc.json['from'] == null
-      ? doc.json['counterparty'] as MemoryItem
-      : doc.json['from'] as MemoryItem;
-
+  // final date = order.json['date'] ?? record.json['date'] ?? '';
   final dd = DT.format(date);
 
-  final batchBarcode = record.json['batch']['barcode'] ?? '';
-  final batchId = record.json['batch']['_uuid'] ?? '';
-  final batchDate = record.json['batch']['date'] ?? '';
+  String batchBarcode = '';
+  String batchId = '';
+  String batchDate = '';
+
+  final batch = record.json['batch'];
+  if (batch != null) {
+    batchBarcode = batch['barcode'] ?? '';
+    batchId = batch['_uuid'] ?? '';
+    batchDate = batch['date'] ?? '';
+  }
 
   var qtyUom = '';
 
@@ -145,12 +144,30 @@ Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
     "дата": dd,
     "количество": qtyUom,
     "line1": "",
-    "поставщик": from.name(),
   };
 
+  MemoryItem from = MemoryItem.empty();
+
+  final counterparty = doc.json['counterparty'];
+  if (counterparty != null) {
+    from = counterparty is MemoryItem ? counterparty : MemoryItem.from(counterparty);
+    labelData['поставщик'] = from.name();
+  }
+
+  final f = doc.json['from'];
+  if (f != null) {
+    from = f is MemoryItem ? f : MemoryItem.from(f);
+    labelData[''] = from.name();
+  }
+
+  final area = doc.json['area'];
+  if (area != null) {
+    from = area is MemoryItem ? area : MemoryItem.from(area);
+    labelData['участок'] = from.name();
+  }
+
   // TODO: place length check and line break from lines_with_barcode to this function
-  Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
-      batchBarcode, batchId, batchDate, labelData);
+  Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId, batchBarcode, batchId, batchDate, labelData);
 
   return Future<PrintResult>.value(PrintResult.success);
 }

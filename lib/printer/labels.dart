@@ -22,8 +22,9 @@ class Labels {
         // // print("close $c");
 
         return res2;
-      } catch (e) {
+      } catch (e, stacktrace) {
         print("error: $e");
+        print(stacktrace);
       } finally {
         printer.disconnect();
       }
