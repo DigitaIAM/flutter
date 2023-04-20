@@ -112,6 +112,7 @@ class WHTransferListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHTransfer.ctx,
       schema: WHTransfer.schema,
+      groupBy: (element) => element.json['date'] ?? '',
       title: (MemoryItem item) => Text(fFrom.resolve(item.json)?.name() ?? ''),
       subtitle: (MemoryItem item) =>
           Text(fInto.resolve(item.json)?.name() ?? ''),

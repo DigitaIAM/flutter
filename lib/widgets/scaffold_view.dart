@@ -4,12 +4,14 @@ import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/widgets/copy_to_clipboard.dart';
+import 'package:nae/wrapper.dart';
 
 class ScaffoldView extends StatelessWidget {
   // final BaseEntity entity;
   final PreferredSizeWidget? appBarBottom;
   final Widget body;
   final String title;
+  final void Function()? onClose;
 
   const ScaffoldView({
     super.key,
@@ -17,6 +19,7 @@ class ScaffoldView extends StatelessWidget {
     // required this.entity,
     this.appBarBottom,
     this.title = "",
+    this.onClose,
   });
 
   @override
@@ -24,7 +27,11 @@ class ScaffoldView extends StatelessWidget {
     Widget leading = IconButton(
       icon: const Icon(Icons.close),
       onPressed: () {
-        context.read<UiBloc>().add(ChangeView(const [], action: 'view'));
+        if (onClose == null) {
+          context.read<UiBloc>().add(ChangeView(const [], action: 'view'));
+        } else {
+          onClose?.call();
+        }
       },
     );
 
