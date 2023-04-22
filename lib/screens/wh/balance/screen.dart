@@ -234,11 +234,7 @@ class ListBuilder extends StatelessWidget {
           if (category == 'stock') {
             final List<Pair> nf = List.from(filters);
             // print("item: ${item.json}");
-            nf.add(Pair(
-                category,
-                MemoryItem(
-                    id: item.json['goods']['_id'] ?? '',
-                    json: item.json['goods'] ?? '')));
+            nf.add(Pair(category, MemoryItem.from(item.json['goods'])));
             down(nf);
           } else if (category == 'batch') {
             return context
