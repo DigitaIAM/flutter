@@ -115,6 +115,8 @@ class WHTransactionsBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     final schema = [
       Field('description', CalculatedType((MemoryItem rec) async {
+        // print("WHTransactionsBuilder rec: $rec");
+        // print("WHTransactionsBuilder entity: $entity");
         final t = rec.json['type'];
         if (t == 'open_balance' || t == 'close_balance') {
           return 'balance at ${rec.json['date']}';
@@ -142,12 +144,28 @@ class WHTransactionsBuilder extends StatelessWidget {
                 "oid": Api.instance.oid,
                 "ctx": ctx
               }).onError((error, stackTrace) => {});
+          final Map mapDoc = document == {} ? document : Map.from(document);
 
-          final Map map_doc = document == {} ? document : Map.from(document);
+          final date = mapDoc['date'] ?? "?";
 
-          final date = map_doc['date'] ?? "?";
+          // final from = mapDoc['from']?['name'] ?? "?";
+          // final into = mapDoc['into']?['name'] ?? "?";
 
-          return date.toString();
+          String from = '';
+          String into = '';
+
+          if (ctx[1] == 'transfer') {
+            from = mapDoc['from']?['name'] ?? "?";
+            into = mapDoc['into']?['name'] ?? "?";
+          } else if (ctx[1] == 'receive') {
+            from = mapDoc['counterparty']?['name'] ?? "?";
+            into = mapDoc['storage']?['name'] ?? "?";
+          } else if (ctx[1] == 'dispatch') {
+            into = mapDoc['counterparty']?['name'] ?? "?";
+            from = mapDoc['storage']?['name'] ?? "?";
+          }
+
+          return '$date\nиз $from в $into';
         }
       })),
       Field('receive', CalculatedType((MemoryItem rec) async {
@@ -165,10 +183,6 @@ class WHTransactionsBuilder extends StatelessWidget {
           CalculatedType((MemoryItem rec) async =>
               rec.json['type'] == 'issue' ? rec.json['qty'] : '')),
     ];
-
-//    let goods = this.entity.
-
-    // print("entity $entity");
 
     final filter = {
       'dates': {'from': '2022-01-01', 'till': Utils.today()},
@@ -221,8 +235,6 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
 
-  String status = "register";
-
   @override
   Widget build(BuildContext context) {
     print("CONTEXT: ${context}");
@@ -261,7 +273,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
                 readOnly: true,
               ),
               ElevatedButton(
-                onPressed: status == 'register' ? registerAndPrint : null,
+                onPressed: _print,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -277,8 +289,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
     );
   }
 
-  void registerAndPrint() async {
-    setState(() => status = "connecting");
+  void _print() async {
     try {
       print("pressed:");
 
@@ -356,8 +367,6 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
       final uomName = uom is MemoryItem ? (uom.json['name'] ?? '') : '';
 
       final result = await Labels.connect(ip, port, (printer) async {
-        setState(() => status = "printing");
-
         final dd = DateFormat.yMMMMd().format(DateTime.parse(batchDate));
 
         final Map<String, String> labelData = {
@@ -388,10 +397,6 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
           axis: Axis.horizontal,
           alignment: Alignment.center,
           position: StyledToastPosition.bottom);
-    } finally {
-      setState(() {
-        status = "register";
-      });
     }
   }
 }

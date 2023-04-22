@@ -340,7 +340,7 @@ class _MemoryListState extends State<MemoryList> {
       return GroupedListView<MemoryItem, String>(
         elements: items,
         groupBy: widget.groupBy!,
-        groupComparator: (g1, g2) => g2.compareTo(g1),
+        groupComparator: (g1, g2) => g1.compareTo(g2),
         itemComparator: (item1, item2) =>
             item1.name().toLowerCase().compareTo(item2.name().toLowerCase()),
         order: GroupedListOrder.ASC,
