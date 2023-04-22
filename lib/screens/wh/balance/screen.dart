@@ -4,7 +4,9 @@ import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
+import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/memory_list.dart';
@@ -210,13 +212,16 @@ class ListBuilder extends StatelessWidget {
           final category = item.json['_category'];
           if (category == 'stock') {
             return Text(fName.resolve(item.json['goods'] ?? '') ?? '');
+          } else if (category == 'batch') {
+            return Text('партия от ${item.json['batch']?['date'] ?? ''}');
           } else {
             return Text(fName.resolve(item.json) ?? '');
           }
         },
         subtitle: (MemoryItem item) {
           final category = item.json['_category'];
-          if (category == 'stock') {
+          if (category == 'stock' || category == 'batch') {
+            // print("item: ${item.json}");
             return Text(
                 '${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
                 '${item.json['cost']?['number'] ?? ''} сум');
@@ -225,10 +230,22 @@ class ListBuilder extends StatelessWidget {
           }
         },
         onTap: (MemoryItem item) {
-          final List<Pair> nf = List.from(filters);
-          print("item: ${item.json}");
-          nf.add(Pair(item.json['_category'], item));
-          down(nf);
+          final category = item.json['_category'];
+          if (category == 'stock') {
+            final List<Pair> nf = List.from(filters);
+            // print("item: ${item.json}");
+            nf.add(Pair(category, MemoryItem.from(item.json['goods'])));
+            down(nf);
+          } else if (category == 'batch') {
+            return context
+                .read<UiBloc>()
+                .add(ChangeView(WHBalance.ctx, entity: item));
+          } else {
+            final List<Pair> nf = List.from(filters);
+            print("item: ${item.json}");
+            nf.add(Pair(category, item));
+            down(nf);
+          }
         },
       ),
     );
