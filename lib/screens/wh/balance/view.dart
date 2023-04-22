@@ -235,6 +235,8 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
 
+  String status = "register";
+
   @override
   Widget build(BuildContext context) {
     print("CONTEXT: ${context}");
@@ -273,7 +275,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
                 readOnly: true,
               ),
               ElevatedButton(
-                onPressed: _print,
+                onPressed: status == 'register' ? _print : null,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -290,6 +292,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
   }
 
   void _print() async {
+    setState(() => status = "connecting");
     try {
       print("pressed:");
 
@@ -367,6 +370,8 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
       final uomName = uom is MemoryItem ? (uom.json['name'] ?? '') : '';
 
       final result = await Labels.connect(ip, port, (printer) async {
+        setState(() => status = "printing");
+
         final dd = DateFormat.yMMMMd().format(DateTime.parse(batchDate));
 
         final Map<String, String> labelData = {
@@ -397,6 +402,10 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
           axis: Axis.horizontal,
           alignment: Alignment.center,
           position: StyledToastPosition.bottom);
+    } finally {
+      setState(() {
+        status = "register";
+      });
     }
   }
 }
