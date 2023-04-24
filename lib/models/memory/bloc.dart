@@ -179,7 +179,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     final data = response['data'] as List;
     for (var json in data) {
       final item = MemoryItem(
-        id: json['_id'],
+        id: json['_id'] ?? json['_uuid'] ?? '',
         json: json,
       );
       list.add(item);
