@@ -197,6 +197,8 @@ class ListBuilder extends StatelessWidget {
       }
     }
 
+    final cache = {};
+
     return BlocProvider(
       create: (context) => MemoryBloc(),
       // ..add(MemoryFetch('memories', ctx, schema: schema, filter: filter)),
@@ -205,7 +207,32 @@ class ListBuilder extends StatelessWidget {
         schema: WHBalance.schema,
         filter: filter,
         groupBy: (element) {
-          return localization.translate(element.json['_category'] ?? '') ?? '';
+          final id = element.json['_category'] ?? '';
+          final o = cache[id];
+          if (o != null) {
+            return o;
+          }
+          final name = localization.translate(id);
+          final n = MemoryItem(id: id, json: {"_uuid": id, "name": name});
+          cache[id] = n;
+          return n;
+        },
+        groupComparator: (a, b) {
+          convert(id) {
+            if (id == 'storage') {
+              return 1;
+            } else if (id == 'category') {
+              return 2;
+            } else if (id == 'goods') {
+              return 3;
+            } else if (id == 'batch') {
+              return 4;
+            } else {
+              return 5;
+            }
+          }
+
+          return convert(a.id).compareTo(convert(b.id));
         },
         sortByName: true,
         title: (MemoryItem item) {
