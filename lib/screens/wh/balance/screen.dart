@@ -60,8 +60,7 @@ class WHBalanceScreen extends EntityHolder {
   State<WHBalanceScreen> createState() => _WHBalanceScreenState();
 }
 
-class _WHBalanceScreenState extends State<WHBalanceScreen>
-    with TickerProviderStateMixin {
+class _WHBalanceScreenState extends State<WHBalanceScreen> with TickerProviderStateMixin {
   // with SingleTickerProviderStateMixin {
   late TabController _controller;
 
@@ -121,16 +120,13 @@ class _WHBalanceScreenState extends State<WHBalanceScreen>
     final localization = AppLocalizations.of(context);
 
     return ScaffoldView(
-      onClose: () => Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const Wrapper())),
+      onClose: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Wrapper())),
       appBarBottom: TabBar(
         controller: _controller,
         isScrollable: true,
         tabs: [
           Tab(text: localization.translate('stock')),
-          ..._filters
-              .map((e) => Tab(text: localization.translate(e.value.name())))
-              .toList()
+          ..._filters.map((e) => Tab(text: localization.translate(e.value.name()))).toList()
         ],
       ),
       body: Builder(builder: (context) {
@@ -189,12 +185,7 @@ class ListBuilder extends StatelessWidget {
 
     final Map<String, dynamic> filter = {};
     for (final pair in filters) {
-      // workaround
-      if (pair.label == "category") {
-        filter[pair.label] = pair.value.id;
-      } else {
-        filter[pair.label] = pair.value.uuid;
-      }
+      filter[pair.label] = pair.value.uuid;
     }
 
     final cache = {};
@@ -249,8 +240,7 @@ class ListBuilder extends StatelessWidget {
           final category = item.json['_category'];
           if (category == 'stock' || category == 'batch') {
             // print("item: ${item.json}");
-            return Text(
-                '${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
+            return Text('${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
                 '${item.json['cost']?['number'] ?? ''} сум');
           } else {
             return Text('${item.json['_cost'] ?? ''} сум');
@@ -264,9 +254,7 @@ class ListBuilder extends StatelessWidget {
             nf.add(Pair(category, MemoryItem.from(item.json['goods'])));
             down(nf);
           } else if (category == 'batch') {
-            return context
-                .read<UiBloc>()
-                .add(ChangeView(WHBalance.ctx, entity: item));
+            return context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item));
           } else {
             final List<Pair> nf = List.from(filters);
             print("item: ${item.json}");
