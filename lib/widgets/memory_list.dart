@@ -70,7 +70,8 @@ class MemoryList extends StatefulWidget {
   final Map<String, dynamic> filter;
   List<MemoryItem> Function(List<MemoryItem>)? preprocess = (items) => items;
 
-  final String Function(MemoryItem)? groupBy;
+  final MemoryItem Function(MemoryItem)? groupBy;
+  final int Function(MemoryItem, MemoryItem)? groupComparator;
   final bool sortByName;
 
   final Widget Function(MemoryItem) title;
@@ -87,6 +88,7 @@ class MemoryList extends StatefulWidget {
     required this.subtitle,
     this.onTap,
     this.groupBy,
+    this.groupComparator,
     this.sortByName = false,
     this.limit,
     this.search,
@@ -337,20 +339,21 @@ class _MemoryListState extends State<MemoryList> {
 
     final items = sort(state.items, widget.sortByName);
     if (widget.groupBy != null) {
-      return GroupedListView<MemoryItem, String>(
+      return GroupedListView<MemoryItem, MemoryItem>(
         elements: items,
         groupBy: widget.groupBy!,
-        groupComparator: (g1, g2) => g2.compareTo(g1),
+        groupComparator: widget.groupComparator ??
+            (g1, g2) => g2.name().compareTo(g1.name()),
         itemComparator: (item1, item2) =>
             item1.name().toLowerCase().compareTo(item2.name().toLowerCase()),
         order: GroupedListOrder.ASC,
         useStickyGroupSeparators: true,
-        stickyHeaderBackgroundColor: Theme.of(context).primaryColor,
+        stickyHeaderBackgroundColor: Theme.of(context).secondaryHeaderColor,
         controller: _scrollController,
-        groupSeparatorBuilder: (String value) => Padding(
+        groupSeparatorBuilder: (MemoryItem value) => Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            value,
+            value.name(),
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),

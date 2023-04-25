@@ -52,10 +52,11 @@ class Field {
       } else if (v is Map<String, dynamic>) {
         return MemoryItem.from(v);
       } else if (v is String) {
-        print("String");
         return v;
       } else {
-        print("?");
+        if (v != null) {
+          print("enrich ? $v");
+        }
         return v; // TODO raise error?
       }
     } else {
