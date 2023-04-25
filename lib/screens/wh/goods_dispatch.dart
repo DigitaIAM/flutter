@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
+import 'package:nae/models/memory/bloc.dart';
+import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
@@ -13,6 +17,7 @@ import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
 import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
+import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
 class GoodsDispatch extends StatefulWidget {
@@ -36,10 +41,13 @@ class GoodsDispatch extends StatefulWidget {
 }
 
 class _GoodsDispatchState extends State<GoodsDispatch> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsDispatchEdit');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_goodsDispatchEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+
+  final ctx = const ['production', 'material', 'used'];
 
   String status = "register";
   int numberOfQuantities = 1;
@@ -62,7 +70,12 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             }
             state.save();
             final value = state.value;
-            // debugPrint("onChanged: $value");
+            debugPrint("onChanged: $value");
+
+            final storage = value['storage'];
+            if (storage is MemoryItem) {
+              setState(() {});
+            }
 
             final goods = value['goods'];
             if (goods is MemoryItem) {
@@ -127,7 +140,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
                 creatable: false,
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(errorText: "выберите место хранения"),
+                  FormBuilderValidators.required(
+                      errorText: "выберите место хранения"),
                 ]),
                 onSave: (context) {},
               ),
@@ -157,46 +171,74 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
               // ),
               // const SizedBox(height: 10),
               ...qtyUom(context),
+              ...goodsList(widget.schema),
             ]),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-              FloatingActionButton(
-                heroTag: 'product_register',
-                backgroundColor: theme.primaryColorDark,
-                onPressed: status == 'register' ? registerPreparation : null,
-                tooltip: localization.translate('register'.toString()),
-                child: registered == 'register'
-                    ? const Icon(Icons.done)
-                    : Icon(
-                        Icons.add,
-                        color: theme.primaryColorLight,
-                      ),
-              ),
-              ...(widget.enablePrinting
-                  ? [
-                      FloatingActionButton(
-                        heroTag: 'product_register_and_print',
-                        backgroundColor: theme.primaryColorDark,
-                        onPressed: status == 'register' ? registerAndPrintPreparation : null,
-                        tooltip: localization.translate('and print'.toString()),
-                        child: registered == 'registerAndPrint'
-                            ? const Icon(Icons.done)
-                            : Icon(
-                                Icons.print,
-                                color: theme.primaryColorLight,
-                              ),
-                      )
-                    ]
-                  : []),
-            ]),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  FloatingActionButton(
+                    heroTag: 'product_register',
+                    backgroundColor: theme.primaryColorDark,
+                    onPressed:
+                        status == 'register' ? registerPreparation : null,
+                    tooltip: localization.translate('register'.toString()),
+                    child: registered == 'register'
+                        ? const Icon(Icons.done)
+                        : Icon(
+                            Icons.add,
+                            color: theme.primaryColorLight,
+                          ),
+                  ),
+                  ...(widget.enablePrinting
+                      ? [
+                          FloatingActionButton(
+                            heroTag: 'product_register_and_print',
+                            backgroundColor: theme.primaryColorDark,
+                            onPressed: status == 'register'
+                                ? registerAndPrintPreparation
+                                : null,
+                            tooltip:
+                                localization.translate('and print'.toString()),
+                            child: registered == 'registerAndPrint'
+                                ? const Icon(Icons.done)
+                                : Icon(
+                                    Icons.print,
+                                    color: theme.primaryColorLight,
+                                  ),
+                          )
+                        ]
+                      : []),
+                ]),
             if (status != 'register')
-              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                Text(status),
-              ]),
-          ]))
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Text(status),
+                  ]),
+          ])),
     ];
     return ScrollableListView(
       children: widgets,
     );
+  }
+
+  List<Widget> goodsList(List<Field> schema) {
+    final state = _formKey.currentState;
+    if (state == null) {
+      return <Widget>[];
+    }
+
+    state.save();
+
+    final storage = state.value['storage'] ?? '';
+
+    if (storage is MemoryItem) {
+      return <Widget>[
+        SizedBox(height: 230, child: WHDispatchListBuilder(storage: storage))
+      ];
+    }
+
+    return <Widget>[];
   }
 
   List<Widget> qtyUom(BuildContext context) {
@@ -301,7 +343,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final doc = await widget.doc.enrich(widget.schema);
 
       try {
-        final result = await register(doc, data, numberOfQuantities, widget.ctx, setStatus);
+        final result = await register(
+            doc, data, numberOfQuantities, widget.ctx, setStatus);
 
         if (!(result.isNew || result.isEmpty)) {
           done('register');
@@ -312,7 +355,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     }
   }
 
-  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data, {MemoryItem? item}) async {
+  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data,
+      {MemoryItem? item}) async {
     resetDone();
 
     setStatus("connecting");
@@ -321,7 +365,9 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(widget.schema);
-        final record = item ?? await register(doc, data, numberOfQuantities, widget.ctx, setStatus);
+        final record = item ??
+            await register(
+                doc, data, numberOfQuantities, widget.ctx, setStatus);
 
         if (item == null) {
           if (!(record.isEmpty || record.isNew)) {
@@ -356,5 +402,50 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     } finally {
       setStatus("register");
     }
+  }
+}
+
+class WHDispatchListBuilder extends StatelessWidget {
+  const WHDispatchListBuilder({super.key, required this.storage});
+
+  final MemoryItem storage;
+
+  @override
+  Widget build(BuildContext context) {
+    final schema = <Field>[
+      fName.copyWith(width: 3.0),
+      // fUomAtQty.copyWith(width: 0.5, editable: false),
+      fQty.copyWith(width: 1.0),
+    ];
+
+    final filter = {
+      'storage': storage.json['_uuid'] ?? '',
+    };
+    const ctx = ['warehouse', 'stock'];
+
+    return BlocProvider(
+      create: (context) {
+        final bloc = MemoryBloc(schema: schema, reverse: true);
+        bloc.add(MemoryFetch(
+          'memories',
+          ctx,
+          filter: filter,
+          reverse: true,
+          loadAll: true,
+        ));
+
+        return bloc;
+      },
+      child: MemoryList(
+        ctx: ctx,
+        schema: schema,
+        filter: filter,
+        title: (MemoryItem item) {
+          return Text(fName.resolve(item.json) ?? '');
+        },
+        subtitle: (MemoryItem item) => Text(item.json['_cost']?['qty'] ?? ''),
+        onTap: (MemoryItem item) => {},
+      ),
+    );
   }
 }
