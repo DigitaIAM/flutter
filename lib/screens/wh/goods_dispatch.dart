@@ -47,8 +47,6 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
 
-  final ctx = const ['production', 'material', 'used'];
-
   String status = "register";
   int numberOfQuantities = 1;
   String registered = '';
@@ -58,167 +56,162 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     final localization = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
+    print("Widget build(BuildContext context)");
+
     final widgets = <Widget>[
-      AppForm(
-          entity: details,
-          formKey: _formKey,
-          focusNode: _focusNode,
-          onChanged: () {
-            final state = _formKey.currentState;
-            if (state == null) {
-              return;
-            }
-            state.save();
-            final value = state.value;
-            debugPrint("onChanged: $value");
-
-            final storage = value['storage'];
-            if (storage is MemoryItem) {
-              setState(() {});
-            }
-
-            final goods = value['goods'];
-            if (goods is MemoryItem) {
-              final baseUom = goods.json['uom'];
-
-              var firstEmpty = -1;
-              var found = false;
-              var newNumber = numberOfQuantities;
-              for (var index = 0; index < numberOfQuantities; index++) {
-                // TODO fix removal
-                // if (found) {
-                //   state.fields['uom_$index']
-                //       ?.setValue(null, populateForm: false);
-                //   state.fields['qty_$index']
-                //       ?.setValue(null, populateForm: false);
-                // }
-                if (!found && baseUom == value['uom_$index']?.id) {
-                  newNumber = index + 1;
-                  found = true;
-                }
-                if (firstEmpty == -1 && value['uom_$index'] == null) {
-                  firstEmpty = index;
-                }
-              }
-              if (!found) {
-                if (firstEmpty == -1) {
-                  newNumber += 1;
-                } else {
-                  newNumber = firstEmpty + 1;
-                }
-              }
-
-              // print("number_of_qties $number_of_qties $newNumber $firstEmpty");
-
-              setState(() {
-                numberOfQuantities = newNumber;
-              });
-            }
-          },
-          child: ScrollableListView(children: <Widget>[
-            FormCard(isLast: true, children: <Widget>[
-              ...(widget.enablePrinting
-                  ? [
-                      DecoratedFormPickerField(
-                        creatable: false,
-                        ctx: const ['printer'],
-                        name: 'printer',
-                        label: localization.translate("printer"),
-                        autofocus: true,
-                        validator: FormBuilderValidators.compose([
-                          // FormBuilderValidators.required(),
-                        ]),
-                        onSave: (context) {},
-                      )
-                    ]
-                  : []),
-              const SizedBox(height: 10),
-              DecoratedFormPickerField(
-                ctx: const ['warehouse', 'storage'],
-                name: 'storage',
-                label: localization.translate("storage"),
-                creatable: false,
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(
-                      errorText: "выберите место хранения"),
-                ]),
-                onSave: (context) {},
-              ),
-              const SizedBox(height: 10),
-              DecoratedFormPickerField(
-                ctx: const ['goods'],
-                name: 'goods',
-                label: localization.translate("goods"),
-                creatable: widget.allowGoodsCreation,
-                autofocus: true,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(errorText: "выберите товар"),
-                ]),
-                onSave: (context) {},
-              ),
-              const SizedBox(height: 10),
-              // DecoratedFormPickerField(
-              //   ctx: const ['goods', 'category'],
-              //   name: 'category',
-              //   label: localization.translate("category"),
-              //   creatable: widget.allowGoodsCreation,
-              //   autofocus: true,
-              //   validator: FormBuilderValidators.compose([
-              //     // FormBuilderValidators.required(),
-              //   ]),
-              //   onSave: (context) {},
-              // ),
-              // const SizedBox(height: 10),
-              ...qtyUom(context),
-              ...goodsList(widget.schema),
+      if (status != 'register')
+        Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Text(status),
             ]),
-            Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  FloatingActionButton(
-                    heroTag: 'product_register',
-                    backgroundColor: theme.primaryColorDark,
-                    onPressed:
-                        status == 'register' ? registerPreparation : null,
-                    tooltip: localization.translate('register'.toString()),
-                    child: registered == 'register'
-                        ? const Icon(Icons.done)
-                        : Icon(
-                            Icons.add,
-                            color: theme.primaryColorLight,
-                          ),
-                  ),
-                  ...(widget.enablePrinting
-                      ? [
-                          FloatingActionButton(
-                            heroTag: 'product_register_and_print',
-                            backgroundColor: theme.primaryColorDark,
-                            onPressed: status == 'register'
-                                ? registerAndPrintPreparation
-                                : null,
-                            tooltip:
-                                localization.translate('and print'.toString()),
-                            child: registered == 'registerAndPrint'
-                                ? const Icon(Icons.done)
-                                : Icon(
-                                    Icons.print,
-                                    color: theme.primaryColorLight,
-                                  ),
-                          )
-                        ]
-                      : []),
-                ]),
-            if (status != 'register')
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Text(status),
-                  ]),
-          ])),
+      AppForm(
+        entity: details,
+        formKey: _formKey,
+        focusNode: _focusNode,
+        onChanged: () {
+          final state = _formKey.currentState;
+          if (state == null) {
+            return;
+          }
+          state.save();
+          var value = state.value;
+          debugPrint("onChanged: $value");
+
+          final storage = value['storage'];
+          final goods = value['goods'];
+
+          if (storage is MemoryItem) {
+            setState(() {});
+          }
+
+          if (goods is MemoryItem) {
+            final baseUom = goods.json['uom'];
+            final baseUomId = baseUom is Map ? baseUom['_id'] : baseUom;
+
+            var firstEmpty = -1;
+            var found = false;
+            var newNumber = numberOfQuantities;
+            for (var index = 0; index < numberOfQuantities; index++) {
+              // TODO fix removal
+              // if (found) {
+              //   state.fields['uom_$index']
+              //       ?.setValue(null, populateForm: false);
+              //   state.fields['qty_$index']
+              //       ?.setValue(null, populateForm: false);
+              // }
+              if (!found && baseUomId == value['uom_$index']?.id) {
+                newNumber = index + 1;
+                found = true;
+              }
+              if (firstEmpty == -1 && value['uom_$index'] == null) {
+                firstEmpty = index;
+              }
+            }
+            if (!found) {
+              if (firstEmpty == -1) {
+                newNumber += 1;
+              } else {
+                newNumber = firstEmpty + 1;
+              }
+            }
+
+            // print("number_of_qties $number_of_qties $newNumber $firstEmpty");
+
+            setState(() {
+              numberOfQuantities = newNumber;
+            });
+          }
+        },
+        child: FormCard(isLast: true, children: <Widget>[
+          ...(widget.enablePrinting
+              ? [
+                  DecoratedFormPickerField(
+                    creatable: false,
+                    ctx: const ['printer'],
+                    name: 'printer',
+                    label: localization.translate("printer"),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      // FormBuilderValidators.required(),
+                    ]),
+                    onSave: (context) {},
+                  )
+                ]
+              : []),
+          const SizedBox(height: 10),
+          DecoratedFormPickerField(
+            ctx: const ['warehouse', 'storage'],
+            name: 'storage',
+            label: localization.translate("storage"),
+            creatable: false,
+            autofocus: true,
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(
+                  errorText: "выберите место хранения"),
+            ]),
+            onSave: (context) {},
+          ),
+          const SizedBox(height: 10),
+          DecoratedFormPickerField(
+            ctx: const ['goods'],
+            name: 'goods',
+            label: localization.translate("goods"),
+            creatable: widget.allowGoodsCreation,
+            autofocus: true,
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(errorText: "выберите товар"),
+            ]),
+            onSave: (context) {},
+          ),
+          const SizedBox(height: 10),
+          ...qtyUom(context),
+          ...goodsList(widget.schema),
+        ]),
+      ),
     ];
-    return ScrollableListView(
-      children: widgets,
+
+    return Scaffold(
+      floatingActionButton: Stack(
+        children: <Widget>[
+          if (widget.enablePrinting) ...[
+            Align(
+                alignment: Alignment.bottomCenter,
+                child: FloatingActionButton(
+                  heroTag: 'product_register_and_print',
+                  backgroundColor: theme.primaryColorDark,
+                  onPressed:
+                      status == 'register' ? registerAndPrintPreparation : null,
+                  tooltip: localization.translate('and print'.toString()),
+                  child: registered == 'registerAndPrint'
+                      ? const Icon(Icons.done)
+                      : Icon(
+                          Icons.print,
+                          color: theme.primaryColorLight,
+                        ),
+                )),
+          ] else
+            ...[],
+          Align(
+            alignment: Alignment.bottomRight,
+            child: FloatingActionButton(
+              heroTag: 'product_register',
+              backgroundColor: theme.primaryColorDark,
+              onPressed: status == 'register' ? registerPreparation : null,
+              tooltip: localization.translate('register'.toString()),
+              child: registered == 'register'
+                  ? const Icon(Icons.done)
+                  : Icon(
+                      Icons.add,
+                      color: theme.primaryColorLight,
+                    ),
+            ),
+          ),
+        ],
+      ),
+      body: ScrollableListView(
+        children: widgets,
+      ),
     );
   }
 
@@ -230,11 +223,25 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
     state.save();
 
-    final storage = state.value['storage'] ?? '';
+    final goods = state.value['goods'];
+    final storage = state.value['storage'];
 
-    if (storage is MemoryItem) {
+    if (storage != null || goods != null) {
       return <Widget>[
-        SizedBox(height: 230, child: WHDispatchListBuilder(storage: storage))
+        // Expanded(child: WHDispatchListBuilder(storage: storage))
+        SizedBox(
+            height: 230,
+            child: WHDispatchListBuilder(
+              storage: storage,
+              goods: goods,
+              changeState: (item) {
+                // print("setState ${_formKey.currentState?.fields["goods"]}");
+                final baseUom = item.json['uom'];
+                _formKey.currentState?.patchValue({"goods": item});
+                _formKey.currentState
+                    ?.patchValue({"uom_0": MemoryItem.from(baseUom)});
+              },
+            ))
       ];
     }
 
@@ -406,9 +413,13 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 }
 
 class WHDispatchListBuilder extends StatelessWidget {
-  const WHDispatchListBuilder({super.key, required this.storage});
+  const WHDispatchListBuilder(
+      {super.key, this.storage, this.goods, required this.changeState});
 
-  final MemoryItem storage;
+  final Function(MemoryItem item) changeState;
+
+  final MemoryItem? storage;
+  final MemoryItem? goods;
 
   @override
   Widget build(BuildContext context) {
@@ -418,9 +429,16 @@ class WHDispatchListBuilder extends StatelessWidget {
       fQty.copyWith(width: 1.0),
     ];
 
-    final filter = {
-      'storage': storage.json['_uuid'] ?? '',
-    };
+    Map<String, dynamic> filter = {};
+
+    if (storage is MemoryItem) {
+      filter['storage'] = storage!.json['_uuid'] ?? '';
+    }
+
+    if (goods is MemoryItem) {
+      filter['goods'] = goods!.json['_uuid'] ?? '';
+    }
+
     const ctx = ['warehouse', 'stock'];
 
     return BlocProvider(
@@ -437,15 +455,14 @@ class WHDispatchListBuilder extends StatelessWidget {
         return bloc;
       },
       child: MemoryList(
-        ctx: ctx,
-        schema: schema,
-        filter: filter,
-        title: (MemoryItem item) {
-          return Text(fName.resolve(item.json) ?? '');
-        },
-        subtitle: (MemoryItem item) => Text(item.json['_cost']?['qty'] ?? ''),
-        onTap: (MemoryItem item) => {},
-      ),
+          ctx: ctx,
+          schema: schema,
+          filter: filter,
+          title: (MemoryItem item) {
+            return Text(fName.resolve(item.json) ?? '');
+          },
+          subtitle: (MemoryItem item) => Text(item.json['_cost']?['qty'] ?? ''),
+          onTap: (MemoryItem item) => changeState(item)),
     );
   }
 }
