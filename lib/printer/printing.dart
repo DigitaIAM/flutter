@@ -93,7 +93,6 @@ Future<MemoryItem> register(
     final request = {
       'document': doc.id,
       'goods': goods.id,
-      'category': categoryId,
       'storage_from': from.id,
       'qty': quantity,
     };

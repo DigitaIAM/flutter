@@ -60,7 +60,8 @@ class WHBalanceScreen extends EntityHolder {
   State<WHBalanceScreen> createState() => _WHBalanceScreenState();
 }
 
-class _WHBalanceScreenState extends State<WHBalanceScreen> with TickerProviderStateMixin {
+class _WHBalanceScreenState extends State<WHBalanceScreen>
+    with TickerProviderStateMixin {
   // with SingleTickerProviderStateMixin {
   late TabController _controller;
 
@@ -70,30 +71,10 @@ class _WHBalanceScreenState extends State<WHBalanceScreen> with TickerProviderSt
   void initState() {
     super.initState();
 
-    // final state = widget.viewModel.state;
     _controller = TabController(
       vsync: this, length: _filters.length + 1,
       initialIndex: 0, // widget.isFilter ? 0 : state.WHDispatchUIState.tabIndex
     );
-    // _controller.addListener(_onTabChanged);
-  }
-
-  // void _onTabChanged() {
-  //   if (widget.isFilter) {
-  //     return;
-  //   }
-  //
-  //   final store = StoreProvider.of<AppState>(context);
-  //   store.dispatch(UpdateProductTab(tabIndex: _controller.index));
-  // }
-
-  @override
-  void didUpdateWidget(oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // print("didUpdateWidget ${_filters.length} vs ${_controller.length}");
-    // if (_filters.length + 1 != _controller.length) {
-    //   updateController();
-    // }
   }
 
   void updateController() {
@@ -104,13 +85,11 @@ class _WHBalanceScreenState extends State<WHBalanceScreen> with TickerProviderSt
       initialIndex: oldIndex,
       vsync: this,
     );
-    print("new _controller ${_controller.length} ${_controller.index}");
     _controller.animateTo(_filters.length);
   }
 
   @override
   void dispose() {
-    // _controller.removeListener(_onTabChanged);
     _controller.dispose();
     super.dispose();
   }
@@ -120,13 +99,16 @@ class _WHBalanceScreenState extends State<WHBalanceScreen> with TickerProviderSt
     final localization = AppLocalizations.of(context);
 
     return ScaffoldView(
-      onClose: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Wrapper())),
+      onClose: () => Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const Wrapper())),
       appBarBottom: TabBar(
         controller: _controller,
         isScrollable: true,
         tabs: [
           Tab(text: localization.translate('stock')),
-          ..._filters.map((e) => Tab(text: localization.translate(e.value.name()))).toList()
+          ..._filters
+              .map((e) => Tab(text: localization.translate(e.value.name())))
+              .toList()
         ],
       ),
       body: Builder(builder: (context) {
@@ -185,7 +167,7 @@ class ListBuilder extends StatelessWidget {
 
     final Map<String, dynamic> filter = {};
     for (final pair in filters) {
-      filter[pair.label] = pair.value.uuid;
+      filter[pair.label] = pair.value.uuid ?? '';
     }
 
     final cache = {};
@@ -240,25 +222,28 @@ class ListBuilder extends StatelessWidget {
           final category = item.json['_category'];
           if (category == 'stock' || category == 'batch') {
             // print("item: ${item.json}");
-            return Text('${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
+            return Text(
+                '${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
                 '${item.json['cost']?['number'] ?? ''} сум');
           } else {
             return Text('${item.json['_cost'] ?? ''} сум');
           }
         },
         onTap: (MemoryItem item) {
-          final category = item.json['_category'];
+          var category = item.json['_category'];
           if (category == 'stock') {
             final List<Pair> nf = List.from(filters);
             // print("item: ${item.json}");
             nf.add(Pair(category, MemoryItem.from(item.json['goods'])));
             down(nf);
           } else if (category == 'batch') {
-            return context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item));
+            return context
+                .read<UiBloc>()
+                .add(ChangeView(WHBalance.ctx, entity: item));
           } else {
             final List<Pair> nf = List.from(filters);
-            print("item: ${item.json}");
             nf.add(Pair(category, item));
+
             down(nf);
           }
         },

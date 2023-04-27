@@ -17,6 +17,7 @@ class Goods extends Entity {
   static const List<String> ctx = ['goods'];
 
   static List<Field> schema = [
+    fCategory,
     fName,
     fUom,
     Field('qty', CalculatedType((MemoryItem goods) async => goods.balance()))
@@ -34,7 +35,8 @@ class Goods extends Entity {
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
-      key: ValueKey('__${name()}_'), // ${DateTime.now().toString()}__
+      key: ValueKey('__${name()}_'),
+      // ${DateTime.now().toString()}__
       ctx: ctx,
       schema: schema,
       list: const GoodsScreen(),
