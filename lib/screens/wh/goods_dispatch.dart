@@ -145,7 +145,6 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             name: 'storage',
             label: localization.translate("storage"),
             creatable: false,
-            autofocus: true,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(
                   errorText: "выберите место хранения"),
@@ -158,9 +157,18 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             name: 'goods',
             label: localization.translate("goods"),
             creatable: widget.allowGoodsCreation,
-            autofocus: true,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: "выберите товар"),
+            ]),
+            onSave: (context) {},
+          ),
+          DecoratedFormPickerField(
+            ctx: const ['goods', 'stock'],
+            name: 'batch',
+            label: localization.translate("batch"),
+            creatable: widget.allowGoodsCreation,
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(errorText: "выберите партию"),
             ]),
             onSave: (context) {},
           ),
@@ -226,20 +234,33 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     final goods = state.value['goods'];
     final storage = state.value['storage'];
 
-    if (storage != null || goods != null) {
+    if (storage != null || (storage != null && goods != null)) {
       return <Widget>[
         // Expanded(child: WHDispatchListBuilder(storage: storage))
         SizedBox(
             height: 230,
-            child: WHDispatchListBuilder(
+            child: BalanceListBuilder(
               storage: storage,
               goods: goods,
               changeState: (item) {
                 // print("setState ${_formKey.currentState?.fields["goods"]}");
-                final baseUom = item.json['uom'];
-                _formKey.currentState?.patchValue({"goods": item});
-                _formKey.currentState
-                    ?.patchValue({"uom_0": MemoryItem.from(baseUom)});
+                // print("changeState: (item) ${item.json}");
+
+                final state = _formKey.currentState;
+                if (state == null) {
+                  return;
+                }
+
+                final batch = item.json['batch'];
+                if (batch != null) {
+                  batch['name'] = batch['barcode'] ?? '?';
+                  // print("batch $batch");
+                  state.patchValue({"batch": MemoryItem.from(batch)});
+                } else {
+                  final baseUom = item.json['uom'];
+                  state.patchValue({"goods": item});
+                  state.patchValue({"uom_0": MemoryItem.from(baseUom)});
+                }
               },
             ))
       ];
@@ -412,8 +433,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   }
 }
 
-class WHDispatchListBuilder extends StatelessWidget {
-  const WHDispatchListBuilder(
+class BalanceListBuilder extends StatelessWidget {
+  const BalanceListBuilder(
       {super.key, this.storage, this.goods, required this.changeState});
 
   final Function(MemoryItem item) changeState;
@@ -431,17 +452,20 @@ class WHDispatchListBuilder extends StatelessWidget {
 
     Map<String, dynamic> filter = {};
 
-    if (storage is MemoryItem) {
+    if (storage != null) {
       filter['storage'] = storage!.json['_uuid'] ?? '';
     }
 
-    if (goods is MemoryItem) {
+    if (goods != null) {
       filter['goods'] = goods!.json['_uuid'] ?? '';
     }
+
+    print("build filter $filter");
 
     const ctx = ['warehouse', 'stock'];
 
     return BlocProvider(
+      key: ValueKey(filter),
       create: (context) {
         final bloc = MemoryBloc(schema: schema, reverse: true);
         bloc.add(MemoryFetch(
@@ -459,9 +483,22 @@ class WHDispatchListBuilder extends StatelessWidget {
           schema: schema,
           filter: filter,
           title: (MemoryItem item) {
+            final batch = item.json['batch'];
+            if (batch != null) {
+              var barcode = batch['barcode'] ?? '';
+              if (barcode.length == 12) {
+                final fst = barcode.substring(0, 1);
+                final snd = barcode.substring(1, 7);
+                final trd = barcode.substring(7, 12);
+                barcode = '$fst $snd $trd';
+              }
+              return Text(barcode);
+            }
             return Text(fName.resolve(item.json) ?? '');
           },
-          subtitle: (MemoryItem item) => Text(item.json['_cost']?['qty'] ?? ''),
+          subtitle: (MemoryItem item) {
+            return Text(item.json['_cost']?['qty'] ?? '');
+          },
           onTap: (MemoryItem item) => changeState(item)),
     );
   }

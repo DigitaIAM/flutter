@@ -23,7 +23,7 @@ Future<MemoryItem> register(
     final baseUomId = baseUom is Map ? baseUom['_id'] : baseUom;
 
     MemoryItem from;
-    MemoryItem into;
+    MemoryItem? into;
 
     if (ctx == const ['warehouse', 'transfer']) {
       final f = doc.json['from'];
@@ -49,9 +49,6 @@ Future<MemoryItem> register(
       // print("used: ${doc.json}");
       final storage = data['storage'];
       from = storage is MemoryItem ? storage : MemoryItem.from(storage);
-
-      // TODO what into should be?
-      into = const MemoryItem(id: '', json: {});
     } else {
       final counterparty = doc.json['counterparty'];
       from = counterparty is MemoryItem
@@ -87,20 +84,27 @@ Future<MemoryItem> register(
       }
     }
 
-    final category = data['category'] as MemoryItem?;
+    final category = data['category'] is MemoryItem
+        ? data['category']
+        : goods.json['category'];
 
-    final response =
-        await Api.feathers().create(serviceName: 'memories', data: {
+    final categoryId = category is MemoryItem ? category.id : category;
+
+    final request = {
       'document': doc.id,
       'goods': goods.id,
-      'category': category?.id,
+      'category': categoryId,
       'storage_from': from.id,
-      'storage_into': into.id,
       'qty': quantity,
-    }, params: {
-      'oid': Api.instance.oid,
-      'ctx': ctx
-    });
+    };
+    if (into != null) {
+      request['storage_into'] = into.id;
+    }
+
+    final response = await Api.feathers().create(
+        serviceName: 'memories',
+        data: request,
+        params: {'oid': Api.instance.oid, 'ctx': ctx});
 
     final result = MemoryItem.from(response);
     print("register result: $result");
