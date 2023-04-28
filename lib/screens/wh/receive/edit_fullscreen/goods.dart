@@ -20,7 +20,7 @@ class WHReceiveGoods extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctx = const ['warehouse', 'receive'];
+    const ctx = ['warehouse', 'receive'];
     final filter = {
       'document': doc.id,
     };
@@ -60,7 +60,7 @@ class WHReceiveGoods extends StatelessWidget {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-          print("item.json ${item.json}");
+          print("subtitle ${item.json}");
 
           var text = '';
 
