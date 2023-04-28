@@ -178,25 +178,9 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
 
     final data = response['data'] as List;
     for (var json in data) {
-      final item = MemoryItem(
-        id: json['_id'] ?? json['_uuid'] ?? '',
-        json: json,
-      );
-      list.add(item);
+      list.add(MemoryItem.from(json));
     }
     return list;
-
-    // return data.map((json) {
-    //   return MemoryItem(
-    //     id: json['_id'],
-    //     json: json,
-    //   );
-    // }).toList();
-
-    // if (response.statusCode == 200) {
-    //   ..
-    // }
-    // throw Exception('error fetching');
   }
 
   Future<void> _onSearch(MemorySearch event, Emitter<RequestState> emit) async {
@@ -293,10 +277,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     // print("update response:");
     // print(response);
 
-    final item = MemoryItem(
-      id: response['_id'],
-      json: response,
-    );
+    final item = MemoryItem.from(response);
 
     // enrich
     final s = schema ?? [];
@@ -345,10 +326,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     // print("update response:");
     // print(response);
 
-    final item = MemoryItem(
-      id: response['_id'],
-      json: response,
-    );
+    final item = MemoryItem.from(response);
 
     // enrich
     final s = schema ?? [];
@@ -396,10 +374,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     print("patch response:");
     print(response);
 
-    final item = MemoryItem(
-      id: response['_id'],
-      json: response,
-    );
+    final item = MemoryItem.from(response);
 
     // enrich
     final s = schema ?? [];
