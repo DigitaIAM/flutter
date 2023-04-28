@@ -1,26 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nae/api.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/memory/state.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/schema/schema.dart';
-import 'package:nae/widgets/memory_list.dart';
-import 'package:nae/widgets/swipe_action.dart';
 
 import 'ProducedEdit.dart';
 
-class POProducedView extends StatelessWidget {
+class POProducedView extends StatefulWidget {
   final MemoryItem order;
 
   const POProducedView({super.key, required this.order});
 
   @override
+  State<StatefulWidget> createState() => _POProducedViewState();
+}
+
+class _POProducedViewState extends State<POProducedView> {
+  MemoryItem? selected;
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     final ctx = ['production', 'produce'];
     final schema = [
       const Field('qty', NumberType()),
@@ -28,34 +37,105 @@ class POProducedView extends StatelessWidget {
         return bag.id.split('T').last;
       }))
     ];
-    final filter = {'order': order.id};
+    final filter = {'order': widget.order.id};
+
+    final date = DateTime.parse(widget.order.json['date']).toLocal();
+    final formatter = NumberFormat("00");
+
     return BlocProvider(
       create: (context) =>
-          MemoryBloc(schema: schema)..add(MemoryFetch('memories', ctx, schema: schema, filter: filter)),
-      child: MemoryList(
-        ctx: ctx,
-        schema: schema,
-        filter: filter,
-        title: (MemoryItem item) => Text(item.json['qty'].toString()),
-        subtitle: (MemoryItem item) => Text(item.id.split('T').last),
-        // onTap: (MemoryItem item) => {},
-        actions: [
-          ItemAction(
-            label: 'delete',
-            icon: Icons.delete_outline,
-            onPressed: (context, item) => deleteItem(context, item),
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.red,
-          ),
-          ItemAction(
-            label: 'print',
-            icon: Icons.print_outlined,
-            onPressed: (context, item) => chooseAndPrint(context, item),
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.blue,
-          ),
-        ],
-      ),
+          MemoryBloc(schema: schema)..add(MemoryFetch('memories', ctx, schema: schema, filter: filter, loadAll: true)),
+      child: BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
+        if (state.status == RequestStatus.initiate) {
+          return const Center(child: Text('loading...'));
+        } else if (state.status == RequestStatus.failure) {
+          return const Center(child: Text('error!'));
+        } else {
+          final groups = <MemoryItem>{};
+          Map<MemoryItem, List<MemoryItem>> items = {};
+          for (final item in state.items) {
+            var id = item.id;
+            id = id.substring(id.length - 24, id.length);
+
+            final current = DateTime.parse(id).toLocal();
+            id = '${current.year}-${current.month}-${current.day}T${current.hour}';
+
+            var name = '${formatter.format(current.hour)}-${formatter.format(current.hour + 1)} час';
+            if (current.hour + 1 > 24) {
+              name = '${formatter.format(current.hour)}-01 час';
+            }
+
+            if (current.year != date.year) {
+              name = '${DateFormat.yMMMMd().format(current)} $name';
+            } else if (current.month != date.month) {
+              name = '${DateFormat.MMMMd().format(current)} $name';
+            } else if (current.day != date.day) {
+              name = '${DateFormat.MMMMd().format(current)} $name';
+            }
+
+            final group = MemoryItem(id: id, json: {"_id": id, "name": name});
+            groups.add(group);
+
+            final list = items[group] ?? [];
+            list.add(item);
+            items[group] = list;
+          }
+
+          return SingleChildScrollView(
+            child: Column(children: <Widget>[
+              ...groups.map((g) {
+                return Card(
+                  elevation: 2.0,
+                  margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+                  child: Column(children: [
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+                      // leading: const Icon(Icons.account_circle),
+                      tileColor: theme.secondaryHeaderColor,
+                      title: Text(g.name()),
+                      trailing: selected == g ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
+                      onTap: () {
+                        setState(() {
+                          if (selected == g) {
+                            selected = null;
+                          } else {
+                            selected = g;
+                          }
+                        });
+                      },
+                    ),
+                    if (selected == g && items[selected] != null)
+                      SizedBox(
+                        height: 300,
+                        child: ListView(
+                          children:
+                              (items[selected] as List<MemoryItem>).map((item) => buildItem(item, theme)).toList(),
+                        ),
+                      )
+                  ]),
+                );
+              })
+            ]),
+          );
+        }
+      }),
+    );
+  }
+
+  Widget buildItem(MemoryItem item, ThemeData theme) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      leading: const Icon(Icons.catching_pokemon_outlined),
+      title: Text(item.json['qty'].toString()),
+      subtitle: Text(item.id.split('T').last),
+      // trailing: const Icon(Icons.arrow_right),
+      // openUsed ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
+      onTap: () {
+        // setState(() {
+        //   openUsed = !openUsed;
+        //   openProduced = false;
+        // });
+      },
     );
   }
 
@@ -102,7 +182,7 @@ class POProducedView extends StatelessWidget {
             final port = int.parse(printer['port']);
 
             final result = await Labels.connect(
-                ip, port, (printer) async => POProducedEdit.printing(printer, order, doc, (newStatus) {}));
+                ip, port, (printer) async => POProducedEdit.printing(printer, widget.order, doc, (newStatus) {}));
 
             if (result != PrintResult.success) {
               showToast(result.msg,

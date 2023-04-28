@@ -9,9 +9,7 @@ abstract class UiEvent extends Equatable {
 
 class ChangeView extends UiEvent {
   ChangeView(this.ctx,
-      {this.action = 'view',
-      this.entity = const MemoryItem(id: '', json: {}),
-      this.filters = const []});
+      {this.action = 'view', this.entity = const MemoryItem(id: '', json: {}, updatedAt: 0), this.filters = const []});
 
   final List<String> ctx;
   final String action;

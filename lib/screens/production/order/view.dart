@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/screens/production/order/screen.dart';
+import 'package:nae/screens/production/order/widgets/MaterialView.dart';
 import 'package:nae/screens/production/order/widgets/ProducedEdit.dart';
 import 'package:nae/screens/production/order/widgets/ProducedView.dart';
 import 'package:nae/screens/wh/goods_dispatch.dart';
@@ -91,7 +92,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
         return Column(children: <Widget>[
           Expanded(
             child: TabBarView(controller: _controller, children: <Widget>[
-              POProducedView(order: widget.entity),
+              MaterialView(order: widget.entity),
               POProducedView(order: widget.entity),
               ProductionOrderOverview(order: widget.entity),
               ...(editable

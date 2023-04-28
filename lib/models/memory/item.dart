@@ -6,15 +6,23 @@ import 'package:nae/schema/schema.dart';
 import 'package:nae/utils/cache.dart';
 
 class MemoryItem extends Equatable {
-  const MemoryItem({required this.id, required this.json});
+  const MemoryItem({required this.id, required this.json, this.updatedAt = 0});
 
   final String id;
   final Map<String, dynamic> json;
+  final int updatedAt;
 
   get uuid => json['_uuid'];
 
+  get isNew => id == 'new';
+
+  get isEmpty => json.isEmpty;
+
+  @override
+  List<Object> get props => [id, updatedAt];
+
   MemoryItem.clone(MemoryItem item)
-      : this(id: item.id, json: jsonDecode(jsonEncode(item.json)));
+      : this(id: item.id, json: jsonDecode(jsonEncode(item.json)), updatedAt: item.updatedAt);
 
   MemoryItem clone() {
     return MemoryItem.clone(this);
@@ -45,15 +53,6 @@ class MemoryItem extends Equatable {
   save() {
     // TODO?
   }
-
-  get isNew => id == 'new';
-
-  get isEmpty => json.isEmpty;
-
-  get updatedAt => null;
-
-  @override
-  List<Object> get props => [id];
 
   Map<String, dynamic> toJson() {
     return processMap(json);
@@ -112,13 +111,12 @@ class MemoryItem extends Equatable {
                 // copy[name] = cached;
                 field.update(copy, cached);
               } else {
-                final response = await Api.feathers()
-                    .get(serviceName: "memories", objectId: id, params: {
+                final response = await Api.feathers().get(serviceName: "memories", objectId: id, params: {
                   "oid": Api.instance.oid,
                   "ctx": type.ctx,
                 });
 
-                var item = MemoryItem(id: id, json: response);
+                var item = MemoryItem.from(response);
                 cache.add(item);
 
                 item = await item.enrich(type.fields);
@@ -139,15 +137,18 @@ class MemoryItem extends Equatable {
       }
     }
 
-    return MemoryItem(id: id, json: copy);
+    return MemoryItem(id: id, json: copy, updatedAt: DateTime.now().millisecondsSinceEpoch);
   }
 
   static create() => const MemoryItem(id: 'new', json: {});
 
   static empty() => const MemoryItem(id: 'empty', json: {});
 
-  static MemoryItem from(Map<String, dynamic> json) =>
-      MemoryItem(id: json['_id'] ?? json['id'], json: json);
+  static MemoryItem from(Map<String, dynamic> json) => MemoryItem(
+        id: json['_id'] ?? json['id'],
+        json: json,
+        updatedAt: DateTime.now().millisecondsSinceEpoch,
+      );
 }
 
 class Holder {
