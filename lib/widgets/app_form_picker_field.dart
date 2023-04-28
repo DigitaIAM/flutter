@@ -19,6 +19,7 @@ class DecoratedFormPickerField extends StatefulWidget {
     this.decoration,
     required this.onSave,
     this.creatable = true,
+    this.readOnly = false,
   });
 
   final List<String> ctx;
@@ -37,6 +38,7 @@ class DecoratedFormPickerField extends StatefulWidget {
   final Function(BuildContext)? onSave;
 
   final bool creatable;
+  final bool readOnly;
 
   @override
   State<DecoratedFormPickerField> createState() =>
@@ -59,6 +61,7 @@ class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
         return Column(
           children: [
             AutocompleteField<MemoryItem>(
+              autofocus: widget.autofocus,
               label: widget.label,
               initialValue: field.value,
               creatable: widget.creatable,

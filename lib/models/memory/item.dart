@@ -147,7 +147,7 @@ class MemoryItem extends Equatable {
   static empty() => const MemoryItem(id: 'empty', json: {});
 
   static MemoryItem from(Map<String, dynamic> json) =>
-      MemoryItem(id: json['_id'], json: json);
+      MemoryItem(id: json['_id'] ?? json['id'], json: json);
 }
 
 class Holder {

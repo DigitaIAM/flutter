@@ -18,13 +18,15 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 class ProductionOrderView extends EntityHolder {
   final int tabIndex;
 
-  const ProductionOrderView({super.key, required super.entity, required this.tabIndex});
+  const ProductionOrderView(
+      {super.key, required super.entity, required this.tabIndex});
 
   @override
   State<ProductionOrderView> createState() => _ProductionOrderViewState();
 }
 
-class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTickerProviderStateMixin {
+class _ProductionOrderViewState extends State<ProductionOrderView>
+    with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -32,9 +34,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
     super.initState();
 
     // final state = widget.viewModel.state;
-    _controller = TabController(
-        vsync: this, length: 6, initialIndex: 2 // widget.isFilter ? 0 : state.productionOrderUIState.tabIndex
-        );
+    _controller = TabController(vsync: this, length: 6, initialIndex: 2);
     _controller.addListener(_onTabChanged);
   }
 
@@ -70,7 +70,9 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
     final date = widget.entity.json["date"];
     final area = widget.entity.json["area"];
 
-    final editable = date == Utils.today() || date == Utils.yesterday() || area.json['type'] == 'roll';
+    final editable = date == Utils.today() ||
+        date == Utils.yesterday() ||
+        area.json['type'] == 'roll';
 
     return ScaffoldView(
       appBarBottom: TabBar(
@@ -140,8 +142,10 @@ class ProductionOrderOverview extends StatelessWidget {
       EntityHeader(pairs: [
         // Pair(localization.translate("production order"), memoryItem.json['date'])
         Pair(localization.translate("plan"), order.json['planned'] ?? '-'),
-        Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
-        Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
+        Pair(localization.translate("produced"),
+            order.json['produced']?['piece'] ?? '-'),
+        Pair(localization.translate("boxes"),
+            order.json['produced']?['box'] ?? '-'),
       ]),
       ListDivider(),
       KeyValue(

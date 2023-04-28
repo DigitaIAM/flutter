@@ -26,7 +26,8 @@ class GoodsEdit extends EntityHolder {
 }
 
 class _GoodsEditState extends State<GoodsEdit> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsEdit');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_goodsEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   @override
@@ -43,9 +44,8 @@ class _GoodsEditState extends State<GoodsEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", Goods.ctx, Goods.schema, MemoryItem(id: widget.entity.id, json: data)));
+      context.read<MemoryBloc>().add(MemorySave("memories", Goods.ctx,
+          Goods.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -62,7 +62,9 @@ class _GoodsEditState extends State<GoodsEdit> {
 
     return EditScaffold(
       entity: widget.entity,
-      title: widget.entity.isNew ? localization.translate("new goods") : localization.translate("edit goods"),
+      title: widget.entity.isNew
+          ? localization.translate("new goods")
+          : localization.translate("edit goods"),
       onClose: (context) {
         context.read<UiBloc>().add(ChangeView(Goods.ctx));
       },
@@ -78,6 +80,16 @@ class _GoodsEditState extends State<GoodsEdit> {
         entity: widget.entity,
         child: ScrollableListView(children: <Widget>[
           FormCard(isLast: true, children: <Widget>[
+            DecoratedFormPickerField(
+              ctx: const ['goods', 'category'],
+              name: 'category',
+              label: localization.translate("category"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: _onSave,
+            ),
             DecoratedFormField(
               name: 'name',
               label: localization.translate("name"),

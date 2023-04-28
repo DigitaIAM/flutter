@@ -90,6 +90,8 @@ class _AutocompleteFieldState<T extends Object>
     }
     selected = selection;
     widget.onItemSelected(selection);
+    _controller.text = widget.displayStringForOption(selected);
+    // print("_controller.text ${_controller.text}");
   }
 
   void update() {
@@ -121,6 +123,15 @@ class _AutocompleteFieldState<T extends Object>
 
   @override
   Widget build(BuildContext context) {
+    // workaround to update controller on change of initial value
+    if (selected != widget.initialValue) {
+      SchedulerBinding.instance.addPostFrameCallback((Duration timeStamp) {
+        setState(() {
+          updateSelection(widget.initialValue);
+        });
+      });
+    }
+
     update();
 
     if (widget.editable) {

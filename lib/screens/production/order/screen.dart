@@ -110,7 +110,10 @@ class ProductionOrdersListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: ProductionOrder.ctx,
       schema: ProductionOrder.schema,
-      groupBy: (element) => element.json['date'] ?? '',
+      groupBy: (element) {
+        final id = element.json['date'] ?? '';
+        return MemoryItem(id: id, json: {'_id': id, 'name': id});
+      },
       title: (MemoryItem item) =>
           Text('${name(item.json['area'])}\n${name(item.json['product'])}'),
       subtitle: (MemoryItem item) => Text(

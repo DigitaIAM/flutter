@@ -116,7 +116,8 @@ class WHDispatchListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHDispatch.ctx,
       schema: WHDispatch.schema,
-      groupBy: (element) => element.json['date'] ?? '',
+      // groupBy: (element) => element.json['date'] ?? '',
+      groupBy: (element) => element,
       title: (MemoryItem item) =>
           Text(fStorage.resolve(item.json)?.name() ?? ''),
       subtitle: (MemoryItem item) =>
