@@ -60,8 +60,7 @@ class WHBalanceScreen extends EntityHolder {
   State<WHBalanceScreen> createState() => _WHBalanceScreenState();
 }
 
-class _WHBalanceScreenState extends State<WHBalanceScreen>
-    with TickerProviderStateMixin {
+class _WHBalanceScreenState extends State<WHBalanceScreen> with TickerProviderStateMixin {
   // with SingleTickerProviderStateMixin {
   late TabController _controller;
 
@@ -99,16 +98,13 @@ class _WHBalanceScreenState extends State<WHBalanceScreen>
     final localization = AppLocalizations.of(context);
 
     return ScaffoldView(
-      onClose: () => Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const Wrapper())),
+      onClose: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Wrapper())),
       appBarBottom: TabBar(
         controller: _controller,
         isScrollable: true,
         tabs: [
           Tab(text: localization.translate('stock')),
-          ..._filters
-              .map((e) => Tab(text: localization.translate(e.value.name())))
-              .toList()
+          ..._filters.map((e) => Tab(text: localization.translate(e.value.name()))).toList()
         ],
       ),
       body: Builder(builder: (context) {
@@ -213,18 +209,22 @@ class ListBuilder extends StatelessWidget {
           if (category == 'stock') {
             return Text(fName.resolve(item.json['goods'] ?? '') ?? '');
           } else if (category == 'batch') {
-            return Text('партия от ${item.json['batch']?['date'] ?? ''}');
+            print('_batch: ${item.json}');
+            return Text('партия ${item.json['batch']?['barcode'] ?? ''}');
           } else {
             return Text(fName.resolve(item.json) ?? '');
           }
         },
         subtitle: (MemoryItem item) {
           final category = item.json['_category'];
-          if (category == 'stock' || category == 'batch') {
+          if (category == 'stock') {
             // print("item: ${item.json}");
-            return Text(
-                '${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
+            return Text('${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
                 '${item.json['cost']?['number'] ?? ''} сум');
+          } else if (category == 'batch') {
+            // print("item: ${item.json}");
+            return Text('${item.json['_cost']?['qty'] ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
+                '${item.json['_cost']?['cost'] ?? ''} сум');
           } else {
             return Text('${item.json['_cost'] ?? ''} сум');
           }
@@ -237,9 +237,7 @@ class ListBuilder extends StatelessWidget {
             nf.add(Pair(category, MemoryItem.from(item.json['goods'])));
             down(nf);
           } else if (category == 'batch') {
-            return context
-                .read<UiBloc>()
-                .add(ChangeView(WHBalance.ctx, entity: item));
+            return context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item));
           } else {
             final List<Pair> nf = List.from(filters);
             nf.add(Pair(category, item));

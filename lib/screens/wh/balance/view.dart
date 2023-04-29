@@ -9,7 +9,6 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
-import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/entity_screens.dart';
@@ -25,20 +24,17 @@ import '../../../widgets/app_form_card.dart';
 import '../../../widgets/app_form_field.dart';
 import '../../../widgets/app_form_picker_field.dart';
 import '../../../widgets/scrollable_list_view.dart';
-import 'screen.dart';
 
 class WHBalanceView extends EntityHolder {
   final int tabIndex;
 
-  const WHBalanceView(
-      {super.key, required super.entity, required this.tabIndex});
+  const WHBalanceView({super.key, required super.entity, required this.tabIndex});
 
   @override
   State<WHBalanceView> createState() => _WHBalanceViewState();
 }
 
-class _WHBalanceViewState extends State<WHBalanceView>
-    with SingleTickerProviderStateMixin {
+class _WHBalanceViewState extends State<WHBalanceView> with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -124,10 +120,7 @@ class WHTransactionsBuilder extends StatelessWidget {
           final response = await Api.feathers().get(
               serviceName: "memories",
               objectId: rec.id,
-              params: {
-                "oid": Api.instance.oid,
-                "ctx": []
-              }).onError((error, stackTrace) => {});
+              params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
 
           final Map map = response == {} ? response : Map.from(response);
 
@@ -140,10 +133,7 @@ class WHTransactionsBuilder extends StatelessWidget {
           final document = await Api.feathers().get(
               serviceName: "memories",
               objectId: id,
-              params: {
-                "oid": Api.instance.oid,
-                "ctx": ctx
-              }).onError((error, stackTrace) => {});
+              params: {"oid": Api.instance.oid, "ctx": ctx}).onError((error, stackTrace) => {});
           final Map mapDoc = document == {} ? document : Map.from(document);
 
           final date = mapDoc['date'] ?? "?";
@@ -178,10 +168,7 @@ class WHTransactionsBuilder extends StatelessWidget {
             return '';
         }
       })),
-      Field(
-          'issue',
-          CalculatedType((MemoryItem rec) async =>
-              rec.json['type'] == 'issue' ? rec.json['qty'] : '')),
+      Field('issue', CalculatedType((MemoryItem rec) async => rec.json['type'] == 'issue' ? rec.json['qty'] : '')),
     ];
 
     final filter = {
@@ -196,15 +183,13 @@ class WHTransactionsBuilder extends StatelessWidget {
 
     return BlocBuilder<UiBloc, UiState>(
       builder: (context, uiState) => MemoryBlocHolder(
-        init: (bloc) => bloc.add(
-            MemoryFetch('inventory', const [], schema: schema, filter: filter)),
+        init: (bloc) => bloc.add(MemoryFetch('inventory', const [], schema: schema, filter: filter)),
         child: screen(context, uiState, schema, filter),
       ),
     );
   }
 
-  Widget screen(BuildContext context, UiState uiState, List<Field> schema,
-      Map<String, dynamic> filter) {
+  Widget screen(BuildContext context, UiState uiState, List<Field> schema, Map<String, dynamic> filter) {
     return MemoryList(
       service: 'inventory',
       ctx: const [],
@@ -229,8 +214,7 @@ class WHBalanceProduced extends StatefulWidget {
 }
 
 class _WHBalanceProducedState extends State<WHBalanceProduced> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_WHBalanceEdit');
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHBalanceEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -318,8 +302,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
       final operationId = order.json['batch']['id'] ?? '';
 
-      final operation = await Api.feathers()
-              .get(serviceName: "memories", objectId: operationId, params: {
+      final operation = await Api.feathers().get(serviceName: "memories", objectId: operationId, params: {
             "oid": Api.instance.oid,
             "ctx": [],
           }) ??
@@ -333,8 +316,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
       final ctx = split.length >= 3 ? split.sublist(0, 3) : [];
 
-      final document = await Api.feathers()
-              .get(serviceName: "memories", objectId: documentId, params: {
+      final document = await Api.feathers().get(serviceName: "memories", objectId: documentId, params: {
             "oid": Api.instance.oid,
             "ctx": ctx,
           }) ??
@@ -343,8 +325,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
       // print("document $document");
 
       final counterpartyId = document['counterparty'] ?? '';
-      final counterparty = await Api.feathers()
-              .get(serviceName: "memories", objectId: counterpartyId, params: {
+      final counterparty = await Api.feathers().get(serviceName: "memories", objectId: counterpartyId, params: {
             "oid": Api.instance.oid,
             "ctx": ["counterparty"],
           }) ??
@@ -382,8 +363,8 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
           "приход от": dd,
         };
 
-        Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId,
-            batchBarcode, operationId, batchDate, labelData);
+        Labels.lines_with_barcode(
+            printer, goodsName, goodsUuid, goodsId, batchBarcode, operationId, batchDate, labelData);
 
         return Future<PrintResult>.value(PrintResult.success);
       });
