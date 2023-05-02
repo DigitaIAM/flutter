@@ -75,7 +75,7 @@ class WHStorageListBuilder extends StatelessWidget {
       schema: WHStorage.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => const Text(''),
-      onTap: (MemoryItem item) =>
+      onTap: (context, item) =>
           context.read<UiBloc>().add(ChangeView(WHStorage.ctx, entity: item)),
     );
   }

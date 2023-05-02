@@ -117,7 +117,7 @@ class WHTransferListBuilder extends StatelessWidget {
       title: (MemoryItem item) => Text(fFrom.resolve(item.json)?.name() ?? ''),
       subtitle: (MemoryItem item) =>
           Text(fInto.resolve(item.json)?.name() ?? ''),
-      onTap: (MemoryItem item) =>
+      onTap: (context, item) =>
           context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, entity: item)),
 //          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, entity: item)),
     );

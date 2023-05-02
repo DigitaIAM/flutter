@@ -499,7 +499,7 @@ class BalanceListBuilder extends StatelessWidget {
           subtitle: (MemoryItem item) {
             return Text(item.json['_cost']?['qty'] ?? '');
           },
-          onTap: (MemoryItem item) => changeState(item)),
+          onTap: (context, item) => changeState(item)),
     );
   }
 }

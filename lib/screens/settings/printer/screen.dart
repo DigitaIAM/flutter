@@ -91,7 +91,7 @@ class UomListBuilder extends StatelessWidget {
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) =>
           Text('${item.json['ip']}:${item.json['port']}'),
-      onTap: (MemoryItem item) =>
+      onTap: (context, item) =>
           context.read<UiBloc>().add(ChangeView(Printer.ctx, entity: item)),
     );
   }
