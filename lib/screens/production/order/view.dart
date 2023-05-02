@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/models/ui/event.dart';
 import 'package:nae/screens/production/order/screen.dart';
 import 'package:nae/screens/production/order/widgets/MaterialView.dart';
 import 'package:nae/screens/production/order/widgets/ProducedEdit.dart';
@@ -19,15 +22,13 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 class ProductionOrderView extends EntityHolder {
   final int tabIndex;
 
-  const ProductionOrderView(
-      {super.key, required super.entity, required this.tabIndex});
+  const ProductionOrderView({super.key, required super.entity, required this.tabIndex});
 
   @override
   State<ProductionOrderView> createState() => _ProductionOrderViewState();
 }
 
-class _ProductionOrderViewState extends State<ProductionOrderView>
-    with SingleTickerProviderStateMixin {
+class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -71,9 +72,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
     final date = widget.entity.json["date"];
     final area = widget.entity.json["area"];
 
-    final editable = date == Utils.today() ||
-        date == Utils.yesterday() ||
-        area.json['type'] == 'roll';
+    final editable = date == Utils.today() || date == Utils.yesterday() || area.json['type'] == 'roll';
 
     return ScaffoldView(
       appBarBottom: TabBar(
@@ -88,6 +87,15 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
           Tab(text: localization.translate("generated raw material")),
         ],
       ),
+      actions: <Widget>[
+        IconButton(
+          icon: const Icon(Icons.edit_note_outlined),
+          tooltip: localization.translate("edit"),
+          onPressed: () {
+            context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, action: 'edit', entity: widget.entity));
+          },
+        ),
+      ],
       body: Builder(builder: (context) {
         return Column(children: <Widget>[
           Expanded(
@@ -143,10 +151,8 @@ class ProductionOrderOverview extends StatelessWidget {
       EntityHeader(pairs: [
         // Pair(localization.translate("production order"), memoryItem.json['date'])
         Pair(localization.translate("plan"), order.json['planned'] ?? '-'),
-        Pair(localization.translate("produced"),
-            order.json['produced']?['piece'] ?? '-'),
-        Pair(localization.translate("boxes"),
-            order.json['produced']?['box'] ?? '-'),
+        Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
+        Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
       ]),
       ListDivider(),
       KeyValue(
@@ -184,6 +190,11 @@ class ProductionOrderOverview extends StatelessWidget {
       final localization = AppLocalizations.of(context);
 
       return [
+        KeyValue(
+          label: localization.translate("raw material"),
+          value: order.json['material'] ?? '',
+          icon: const Icon(Icons.question_mark),
+        ),
         KeyValue(
           label: localization.translate("thickness"),
           value: order.json['thickness'] ?? '',

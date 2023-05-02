@@ -18,6 +18,7 @@ class DecoratedFormPickerField extends StatefulWidget {
     this.maxLines = 1,
     this.decoration,
     required this.onSave,
+    this.onChange,
     this.creatable = true,
     this.readOnly = false,
   });
@@ -36,13 +37,13 @@ class DecoratedFormPickerField extends StatefulWidget {
 
   final InputDecoration? decoration;
   final Function(BuildContext)? onSave;
+  final Function(MemoryItem?)? onChange;
 
   final bool creatable;
   final bool readOnly;
 
   @override
-  State<DecoratedFormPickerField> createState() =>
-      _DecoratedFormPickerFieldState();
+  State<DecoratedFormPickerField> createState() => _DecoratedFormPickerFieldState();
 }
 
 class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
@@ -77,25 +78,18 @@ class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
                 if (field.value != null && field.value.name() != text) {
                   field.didChange(null);
                 }
-                final response = await Api.feathers().find(
-                    serviceName: "memories",
-                    query: {
-                      "oid": Api.instance.oid,
-                      "ctx": widget.ctx,
-                      "search": text
-                    });
-                return (response['data'] ?? [])
-                    .map<MemoryItem>((item) => MemoryItem.from(item))
-                    .toList();
+                final response = await Api.feathers()
+                    .find(serviceName: "memories", query: {"oid": Api.instance.oid, "ctx": widget.ctx, "search": text});
+                return (response['data'] ?? []).map<MemoryItem>((item) => MemoryItem.from(item)).toList();
               },
               displayStringForOption: (item) => item?.name() ?? '',
               itemBuilder: (context, entry) {
-                return Text(entry.name(),
-                    style: Theme.of(context).textTheme.labelMedium);
+                return Text(entry.name(), style: Theme.of(context).textTheme.labelMedium);
               },
               onItemSelected: (entry) {
                 // print('onItemSelected $entry');
                 field.didChange(entry);
+                widget.onChange?.call(entry);
               },
               // decoration: inputDecoration,
             ),
@@ -106,11 +100,7 @@ class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
                     padding: const EdgeInsets.only(left: 8, top: 10),
                     child: Text(
                       field.errorText!,
-                      style: TextStyle(
-                          fontStyle: FontStyle.normal,
-                          fontSize: 13,
-                          color: Colors.red[700],
-                          height: 0.5),
+                      style: TextStyle(fontStyle: FontStyle.normal, fontSize: 13, color: Colors.red[700], height: 0.5),
                     ),
                   ),
                 ],

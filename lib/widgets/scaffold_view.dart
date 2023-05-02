@@ -4,7 +4,6 @@ import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/widgets/copy_to_clipboard.dart';
-import 'package:nae/wrapper.dart';
 
 class ScaffoldView extends StatelessWidget {
   // final BaseEntity entity;
@@ -12,6 +11,7 @@ class ScaffoldView extends StatelessWidget {
   final Widget body;
   final String title;
   final void Function()? onClose;
+  final List<Widget>? actions;
 
   const ScaffoldView({
     super.key,
@@ -20,6 +20,7 @@ class ScaffoldView extends StatelessWidget {
     this.appBarBottom,
     this.title = "",
     this.onClose,
+    this.actions,
   });
 
   @override
@@ -47,6 +48,7 @@ class ScaffoldView extends StatelessWidget {
             child: Text(title),
           ),
           bottom: appBarBottom,
+          actions: actions,
         ),
         body: SafeArea(
           child: body,

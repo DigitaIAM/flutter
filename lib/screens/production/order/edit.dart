@@ -31,6 +31,18 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_productionOrderEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
+  MemoryItem? product;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final p = widget.entity.json['product'];
+    if (p is MemoryItem) {
+      product = p;
+    }
+  }
+
   @override
   void dispose() {
     _focusNode.dispose();
@@ -39,6 +51,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   }
 
   void _onSave(BuildContext context) {
+    print("_onSave");
     final state = _formKey.currentState;
     if (state != null && state.saveAndValidate()) {
       print("state ${state.value}");
@@ -77,6 +90,8 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
       // TODO context.read<UiBloc>().add(PreviousRoute());
     }
 
+    print("Widget build");
+
     return EditScaffold(
       entity: widget.entity,
       title: widget.entity.isNew
@@ -96,7 +111,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
             DateField(
               name: 'date',
               label: localization.translate("date"),
-              autofocus: true,
+              autofocus: false,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
               ]),
@@ -136,6 +151,12 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
                 FormBuilderValidators.required(),
               ]),
               onSave: _onSave,
+              onChange: (item) {
+                print("onChange: (item) $item");
+                setState(() {
+                  product = item;
+                });
+              },
               // keyboardType: TextInputType.text,
             ),
             ...additional(context),
@@ -169,34 +190,31 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   }
 
   List<Widget> additional(BuildContext context) {
-    final value = _formKey.currentState?.value;
-    if (value != null) {
-      final product = value['product'] ?? MemoryItem.empty;
-      if ((product.json['type'] ?? '') == 'roll') {
-        final localization = AppLocalizations.of(context);
-        return [
-          DecoratedFormField(
-            name: 'material',
-            label: localization.translate("raw material"),
-            autofocus: true,
-            validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(),
-            ]),
-            onSave: (context) {},
-            keyboardType: TextInputType.text,
-          ),
-          DecoratedFormField(
-            name: 'thickness',
-            label: localization.translate("thickness"),
-            autofocus: true,
-            validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(),
-            ]),
-            onSave: (context) {},
-            keyboardType: TextInputType.text,
-          ),
-        ];
-      }
+    print("additional");
+    if (product != null && (product!.json['type'] ?? '') == 'roll') {
+      final localization = AppLocalizations.of(context);
+      return [
+        DecoratedFormField(
+          name: 'material',
+          label: localization.translate("raw material"),
+          autofocus: true,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(),
+          ]),
+          onSave: (context) {},
+          keyboardType: TextInputType.text,
+        ),
+        DecoratedFormField(
+          name: 'thickness',
+          label: localization.translate("thickness"),
+          autofocus: true,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(),
+          ]),
+          onSave: (context) {},
+          keyboardType: TextInputType.text,
+        ),
+      ];
     }
     return [];
   }
