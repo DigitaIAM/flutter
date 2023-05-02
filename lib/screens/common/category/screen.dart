@@ -88,7 +88,7 @@ class CategoryListBuilder extends StatelessWidget {
       schema: Category.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => const Text(''),
-      onTap: (MemoryItem item) =>
+      onTap: (context, item) =>
           context.read<UiBloc>().add(ChangeView(Category.ctx, entity: item)),
     );
   }

@@ -122,7 +122,7 @@ class WHDispatchListBuilder extends StatelessWidget {
           Text(fStorage.resolve(item.json)?.name() ?? ''),
       subtitle: (MemoryItem item) =>
           Text(fCounterparty.resolve(item.json)?.name() ?? ''),
-      onTap: (MemoryItem item) =>
+      onTap: (context, item) =>
           context.read<UiBloc>().add(ChangeView(WHDispatch.ctx, entity: item)),
     );
   }

@@ -15,6 +15,7 @@ import 'package:nae/screens/settings/printer/screen.dart';
 import 'package:nae/screens/wh/balance/screen.dart';
 import 'package:nae/screens/wh/dispatch/screen.dart';
 import 'package:nae/screens/wh/inventory/screen.dart';
+import 'package:nae/screens/wh/list_builder.dart';
 import 'package:nae/screens/wh/receive/screen.dart';
 import 'package:nae/screens/wh/storage/screen.dart';
 import 'package:nae/screens/wh/transfer/screen.dart';

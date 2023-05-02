@@ -118,7 +118,7 @@ class ProductionOrdersListBuilder extends StatelessWidget {
           Text('${name(item.json['area'])}\n${name(item.json['product'])}'),
       subtitle: (MemoryItem item) => Text(
           'план: ${item.json['planned']} шт\nвыработка: ${item.json['produced~']}'),
-      onTap: (MemoryItem item) => context
+      onTap: (context, item) => context
           .read<UiBloc>()
           .add(ChangeView(ProductionOrder.ctx, entity: item)),
     );
