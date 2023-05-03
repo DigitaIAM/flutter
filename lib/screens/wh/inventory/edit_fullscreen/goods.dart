@@ -74,6 +74,8 @@ class WHInventoryGoods extends StatelessWidget {
               } else {
                 text = '$text${qty['number']} ${uom['name']} ';
               }
+            } else {
+              text = '$text${qty['number']} ${item.json['goods']?['uom']?['name'] ?? ''}';
             }
             qty = qty['uom'];
           }
