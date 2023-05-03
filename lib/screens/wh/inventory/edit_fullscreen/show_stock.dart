@@ -7,6 +7,7 @@ import 'package:nae/app_localizations.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/memory/state.dart';
 import 'package:nae/screens/wh/inventory/screen.dart';
 import 'package:nae/screens/wh/list_builder.dart';
 import 'package:nae/share/utils.dart';
@@ -23,8 +24,7 @@ class WHInventoryShowStock extends StatefulWidget {
 }
 
 class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_WHInventoryShowStockState');
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHInventoryShowStockState');
 
   final FocusScopeNode _focusNode = FocusScopeNode();
 
@@ -38,8 +38,9 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
       // workaround
       data['_id'] = widget.doc.id;
 
-      context.read<MemoryBloc>().add(MemorySave("memories", WHInventory.ctx,
-          WHInventory.schema, MemoryItem(id: widget.doc.id, json: data)));
+      context
+          .read<MemoryBloc>()
+          .add(MemorySave("memories", WHInventory.ctx, WHInventory.schema, MemoryItem(id: widget.doc.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -48,40 +49,113 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Pair> pairs = [];
+    final List<Pair> filters = [];
 
     final storage = widget.doc.json['storage'] is MemoryItem
-        ? widget.doc.json['storage']
-        : MemoryItem(
-            id: widget.doc.json['storage']['_id'],
-            json: widget.doc.json['storage']);
+        ? widget.doc.json['storage'] as MemoryItem
+        : MemoryItem(id: widget.doc.json['storage']['_id'], json: widget.doc.json['storage']);
 
-    pairs.add(Pair('storage', storage));
+    final storageUuid = storage.json['_uuid'] ?? '';
 
-    return ListBuilder(
-        filters: List.from(pairs),
-        down: (context, filters) => callBack(context, filters),
-        ctx: const ['warehouse', 'stock'],
-        schema: WHInventory.schema);
+    filters.add(Pair('storage', storage));
+
+    print("doc: ${widget.doc.json}");
+    print("storage: ${storage.json}");
+
+    final docFilter = {'document': widget.doc.id};
+    final storageFilter = {'storage': storageUuid};
+
+    // final stockList = ListBuilder(
+    //     filters: List.from(pairs),
+    //     down: (context, filters) => callBack(context, filters),
+    //     ctx: const ['warehouse', 'stock'],
+    //     schema: WHInventory.schema);
+
+    // final stockList = MemoryList(
+    //   ctx: const ['warehouse', 'stock'],
+    //   schema: WHInventory.schema,
+    //   title: (MemoryItem item) => Text(fName.resolve(item.json) ?? ''),
+    //   subtitle: (MemoryItem item) => Text('${item.json['_cost'] ?? ''} сум'),
+    // );
+    //
+    // print("stockList: ${stockList}");
+
+    return BlocProvider(
+      create: (context) => MemoryBloc(),
+      child: BlocBuilder<MemoryBloc, RequestState>(builder: (context, stockState) {
+        context.read<MemoryBloc>().add(
+            MemoryFetch('memories', const ['warehouse', 'stock'], schema: WHInventory.schema, filter: storageFilter));
+        return BlocProvider(
+          create: (context) => MemoryBloc(),
+          child: BlocBuilder<MemoryBloc, RequestState>(
+            builder: (context, linesState) {
+              context.read<MemoryBloc>().add(MemoryFetch('memories', const ['warehouse', 'inventory'],
+                  schema: WHInventory.schema, filter: docFilter));
+
+              final stock = stockState.items;
+              final lines = linesState.items;
+
+              print("stock: $stock");
+              print("lines: $lines");
+
+              // final todo = stock.where((element) => !lines.contains(element)).toList();
+
+              List<MemoryItem> todo = stock.toList();
+
+              for (final s in stock) {
+                // print("s name: ${s.json['name']}");
+                for (final line in lines) {
+                  // print("line name: ${line.json}");
+                  if (s.json['name'] == line.json['goods']['name']) {
+                    todo.remove(s);
+                    break;
+                  }
+                }
+              }
+
+              print("todo: $todo");
+
+              List<Widget> todoList = [];
+
+              for (final record in todo) {
+                print("record: ${record.json['name']}");
+                todoList.add(ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+                  // leading: const Icon(Icons.account_circle),
+                  title: Text(record.json['name'] ?? ''),
+                  subtitle: Text('${record.json['_cost']['qty'] ?? ''} ${record.json['uom']['name'] ?? ''}, '
+                      '${record.json['_cost']['cost'] ?? ''} сум'),
+                  // trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
+                  onTap: () => callBack(context, record),
+                ));
+              }
+
+              // return widget(todo);
+
+              return Column(children: todoList);
+            },
+          ),
+        );
+      }),
+    );
   }
 
-  Future callBack(BuildContext context, List<Pair> filters) {
+  Future callBack(BuildContext context, MemoryItem record) {
     return showMaterialModalBottomSheet(
       context: context,
       builder: (ctx) => SingleChildScrollView(
         controller: ModalScrollController.of(context),
-        child: enteringAmount(context, filters),
+        child: enteringAmount(context, record),
       ),
     );
   }
 
-  Widget enteringAmount(BuildContext context, List<Pair> filters) {
+  Widget enteringAmount(BuildContext context, MemoryItem record) {
     final localization = AppLocalizations.of(context);
 
     List<Widget> widgets = [];
 
-    final MemoryItem details = MemoryItem(
-        id: '', json: {'date': Utils.today()}); // TODO input doc date?
+    final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()}); // TODO input doc date?
 
     widgets.add(const Text('Enter the amount of goods:'));
 
@@ -100,7 +174,7 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
 
     widgets.add(
       ElevatedButton(
-        onPressed: () => registerDocument(context, filters),
+        onPressed: () => registerDocument(context, record),
         // onPressed: () => {},
         style: ElevatedButton.styleFrom(
           shape: RoundedRectangleBorder(
@@ -122,21 +196,9 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
         child: Column(children: widgets));
   }
 
-  void registerDocument(BuildContext context, List<Pair> filters) {
+  void registerDocument(BuildContext context, MemoryItem record) {
     final data = _formKey.currentState?.value;
     if (data == null) {
-      return;
-    }
-
-    MemoryItem? goods;
-    for (final filter in filters) {
-      if (filter.label == 'goods') {
-        goods = filter.value;
-        break;
-      }
-    }
-
-    if (goods == null) {
       return;
     }
 
@@ -151,7 +213,7 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
           'inventory'
         ], const [], {
           "document": widget.doc.id,
-          "goods": goods.id,
+          "goods": record.id,
           'qty': {'number': qty}
         }));
   }
