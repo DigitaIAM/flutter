@@ -11,6 +11,7 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
@@ -102,6 +103,71 @@ class _WHBalanceViewState extends State<WHBalanceView> with SingleTickerProvider
   }
 }
 
+Field fType = Field('type', CalculatedType((MemoryItem rec) async {
+  return rec.json['type'] ?? rec.json['op']?['type'] ?? '';
+}));
+
+Field fQty = Field('qty', CalculatedType((MemoryItem rec) async {
+  // print("rec.json ${rec.json}");
+  // print("rec.json['qty'] ${rec.json['qty']}");
+  // print("rec.json['op'] ${rec.json['op']}");
+  // print("rec.json['op']?['qty'] ${rec.json['op']?['qty']}");
+  return rec.json['qty'] ?? rec.json['op']?['qty'] ?? '';
+}));
+
+Field fCost = Field('cost', CalculatedType((MemoryItem rec) async {
+  return rec.json['cost'] ?? rec.json['op']?['cost'] ?? '';
+}));
+
+Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
+  // print("WHTransactionsBuilder rec: $rec");
+  // print("WHTransactionsBuilder entity: $entity");
+  final t = rec.json['type'];
+  if (t == 'open_balance' || t == 'close_balance') {
+    return 'balance|${rec.json['date']}';
+  } else {
+    final response = await Api.feathers().get(
+        serviceName: "memories",
+        objectId: rec.id,
+        params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+
+    final Map map = response == {} ? response : Map.from(response);
+
+    final id = map['document'] ?? "";
+
+    final split = id.toString().split('/');
+
+    final ctx = split.length >= 3 ? split.sublist(0, 3) : [];
+
+    final document = await Api.feathers().get(
+        serviceName: "memories",
+        objectId: id,
+        params: {"oid": Api.instance.oid, "ctx": ctx}).onError((error, stackTrace) => {});
+    final Map mapDoc = document == {} ? document : Map.from(document);
+
+    final date = mapDoc['date'] ?? "?";
+
+    // final from = mapDoc['from']?['name'] ?? "?";
+    // final into = mapDoc['into']?['name'] ?? "?";
+
+    String from = '';
+    String into = '';
+
+    if (ctx[1] == 'transfer') {
+      from = mapDoc['from']?['name'] ?? "?";
+      into = mapDoc['into']?['name'] ?? "?";
+    } else if (ctx[1] == 'receive') {
+      from = mapDoc['counterparty']?['name'] ?? "?";
+      into = mapDoc['storage']?['name'] ?? "?";
+    } else if (ctx[1] == 'dispatch') {
+      into = mapDoc['counterparty']?['name'] ?? "?";
+      from = mapDoc['storage']?['name'] ?? "?";
+    }
+
+    return '${ctx[1]}|$date|$from|$into';
+  }
+}));
+
 class WHTransactionsBuilder extends StatelessWidget {
   final MemoryItem entity;
 
@@ -110,65 +176,10 @@ class WHTransactionsBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final schema = [
-      Field('description', CalculatedType((MemoryItem rec) async {
-        // print("WHTransactionsBuilder rec: $rec");
-        // print("WHTransactionsBuilder entity: $entity");
-        final t = rec.json['type'];
-        if (t == 'open_balance' || t == 'close_balance') {
-          return 'balance at ${rec.json['date']}';
-        } else {
-          final response = await Api.feathers().get(
-              serviceName: "memories",
-              objectId: rec.id,
-              params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
-
-          final Map map = response == {} ? response : Map.from(response);
-
-          final id = map['document'] ?? "";
-
-          final split = id.toString().split('/');
-
-          final ctx = split.length >= 3 ? split.sublist(0, 3) : [];
-
-          final document = await Api.feathers().get(
-              serviceName: "memories",
-              objectId: id,
-              params: {"oid": Api.instance.oid, "ctx": ctx}).onError((error, stackTrace) => {});
-          final Map mapDoc = document == {} ? document : Map.from(document);
-
-          final date = mapDoc['date'] ?? "?";
-
-          // final from = mapDoc['from']?['name'] ?? "?";
-          // final into = mapDoc['into']?['name'] ?? "?";
-
-          String from = '';
-          String into = '';
-
-          if (ctx[1] == 'transfer') {
-            from = mapDoc['from']?['name'] ?? "?";
-            into = mapDoc['into']?['name'] ?? "?";
-          } else if (ctx[1] == 'receive') {
-            from = mapDoc['counterparty']?['name'] ?? "?";
-            into = mapDoc['storage']?['name'] ?? "?";
-          } else if (ctx[1] == 'dispatch') {
-            into = mapDoc['counterparty']?['name'] ?? "?";
-            from = mapDoc['storage']?['name'] ?? "?";
-          }
-
-          return '$date\nиз $from в $into';
-        }
-      })),
-      Field('receive', CalculatedType((MemoryItem rec) async {
-        switch (rec.json['type']) {
-          case 'receive':
-          case 'open_balance':
-          case 'close_balance':
-            return rec.json['qty'];
-          default:
-            return '';
-        }
-      })),
-      Field('issue', CalculatedType((MemoryItem rec) async => rec.json['type'] == 'issue' ? rec.json['qty'] : '')),
+      fDesc,
+      fType,
+      fQty,
+      fCost,
     ];
 
     final filter = {
@@ -195,9 +206,49 @@ class WHTransactionsBuilder extends StatelessWidget {
       ctx: const [],
       schema: schema,
       filter: filter,
-      title: (MemoryItem item) => Text(item.json['description'] ?? ''),
-      subtitle: (MemoryItem item) => Text(
-          '${fType.resolve(item.json)} ${fQtySingle.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}'),
+      title: (MemoryItem item) {
+        // var alignment = Alignment.centerRight;
+        // switch (fType.resolve(item.json)) {
+        //   case 'open_balance':
+        //   case 'close_balance':
+        //     alignment = Alignment.centerRight;
+        //     break;
+        //   case 'receive':
+        //     alignment = Alignment.centerRight;
+        //     break;
+        //   default:
+        //     alignment = Alignment.centerRight;
+        //     break;
+        // }
+        return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text("${fQty.resolve(item.json)}"),
+          Text("${fCost.resolve(item.json)}"),
+        ]);
+      },
+      subtitle: (MemoryItem item) {
+        final description = fDesc.resolve(item.json);
+        final parts = description.split('|');
+        if (parts.length == 2) {
+          return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text("${parts[0]}"),
+            Text(DT.format(parts[1])),
+          ]);
+        } else if (parts.length == 4) {
+          return Column(children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text("${parts[0]}"),
+              Text("${parts[3]}"),
+            ]),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text(DT.format(parts[1])),
+            ])
+          ]);
+        } else {
+          return Text(description);
+        }
+      },
+      // Text(
+      // '${fType.resolve(item.json)} ${fQtySingle.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}'),
       // onTap: (MemoryItem item) =>
       //     context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
     );

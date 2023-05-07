@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nae/api.dart';
+import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
@@ -9,20 +12,52 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/inventory/screen.dart';
 import 'package:nae/screens/wh/receive/screen.dart';
+import 'package:nae/share/utils.dart';
+import 'package:nae/widgets/app_form.dart';
+import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
 
-class WHInventoryGoods extends StatelessWidget {
+class WHInventoryGoods extends StatefulWidget {
   final MemoryItem doc;
 
   const WHInventoryGoods({super.key, required this.doc});
 
   @override
+  State<StatefulWidget> createState() => _WHInventoryGoodsState();
+}
+
+class _WHInventoryGoodsState extends State<WHInventoryGoods> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHInventoryGoodsState');
+
+  final FocusScopeNode _focusNode = FocusScopeNode();
+
+  void _onSave(BuildContext context) {
+    final state = _formKey.currentState;
+    if (state != null && state.saveAndValidate()) {
+      debugPrint('new data');
+      debugPrint(_formKey.currentState?.value.toString());
+
+      final Map<String, dynamic> data = Map.from(state.value);
+      // workaround
+      data['_id'] = widget.doc.id;
+
+      context
+          .read<MemoryBloc>()
+          .add(MemorySave("memories", WHInventory.ctx, WHInventory.schema, MemoryItem(id: widget.doc.id, json: data)));
+    } else {
+      debugPrint(_formKey.currentState?.value.toString());
+      debugPrint('validation failed');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     const ctx = ['warehouse', 'inventory'];
     final filter = {
-      'document': doc.id,
+      'document': widget.doc.id,
     };
     final schema = <Field>[
       fGoods.copyWith(width: 3.0),
@@ -89,7 +124,7 @@ class WHInventoryGoods extends StatelessWidget {
           }
           return Text(text, style: style);
         },
-        // onTap: (MemoryItem item) =>
+        onTap: (context, MemoryItem item) => popUpPatch(context, item),
         // context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
         actions: [
           ItemAction(
@@ -163,12 +198,113 @@ class WHInventoryGoods extends StatelessWidget {
   void printPreparation(String ip, int port, MemoryItem item) async {
     print("printPreparation: ${item.json}");
 
-    final _doc = await doc.enrich(WHReceive.schema);
+    final _doc = await widget.doc.enrich(WHReceive.schema);
 
     final result = await Labels.connect(ip, port, (printer) async {
       return await printing(printer, _doc, item, (newStatus) => {});
     });
 
     print("printResult: $result");
+  }
+
+  Future popUpPatch(BuildContext context, MemoryItem record) {
+    return showMaterialModalBottomSheet(
+      context: context,
+      builder: (ctx) => SingleChildScrollView(
+        controller: ModalScrollController.of(context),
+        child: enteringAmount(context, record),
+      ),
+    );
+  }
+
+  Widget enteringAmount(BuildContext context, MemoryItem record) {
+    final localization = AppLocalizations.of(context);
+
+    List<Widget> widgets = [];
+
+    final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()}); // TODO input doc date?
+
+    widgets.add(const Text('Enter the amount of goods:'));
+
+    widgets.add(DecoratedFormField(
+      name: 'qty',
+      label: localization.translate("qty"),
+      autofocus: true,
+      validator: FormBuilderValidators.compose([
+        FormBuilderValidators.required(),
+      ]),
+      onSave: (context) => _onSave,
+      keyboardType: TextInputType.number,
+    ));
+
+    widgets.add(Container(height: 10));
+
+    widgets.add(
+      ElevatedButton(
+        onPressed: () => patchDocument(context, record),
+        // onPressed: () => {},
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Text(localization.translate('register')),
+      ),
+    );
+
+    return AppForm(
+        entity: details,
+        formKey: _formKey,
+        focusNode: _focusNode,
+        onChanged: () {
+          _formKey.currentState!.save();
+          debugPrint("onChanged: ${_formKey.currentState!.value}");
+        },
+        child: Column(children: widgets));
+  }
+
+  void patchDocument(BuildContext context, MemoryItem record) {
+    final data = _formKey.currentState?.value;
+    if (data == null) {
+      return;
+    }
+
+    // print("data type ${data.runtimeType}");
+    print("inventory_data $data");
+    print("inventory_doc ${widget.doc.json}");
+
+    final qty = data['qty'] ?? '';
+
+    if (isNumeric(qty) == true) {
+      // context.read<MemoryBloc>().add(MemoryCreate("memories", const [
+      //       'warehouse',
+      //       'inventory'
+      //     ], const [], {
+      //       "document": widget.doc.id,
+      //       "goods": record.id,
+      //       'qty': {'number': qty}
+      //     }));
+
+      context.read<MemoryBloc>().add(MemoryPatch(
+          "memories",
+          const ['warehouse', 'inventory'],
+          const [],
+          record.id,
+          {
+            'qty': {'number': qty}
+          }));
+    } else {
+      print("Wrong value was entered");
+    }
+  }
+
+  bool isNumeric(String str) {
+    try {
+      var value = double.parse(str);
+    } on FormatException {
+      return false;
+    }
+
+    return true;
   }
 }

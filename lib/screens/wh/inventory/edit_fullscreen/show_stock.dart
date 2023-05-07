@@ -113,7 +113,7 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
                     subtitle: Text('${record.json['_cost']['qty'] ?? ''} ${record.json['uom']['name'] ?? ''}, '
                         '${record.json['_cost']['cost'] ?? ''} сум'),
                     // trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
-                    onTap: () => callBack(context, record),
+                    onTap: () => popUpRegister(context, record),
                   ),
                 ));
               }
@@ -126,7 +126,7 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
     );
   }
 
-  Future callBack(BuildContext context, MemoryItem record) {
+  Future popUpRegister(BuildContext context, MemoryItem record) {
     return showMaterialModalBottomSheet(
       context: context,
       builder: (ctx) => SingleChildScrollView(
@@ -192,15 +192,29 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
     print("inventory_data $data");
     print("inventory_doc ${widget.doc.json}");
 
-    final qty = data['qty'];
+    final qty = data['qty'] ?? '';
 
-    context.read<MemoryBloc>().add(MemoryCreate("memories", const [
-          'warehouse',
-          'inventory'
-        ], const [], {
-          "document": widget.doc.id,
-          "goods": record.id,
-          'qty': {'number': qty}
-        }));
+    if (isNumeric(qty) == true) {
+      context.read<MemoryBloc>().add(MemoryCreate("memories", const [
+            'warehouse',
+            'inventory'
+          ], const [], {
+            "document": widget.doc.id,
+            "goods": record.id,
+            'qty': {'number': qty}
+          }));
+    } else {
+      print("Wrong value was entered");
+    }
+  }
+
+  bool isNumeric(String str) {
+    try {
+      var value = double.parse(str);
+    } on FormatException {
+      return false;
+    }
+
+    return true;
   }
 }
