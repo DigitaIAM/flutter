@@ -4,27 +4,27 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
+import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/state.dart';
+import 'package:nae/printer/labels.dart';
+import 'package:nae/printer/network_printer.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/share/utils.dart';
 import 'package:nae/utils/date.dart';
+import 'package:nae/utils/number.dart';
+import 'package:nae/widgets/app_form.dart';
+import 'package:nae/widgets/app_form_card.dart';
+import 'package:nae/widgets/app_form_field.dart';
+import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
-
-import '../../../api.dart';
-import '../../../printer/labels.dart';
-import '../../../printer/network_printer.dart';
-import '../../../share/utils.dart';
-import '../../../widgets/app_form.dart';
-import '../../../widgets/app_form_card.dart';
-import '../../../widgets/app_form_field.dart';
-import '../../../widgets/app_form_picker_field.dart';
-import '../../../widgets/scrollable_list_view.dart';
+import 'package:nae/widgets/scrollable_list_view.dart';
 
 class WHBalanceView extends EntityHolder {
   final int tabIndex;
@@ -150,21 +150,21 @@ Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
     // final from = mapDoc['from']?['name'] ?? "?";
     // final into = mapDoc['into']?['name'] ?? "?";
 
-    String from = '';
-    String into = '';
+    String store = '';
+    String counterparty = '';
 
     if (ctx[1] == 'transfer') {
-      from = mapDoc['from']?['name'] ?? "?";
-      into = mapDoc['into']?['name'] ?? "?";
+      store = mapDoc['from']?['name'] ?? "?";
+      counterparty = mapDoc['into']?['name'] ?? "?";
     } else if (ctx[1] == 'receive') {
-      from = mapDoc['counterparty']?['name'] ?? "?";
-      into = mapDoc['storage']?['name'] ?? "?";
+      counterparty = mapDoc['counterparty']?['name'] ?? "?";
+      store = mapDoc['storage']?['name'] ?? "?";
     } else if (ctx[1] == 'dispatch') {
-      into = mapDoc['counterparty']?['name'] ?? "?";
-      from = mapDoc['storage']?['name'] ?? "?";
+      counterparty = mapDoc['counterparty']?['name'] ?? "?";
+      store = mapDoc['storage']?['name'] ?? "?";
     }
 
-    return '${ctx[1]}|$date|$from|$into';
+    return '${ctx[1]}|$date|$store|$counterparty';
   }
 }));
 
@@ -222,7 +222,7 @@ class WHTransactionsBuilder extends StatelessWidget {
         // }
         return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text("${fQty.resolve(item.json)}"),
-          Text("${fCost.resolve(item.json)}"),
+          Text(Number.format(fCost.resolve(item.json))),
         ]);
       },
       subtitle: (MemoryItem item) {
@@ -236,8 +236,8 @@ class WHTransactionsBuilder extends StatelessWidget {
         } else if (parts.length == 4) {
           return Column(children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text("${parts[0]}"),
-              Text("${parts[3]}"),
+              Text("${parts[0]} ${parts[3]}"),
+              Text(''),
             ]),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text(DT.format(parts[1])),
@@ -274,8 +274,6 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
   @override
   Widget build(BuildContext context) {
-    print("CONTEXT: ${context}");
-//    final x =
     final localization = AppLocalizations.of(context);
     final widgets = <Widget>[
       AppForm(

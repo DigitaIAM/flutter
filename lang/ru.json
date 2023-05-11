@@ -98,5 +98,6 @@
   "notes": "заметки",
   "thickness": "толщина",
   "length": "длина",
-  "weight": "вес"
+  "weight": "вес",
+  "batch": "партия"
 }
