@@ -13,6 +13,7 @@ import 'package:nae/screens/wh/list_builder.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_field.dart';
+import 'package:nae/widgets/scrollable_list_view.dart';
 
 class WHInventoryShowStock extends StatefulWidget {
   final MemoryItem doc;
@@ -65,21 +66,6 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
     final docFilter = {'document': widget.doc.id};
     final storageFilter = {'storage': storageUuid};
 
-    // final stockList = ListBuilder(
-    //     filters: List.from(pairs),
-    //     down: (context, filters) => callBack(context, filters),
-    //     ctx: const ['warehouse', 'stock'],
-    //     schema: WHInventory.schema);
-
-    // final stockList = MemoryList(
-    //   ctx: const ['warehouse', 'stock'],
-    //   schema: WHInventory.schema,
-    //   title: (MemoryItem item) => Text(fName.resolve(item.json) ?? ''),
-    //   subtitle: (MemoryItem item) => Text('${item.json['_cost'] ?? ''} сум'),
-    // );
-    //
-    // print("stockList: ${stockList}");
-
     return BlocProvider(
       create: (context) => MemoryBloc(),
       child: BlocBuilder<MemoryBloc, RequestState>(builder: (context, stockState) {
@@ -97,8 +83,6 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
 
               print("stock: $stock");
               print("lines: $lines");
-
-              // final todo = stock.where((element) => !lines.contains(element)).toList();
 
               List<MemoryItem> todo = stock.toList();
 
@@ -118,21 +102,23 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
               List<Widget> todoList = [];
 
               for (final record in todo) {
-                print("record: ${record.json['name']}");
-                todoList.add(ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-                  // leading: const Icon(Icons.account_circle),
-                  title: Text(record.json['name'] ?? ''),
-                  subtitle: Text('${record.json['_cost']['qty'] ?? ''} ${record.json['uom']['name'] ?? ''}, '
-                      '${record.json['_cost']['cost'] ?? ''} сум'),
-                  // trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
-                  onTap: () => callBack(context, record),
+                print("record: ${record.json}");
+                todoList.add(Card(
+                  elevation: 2.0,
+                  margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+                    // leading: const Icon(Icons.account_circle),
+                    title: Text(record.json['name'] ?? ''),
+                    subtitle: Text('${record.json['_cost']['qty'] ?? ''} ${record.json['uom']['name'] ?? ''}, '
+                        '${record.json['_cost']['cost'] ?? ''} сум'),
+                    // trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
+                    onTap: () => popUpRegister(context, record),
+                  ),
                 ));
               }
 
-              // return widget(todo);
-
-              return Column(children: todoList);
+              return ScrollableListView(children: todoList);
             },
           ),
         );
@@ -140,7 +126,7 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
     );
   }
 
-  Future callBack(BuildContext context, MemoryItem record) {
+  Future popUpRegister(BuildContext context, MemoryItem record) {
     return showMaterialModalBottomSheet(
       context: context,
       builder: (ctx) => SingleChildScrollView(
@@ -206,15 +192,29 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
     print("inventory_data $data");
     print("inventory_doc ${widget.doc.json}");
 
-    final qty = data['qty'];
+    final qty = data['qty'] ?? '';
 
-    context.read<MemoryBloc>().add(MemoryCreate("memories", const [
-          'warehouse',
-          'inventory'
-        ], const [], {
-          "document": widget.doc.id,
-          "goods": record.id,
-          'qty': {'number': qty}
-        }));
+    if (isNumeric(qty) == true) {
+      context.read<MemoryBloc>().add(MemoryCreate("memories", const [
+            'warehouse',
+            'inventory'
+          ], const [], {
+            "document": widget.doc.id,
+            "goods": record.id,
+            'qty': {'number': qty}
+          }));
+    } else {
+      print("Wrong value was entered");
+    }
+  }
+
+  bool isNumeric(String str) {
+    try {
+      var value = double.parse(str);
+    } on FormatException {
+      return false;
+    }
+
+    return true;
   }
 }

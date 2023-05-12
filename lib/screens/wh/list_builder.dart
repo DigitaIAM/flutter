@@ -7,6 +7,7 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/utils/number.dart';
 import 'package:nae/widgets/memory_list.dart';
 
 class Pair {
@@ -56,7 +57,7 @@ class ListBuilder extends StatelessWidget {
           return o;
         }
         final name = localization.translate(id);
-        final n = MemoryItem(id: id, json: {"_uuid": id, "name": name});
+        final n = MemoryItem(id: id, json: {"_uuid": id, "name": localization.translate(name)});
         cache[id] = n;
         return n;
       },
@@ -83,8 +84,8 @@ class ListBuilder extends StatelessWidget {
         if (category == 'stock') {
           return Text(fName.resolve(item.json['goods'] ?? '') ?? '');
         } else if (category == 'batch') {
-          print('_batch: ${item.json}');
-          return Text('партия ${item.json['batch']?['barcode'] ?? ''}');
+          final batch = item.json['batch']?['barcode'] ?? '';
+          return Text('$batch');
         } else {
           return Text(fName.resolve(item.json) ?? '');
         }
@@ -94,13 +95,30 @@ class ListBuilder extends StatelessWidget {
         if (category == 'stock') {
           // print("item: ${item.json}");
           return Text('${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
-              '${item.json['cost']?['number'] ?? ''} сум');
-        } else if (category == 'batch') {
-          // print("item: ${item.json}");
-          return Text('${item.json['_cost']?['qty'] ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
-              '${item.json['_cost']?['cost'] ?? ''} сум');
+              '${Number.format(item.json['cost']?['number'] ?? '')} сум');
+          // } else if (category == 'batch') {
+          //   // print("item: ${item.json}");
+          //   return Text('${item.json['_balance']?['qty'] ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
+          //       '${item.json['_balance']?['cost'] ?? ''} сум');
         } else {
-          return Text('${item.json['_cost'] ?? ''} сум');
+          print("item: ${item.json}");
+          final cost = item.json['_cost'];
+          if (cost != null) {
+            return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Text(''),
+              Text('${Number.format(cost)} сум'),
+            ]);
+          } else {
+            final balance = item.json['_balance'];
+            print("balance: ${balance}");
+            if (balance != null) {
+              return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text('${balance['qty'] ?? ''} ${fUom.resolve(item.json)?.name() ?? ''}'),
+                Text('${Number.format(balance['cost'] ?? '')} сум'),
+              ]);
+            }
+          }
+          return const Text('');
         }
       },
       onTap: (context, item) {

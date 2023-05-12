@@ -97,5 +97,6 @@
   "notes": "notes",
   "thickness": "thickness",
   "length": "length",
-  "weight": "weight"
+  "weight": "weight",
+  "batch": "batch"
 }

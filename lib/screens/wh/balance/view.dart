@@ -4,26 +4,27 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
+import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/state.dart';
+import 'package:nae/printer/labels.dart';
+import 'package:nae/printer/network_printer.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/share/utils.dart';
+import 'package:nae/utils/date.dart';
+import 'package:nae/utils/number.dart';
+import 'package:nae/widgets/app_form.dart';
+import 'package:nae/widgets/app_form_card.dart';
+import 'package:nae/widgets/app_form_field.dart';
+import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
-
-import '../../../api.dart';
-import '../../../printer/labels.dart';
-import '../../../printer/network_printer.dart';
-import '../../../share/utils.dart';
-import '../../../widgets/app_form.dart';
-import '../../../widgets/app_form_card.dart';
-import '../../../widgets/app_form_field.dart';
-import '../../../widgets/app_form_picker_field.dart';
-import '../../../widgets/scrollable_list_view.dart';
+import 'package:nae/widgets/scrollable_list_view.dart';
 
 class WHBalanceView extends EntityHolder {
   final int tabIndex;
@@ -102,6 +103,71 @@ class _WHBalanceViewState extends State<WHBalanceView> with SingleTickerProvider
   }
 }
 
+Field fType = Field('type', CalculatedType((MemoryItem rec) async {
+  return rec.json['type'] ?? rec.json['op']?['type'] ?? '';
+}));
+
+Field fQty = Field('qty', CalculatedType((MemoryItem rec) async {
+  // print("rec.json ${rec.json}");
+  // print("rec.json['qty'] ${rec.json['qty']}");
+  // print("rec.json['op'] ${rec.json['op']}");
+  // print("rec.json['op']?['qty'] ${rec.json['op']?['qty']}");
+  return rec.json['qty'] ?? rec.json['op']?['qty'] ?? '';
+}));
+
+Field fCost = Field('cost', CalculatedType((MemoryItem rec) async {
+  return rec.json['cost'] ?? rec.json['op']?['cost'] ?? '';
+}));
+
+Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
+  // print("WHTransactionsBuilder rec: $rec");
+  // print("WHTransactionsBuilder entity: $entity");
+  final t = rec.json['type'];
+  if (t == 'open_balance' || t == 'close_balance') {
+    return 'balance|${rec.json['date']}';
+  } else {
+    final response = await Api.feathers().get(
+        serviceName: "memories",
+        objectId: rec.id,
+        params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+
+    final Map map = response == {} ? response : Map.from(response);
+
+    final id = map['document'] ?? "";
+
+    final split = id.toString().split('/');
+
+    final ctx = split.length >= 3 ? split.sublist(0, 3) : [];
+
+    final document = await Api.feathers().get(
+        serviceName: "memories",
+        objectId: id,
+        params: {"oid": Api.instance.oid, "ctx": ctx}).onError((error, stackTrace) => {});
+    final Map mapDoc = document == {} ? document : Map.from(document);
+
+    final date = mapDoc['date'] ?? "?";
+
+    // final from = mapDoc['from']?['name'] ?? "?";
+    // final into = mapDoc['into']?['name'] ?? "?";
+
+    String store = '';
+    String counterparty = '';
+
+    if (ctx[1] == 'transfer') {
+      store = mapDoc['from']?['name'] ?? "?";
+      counterparty = mapDoc['into']?['name'] ?? "?";
+    } else if (ctx[1] == 'receive') {
+      counterparty = mapDoc['counterparty']?['name'] ?? "?";
+      store = mapDoc['storage']?['name'] ?? "?";
+    } else if (ctx[1] == 'dispatch') {
+      counterparty = mapDoc['counterparty']?['name'] ?? "?";
+      store = mapDoc['storage']?['name'] ?? "?";
+    }
+
+    return '${ctx[1]}|$date|$store|$counterparty';
+  }
+}));
+
 class WHTransactionsBuilder extends StatelessWidget {
   final MemoryItem entity;
 
@@ -110,65 +176,10 @@ class WHTransactionsBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final schema = [
-      Field('description', CalculatedType((MemoryItem rec) async {
-        // print("WHTransactionsBuilder rec: $rec");
-        // print("WHTransactionsBuilder entity: $entity");
-        final t = rec.json['type'];
-        if (t == 'open_balance' || t == 'close_balance') {
-          return 'balance at ${rec.json['date']}';
-        } else {
-          final response = await Api.feathers().get(
-              serviceName: "memories",
-              objectId: rec.id,
-              params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
-
-          final Map map = response == {} ? response : Map.from(response);
-
-          final id = map['document'] ?? "";
-
-          final split = id.toString().split('/');
-
-          final ctx = split.length >= 3 ? split.sublist(0, 3) : [];
-
-          final document = await Api.feathers().get(
-              serviceName: "memories",
-              objectId: id,
-              params: {"oid": Api.instance.oid, "ctx": ctx}).onError((error, stackTrace) => {});
-          final Map mapDoc = document == {} ? document : Map.from(document);
-
-          final date = mapDoc['date'] ?? "?";
-
-          // final from = mapDoc['from']?['name'] ?? "?";
-          // final into = mapDoc['into']?['name'] ?? "?";
-
-          String from = '';
-          String into = '';
-
-          if (ctx[1] == 'transfer') {
-            from = mapDoc['from']?['name'] ?? "?";
-            into = mapDoc['into']?['name'] ?? "?";
-          } else if (ctx[1] == 'receive') {
-            from = mapDoc['counterparty']?['name'] ?? "?";
-            into = mapDoc['storage']?['name'] ?? "?";
-          } else if (ctx[1] == 'dispatch') {
-            into = mapDoc['counterparty']?['name'] ?? "?";
-            from = mapDoc['storage']?['name'] ?? "?";
-          }
-
-          return '$date\nиз $from в $into';
-        }
-      })),
-      Field('receive', CalculatedType((MemoryItem rec) async {
-        switch (rec.json['type']) {
-          case 'receive':
-          case 'open_balance':
-          case 'close_balance':
-            return rec.json['qty'];
-          default:
-            return '';
-        }
-      })),
-      Field('issue', CalculatedType((MemoryItem rec) async => rec.json['type'] == 'issue' ? rec.json['qty'] : '')),
+      fDesc,
+      fType,
+      fQty,
+      fCost,
     ];
 
     final filter = {
@@ -195,9 +206,49 @@ class WHTransactionsBuilder extends StatelessWidget {
       ctx: const [],
       schema: schema,
       filter: filter,
-      title: (MemoryItem item) => Text(item.json['description'] ?? ''),
-      subtitle: (MemoryItem item) => Text(
-          '${fType.resolve(item.json)} ${fQtySingle.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}'),
+      title: (MemoryItem item) {
+        // var alignment = Alignment.centerRight;
+        // switch (fType.resolve(item.json)) {
+        //   case 'open_balance':
+        //   case 'close_balance':
+        //     alignment = Alignment.centerRight;
+        //     break;
+        //   case 'receive':
+        //     alignment = Alignment.centerRight;
+        //     break;
+        //   default:
+        //     alignment = Alignment.centerRight;
+        //     break;
+        // }
+        return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text("${fQty.resolve(item.json)}"),
+          Text(Number.format(fCost.resolve(item.json))),
+        ]);
+      },
+      subtitle: (MemoryItem item) {
+        final description = fDesc.resolve(item.json);
+        final parts = description.split('|');
+        if (parts.length == 2) {
+          return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text("${parts[0]}"),
+            Text(DT.format(parts[1])),
+          ]);
+        } else if (parts.length == 4) {
+          return Column(children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text("${parts[0]} ${parts[3]}"),
+              Text(''),
+            ]),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text(DT.format(parts[1])),
+            ])
+          ]);
+        } else {
+          return Text(description);
+        }
+      },
+      // Text(
+      // '${fType.resolve(item.json)} ${fQtySingle.resolve(item.json)} ${fUomAtGoods.resolve(entity.json)?.name() ?? ''}'),
       // onTap: (MemoryItem item) =>
       //     context.read<UiBloc>().add(ChangeView(WHBalance.ctx, entity: item)),
     );
@@ -223,8 +274,6 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
   @override
   Widget build(BuildContext context) {
-    print("CONTEXT: ${context}");
-//    final x =
     final localization = AppLocalizations.of(context);
     final widgets = <Widget>[
       AppForm(
