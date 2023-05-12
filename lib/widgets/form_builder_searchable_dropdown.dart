@@ -155,7 +155,7 @@ class FormBuilderSearchableDropdown<T> extends FormBuilderField<T> {
           onSaved: onSaved,
           enabled: enabled,
           onReset: onReset,
-          decoration: decoration,
+          // TODO fix it - decoration: decoration,
           focusNode: focusNode,
           builder: (FormFieldState<T?> field) {
             final state = field as FormBuilderSearchableDropdownState<T>;
@@ -168,7 +168,7 @@ class FormBuilderSearchableDropdown<T> extends FormBuilderField<T> {
               dropdownBuilder: dropdownBuilder,
               dropdownButtonProps: dropdownButtonProps ?? const DropdownButtonProps(),
               dropdownDecoratorProps: DropDownDecoratorProps(
-                dropdownSearchDecoration: state.decoration,
+                // TODO fix it - dropdownSearchDecoration: state.decoration,
                 textAlign: dropdownSearchTextAlign,
                 textAlignVertical: dropdownSearchTextAlignVertical,
                 baseStyle: dropdownSearchTextStyle,
@@ -179,7 +179,7 @@ class FormBuilderSearchableDropdown<T> extends FormBuilderField<T> {
               onBeforeChange: onBeforeChange,
               onChanged: (value) {
                 if (shouldRequestFocus) {
-                  state.requestFocus();
+                  // TODO fix it - state.requestFocus();
                 }
                 state.didChange(value);
               },
