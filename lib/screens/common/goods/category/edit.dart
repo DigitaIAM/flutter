@@ -25,8 +25,7 @@ class CategoryEdit extends EntityHolder {
 }
 
 class _CategoryEditState extends State<CategoryEdit> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_CategoryEdit');
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_CategoryEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   @override
@@ -43,8 +42,8 @@ class _CategoryEditState extends State<CategoryEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
-      context.read<MemoryBloc>().add(MemorySave("memories", Category.ctx,
-          Category.schema, MemoryItem(id: widget.entity.id, json: data)));
+      context.read<MemoryBloc>().add(MemorySave(
+          "memories", CategoryForGoods.ctx, CategoryForGoods.schema, MemoryItem(id: widget.entity.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -60,17 +59,15 @@ class _CategoryEditState extends State<CategoryEdit> {
     final localization = AppLocalizations.of(context);
 
     routerBack(BuildContext context) {
-      context.read<UiBloc>().add(ChangeView(Category.ctx));
+      context.read<UiBloc>().add(ChangeView(CategoryForGoods.ctx));
       // TODO context.read<UiBloc>().add(PreviousRoute());
     }
 
     return EditScaffold(
       entity: widget.entity,
-      title: widget.entity.isNew
-          ? localization.translate("new category")
-          : localization.translate("edit category"),
+      title: widget.entity.isNew ? localization.translate("new category") : localization.translate("edit category"),
       onClose: (context) {
-        context.read<UiBloc>().add(ChangeView(Category.ctx));
+        context.read<UiBloc>().add(ChangeView(CategoryForGoods.ctx));
       },
       onCancel: routerBack,
       onSave: _onSave,

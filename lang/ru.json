@@ -99,5 +99,8 @@
   "thickness": "толщина",
   "length": "длина",
   "weight": "вес",
-  "batch": "партия"
+  "batch": "партия",
+  "receive": "приход",
+  "dispatch": "отгрузка",
+  "transfer": "перемещение"
 }

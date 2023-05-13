@@ -10,6 +10,7 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
@@ -36,66 +37,17 @@ class WHBalanceView extends EntityHolder {
 }
 
 class _WHBalanceViewState extends State<WHBalanceView> with SingleTickerProviderStateMixin {
-  late TabController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // final state = widget.viewModel.state;
-    _controller = TabController(
-      vsync: this, length: 2,
-      initialIndex: 0, // widget.isFilter ? 0 : state.WHDispatchUIState.tabIndex
-    );
-    _controller.addListener(_onTabChanged);
-  }
-
-  void _onTabChanged() {
-    // if (widget.isFilter) {
-    //   return;
-    // }
-
-    // final store = StoreProvider.of<AppState>(context);
-    // store.dispatch(UpdateProductTab(tabIndex: _controller.index));
-  }
-
-  @override
-  void didUpdateWidget(oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.tabIndex != widget.tabIndex) {
-      _controller.index = widget.tabIndex;
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.removeListener(_onTabChanged);
-    _controller.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final localization = AppLocalizations.of(context);
+    final store = fStorage.resolve(widget.entity.json);
+    final goods = fGoods.resolve(widget.entity.json);
 
     return ScaffoldView(
-      appBarBottom: TabBar(
-        controller: _controller,
-        isScrollable: true,
-        tabs: [
-          Tab(text: localization.translate("overview")),
-          Tab(text: localization.translate("print")),
-        ],
-      ),
+      title: '${store.name().toLowerCase()}\n${goods.name().toLowerCase()}',
       body: Builder(builder: (context) {
         return Column(children: <Widget>[
           Expanded(
-            child: TabBarView(controller: _controller, children: <Widget>[
-              WHTransactionsBuilder(widget.entity),
-              WHBalanceProduced(order: widget.entity)
-            ] //WHDispatchOverview(doc: widget.entity), WHDispatchGoods(doc: widget.entity)]),
-                ),
+            child: WHTransactionsBuilder(widget.entity),
           ),
         ]);
       }),
@@ -182,44 +134,38 @@ class WHTransactionsBuilder extends StatelessWidget {
       fCost,
     ];
 
+    final store = fStorage.resolve(entity.json);
+    final goods = fGoods.resolve(entity.json);
+
     final filter = {
       'dates': {'from': '2022-01-01', 'till': Utils.today()},
-      'storage': fStorage.resolve(entity.json).uuid,
-      'goods': fGoods.resolve(entity.json).uuid,
+      'storage': store.uuid,
+      'goods': goods.uuid,
       'batch_id': entity.json['batch']['id'],
       'batch_date': entity.json['batch']['date'],
     };
 
-    print("FILTER: $filter");
+    // print("FILTER: $filter");
 
     return BlocBuilder<UiBloc, UiState>(
       builder: (context, uiState) => MemoryBlocHolder(
         init: (bloc) => bloc.add(MemoryFetch('inventory', const [], schema: schema, filter: filter)),
-        child: screen(context, uiState, schema, filter),
+        child: screen(context, uiState, schema, filter, store),
       ),
     );
   }
 
-  Widget screen(BuildContext context, UiState uiState, List<Field> schema, Map<String, dynamic> filter) {
+  Widget screen(
+      BuildContext context, UiState uiState, List<Field> schema, Map<String, dynamic> filter, MemoryItem store) {
+    final localization = AppLocalizations.of(context);
+
     return MemoryList(
+      mode: Mode.mobile,
       service: 'inventory',
       ctx: const [],
       schema: schema,
       filter: filter,
       title: (MemoryItem item) {
-        // var alignment = Alignment.centerRight;
-        // switch (fType.resolve(item.json)) {
-        //   case 'open_balance':
-        //   case 'close_balance':
-        //     alignment = Alignment.centerRight;
-        //     break;
-        //   case 'receive':
-        //     alignment = Alignment.centerRight;
-        //     break;
-        //   default:
-        //     alignment = Alignment.centerRight;
-        //     break;
-        // }
         return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text("${fQty.resolve(item.json)}"),
           Text(Number.format(fCost.resolve(item.json))),
@@ -234,17 +180,46 @@ class WHTransactionsBuilder extends StatelessWidget {
             Text(DT.format(parts[1])),
           ]);
         } else if (parts.length == 4) {
+          var details = parts[2];
+          if (store.name() == details) {
+            details = parts[3];
+          }
           return Column(children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text("${parts[0]} ${parts[3]}"),
-              Text(''),
+              Text(localization.translate(parts[0])),
+              const Text(''),
             ]),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text('$details'),
               Text(DT.format(parts[1])),
             ])
           ]);
         } else {
           return Text(description);
+        }
+      },
+      onTap: (context, item) async {
+        print("click ${item.json}");
+        final record =
+            await Api.feathers().get(serviceName: "memories", objectId: item.id, params: {'oid': Api.instance.oid});
+
+        print("record $record");
+        final docId = record['document'];
+        if (docId != null) {
+          final document =
+              await Api.feathers().get(serviceName: "memories", objectId: docId, params: {'oid': Api.instance.oid});
+
+          print("document $document");
+
+          final id = document['_id'] ?? '';
+          List<String> parts = id.toString().split('/');
+
+          List<String> ctx = parts.length >= 2 ? parts.sublist(0, parts.length - 1) : [];
+          if (ctx.isNotEmpty) {
+            final entity = MemoryItem.from(document);
+            print("ctx $ctx");
+            context.read<UiBloc>().add(ChangeView(ctx, entity: entity));
+          }
         }
       },
       // Text(

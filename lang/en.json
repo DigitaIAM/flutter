@@ -98,5 +98,8 @@
   "thickness": "thickness",
   "length": "length",
   "weight": "weight",
-  "batch": "batch"
+  "batch": "batch",
+  "receive": "receive",
+  "dispatch": "dispatch",
+  "transfer": "transfer"
 }

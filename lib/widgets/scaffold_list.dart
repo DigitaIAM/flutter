@@ -11,15 +11,16 @@ import 'package:nae/widgets/menu_drawer_builder.dart';
 import '../models/ui/state.dart';
 
 class ScaffoldList extends StatelessWidget {
-  const ScaffoldList(
-      {super.key,
-      required this.entityType,
-      required this.appBarTitle,
-      required this.body,
-      this.onHamburgerLongPress,
-      this.floatingActionButton});
+  const ScaffoldList({
+    super.key,
+    required this.entityType,
+    required this.appBarTitle,
+    required this.body,
+    this.onHamburgerLongPress,
+    this.floatingActionButton,
+  });
 
-  final List<String> entityType;
+  final List<String>? entityType;
 
   final Widget appBarTitle;
   final Widget body;
@@ -55,7 +56,7 @@ class ScaffoldList extends StatelessWidget {
             //   backgroundColor: MaterialStateProperty.all(theme.primaryColor)
             // ),
             onPressed: () {
-              context.read<UiBloc>().add(ChangeView(entityType, action: 'edit', entity: MemoryItem.create()));
+              context.read<UiBloc>().add(ChangeView(entityType!, action: 'edit', entity: MemoryItem.create()));
             },
             child: IconText(
               text: localization.translate("create"),

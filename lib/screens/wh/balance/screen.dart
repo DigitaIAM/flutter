@@ -6,6 +6,8 @@ import 'package:nae/models/ui/entity.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/wh/list_builder.dart';
 import 'package:nae/widgets/entity_screens.dart';
+import 'package:nae/widgets/list_filter.dart';
+import 'package:nae/widgets/scaffold_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/wrapper.dart';
 
@@ -39,12 +41,38 @@ class WHBalance extends Entity {
       // ${DateTime.now().toString()}__
       ctx: ctx,
       schema: schema,
-      list: WHBalanceScreen(entity: entity),
+      list: WHStockScreen(entity: entity),
       view: WHBalanceView(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
         entity: entity,
         tabIndex: 0,
       ), // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
+    );
+  }
+}
+
+class WHStockScreen extends EntityHolder {
+  const WHStockScreen({super.key, required super.entity});
+
+  @override
+  State<WHStockScreen> createState() => _WHStockScreenState();
+}
+
+class _WHStockScreenState extends State<WHStockScreen> {
+  @override
+  Widget build(BuildContext context) {
+    // final theme = Theme.of(context);
+    return ScaffoldList(
+      entityType: null,
+      appBarTitle: ListFilter(
+        // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
+        filter: null, //state.WHReceiveListState.filter,
+        onFilterChanged: (value) {
+          // store.dispatch(FilterProducts(value));
+        },
+      ),
+      floatingActionButton: null,
+      body: WHBalanceScreen(entity: widget.entity),
     );
   }
 }
@@ -56,8 +84,7 @@ class WHBalanceScreen extends EntityHolder {
   State<WHBalanceScreen> createState() => _WHBalanceScreenState();
 }
 
-class _WHBalanceScreenState extends State<WHBalanceScreen>
-    with TickerProviderStateMixin {
+class _WHBalanceScreenState extends State<WHBalanceScreen> with TickerProviderStateMixin {
   // with SingleTickerProviderStateMixin {
   late TabController _controller;
 
@@ -93,30 +120,44 @@ class _WHBalanceScreenState extends State<WHBalanceScreen>
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
-    return ScaffoldView(
-      onClose: () => Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const Wrapper())),
-      appBarBottom: TabBar(
-        controller: _controller,
-        isScrollable: true,
-        tabs: [
-          Tab(text: localization.translate('stock')),
-          ..._filters
-              .map((e) => Tab(text: localization.translate(e.value.name())))
-              .toList()
-        ],
-      ),
-      body: Builder(builder: (context) {
-        return Column(children: <Widget>[
-          Expanded(
-            child: TabBarView(
-              controller: _controller,
-              children: buildChildren(),
+    return Scaffold(
+      backgroundColor: Theme.of(context).cardColor,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kBottomNavigationBarHeight),
+        child: Container(
+          color: theme.appBarTheme.backgroundColor,
+          child: SafeArea(
+            child: Column(
+              children: <Widget>[
+                TabBar(
+                  labelStyle: theme.appBarTheme.titleTextStyle,
+                  indicatorColor: theme.appBarTheme.foregroundColor,
+                  controller: _controller,
+                  isScrollable: true,
+                  tabs: [
+                    Tab(text: localization.translate('stock')),
+                    ..._filters.map((e) => Tab(text: localization.translate(e.value.name().toLowerCase()))).toList()
+                  ],
+                ),
+              ],
             ),
           ),
-        ]);
-      }),
+        ),
+      ),
+      body: SafeArea(
+        child: Builder(builder: (context) {
+          return Column(children: <Widget>[
+            Expanded(
+              child: TabBarView(
+                controller: _controller,
+                children: buildChildren(),
+              ),
+            ),
+          ]);
+        }),
+      ),
     );
   }
 
