@@ -89,11 +89,9 @@ class WHReceiveScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(WHReceive.ctx,
-              action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(WHReceive.ctx, action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip:
-            AppLocalizations.of(context).translate("new warehouse inventory"),
+        tooltip: AppLocalizations.of(context).translate("new warehouse inventory"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,
@@ -114,12 +112,9 @@ class WHReceiveListBuilder extends StatelessWidget {
       schema: WHReceive.schema,
       // groupBy: (element) => element.json['date'] ?? '',
       groupBy: (element) => element,
-      title: (MemoryItem item) =>
-          Text(fCounterparty.resolve(item.json)?.name() ?? ''),
-      subtitle: (MemoryItem item) =>
-          Text(fStorage.resolve(item.json)?.name() ?? ''),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
+      title: (MemoryItem item) => Text(fCounterparty.resolve(item.json)?.name() ?? ''),
+      subtitle: (MemoryItem item) => Text(fStorage.resolve(item.json)?.name() ?? ''),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
     );
   }
 }

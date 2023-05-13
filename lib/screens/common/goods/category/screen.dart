@@ -14,7 +14,7 @@ import 'package:nae/widgets/scaffold_list.dart';
 
 import 'edit.dart';
 
-class Category extends Entity {
+class CategoryForGoods extends Entity {
   static const List<String> ctx = ['goods', 'category'];
 
   static const List<Field> schema = [
@@ -52,7 +52,7 @@ class CategoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return ScaffoldList(
-      entityType: Category.ctx,
+      entityType: CategoryForGoods.ctx,
       appBarTitle: ListFilter(
         // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
         filter: null, //state.productListState.filter,
@@ -64,8 +64,7 @@ class CategoryScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(Category.ctx,
-              action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(CategoryForGoods.ctx, action: 'edit', entity: MemoryItem.create()));
         },
         tooltip: AppLocalizations.of(context).translate("new category"),
         child: Icon(
@@ -84,12 +83,11 @@ class CategoryListBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MemoryList(
-      ctx: Category.ctx,
-      schema: Category.schema,
+      ctx: CategoryForGoods.ctx,
+      schema: CategoryForGoods.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => const Text(''),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(Category.ctx, entity: item)),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(CategoryForGoods.ctx, entity: item)),
     );
   }
 }

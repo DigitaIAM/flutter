@@ -47,6 +47,7 @@ class ListBuilder extends StatelessWidget {
     final cache = {};
 
     return MemoryList(
+      mode: Mode.mobile,
       ctx: ctx,
       schema: schema,
       filter: filter,

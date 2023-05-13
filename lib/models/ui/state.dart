@@ -3,8 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/entity.dart';
-import 'package:nae/screens/common/category/screen.dart';
 import 'package:nae/screens/common/counterparty/screen.dart';
+import 'package:nae/screens/common/goods/category/screen.dart';
 import 'package:nae/screens/common/goods/screen.dart';
 import 'package:nae/screens/common/person/screen.dart';
 import 'package:nae/screens/common/product/screen.dart';
@@ -20,6 +20,7 @@ import 'package:nae/screens/wh/receive/screen.dart';
 import 'package:nae/screens/wh/storage/screen.dart';
 import 'package:nae/screens/wh/transfer/screen.dart';
 import 'package:nae/widgets/blank_screen.dart';
+import 'package:flutter/foundation.dart';
 
 part 'state.g.dart';
 
@@ -71,7 +72,7 @@ class UiState extends Equatable {
   final List<List<Entity>> entities = [
     [ProductionOrder()],
     [WHBalance(), WHReceive(), WHTransfer(), WHDispatch(), WHInventory()],
-    [Product(), Goods(), Category(), Uom()],
+    [Product(), Goods(), CategoryForGoods(), Uom()],
     [WHStorage(), ProductionArea()],
     [Counterparty(), Person()],
     [Printer()],
@@ -89,7 +90,7 @@ class UiState extends Equatable {
     print("entityScreen $currentRoute");
     for (final list in entities) {
       for (final item in list) {
-        if (currentRoute == item.route()) {
+        if (listEquals(currentRoute, item.route())) {
           return item.screen(action, entity);
         }
       }
