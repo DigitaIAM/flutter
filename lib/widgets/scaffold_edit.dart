@@ -43,13 +43,13 @@ class EditScaffold extends StatelessWidget {
 
     return BlocListener<MemoryBloc, RequestState>(
       listener: (context, state) {
-        if (state.saveStatus == SaveStatus.success) {
-          if (afterSave != null && state.saved != null) {
+        if (state.isUpdated(entity)) {
+          if (afterSave != null) {
             afterSave?.call(context, state.saved!);
           } else {
             onClose(context);
           }
-        } else if (state.saveStatus == SaveStatus.failure) {}
+        }
       },
       child: WillPopScope(
         onWillPop: () async {
@@ -74,68 +74,46 @@ class EditScaffold extends StatelessWidget {
           child: BlocBuilder<UiBloc, UiState>(
             builder: (context, uiState) => FocusTraversalGroup(
               child: BlocBuilder<MemoryBloc, RequestState>(
-                builder: (context, memState) => Scaffold(
-                  drawer: uiState.isDesktop ? const MenuDrawerBuilder() : null,
-                  appBar: AppBar(
-                      centerTitle: false,
-                      automaticallyImplyLeading: uiState.isMobile,
-                      title: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            if (showOverflow) Text(title) else Flexible(child: Text(title)),
-                          ]),
-                      actions: [
-                        // if (isMobile(context))
-                        if (memState.saveStatus == SaveStatus.saving)
-                          const Padding(
-                            padding: EdgeInsets.only(right: 20),
-                            child: Center(
-                              child: SizedBox(
-                                width: 26,
-                                height: 26,
-                                child: CircularProgressIndicator(color: Colors.white),
-                              ),
-                            ),
-                          )
-                        else
+                builder: (context, memState) {
+                  return Scaffold(
+                    drawer: uiState.isDesktop ? const MenuDrawerBuilder() : null,
+                    appBar: AppBar(
+                        centerTitle: false,
+                        automaticallyImplyLeading: uiState.isMobile,
+                        title: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              if (showOverflow) Text(title) else Flexible(child: Text(title)),
+                            ]),
+                        actions: [
                           SaveCancelButtons(
-                              isEnabled: isEnabled(memState) && onSave != null,
-                              isHeader: true,
-                              isCancelEnabled: isCancelEnabled,
-                              saveLabel: saveLabel,
-                              onSave: (context) {
-                                // prevent form become changed and to hide the keyboard
-                                FocusScope.of(context).unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
-                                onSave?.call(context);
-                              },
-                              onCancel: (context) {
-                                onCancel?.call(context);
-                              })
-
-                        // else
-                        //   Row(
-                        //     children: []
-                        //   )
-                      ]),
-                  body: Stack(alignment: Alignment.topCenter, children: [
-                    Column(children: [
-                      Expanded(
-                        child: body,
-                      ),
-                    ])
-                  ]),
-                ),
+                            isEnabled: onSave != null || onCancel != null,
+                            isHeader: true,
+                            isCancelEnabled: isCancelEnabled,
+                            saveLabel: saveLabel,
+                            onSave: (context) {
+                              // prevent form become changed and to hide the keyboard
+                              FocusScope.of(context).unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
+                              onSave?.call(context);
+                            },
+                            onCancel: onCancel,
+                          )
+                        ]),
+                    body: Stack(alignment: Alignment.topCenter, children: [
+                      Column(children: [
+                        Expanded(
+                          child: body,
+                        ),
+                      ])
+                    ]),
+                  );
+                },
               ),
             ),
           ),
         ),
       ),
     );
-  }
-
-  bool isEnabled(RequestState state) {
-    // entity?.isEditable ?? true
-    return state.saveStatus == SaveStatus.ready || state.saveStatus == SaveStatus.failure;
   }
 }
