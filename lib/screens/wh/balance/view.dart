@@ -174,19 +174,22 @@ class WHTransactionsBuilder extends StatelessWidget {
       subtitle: (MemoryItem item) {
         final description = fDesc.resolve(item.json);
         final parts = description.split('|');
+        final type = parts[0] ?? '';
         if (parts.length == 2) {
           return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text("${parts[0]}"),
+            Text("$type"),
             Text(DT.format(parts[1])),
           ]);
         } else if (parts.length == 4) {
           var details = parts[2];
           if (store.name() == details) {
-            details = parts[3];
+            details = type == 'transfer' ? '>> ${parts[3]}' : parts[3];
+          } else {
+            details = type == 'transfer' ? '${parts[2]} >>' : parts[2];
           }
           return Column(children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(localization.translate(parts[0])),
+              Text(localization.translate(type)),
               const Text(''),
             ]),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
