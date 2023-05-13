@@ -62,9 +62,9 @@ class _CounterpartyEditState extends State<CounterpartyEdit> {
 
     return BlocListener<MemoryBloc, RequestState>(
       listener: (context, state) {
-        if (state.saveStatus == SaveStatus.success) {
+        if (state.isUpdated(widget.entity)) {
           routerBack(context);
-        } else if (state.saveStatus == SaveStatus.failure) {}
+        }
       },
       child: EditScaffold(
         entity: widget.entity,

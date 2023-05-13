@@ -9,25 +9,23 @@ class Field {
 
   final bool editable;
 
-  const Field(this.name, this.type,
-      {this.path, this.width = 1.0, this.editable = true});
+  const Field(this.name, this.type, {this.path, this.width = 1.0, this.editable = true});
 
   Field copyWith({
     double? width,
     bool? editable,
   }) {
-    return Field(name, type,
-        path: path,
-        width: width ?? this.width,
-        editable: editable ?? this.editable);
+    return Field(name, type, path: path, width: width ?? this.width, editable: editable ?? this.editable);
   }
 
   dynamic resolve(Map<String, dynamic> json) {
     // print("resolve: ");
     // print('$path $name');
     // print(json);
+    dynamic value;
+    dynamic result;
     if (path != null) {
-      dynamic value = json;
+      value = json;
 
       for (final name in path!) {
         if (value == null) {
@@ -40,9 +38,17 @@ class Field {
           return null; // TODO error?
         }
       }
-      return enrich(value);
+      result = enrich(value);
+    } else {
+      value = json[name];
+      result = enrich(value);
     }
-    return enrich(json[name]);
+
+    if (value != result) {
+      update(json, result);
+    }
+
+    return result;
   }
 
   dynamic enrich(dynamic v) {

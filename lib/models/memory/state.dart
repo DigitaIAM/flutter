@@ -3,8 +3,6 @@ import 'package:nae/models/memory/item.dart';
 
 enum RequestStatus { initiate, success, failure }
 
-enum SaveStatus { ready, saving, success, failure }
-
 class RequestState extends Equatable {
   RequestState(
     this.created, {
@@ -14,7 +12,6 @@ class RequestState extends Equatable {
     this.query,
     this.hasReachedMax = false,
     this.saved,
-    this.saveStatus = SaveStatus.ready,
     DateTime? ts,
   }) : updated = ts ?? DateTime.now();
 
@@ -34,9 +31,12 @@ class RequestState extends Equatable {
   final bool hasReachedMax;
 
   final MemoryItem? saved;
-  final SaveStatus saveStatus;
 
   List<MemoryItem> get items => (query == null || query!.trim().isEmpty) ? original : filtered;
+
+  bool isUpdated(MemoryItem entity) {
+    return saved != null && saved!.updatedAt > entity.updatedAt;
+  }
 
   RequestState copyWith({
     RequestStatus? status,
@@ -45,7 +45,6 @@ class RequestState extends Equatable {
     String? query,
     bool? hasReachedMax,
     MemoryItem? saved,
-    SaveStatus? saveStatus,
   }) {
     return RequestState(
       created,
@@ -54,8 +53,7 @@ class RequestState extends Equatable {
       filtered: filtered ?? original ?? this.original,
       query: query,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
-      saved: saved ?? this.saved,
-      saveStatus: saveStatus ?? this.saveStatus,
+      saved: saved,
     );
   }
 

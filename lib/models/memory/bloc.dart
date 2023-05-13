@@ -258,13 +258,14 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       return emit(state.copyWith(
         original: list,
         saved: saved,
-        saveStatus: SaveStatus.success,
+        // saveStatus: SaveStatus.success,
       ));
     } catch (e, stacktrace) {
       print("ERROR _onCreate:");
       print(e);
       print(stacktrace);
-      emit(state.copyWith(saveStatus: SaveStatus.failure));
+      // emit(state.copyWith(saveStatus: SaveStatus.failure));
+      emit(state.copyWith(saved: MemoryItem(id: "error", json: {'name': e})));
     }
   }
 
@@ -299,6 +300,14 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       for (int i = 0; i < list.length; i++) {
         final item = list[i];
         if (item.id == saved.id) {
+          // workaround for internally calculated data
+          final before = list[i];
+          for (final pair in before.json.entries) {
+            if (pair.key.startsWith("_")) {
+              saved.json[pair.key] = pair.value;
+            }
+          }
+
           list[i] = saved;
         }
       }
@@ -306,13 +315,13 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       return emit(state.copyWith(
         original: list,
         saved: saved,
-        saveStatus: SaveStatus.success,
       ));
     } catch (e, stacktrace) {
       print("ERROR _onUpdate:");
       print(e);
       print(stacktrace);
-      emit(state.copyWith(saveStatus: SaveStatus.failure));
+      // emit(state.copyWith(saveStatus: SaveStatus.failure));
+      emit(state.copyWith(saved: MemoryItem(id: "error", json: {'name': e})));
     }
   }
 
@@ -340,7 +349,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     try {
       var saved = await _patch(event.serviceName, event.ctx, event.id, event.data);
       saved = await saved.enrich(event.schema); // ?? schema ?? []);
-      // print("saved $saved");
+      // print("saved ${saved.json}");
 
       final List<MemoryItem> list = List.from(state.original);
 
@@ -348,20 +357,31 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       for (int i = 0; i < list.length; i++) {
         final item = list[i];
         if (item.id == saved.id) {
-          list[i] = saved; // TODO patch it
+          // workaround for internally calculated data
+          final before = list[i];
+          for (final pair in before.json.entries) {
+            if (pair.key.startsWith("_")) {
+              saved.json[pair.key] = pair.value;
+            }
+          }
+
+          list[i] = saved;
         }
       }
 
       return emit(state.copyWith(
         original: list,
         saved: saved,
-        saveStatus: SaveStatus.success,
       ));
     } catch (e, stacktrace) {
       print("ERROR _onPatch:");
       print(e);
       print(stacktrace);
-      emit(state.copyWith(saveStatus: SaveStatus.failure));
+      // emit(state.copyWith(
+      //   saved: MemoryItem(id: event.id, json: event.data),
+      //   saveStatus: SaveStatus.failure,
+      // ));
+      emit(state.copyWith(saved: MemoryItem(id: "error", json: {'name': e})));
     }
   }
 
