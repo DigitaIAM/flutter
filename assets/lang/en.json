@@ -64,6 +64,7 @@
   "boxes": "boxes",
   "area": "area",
   "qty": "qty",
+  "cost": "cost",
   "planned qty": "planned qty",
   "qty in box": "qty in box",
   "printer": "printer",
