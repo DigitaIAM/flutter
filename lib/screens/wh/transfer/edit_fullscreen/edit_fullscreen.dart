@@ -375,6 +375,8 @@ class _LinesState extends State<Lines> {
                   // workaround: reset selected uom
                   fUomAtQty.update(data, null);
 
+                  print("onItemSelected $data");
+
                   patch(context, item, data);
                 },
               ),
@@ -394,6 +396,8 @@ class _LinesState extends State<Lines> {
                       column.update(data, int.parse(text));
                     }
 
+                    print("CustomTextField $data");
+
                     patch(context, item, data);
                   }),
             );
@@ -409,6 +413,7 @@ class _LinesState extends State<Lines> {
   }
 
   void patch(BuildContext context, MemoryItem item, Map<String, dynamic> data) {
+    print("patch $data");
     if (item.isNew) {
       data['document'] = widget.document.id;
       context.read<MemoryBloc>().add(MemoryCreate('memories', widget.ctx, widget.schema, data));

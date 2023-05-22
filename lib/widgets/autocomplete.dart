@@ -41,23 +41,23 @@ class AutocompleteField<T extends Object> extends StatefulWidget {
   State<StatefulWidget> createState() => _AutocompleteFieldState<T>();
 }
 
-class _AutocompleteFieldState<T extends Object>
-    extends State<AutocompleteField<T>> {
+class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<T>> {
   late TextEditingController _controller;
   late FocusNode _focusNode;
 
   late InputDecoration inputDecoration;
 
+  late T? initialValue;
   late T? selected;
 
   @override
   void initState() {
     super.initState();
 
+    initialValue = widget.initialValue;
     selected = widget.initialValue;
 
-    _controller = TextEditingController(
-        text: widget.displayStringForOption(widget.initialValue));
+    _controller = TextEditingController(text: widget.displayStringForOption(widget.initialValue));
     _controller.addListener(() {
       update();
     });
@@ -65,8 +65,7 @@ class _AutocompleteFieldState<T extends Object>
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(() {
       if (!_focusNode.hasFocus) {
-        if (selected == null ||
-            _controller.text != widget.displayStringForOption(selected)) {
+        if (selected == null || _controller.text != widget.displayStringForOption(selected)) {
           updateSelection(null);
         }
         // widget.onItemSelected(selection);
@@ -106,9 +105,8 @@ class _AutocompleteFieldState<T extends Object>
       inputDecoration = InputDecoration(
         labelText: widget.label,
         border: const UnderlineInputBorder(),
-        floatingLabelBehavior: widget.label?.isEmpty ?? true
-            ? FloatingLabelBehavior.always
-            : FloatingLabelBehavior.auto,
+        floatingLabelBehavior:
+            widget.label?.isEmpty ?? true ? FloatingLabelBehavior.always : FloatingLabelBehavior.auto,
         suffixIcon: isNew && widget.editable && widget.creatable
             ? IconButton(
                 icon: const Icon(Icons.add_box_outlined),
@@ -124,9 +122,11 @@ class _AutocompleteFieldState<T extends Object>
   @override
   Widget build(BuildContext context) {
     // workaround to update controller on change of initial value
-    if (selected != widget.initialValue) {
+    if (initialValue != widget.initialValue) {
       SchedulerBinding.instance.addPostFrameCallback((Duration timeStamp) {
         setState(() {
+          // print("initialValue ${widget.initialValue} vs $initialValue");
+          initialValue = widget.initialValue;
           updateSelection(widget.initialValue);
         });
       });
@@ -139,10 +139,8 @@ class _AutocompleteFieldState<T extends Object>
           textEditingController: _controller,
           focusNode: _focusNode,
           onSelected: updateSelection,
-          fieldViewBuilder: (BuildContext context,
-              TextEditingController fieldTextEditingController,
-              FocusNode fieldFocusNode,
-              VoidCallback onFieldSubmitted) {
+          fieldViewBuilder: (BuildContext context, TextEditingController fieldTextEditingController,
+              FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
             return TextField(
               controller: fieldTextEditingController,
               focusNode: fieldFocusNode,
@@ -154,8 +152,7 @@ class _AutocompleteFieldState<T extends Object>
           optionsBuilder: (TextEditingValue v) {
             return widget.delegate(v.text);
           },
-          optionsViewBuilder: (BuildContext context,
-              AutocompleteOnSelected<T> onSelected, Iterable<T> options) {
+          optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<T> onSelected, Iterable<T> options) {
             final theme = Theme.of(context);
 
             return Align(
@@ -163,8 +160,7 @@ class _AutocompleteFieldState<T extends Object>
               child: Material(
                 elevation: 4.0,
                 child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(maxHeight: 200, maxWidth: 600),
+                  constraints: const BoxConstraints(maxHeight: 200, maxWidth: 600),
                   // color: theme.cardColor,
                   // width: 300,
                   // constraints: const BoxConstraints(maxHeight: 270),
@@ -181,22 +177,17 @@ class _AutocompleteFieldState<T extends Object>
                             onSelected(option);
                           },
                           child: Builder(builder: (BuildContext context) {
-                            final highlightedIndex =
-                                AutocompleteHighlightedOption.of(context);
+                            final highlightedIndex = AutocompleteHighlightedOption.of(context);
                             final highlight = highlightedIndex == index;
                             if (highlight) {
-                              SchedulerBinding.instance
-                                  .addPostFrameCallback((Duration timeStamp) {
-                                Scrollable.ensureVisible(context,
-                                    alignment: 0.5);
+                              SchedulerBinding.instance.addPostFrameCallback((Duration timeStamp) {
+                                Scrollable.ensureVisible(context, alignment: 0.5);
                               });
                             }
 
                             return Container(
                               // theme.primaryColorDark : theme.primaryColorLight,
-                              color: highlight
-                                  ? Theme.of(context).focusColor
-                                  : null,
+                              color: highlight ? Theme.of(context).focusColor : null,
                               padding: const EdgeInsets.all(16.0),
                               child: widget.itemBuilder(context, option),
                               // ListTile(

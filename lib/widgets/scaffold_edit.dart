@@ -88,6 +88,7 @@ class EditScaffold extends StatelessWidget {
                             ]),
                         actions: [
                           SaveCancelButtons(
+                            entity: entity,
                             isEnabled: onSave != null || onCancel != null,
                             isHeader: true,
                             isCancelEnabled: isCancelEnabled,

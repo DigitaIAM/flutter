@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/models/memory/bloc.dart';
+import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/widgets/app_text_button.dart';
 
 class SaveCancelButtons extends StatefulWidget {
   const SaveCancelButtons({
     super.key,
+    required this.entity,
     this.isEnabled = true,
     this.isHeader = true,
     this.isCancelEnabled = false,
@@ -17,8 +19,11 @@ class SaveCancelButtons extends StatefulWidget {
     this.onCancel,
   });
 
+  final MemoryItem entity;
+
   final bool isEnabled;
   final bool isHeader;
+
   final bool isCancelEnabled;
 
   final String? saveLabel;
@@ -40,6 +45,16 @@ class _SaveCancelButtonsState extends State<SaveCancelButtons> {
 
     return BlocBuilder<MemoryBloc, RequestState>(
       builder: (context, state) {
+        print('state.saved ${state.saved}');
+        if (state.saved != null) {
+          print('state.saved != null');
+          if (state.saved!.updatedAt > widget.entity.updatedAt) {
+            print('updatedAt changed2');
+            setState(() {
+              saving = false;
+            });
+          }
+        }
         // if (isMobile(context))
         if (saving) {
           return const Padding(
@@ -66,7 +81,7 @@ class _SaveCancelButtonsState extends State<SaveCancelButtons> {
                 }),
               Builder(builder: (BuildContext context) {
                 return AppTextButton(
-                  label: _saveLabel(state, localization),
+                  label: _saveLabel(localization),
                   isHeader: widget.isHeader,
                   onPressed: widget.isEnabled || !saving
                       ? () {
@@ -85,7 +100,7 @@ class _SaveCancelButtonsState extends State<SaveCancelButtons> {
     );
   }
 
-  String _saveLabel(RequestState state, AppLocalizations localization) {
+  String _saveLabel(AppLocalizations localization) {
     if (widget.saveLabel != null && widget.saveLabel!.isNotEmpty) {
       return widget.saveLabel!;
     }
