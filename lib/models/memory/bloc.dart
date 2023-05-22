@@ -234,7 +234,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       var saved = await _create(event.serviceName, event.ctx, event.data);
       saved = await saved.enrich(event.schema); // ?? schema ?? []);
       print("schema $schema");
-      print("saved $saved");
+      print("_onCreate saved $saved");
 
       final List<MemoryItem> list = List.from(state.original);
 
@@ -349,7 +349,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     try {
       var saved = await _patch(event.serviceName, event.ctx, event.id, event.data);
       saved = await saved.enrich(event.schema); // ?? schema ?? []);
-      // print("saved ${saved.json}");
+      print("_onPatch saved ${saved.json}");
 
       final List<MemoryItem> list = List.from(state.original);
 
@@ -390,6 +390,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       "oid": Api.instance.oid,
       "ctx": ctx,
     };
+    print("patch request:");
+    print(data);
     final response = await Api.feathers().patch(serviceName: serviceName, objectId: id, data: data, params: params);
     print("patch response:");
     print(response);
