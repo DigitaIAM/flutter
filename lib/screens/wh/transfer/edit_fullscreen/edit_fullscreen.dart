@@ -240,6 +240,8 @@ class _LinesState extends State<Lines> {
       fGoods.copyWith(width: 3.0),
       fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
+      const Field('storage_from', ReferenceType(['warehouse', 'storage']), path: ['storage_from']).copyWith(width: 1.0),
+      const Field('storage_into', ReferenceType(['warehouse', 'storage']), path: ['storage_into']).copyWith(width: 1.0),
       // fStorage,
     ];
 
