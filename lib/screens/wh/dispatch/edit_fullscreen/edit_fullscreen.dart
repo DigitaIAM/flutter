@@ -242,6 +242,7 @@ class _LinesState extends State<Lines> {
       fGoods.copyWith(width: 3.0),
       fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
+      const Field('sell_cost', NumberType(), path: ['sell_cost', 'number']),
       // fStorage,
     ];
 
