@@ -11,6 +11,7 @@ import 'package:nae/models/ui/event.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
 import 'package:nae/widgets/app_form_field.dart';
+import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/scaffold_edit.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
@@ -94,6 +95,16 @@ class _ProductionAreaEditState extends State<ProductionAreaEdit> {
               ]),
               onSave: _onSave,
               keyboardType: TextInputType.text,
+            ),
+            DecoratedFormPickerField(
+              ctx: const ['warehouse', 'storage'],
+              name: 'storage',
+              label: localization.translate("storage of receive production"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: _onSave,
             ),
           ])
         ]),

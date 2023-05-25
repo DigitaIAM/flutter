@@ -20,7 +20,8 @@ class Product extends Entity {
     fName,
     const Field('part_number', StringType()),
     fUom,
-    Field('qty', CalculatedType((MemoryItem product) async => "?"))
+    // Field('qty', CalculatedType((MemoryItem product) async => "?")),
+    fGoods
   ];
 
   @override
@@ -75,8 +76,7 @@ class ProductListBuilder extends StatelessWidget {
       schema: Product.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => const Text(''),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(Product.ctx, entity: item)),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(Product.ctx, entity: item)),
     );
   }
 }
