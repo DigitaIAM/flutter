@@ -84,7 +84,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
           Tab(text: localization.translate("overview")),
           Tab(text: localization.translate("production")),
           Tab(text: localization.translate("used raw material")),
-          Tab(text: localization.translate("generated raw material")),
+          Tab(text: localization.translate("produced raw material")),
         ],
       ),
       actions: <Widget>[

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nae/api.dart';
+import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
@@ -31,6 +32,7 @@ class _MaterialViewState extends State<MaterialView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final localization = AppLocalizations.of(context);
 
     final filter = {'document': widget.order.id};
 
@@ -44,7 +46,7 @@ class _MaterialViewState extends State<MaterialView> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
             // leading: const Icon(Icons.account_circle),
             tileColor: theme.secondaryHeaderColor,
-            title: const Text("Material used"),
+            title: Text(localization.translate("used raw material")),
             trailing: openUsed ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
             onTap: () {
               setState(() {
@@ -63,7 +65,7 @@ class _MaterialViewState extends State<MaterialView> {
             // leading: const Icon(Icons.account_circle),
             tileColor: theme.secondaryHeaderColor,
             title: Text(
-              "Material produced",
+              localization.translate("produced raw material"),
               style: theme.textTheme.bodyLarge,
             ),
             trailing: openProduced ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
@@ -88,6 +90,7 @@ class _MaterialViewState extends State<MaterialView> {
         create: (context) =>
             MemoryBloc(schema: schema)..add(MemoryFetch('memories', ctx, schema: schema, filter: filter)),
         child: MemoryList(
+          mode: Mode.mobile,
           ctx: ctx,
           schema: schema,
           filter: filter,
@@ -115,7 +118,7 @@ class _MaterialViewState extends State<MaterialView> {
               );
             }
 
-            return Text(text);
+            return Text(text, style: style);
           },
           // onTap: (MemoryItem item) => {},
           actions: [
