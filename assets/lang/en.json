@@ -102,5 +102,7 @@
   "batch": "batch",
   "receive": "receive",
   "dispatch": "dispatch",
-  "transfer": "transfer"
+  "transfer": "transfer",
+  "used raw material": "used raw material",
+  "produced raw material": "produced raw material"
 }

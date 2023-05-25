@@ -103,5 +103,7 @@
   "batch": "партия",
   "receive": "приход",
   "dispatch": "отгрузка",
-  "transfer": "перемещение"
+  "transfer": "перемещение",
+  "used raw material": "использованный метериал",
+  "produced raw material": "полученный материал"
 }
