@@ -16,9 +16,7 @@ import 'edit.dart';
 class ProductionArea extends Entity {
   static const List<String> ctx = ['production', 'area'];
 
-  static const List<Field> schema = [
-    fName,
-  ];
+  static const List<Field> schema = [fName, fStorage];
 
   @override
   List<String> route() => ctx;
@@ -73,9 +71,7 @@ class ProductionAreaListBuilder extends StatelessWidget {
       schema: ProductionArea.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => const Text(''),
-      onTap: (context, item) => context
-          .read<UiBloc>()
-          .add(ChangeView(ProductionArea.ctx, entity: item)),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(ProductionArea.ctx, entity: item)),
     );
   }
 }
