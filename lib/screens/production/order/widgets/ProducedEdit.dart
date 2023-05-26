@@ -409,6 +409,16 @@ class _POProducedEditState extends State<POProducedEdit> {
         recordData['label'] = label;
       }
 
+      final goods = order.json['product']?.json['goods']?['_id'];
+      if (goods != null) {
+        recordData['goods'] = goods;
+      }
+
+      final storage = order.json['area']?.json['storage']?['_id'];
+      if (storage != null) {
+        recordData['storage'] = storage;
+      }
+
       final result = await Labels.connect(ip, port, (printer) async {
         setState(() => status = "registering");
         final response = await Api.feathers().create(serviceName: 'memories', data: recordData, params: {
