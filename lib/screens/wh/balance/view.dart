@@ -72,7 +72,7 @@ Field fCost = Field('cost', CalculatedType((MemoryItem rec) async {
 }));
 
 Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
-  // print("WHTransactionsBuilder rec: $rec");
+  // print("_rec_: ${rec.json}");
   // print("WHTransactionsBuilder entity: $entity");
   final t = rec.json['type'];
   if (t == 'open_balance' || t == 'close_balance') {
@@ -85,7 +85,7 @@ Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
 
     final Map map = response == {} ? response : Map.from(response);
 
-    final id = map['document'] ?? "";
+    final id = map['document'] ?? map['order'] ?? "";
 
     final split = id.toString().split('/');
 
@@ -95,28 +95,34 @@ Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
         serviceName: "memories",
         objectId: id,
         params: {"oid": Api.instance.oid, "ctx": ctx}).onError((error, stackTrace) => {});
-    final Map mapDoc = document == {} ? document : Map.from(document);
+    final Map<String, dynamic> mapDoc = document == {} ? document : Map.from(document);
 
     final date = mapDoc['date'] ?? "?";
-
-    // final from = mapDoc['from']?['name'] ?? "?";
-    // final into = mapDoc['into']?['name'] ?? "?";
 
     String store = '';
     String counterparty = '';
 
-    if (ctx[1] == 'transfer') {
+    final mapId = map['_id'] ?? '';
+    final mapSplit = mapId.toString().split('/');
+
+    var type = mapSplit.length >= 2 ? mapSplit[1] : ctx[1];
+
+    if (type == 'produce') {
+      type = 'produced';
+      store = "";
+      counterparty = "";
+    } else if (type == 'transfer') {
       store = mapDoc['from']?['name'] ?? "?";
       counterparty = mapDoc['into']?['name'] ?? "?";
-    } else if (ctx[1] == 'receive') {
+    } else if (type == 'receive') {
       counterparty = mapDoc['counterparty']?['name'] ?? "?";
       store = mapDoc['storage']?['name'] ?? "?";
-    } else if (ctx[1] == 'dispatch') {
+    } else if (type == 'dispatch') {
       counterparty = mapDoc['counterparty']?['name'] ?? "?";
       store = mapDoc['storage']?['name'] ?? "?";
     }
 
-    return '${ctx[1]}|$date|$store|$counterparty';
+    return '$type|$date|$store|$counterparty';
   }
 }));
 
