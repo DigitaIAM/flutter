@@ -86,7 +86,7 @@ class ListBuilder extends StatelessWidget {
           return Text(fName.resolve(item.json['goods'] ?? '') ?? '');
         } else if (category == 'batch') {
           return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('${item.json['batch']?['barcode'] ?? ''}'),
+            Text('${item.json['batch']?['date'] ?? ''}'),
             Text('${fStorage.resolve(item.json)?.name() ?? ''}'),
           ]);
         } else {
