@@ -20,6 +20,7 @@ class WHStorage extends Entity {
     Field('location', ReferenceType(['warehouse', 'storage'])),
     fName,
     Field('code', StringType()),
+    Field('status', StringType()),
   ];
 
   @override
@@ -75,8 +76,7 @@ class WHStorageListBuilder extends StatelessWidget {
       schema: WHStorage.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => const Text(''),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(WHStorage.ctx, entity: item)),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(WHStorage.ctx, entity: item)),
     );
   }
 }

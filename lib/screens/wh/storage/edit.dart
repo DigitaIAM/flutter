@@ -43,6 +43,12 @@ class _WHStorageEditState extends State<WHStorageEdit> {
       // workaround
       data['_id'] = widget.entity.json['_id'];
 
+      // workaround for edit storage with no location
+      final location = data["location"] as MemoryItem;
+      if (location.isEmpty) {
+        data["location"] = null;
+      }
+
       context
           .read<MemoryBloc>()
           .add(MemorySave("memories", WHStorage.ctx, WHStorage.schema, MemoryItem(id: widget.entity.id, json: data)));
@@ -103,6 +109,16 @@ class _WHStorageEditState extends State<WHStorageEdit> {
             DecoratedFormField(
               name: 'code',
               label: localization.translate("code"),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: _onSave,
+              keyboardType: TextInputType.text,
+            ),
+            DecoratedFormField(
+              name: 'status',
+              label: localization.translate("status"),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
