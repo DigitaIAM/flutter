@@ -243,6 +243,7 @@ class _LinesState extends State<Lines> {
       fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
       const Field('cost_sell', NumberType(), path: ['cost_sell', 'number']),
+      const Field('status', StringType()),
       // fStorage,
     ];
 
@@ -396,6 +397,20 @@ class _LinesState extends State<Lines> {
                     } else {
                       column.update(data, int.parse(text));
                     }
+
+                    patch(context, item, data);
+                  }),
+            );
+          } else if (column.type is StringType) {
+            return Padding(
+              padding: const EdgeInsets.only(right: cTableColumnGap),
+              child: CustomTextField(
+                  key: ValueKey('__line_${rowIndex}_${colIndex}_'),
+                  initialValue: column.resolve(item.json),
+                  onChanged: (text) {
+                    final Map<String, dynamic> data = {};
+
+                    column.update(data, text);
 
                     patch(context, item, data);
                   }),

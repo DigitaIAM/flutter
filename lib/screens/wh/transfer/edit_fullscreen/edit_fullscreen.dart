@@ -242,6 +242,7 @@ class _LinesState extends State<Lines> {
       fQty.copyWith(width: 1.0),
       const Field('storage_from', ReferenceType(['warehouse', 'storage']), path: ['storage_from']).copyWith(width: 1.0),
       const Field('storage_into', ReferenceType(['warehouse', 'storage']), path: ['storage_into']).copyWith(width: 1.0),
+      const Field('status', StringType()),
       // fStorage,
     ];
 
@@ -399,6 +400,20 @@ class _LinesState extends State<Lines> {
                     }
 
                     print("CustomTextField $data");
+
+                    patch(context, item, data);
+                  }),
+            );
+          } else if (column.type is StringType) {
+            return Padding(
+              padding: const EdgeInsets.only(right: cTableColumnGap),
+              child: CustomTextField(
+                  key: ValueKey('__line_${rowIndex}_${colIndex}_'),
+                  initialValue: column.resolve(item.json),
+                  onChanged: (text) {
+                    final Map<String, dynamic> data = {};
+
+                    column.update(data, text);
 
                     patch(context, item, data);
                   }),
