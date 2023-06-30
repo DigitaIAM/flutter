@@ -44,8 +44,9 @@ class _WHStorageEditState extends State<WHStorageEdit> {
       data['_id'] = widget.entity.json['_id'];
 
       // workaround for edit storage with no location
-      final location = data["location"] as MemoryItem;
-      if (location.isEmpty) {
+      final location = data["location"] as MemoryItem?;
+
+      if (location == null || location.isEmpty) {
         data["location"] = null;
       }
 
@@ -91,7 +92,7 @@ class _WHStorageEditState extends State<WHStorageEdit> {
               label: localization.translate('location'),
               autofocus: true,
               validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
+                // FormBuilderValidators.required(),
               ]),
               onSave: _onSave,
               // keyboardType: TextInputType.text,
@@ -121,7 +122,7 @@ class _WHStorageEditState extends State<WHStorageEdit> {
               label: localization.translate("status"),
               autofocus: true,
               validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
+                // FormBuilderValidators.required(),
               ]),
               onSave: _onSave,
               keyboardType: TextInputType.text,
