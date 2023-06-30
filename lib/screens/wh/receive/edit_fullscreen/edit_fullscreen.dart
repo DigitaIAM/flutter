@@ -158,6 +158,16 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS> with SingleTickerProv
                     ]),
                     onSave: _onSave,
                   ),
+                  DecoratedFormField(
+                    name: 'comment',
+                    label: localization.translate("comment"),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      // FormBuilderValidators.required(),
+                    ]),
+                    onSave: _onSave,
+                    keyboardType: TextInputType.text,
+                  ),
                 ]),
                 Expanded(
                   child: ScrollableListView(children: <Widget>[
@@ -238,8 +248,7 @@ class _LinesState extends State<Lines> {
       fGoods.copyWith(width: 3.0),
       fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
-      const Field('cost', NumberType(), path: ['cost', 'number'])
-          .copyWith(width: 1.0),
+      const Field('cost', NumberType(), path: ['cost', 'number']).copyWith(width: 1.0),
       const Field('status', StringType()),
       // fStorage,
     ];
