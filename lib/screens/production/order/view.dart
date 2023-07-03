@@ -72,7 +72,8 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
     final date = widget.entity.json["date"];
     final area = widget.entity.json["area"];
 
-    final editable = date == Utils.today() || date == Utils.yesterday() || area.json['type'] == 'roll';
+    final editable = date.compareTo(Utils.daysAgo(14)) >= 0;
+    // final editable = date == Utils.today() || date == Utils.yesterday() || area.json['type'] == 'roll';
 
     return ScaffoldView(
       appBarBottom: TabBar(

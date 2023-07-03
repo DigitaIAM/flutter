@@ -139,4 +139,8 @@ class Utils {
   static String yesterday() {
     return DateFormat("yyyy-MM-dd").format(DateTime.now().subtract(const Duration(days: 1)));
   }
+
+  static String daysAgo(int days) {
+    return DateFormat("yyyy-MM-dd").format(DateTime.now().subtract(Duration(days: days)));
+  }
 }
