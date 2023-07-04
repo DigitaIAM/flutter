@@ -243,6 +243,7 @@ class _LinesState extends State<Lines> {
       const Field('storage_from', ReferenceType(['warehouse', 'storage']), path: ['storage_from']).copyWith(width: 1.0),
       const Field('storage_into', ReferenceType(['warehouse', 'storage']), path: ['storage_into']).copyWith(width: 1.0),
       const Field('status', StringType()),
+      const Field('deleted', CheckBoxType())
       // fStorage,
     ];
 
@@ -418,6 +419,21 @@ class _LinesState extends State<Lines> {
                     patch(context, item, data);
                   }),
             );
+          } else if (column.type is CheckBoxType) {
+            return Padding(
+              padding: const EdgeInsets.only(right: cTableColumnGap),
+              child: StatusCheckBox(
+                  status: item.json['status'] as String?,
+                  onChanged: (isChecked) {
+                    final Map<String, dynamic> data = {};
+
+                    final status = isChecked == true ? 'deleted' : 'restored';
+
+                    data['status'] = status;
+
+                    patch(context, item, data);
+                  }),
+            );
           } else {
             return Padding(
               padding: const EdgeInsets.only(right: cTableColumnGap),
@@ -485,6 +501,42 @@ class _CustomTextFieldState extends State<CustomTextField> {
       textAlign: TextAlign.right,
       keyboardType: TextInputType.number,
     );
+  }
+}
+
+class StatusCheckBox extends StatefulWidget {
+  const StatusCheckBox({super.key, required this.status, required this.onChanged});
+
+  final String? status;
+  final Function(bool) onChanged;
+
+  @override
+  State<StatefulWidget> createState() => _StatusCheckBoxState();
+}
+
+class _StatusCheckBoxState extends State<StatusCheckBox> {
+  bool isChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.status == 'deleted') {
+      isChecked = true;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Checkbox(
+        value: isChecked,
+        onChanged: (bool? value) {
+          setState(() {
+            isChecked = value!;
+
+            widget.onChanged(isChecked);
+          });
+        });
   }
 }
 
