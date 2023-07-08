@@ -17,6 +17,7 @@ class AutocompleteField<T extends Object> extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.creatable = true,
     this.editable = true,
+    this.deleted = false,
   });
 
   final String? label;
@@ -24,6 +25,7 @@ class AutocompleteField<T extends Object> extends StatefulWidget {
 
   final bool creatable;
   final bool editable;
+  final bool deleted;
 
   final InputDecoration? decoration;
   final String Function(T?) displayStringForOption;
@@ -134,7 +136,7 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
 
     update();
 
-    if (widget.editable) {
+    if (widget.editable && !widget.deleted) {
       return RawAutocomplete<T>(
           textEditingController: _controller,
           focusNode: _focusNode,
@@ -207,11 +209,13 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
           });
     } else {
       _controller.text = widget.displayStringForOption(widget.initialValue);
+      final style = widget.deleted ? const TextStyle(color: Colors.grey) : const TextStyle(fontWeight: FontWeight.bold);
+
       return TextField(
         readOnly: true,
         controller: _controller,
 //        focusNode: fieldFocusNode,
-        style: const TextStyle(fontWeight: FontWeight.bold),
+        style: style,
         decoration: inputDecoration,
       );
     }

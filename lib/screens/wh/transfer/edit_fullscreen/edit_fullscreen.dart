@@ -242,7 +242,8 @@ class _LinesState extends State<Lines> {
       fQty.copyWith(width: 1.0),
       const Field('storage_from', ReferenceType(['warehouse', 'storage']), path: ['storage_from']).copyWith(width: 1.0),
       const Field('storage_into', ReferenceType(['warehouse', 'storage']), path: ['storage_into']).copyWith(width: 1.0),
-      const Field('status', StringType()),
+      // const Field('status', StringType()),
+      const Field('', CheckBoxType())
       // fStorage,
     ];
 
@@ -344,6 +345,8 @@ class _LinesState extends State<Lines> {
         ...columns.entries.map((entry) {
           final colIndex = entry.key;
           final column = entry.value;
+          final String? status = item.json['status'];
+
           if (column.type is ReferenceType) {
             final type = column.type as ReferenceType;
             final MemoryItem? value = column.resolve(item.json);
@@ -351,7 +354,7 @@ class _LinesState extends State<Lines> {
               padding: const EdgeInsets.only(right: cTableColumnGap),
               child: AutocompleteField<MemoryItem>(
                 key: ValueKey('__line_${rowIndex}_${colIndex}_'),
-                editable: column.editable,
+                editable: status == 'deleted' ? false : column.editable,
                 initialValue: value,
                 // focusNode: _focusNode,
                 create: (text) async {
@@ -382,38 +385,58 @@ class _LinesState extends State<Lines> {
 
                   patch(context, item, data);
                 },
+                deleted: status == 'deleted' ? true : false,
               ),
             );
           } else if (column.type is NumberType) {
             return Padding(
               padding: const EdgeInsets.only(right: cTableColumnGap),
               child: CustomTextField(
-                  key: ValueKey('__line_${rowIndex}_${colIndex}_'),
-                  initialValue: column.resolve(item.json),
-                  onChanged: (text) {
-                    final Map<String, dynamic> data = {};
+                key: ValueKey('__line_${rowIndex}_${colIndex}_'),
+                initialValue: column.resolve(item.json),
+                onChanged: (text) {
+                  final Map<String, dynamic> data = {};
 
-                    if (text.contains('.')) {
-                      column.update(data, double.parse(text));
-                    } else {
-                      column.update(data, int.parse(text));
-                    }
+                  if (text.contains('.')) {
+                    column.update(data, double.parse(text));
+                  } else {
+                    column.update(data, int.parse(text));
+                  }
 
-                    print("CustomTextField $data");
+                  print("CustomTextField $data");
 
-                    patch(context, item, data);
-                  }),
+                  patch(context, item, data);
+                },
+                editable: status == 'deleted' ? false : column.editable,
+              ),
             );
           } else if (column.type is StringType) {
             return Padding(
               padding: const EdgeInsets.only(right: cTableColumnGap),
               child: CustomTextField(
-                  key: ValueKey('__line_${rowIndex}_${colIndex}_'),
-                  initialValue: column.resolve(item.json),
-                  onChanged: (text) {
+                key: ValueKey('__line_${rowIndex}_${colIndex}_'),
+                initialValue: column.resolve(item.json),
+                onChanged: (text) {
+                  final Map<String, dynamic> data = {};
+
+                  column.update(data, text);
+
+                  patch(context, item, data);
+                },
+                editable: status == 'deleted' ? false : column.editable,
+              ),
+            );
+          } else if (column.type is CheckBoxType) {
+            return Padding(
+              padding: const EdgeInsets.only(right: cTableColumnGap, top: 9),
+              child: DeleteButton(
+                  status: item.json['status'] as String?,
+                  onChanged: (isChecked) {
                     final Map<String, dynamic> data = {};
 
-                    column.update(data, text);
+                    final status = isChecked == true ? 'deleted' : null;
+
+                    data['status'] = status;
 
                     patch(context, item, data);
                   }),
@@ -441,10 +464,11 @@ class _LinesState extends State<Lines> {
 }
 
 class CustomTextField extends StatefulWidget {
-  const CustomTextField({super.key, required this.initialValue, required this.onChanged});
+  const CustomTextField({super.key, required this.initialValue, required this.onChanged, this.editable = true});
 
   final dynamic initialValue;
   final Function(String) onChanged;
+  final bool editable;
 
   @override
   State<StatefulWidget> createState() => _CustomTextFieldState();
@@ -484,6 +508,51 @@ class _CustomTextFieldState extends State<CustomTextField> {
       focusNode: _focusNode,
       textAlign: TextAlign.right,
       keyboardType: TextInputType.number,
+      readOnly: widget.editable ? false : true,
+      style: widget.editable ? null : const TextStyle(color: Colors.grey),
+    );
+  }
+}
+
+class DeleteButton extends StatefulWidget {
+  const DeleteButton({super.key, required this.status, required this.onChanged});
+
+  final String? status;
+  final Function(bool) onChanged;
+
+  @override
+  State<StatefulWidget> createState() => _DeleteButtonState();
+}
+
+class _DeleteButtonState extends State<DeleteButton> {
+  bool isChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.status == 'deleted') {
+      isChecked = true;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final buttonText = isChecked ? 'restore' : 'delete';
+
+    return TextButton(
+      style: ButtonStyle(
+        foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.grey),
+      ),
+      onPressed: () {
+        setState(() {
+          isChecked = !isChecked;
+
+          widget.onChanged(isChecked);
+        });
+      },
+      child: Text(buttonText),
     );
   }
 }
