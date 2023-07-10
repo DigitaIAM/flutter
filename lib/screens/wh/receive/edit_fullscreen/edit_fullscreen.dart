@@ -13,6 +13,8 @@ import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/custom_textfield.dart';
+import 'package:nae/screens/wh/delete_button.dart';
 import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/screens/wh/receive/edit_fullscreen/document_creation.dart';
 import 'package:nae/screens/wh/receive/edit_fullscreen/goods.dart';
@@ -249,7 +251,7 @@ class _LinesState extends State<Lines> {
       fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
       const Field('cost', NumberType(), path: ['cost', 'number']).copyWith(width: 1.0),
-      const Field('status', StringType()),
+      const Field('', CheckBoxType())
       // fStorage,
     ];
 
@@ -351,6 +353,8 @@ class _LinesState extends State<Lines> {
         ...columns.entries.map((entry) {
           final colIndex = entry.key;
           final column = entry.value;
+          final String? status = item.json['status'];
+
           if (column.type is ReferenceType) {
             final type = column.type as ReferenceType;
             final MemoryItem? value = column.resolve(item.json);
@@ -358,7 +362,7 @@ class _LinesState extends State<Lines> {
               padding: const EdgeInsets.only(right: cTableColumnGap),
               child: AutocompleteField<MemoryItem>(
                 key: ValueKey('__line_${rowIndex}_${colIndex}_'),
-                editable: column.editable,
+                editable: status == 'deleted' ? false : column.editable,
                 initialValue: value,
                 // focusNode: _focusNode,
                 create: (text) async {
@@ -387,36 +391,56 @@ class _LinesState extends State<Lines> {
 
                   patch(context, item, data);
                 },
+                deleted: status == 'deleted' ? true : false,
               ),
             );
           } else if (column.type is NumberType) {
             return Padding(
               padding: const EdgeInsets.only(right: cTableColumnGap),
               child: CustomTextField(
-                  key: ValueKey('__line_${rowIndex}_${colIndex}_'),
-                  initialValue: column.resolve(item.json),
-                  onChanged: (text) {
-                    final Map<String, dynamic> data = {};
+                key: ValueKey('__line_${rowIndex}_${colIndex}_'),
+                initialValue: column.resolve(item.json),
+                onChanged: (text) {
+                  final Map<String, dynamic> data = {};
 
-                    if (text.contains('.')) {
-                      column.update(data, double.parse(text));
-                    } else {
-                      column.update(data, int.parse(text));
-                    }
+                  if (text.contains('.')) {
+                    column.update(data, double.parse(text));
+                  } else {
+                    column.update(data, int.parse(text));
+                  }
 
-                    patch(context, item, data);
-                  }),
+                  patch(context, item, data);
+                },
+                editable: status == 'deleted' ? false : column.editable,
+              ),
             );
           } else if (column.type is StringType) {
             return Padding(
               padding: const EdgeInsets.only(right: cTableColumnGap),
               child: CustomTextField(
-                  key: ValueKey('__line_${rowIndex}_${colIndex}_'),
-                  initialValue: column.resolve(item.json),
-                  onChanged: (text) {
+                key: ValueKey('__line_${rowIndex}_${colIndex}_'),
+                initialValue: column.resolve(item.json),
+                onChanged: (text) {
+                  final Map<String, dynamic> data = {};
+
+                  column.update(data, text);
+
+                  patch(context, item, data);
+                },
+                editable: status == 'deleted' ? false : column.editable,
+              ),
+            );
+          } else if (column.type is CheckBoxType && !item.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.only(right: cTableColumnGap, top: 9),
+              child: DeleteButton(
+                  status: item.json['status'] as String?,
+                  onChanged: (isChecked) {
                     final Map<String, dynamic> data = {};
 
-                    column.update(data, text);
+                    final status = isChecked == true ? 'deleted' : null;
+
+                    data['status'] = status;
 
                     patch(context, item, data);
                   }),
@@ -439,54 +463,6 @@ class _LinesState extends State<Lines> {
     } else {
       context.read<MemoryBloc>().add(MemoryPatch('memories', widget.ctx, widget.schema, item.id, data));
     }
-  }
-}
-
-class CustomTextField extends StatefulWidget {
-  const CustomTextField({super.key, required this.initialValue, required this.onChanged});
-
-  final dynamic initialValue;
-  final Function(String) onChanged;
-
-  @override
-  State<StatefulWidget> createState() => _CustomTextFieldState();
-}
-
-class _CustomTextFieldState extends State<CustomTextField> {
-  final _controller = TextEditingController();
-  late FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller.text = widget.initialValue?.toString() ?? '';
-
-    _focusNode = FocusNode();
-    _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) {
-        print("lost focus");
-        widget.onChanged(_controller.text);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: _controller,
-      focusNode: _focusNode,
-      textAlign: TextAlign.right,
-      keyboardType: TextInputType.number,
-    );
   }
 }
 
