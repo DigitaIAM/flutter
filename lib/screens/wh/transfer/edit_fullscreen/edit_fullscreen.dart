@@ -13,6 +13,8 @@ import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/custom_textfield.dart';
+import 'package:nae/screens/wh/delete_button.dart';
 import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/document_creation.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/goods.dart';
@@ -242,7 +244,6 @@ class _LinesState extends State<Lines> {
       fQty.copyWith(width: 1.0),
       const Field('storage_from', ReferenceType(['warehouse', 'storage']), path: ['storage_from']).copyWith(width: 1.0),
       const Field('storage_into', ReferenceType(['warehouse', 'storage']), path: ['storage_into']).copyWith(width: 1.0),
-      // const Field('status', StringType()),
       const Field('', CheckBoxType())
       // fStorage,
     ];
@@ -426,7 +427,7 @@ class _LinesState extends State<Lines> {
                 editable: status == 'deleted' ? false : column.editable,
               ),
             );
-          } else if (column.type is CheckBoxType) {
+          } else if (column.type is CheckBoxType && !item.isEmpty) {
             return Padding(
               padding: const EdgeInsets.only(right: cTableColumnGap, top: 9),
               child: DeleteButton(
@@ -460,100 +461,6 @@ class _LinesState extends State<Lines> {
     } else {
       context.read<MemoryBloc>().add(MemoryPatch('memories', widget.ctx, widget.schema, item.id, data));
     }
-  }
-}
-
-class CustomTextField extends StatefulWidget {
-  const CustomTextField({super.key, required this.initialValue, required this.onChanged, this.editable = true});
-
-  final dynamic initialValue;
-  final Function(String) onChanged;
-  final bool editable;
-
-  @override
-  State<StatefulWidget> createState() => _CustomTextFieldState();
-}
-
-class _CustomTextFieldState extends State<CustomTextField> {
-  final _controller = TextEditingController();
-  late FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller.text = widget.initialValue?.toString() ?? '';
-
-    _focusNode = FocusNode();
-    _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) {
-        print("lost focus");
-        widget.onChanged(_controller.text);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: _controller,
-      focusNode: _focusNode,
-      textAlign: TextAlign.right,
-      keyboardType: TextInputType.number,
-      readOnly: widget.editable ? false : true,
-      style: widget.editable ? null : const TextStyle(color: Colors.grey),
-    );
-  }
-}
-
-class DeleteButton extends StatefulWidget {
-  const DeleteButton({super.key, required this.status, required this.onChanged});
-
-  final String? status;
-  final Function(bool) onChanged;
-
-  @override
-  State<StatefulWidget> createState() => _DeleteButtonState();
-}
-
-class _DeleteButtonState extends State<DeleteButton> {
-  bool isChecked = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    if (widget.status == 'deleted') {
-      isChecked = true;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final buttonText = isChecked ? 'restore' : 'delete';
-
-    return TextButton(
-      style: ButtonStyle(
-        foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.grey),
-      ),
-      onPressed: () {
-        setState(() {
-          isChecked = !isChecked;
-
-          widget.onChanged(isChecked);
-        });
-      },
-      child: Text(buttonText),
-    );
   }
 }
 
