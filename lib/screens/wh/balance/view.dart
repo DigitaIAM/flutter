@@ -120,6 +120,8 @@ Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
     } else if (type == 'dispatch') {
       counterparty = mapDoc['counterparty']?['name'] ?? "?";
       store = mapDoc['storage']?['name'] ?? "?";
+    } else if (type == 'material') {
+      type = '${mapSplit[2]} $type';
     }
 
     return '$type|$date|$store|$counterparty';
