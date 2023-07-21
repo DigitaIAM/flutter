@@ -177,12 +177,41 @@ class ProductionOrderOverview extends StatelessWidget {
         value: DT.format(order.json['date']),
         icon: const Icon(Icons.question_mark),
       ),
-      ListDivider(),
+      ...buildItemsList(order.json['_material']?['used']),
+      ...buildItemsList(order.json['_material']?['produced']),
+      ...buildItemsList(order.json['_delta']),
     ];
 
     return ScrollableListView(
       children: widgets,
     );
+  }
+
+  List<Widget> buildItemsList(dynamic data) {
+    var children = <Widget>[];
+
+    print('buildItemsList $data');
+
+    if (data != null) {
+      children.add(ListDivider());
+      if (data is List) {
+        for (Map item in data) {
+          children.add(KeyValue(
+            label: item.entries.first.key,
+            value: item.entries.first.value,
+            icon: const Icon(Icons.question_mark),
+          ));
+        }
+      } else if (data is Map) {
+        children.add(KeyValue(
+          label: data.entries.first.key,
+          value: data.entries.first.value,
+          icon: const Icon(Icons.question_mark),
+        ));
+      }
+    }
+
+    return children;
   }
 
   List<Widget> additional(BuildContext context) {

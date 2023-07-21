@@ -41,8 +41,7 @@ class GoodsDispatch extends StatefulWidget {
 }
 
 class _GoodsDispatchState extends State<GoodsDispatch> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_goodsDispatchEdit');
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsDispatchEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -60,11 +59,9 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
     final widgets = <Widget>[
       if (status != 'register')
-        Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              Text(status),
-            ]),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+          Text(status),
+        ]),
       AppForm(
         entity: details,
         formKey: _formKey,
@@ -146,8 +143,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             label: localization.translate("storage"),
             creatable: false,
             validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(
-                  errorText: "выберите место хранения"),
+              FormBuilderValidators.required(errorText: "выберите место хранения"),
             ]),
             onSave: (context) {},
           ),
@@ -162,19 +158,19 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             ]),
             onSave: (context) {},
           ),
-          DecoratedFormPickerField(
-            ctx: const ['goods', 'stock'],
-            name: 'batch',
-            label: localization.translate("batch"),
-            creatable: widget.allowGoodsCreation,
-            validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(errorText: "выберите партию"),
-            ]),
-            onSave: (context) {},
-          ),
+          // DecoratedFormPickerField(
+          //   ctx: const ['goods', 'stock'],
+          //   name: 'batch',
+          //   label: localization.translate("batch"),
+          //   creatable: widget.allowGoodsCreation,
+          //   validator: FormBuilderValidators.compose([
+          //     FormBuilderValidators.required(errorText: "выберите партию"),
+          //   ]),
+          //   onSave: (context) {},
+          // ),
           const SizedBox(height: 10),
           ...qtyUom(context),
-          ...goodsList(widget.schema),
+          // ...goodsList(widget.schema),
         ]),
       ),
     ];
@@ -188,8 +184,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
                 child: FloatingActionButton(
                   heroTag: 'product_register_and_print',
                   backgroundColor: theme.primaryColorDark,
-                  onPressed:
-                      status == 'register' ? registerAndPrintPreparation : null,
+                  onPressed: status == 'register' ? registerAndPrintPreparation : null,
                   tooltip: localization.translate('and print'.toString()),
                   child: registered == 'registerAndPrint'
                       ? const Icon(Icons.done)
@@ -371,8 +366,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final doc = await widget.doc.enrich(widget.schema);
 
       try {
-        final result = await register(
-            doc, data, numberOfQuantities, widget.ctx, setStatus);
+        final result = await register(doc, data, numberOfQuantities, widget.ctx, setStatus);
 
         if (!(result.isNew || result.isEmpty)) {
           done('register');
@@ -383,8 +377,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     }
   }
 
-  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data,
-      {MemoryItem? item}) async {
+  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data, {MemoryItem? item}) async {
     resetDone();
 
     setStatus("connecting");
@@ -393,9 +386,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(widget.schema);
-        final record = item ??
-            await register(
-                doc, data, numberOfQuantities, widget.ctx, setStatus);
+        final record = item ?? await register(doc, data, numberOfQuantities, widget.ctx, setStatus);
 
         if (item == null) {
           if (!(record.isEmpty || record.isNew)) {
@@ -434,8 +425,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 }
 
 class BalanceListBuilder extends StatelessWidget {
-  const BalanceListBuilder(
-      {super.key, this.storage, this.goods, required this.changeState});
+  const BalanceListBuilder({super.key, this.storage, this.goods, required this.changeState});
 
   final Function(MemoryItem item) changeState;
 
