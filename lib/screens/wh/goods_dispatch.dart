@@ -55,7 +55,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     final localization = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    print("Widget build(BuildContext context)");
+    // print("Widget build(BuildContext context)");
 
     final widgets = <Widget>[
       if (status != 'register')
@@ -312,13 +312,13 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   }
 
   void resetDone() {
-    setState(() => {registered = ''});
+    setState(() => registered = '');
   }
 
   void done(String type) {
-    setState(() => {registered = type});
+    setState(() => registered = type);
     Future.delayed(const Duration(seconds: 2), () {
-      setState(() => {registered = ''});
+      setState(() => registered = '');
     });
   }
 
@@ -394,7 +394,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           }
         }
 
-        print("registerAndPrint record: $record");
+        // print("registerAndPrint record: $record");
 
         if (record.isEmpty || record.isNew) {
           return PrintResult.registrationFailed;
@@ -450,7 +450,7 @@ class BalanceListBuilder extends StatelessWidget {
       filter['goods'] = goods!.json['_uuid'] ?? '';
     }
 
-    print("build filter $filter");
+    // print("build filter $filter");
 
     const ctx = ['warehouse', 'stock'];
 

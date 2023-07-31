@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class ChangeLayoutBanner extends StatefulWidget {
@@ -7,8 +6,7 @@ class ChangeLayoutBanner extends StatefulWidget {
   const ChangeLayoutBanner({super.key, required this.child});
 
   @override
-  _ChangeLayoutBannerState createState() => _ChangeLayoutBannerState();
-
+  State<ChangeLayoutBanner> createState() => _ChangeLayoutBannerState();
 }
 
 class _ChangeLayoutBannerState extends State<ChangeLayoutBanner> {
@@ -16,15 +14,11 @@ class _ChangeLayoutBannerState extends State<ChangeLayoutBanner> {
   Widget build(BuildContext context) {
     // TODO detect size and ratio changes
     return SafeArea(
-        child: Column(
-          children: [
-            // AnimatedContainer(),
-            Expanded(
-              child: widget.child,
-            )
-          ]
-        )
-    );
+        child: Column(children: [
+      // AnimatedContainer(),
+      Expanded(
+        child: widget.child,
+      )
+    ]));
   }
-
 }

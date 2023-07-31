@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 void showMyInputText(BuildContext context, TextEditingController controller, VoidCallback callback) {
   Dialog myDialog = Dialog(
-    child: Container(
+    child: SizedBox(
       height: 250.0,
       width: 300.0,
       child: Column(
@@ -50,7 +50,7 @@ Future<dynamic>? showYesNo(BuildContext context, String msg, VoidCallback callba
     {String? yesText, String? noText}) {
   Dialog dialogWithImage = Dialog(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    child: Container(
+    child: SizedBox(
       height: 300.0,
       width: 440.0,
       child: Padding(
@@ -83,7 +83,7 @@ Future<dynamic>? showYesNo(BuildContext context, String msg, VoidCallback callba
                       },
                       child: Text(
                         noText ?? "Yo'q",
-                        style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        style: const TextStyle(fontSize: 18.0, color: Colors.white),
                       ),
                     ),
                   ),
@@ -119,7 +119,7 @@ Future<dynamic>? showYesNo(BuildContext context, String msg, VoidCallback callba
 
 void showAlert(BuildContext context, String msg, {String? okText}) {
   Dialog dialogWithImage = Dialog(
-    child: Container(
+    child: SizedBox(
       height: 200.0,
       width: 300.0,
       child: Column(
@@ -168,7 +168,7 @@ void showAlert(BuildContext context, String msg, {String? okText}) {
 void showYesNoCancel(BuildContext context, String msg, VoidCallback callbackYes, VoidCallback callbackNo,
     {String? yesText, String? noText, String? cancelText}) {
   Dialog dialogWithImage = Dialog(
-    child: Container(
+    child: SizedBox(
       height: 310.0,
       width: 300.0,
       child: Column(

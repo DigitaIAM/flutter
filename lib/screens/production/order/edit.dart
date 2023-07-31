@@ -51,10 +51,10 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   }
 
   void _onSave(BuildContext context) {
-    print("_onSave");
+    // print("_onSave");
     final state = _formKey.currentState;
     if (state != null && state.saveAndValidate()) {
-      print("state ${state.value}");
+      // print("state ${state.value}");
       final Map<String, dynamic> data = Map.from(state.value);
       // workaround
       data['_id'] = widget.entity.json['_id'];
@@ -90,7 +90,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
       // TODO context.read<UiBloc>().add(PreviousRoute());
     }
 
-    print("Widget build");
+    // print("Widget build");
 
     return EditScaffold(
       entity: widget.entity,
@@ -152,7 +152,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
               ]),
               onSave: _onSave,
               onChange: (item) {
-                print("onChange: (item) $item");
+                // print("onChange: (item) $item");
                 setState(() {
                   product = item;
                 });
@@ -190,7 +190,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   }
 
   List<Widget> additional(BuildContext context) {
-    print("additional");
+    // print("additional");
     if (product != null && (product!.json['type'] ?? '') == 'roll') {
       final localization = AppLocalizations.of(context);
       return [

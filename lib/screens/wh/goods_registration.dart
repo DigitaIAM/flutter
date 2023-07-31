@@ -247,13 +247,13 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
   }
 
   void resetDone() {
-    setState(() => {registered = ''});
+    setState(() => registered = '');
   }
 
   void done(String type) {
-    setState(() => {registered = type});
+    setState(() => registered = type);
     Future.delayed(const Duration(seconds: 2), () {
-      setState(() => {registered = ''});
+      setState(() => registered = '');
     });
   }
 
@@ -329,7 +329,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
           }
         }
 
-        print("registerAndPrint record: $record");
+        // print("registerAndPrint record: $record");
 
         if (record.isEmpty || record.isNew) {
           return PrintResult.registrationFailed;

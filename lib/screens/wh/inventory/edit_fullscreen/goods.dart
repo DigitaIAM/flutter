@@ -95,7 +95,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-          print("subtitle ${item.json}");
+          // print("subtitle ${item.json}");
 
           var text = '';
 
@@ -172,13 +172,13 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
       "ctx": const ['printer'],
     });
 
-    print("printers ${response.runtimeType} ${response}");
+    // print("printers ${response.runtimeType} ${response}");
 
     final printers = response['data'];
 
     final children = <Widget>[];
 
-    children.add(Text("Choose the printer"));
+    children.add(const Text("Choose the printer"));
 
     if (printers is List) {
       for (var printer in printers) {
@@ -196,15 +196,15 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
   }
 
   void printPreparation(String ip, int port, MemoryItem item) async {
-    print("printPreparation: ${item.json}");
+    // print("printPreparation: ${item.json}");
 
-    final _doc = await widget.doc.enrich(WHReceive.schema);
+    final d = await widget.doc.enrich(WHReceive.schema);
 
-    final result = await Labels.connect(ip, port, (printer) async {
-      return await printing(printer, _doc, item, (newStatus) => {});
+    await Labels.connect(ip, port, (printer) async {
+      return await printing(printer, d, item, (newStatus) => {});
     });
 
-    print("printResult: $result");
+    // print("printResult: $result");
   }
 
   Future popUpPatch(BuildContext context, MemoryItem record) {
@@ -270,8 +270,8 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
     }
 
     // print("data type ${data.runtimeType}");
-    print("inventory_data $data");
-    print("inventory_doc ${widget.doc.json}");
+    // print("inventory_data $data");
+    // print("inventory_doc ${widget.doc.json}");
 
     final qty = data['qty'] ?? '';
 
@@ -294,7 +294,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
             'qty': {'number': qty}
           }));
     } else {
-      print("Wrong value was entered");
+      // print("Wrong value was entered");
     }
   }
 

@@ -143,10 +143,10 @@ class _CamerasPageState extends State<CamerasPage> {
             setState(() {
               rows = event["data"];
             });
-            print(rows);
+            // print(rows);
           });
     } catch (e) {
-      print(e);
+      // print(e);
     }
   }
 

@@ -60,8 +60,8 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
 
     filters.add(Pair('storage', storage));
 
-    print("doc: ${widget.doc.json}");
-    print("storage: ${storage.json}");
+    // print("doc: ${widget.doc.json}");
+    // print("storage: ${storage.json}");
 
     final docFilter = {'document': widget.doc.id};
     final storageFilter = {'storage': storageUuid};
@@ -81,8 +81,8 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
               final stock = stockState.items;
               final lines = linesState.items;
 
-              print("stock: $stock");
-              print("lines: $lines");
+              // print("stock: $stock");
+              // print("lines: $lines");
 
               List<MemoryItem> todo = stock.toList();
 
@@ -97,12 +97,12 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
                 }
               }
 
-              print("todo: $todo");
+              // print("todo: $todo");
 
               List<Widget> todoList = [];
 
               for (final record in todo) {
-                print("record: ${record.json}");
+                // print("record: ${record.json}");
                 todoList.add(Card(
                   elevation: 2.0,
                   margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
@@ -189,8 +189,8 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
     }
 
     // print("data type ${data.runtimeType}");
-    print("inventory_data $data");
-    print("inventory_doc ${widget.doc.json}");
+    // print("inventory_data $data");
+    // print("inventory_doc ${widget.doc.json}");
 
     final qty = data['qty'] ?? '';
 
@@ -204,7 +204,7 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
             'qty': {'number': qty}
           }));
     } else {
-      print("Wrong value was entered");
+      // print("Wrong value was entered");
     }
   }
 

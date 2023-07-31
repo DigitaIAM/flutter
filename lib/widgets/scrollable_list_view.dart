@@ -1,14 +1,13 @@
-
 import 'package:flutter/material.dart';
 
 class ScrollableListView extends StatefulWidget {
-
   final List<Widget> children;
   final EdgeInsetsGeometry? padding;
   final bool primary;
   final bool showScrollbar;
 
-  const ScrollableListView({super.key, required this.children, this.showScrollbar = false, this.primary = false, this.padding});
+  const ScrollableListView(
+      {super.key, required this.children, this.showScrollbar = false, this.primary = false, this.padding});
 
   @override
   State<ScrollableListView> createState() => _ScrollableListViewState();
@@ -31,7 +30,7 @@ class _ScrollableListViewState extends State<ScrollableListView> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = null; // widget.primary == true ? null : widget.scrollController ?? _scrollController;
+    const controller = null; // widget.primary == true ? null : widget.scrollController ?? _scrollController;
 
     Widget child = ListView(
       padding: widget.padding,

@@ -34,9 +34,9 @@ class _CompaniesPageState extends State<CompaniesPage> {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
         onPressed: () async {
-          String? newName = await prompt(context, title: Text("New company name"));
+          String? newName = await prompt(context, title: const Text("New company name"));
           if (newName == null) return;
           Api.feathers().create(serviceName: "companies", data: {"name": newName});
         },
@@ -117,7 +117,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
             });
           });
     } catch (e) {
-      print(e);
+      // print(e);
     }
   }
 

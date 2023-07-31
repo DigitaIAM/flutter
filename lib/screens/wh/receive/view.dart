@@ -217,7 +217,7 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
   void registerAndPrint() async {
     setState(() => status = "connecting");
     try {
-      print("pressed:");
+      // print("pressed:");
 
       final data = _formKey.currentState?.value;
       if (data == null) {
@@ -227,11 +227,11 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
       final ip = data['printer']['ip'];
       final port = int.parse(data['printer']['port']);
 
-      print("printer $ip $port");
+      // print("printer $ip $port");
 
       final doc = await widget.doc.enrich(WHReceive.schema);
 
-      print("doc ${doc.json}");
+      // print("doc ${doc.json}");
 
       final docId = doc.id;
       final goods = data['goods'] as MemoryItem;
@@ -285,7 +285,7 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
             position: StyledToastPosition.bottom);
       }
     } catch (e, stacktrace) {
-      print(stacktrace);
+      // print(stacktrace);
       showToast(e.toString(),
           // context: context,
           axis: Axis.horizontal,

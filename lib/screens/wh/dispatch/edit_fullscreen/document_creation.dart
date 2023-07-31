@@ -24,10 +24,8 @@ class WHDispatchDocumentCreation extends StatefulWidget {
   State<StatefulWidget> createState() => _WHDispatchDocumentCreationState();
 }
 
-class _WHDispatchDocumentCreationState
-    extends State<WHDispatchDocumentCreation> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_WHDispatchDocumentCreation');
+class _WHDispatchDocumentCreationState extends State<WHDispatchDocumentCreation> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHDispatchDocumentCreation');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -82,9 +80,7 @@ class _WHDispatchDocumentCreationState
               ),
               Container(height: 10),
               ElevatedButton(
-                onPressed: status == 'register'
-                    ? () => registerDocument(context)
-                    : null,
+                onPressed: status == 'register' ? () => registerDocument(context) : null,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -109,7 +105,7 @@ class _WHDispatchDocumentCreationState
       return;
     }
 
-    print("data $data");
+    // print("data $data");
 
     final date = data['date'] ?? '';
     final storage = data['storage'] as MemoryItem;
@@ -124,9 +120,8 @@ class _WHDispatchDocumentCreationState
       'ctx': ['warehouse', 'dispatch', 'document']
     });
 
-    print("record: $record");
+    // print("record: $record");
 
-    context.read<UiBloc>().add(ChangeView(WHDispatch.ctx,
-        action: 'edit', entity: MemoryItem.from(record)));
+    context.read<UiBloc>().add(ChangeView(WHDispatch.ctx, action: 'edit', entity: MemoryItem.from(record)));
   }
 }

@@ -39,7 +39,7 @@ class EditScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isCancelEnabled = false;
 
-    final showOverflow = false; // TODO isDesktop(context) && uiState.isFullScreen;
+    const showOverflow = false; // TODO isDesktop(context) && uiState.isFullScreen;
 
     return BlocListener<MemoryBloc, RequestState>(
       listener: (context, state) {
@@ -64,7 +64,7 @@ class EditScaffold extends StatelessWidget {
             } else if (LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyS)
                     .accepts(event, RawKeyboard.instance) ||
                 const SingleActivator(LogicalKeyboardKey.keyS, control: true).accepts(event, RawKeyboard.instance)) {
-              print("ctrl+s");
+              // print("ctrl+s");
               onSave?.call(context);
 
               return KeyEventResult.handled;

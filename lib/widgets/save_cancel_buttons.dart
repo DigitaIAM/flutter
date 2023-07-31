@@ -45,11 +45,11 @@ class _SaveCancelButtonsState extends State<SaveCancelButtons> {
 
     return BlocBuilder<MemoryBloc, RequestState>(
       builder: (context, state) {
-        print('state.saved ${state.saved}');
+        // print('state.saved ${state.saved}');
         if (state.saved != null) {
-          print('state.saved != null');
+          // print('state.saved != null');
           if (state.saved!.updatedAt > widget.entity.updatedAt) {
-            print('updatedAt changed2');
+            // print('updatedAt changed2');
             setState(() {
               saving = false;
             });

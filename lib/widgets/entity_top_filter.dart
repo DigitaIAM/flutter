@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class EntityTopFilter extends StatelessWidget {
@@ -7,12 +6,9 @@ class EntityTopFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).cardColor,
-      child: Column(
-        children: [
+        color: Theme.of(context).cardColor,
+        child: const Column(children: [
           // TODO
-        ]
-      )
-    );
+        ]));
   }
 }

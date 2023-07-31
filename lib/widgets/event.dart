@@ -12,7 +12,7 @@ class LoadItemsEvent extends MasterDetailEvent {
 class AddItemEvent extends MasterDetailEvent {
   final dynamic element;
 
-  AddItemEvent(this.element);
+  const AddItemEvent(this.element);
 
   @override
   List<Object> get props => [element];
@@ -21,7 +21,7 @@ class AddItemEvent extends MasterDetailEvent {
 class SelectItemEvent extends MasterDetailEvent {
   final dynamic selected;
 
-  SelectItemEvent(this.selected);
+  const SelectItemEvent(this.selected);
 
   @override
   List<Object> get props => [selected];

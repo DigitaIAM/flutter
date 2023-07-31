@@ -82,7 +82,7 @@ class _DateFieldState extends State<DateField> {
 
       format: DateFormat.yMMMMd('ru'),
       valueTransformer: (text) {
-        print('valueTransformer $text');
+        // print('valueTransformer $text');
         return text;
       },
 

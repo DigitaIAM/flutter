@@ -254,8 +254,8 @@ class _DrawerTileState extends State<DrawerTile> {
             leading: _isHovered && uiState.isDesktop && iconWidget != null
                 ? iconWidget
                 : isLoading
-                    ? Padding(
-                        padding: const EdgeInsets.only(left: 10),
+                    ? const Padding(
+                        padding: EdgeInsets.only(left: 10),
                         child: SizedBox(
                           child: CircularProgressIndicator(),
                           width: 22,

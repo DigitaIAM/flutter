@@ -20,7 +20,7 @@ EventTransformer<E> throttleDroppable<E>(Duration duration) {
 
 class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
   MemoryBloc({this.schema, this.reverse = false}) : super(RequestState(DateTime.now())) {
-    print("init RequestState");
+    // print("init RequestState");
     on<MemorySearch>(_onSearch);
     on<MemorySave>(_onSave);
     on<MemoryFetch>(
@@ -141,9 +141,9 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
               hasReachedMax: false,
             ));
     } catch (e, stacktrace) {
-      print("ERROR _onFetched:");
-      print(e);
-      print(stacktrace);
+      // print("ERROR _onFetched:");
+      // print(e);
+      // print(stacktrace);
       emit(newState.copyWith(status: RequestStatus.failure));
     }
   }
@@ -185,7 +185,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
 
   Future<void> _onSearch(MemorySearch event, Emitter<RequestState> emit) async {
     // workaround
-    print("_onSearch: ${event.query}");
+    // print("_onSearch: ${event.query}");
     var original = state.original;
 
     final originalQuery = (event.query ?? '').trim();
@@ -233,8 +233,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     try {
       var saved = await _create(event.serviceName, event.ctx, event.data);
       saved = await saved.enrich(event.schema); // ?? schema ?? []);
-      print("schema $schema");
-      print("_onCreate saved $saved");
+      // print("schema $schema");
+      // print("_onCreate saved $saved");
 
       final List<MemoryItem> list = List.from(state.original);
 
@@ -261,9 +261,9 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
         // saveStatus: SaveStatus.success,
       ));
     } catch (e, stacktrace) {
-      print("ERROR _onCreate:");
-      print(e);
-      print(stacktrace);
+      // print("ERROR _onCreate:");
+      // print(e);
+      // print(stacktrace);
       // emit(state.copyWith(saveStatus: SaveStatus.failure));
       emit(state.copyWith(saved: MemoryItem(id: "error", json: {'name': e})));
     }
@@ -317,9 +317,9 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
         saved: saved,
       ));
     } catch (e, stacktrace) {
-      print("ERROR _onUpdate:");
-      print(e);
-      print(stacktrace);
+      // print("ERROR _onUpdate:");
+      // print(e);
+      // print(stacktrace);
       // emit(state.copyWith(saveStatus: SaveStatus.failure));
       emit(state.copyWith(saved: MemoryItem(id: "error", json: {'name': e})));
     }
@@ -349,7 +349,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     try {
       var saved = await _patch(event.serviceName, event.ctx, event.id, event.data);
       saved = await saved.enrich(event.schema); // ?? schema ?? []);
-      print("_onPatch saved ${saved.json}");
+      // print("_onPatch saved ${saved.json}");
 
       final List<MemoryItem> list = List.from(state.original);
 
@@ -374,9 +374,9 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
         saved: saved,
       ));
     } catch (e, stacktrace) {
-      print("ERROR _onPatch:");
-      print(e);
-      print(stacktrace);
+      // print("ERROR _onPatch:");
+      // print(e);
+      // print(stacktrace);
       // emit(state.copyWith(
       //   saved: MemoryItem(id: event.id, json: event.data),
       //   saveStatus: SaveStatus.failure,
@@ -390,11 +390,11 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       "oid": Api.instance.oid,
       "ctx": ctx,
     };
-    print("patch request:");
-    print(data);
+    // print("patch request:");
+    // print(data);
     final response = await Api.feathers().patch(serviceName: serviceName, objectId: id, data: data, params: params);
-    print("patch response:");
-    print(response);
+    // print("patch response:");
+    // print(response);
 
     final item = MemoryItem.from(response);
 

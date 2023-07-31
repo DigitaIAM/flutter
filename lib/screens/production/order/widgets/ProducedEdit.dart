@@ -140,8 +140,7 @@ class POProducedEdit extends StatefulWidget {
 }
 
 class _POProducedEditState extends State<POProducedEdit> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_productionOrderProducedEdit');
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_productionOrderProducedEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -336,7 +335,7 @@ class _POProducedEditState extends State<POProducedEdit> {
   void registerAndPrint() async {
     setState(() => status = "connecting");
     try {
-      print("pressed:");
+      // print("pressed:");
 
       final data = _formKey.currentState?.value;
       if (data == null) {
@@ -350,14 +349,14 @@ class _POProducedEditState extends State<POProducedEdit> {
       final ip = printer.json['ip'];
       final port = int.parse(printer.json['port']);
 
-      print("printer $ip $port");
+      // print("printer $ip $port");
 
       final order = await widget.order.enrich([
         fProduct,
         fOperator,
       ]);
 
-      print("order ${order.json}");
+      // print("order ${order.json}");
 
       final orderId = order.id;
 
@@ -372,7 +371,7 @@ class _POProducedEditState extends State<POProducedEdit> {
       if (control == null) {
         throw const FormatException('select control');
       }
-      print("control $control");
+      // print("control $control");
       final controlId = control.id;
 
       final qty = data['qty'] ?? 0;
@@ -412,8 +411,7 @@ class _POProducedEditState extends State<POProducedEdit> {
 
       final result = await Labels.connect(ip, port, (printer) async {
         setState(() => status = "registering");
-        final response = await Api.feathers()
-            .create(serviceName: 'memories', data: recordData, params: {
+        final response = await Api.feathers().create(serviceName: 'memories', data: recordData, params: {
           'oid': Api.instance.oid,
           'ctx': ['production', 'produce']
         });
@@ -436,7 +434,7 @@ class _POProducedEditState extends State<POProducedEdit> {
             position: StyledToastPosition.bottom);
       }
     } catch (e, stacktrace) {
-      print(stacktrace);
+      // print(stacktrace);
       showToast(e.toString(),
           // context: context,
           axis: Axis.horizontal,

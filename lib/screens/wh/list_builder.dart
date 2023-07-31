@@ -18,12 +18,7 @@ class Pair {
 }
 
 class ListBuilder extends StatelessWidget {
-  const ListBuilder(
-      {super.key,
-      required this.filters,
-      required this.down,
-      required this.ctx,
-      required this.schema});
+  const ListBuilder({super.key, required this.filters, required this.down, required this.ctx, required this.schema});
 
   final List<Pair> filters;
   final Future<dynamic> Function(BuildContext context, List<Pair>) down;
@@ -63,8 +58,7 @@ class ListBuilder extends StatelessWidget {
           return o;
         }
         final name = localization.translate(id);
-        final n = MemoryItem(
-            id: id, json: {"_uuid": id, "name": localization.translate(name)});
+        final n = MemoryItem(id: id, json: {"_uuid": id, "name": localization.translate(name)});
         cache[id] = n;
         return n;
       },
@@ -93,15 +87,12 @@ class ListBuilder extends StatelessWidget {
         } else if (category == 'batch') {
           final strDate = item.json['batch']?['date'] ?? '';
           final split = strDate.toString().split('-');
-          final date =
-              split.length == 3 ? '${split[2]}.${split[1]}.${split[0]}' : '';
+          final date = split.length == 3 ? '${split[2]}.${split[1]}.${split[0]}' : '';
 
-          return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(date),
-                Text('${fStorage.resolve(item.json)?.name() ?? ''}'),
-              ]);
+          return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(date),
+            Text('${fStorage.resolve(item.json)?.name() ?? ''}'),
+          ]);
         } else {
           return Text(fName.resolve(item.json) ?? '');
         }
@@ -110,34 +101,28 @@ class ListBuilder extends StatelessWidget {
         final category = item.json['_category'];
         if (category == 'stock') {
           // print("item: ${item.json}");
-          return Text(
-              '${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
+          return Text('${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
               '${Number.format(item.json['cost']?['number'] ?? '')} сум');
           // } else if (category == 'batch') {
           //   // print("item: ${item.json}");
           //   return Text('${item.json['_balance']?['qty'] ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
           //       '${item.json['_balance']?['cost'] ?? ''} сум');
         } else {
-          print("item: ${item.json}");
+          // print("item: ${item.json}");
           final cost = item.json['_cost'];
           if (cost != null) {
-            return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(''),
-                  Text('${Number.format(cost)} сум'),
-                ]);
+            return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Text(''),
+              Text('${Number.format(cost)} сум'),
+            ]);
           } else {
             final balance = item.json['_balance'];
-            print("balance: ${balance}");
+            // print("balance: ${balance}");
             if (balance != null) {
-              return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                        '${balance['qty'] ?? ''} ${fUom.resolve(item.json)?.name() ?? ''}'),
-                    Text('${Number.format(balance['cost'] ?? '')} сум'),
-                  ]);
+              return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text('${balance['qty'] ?? ''} ${fUom.resolve(item.json)?.name() ?? ''}'),
+                Text('${Number.format(balance['cost'] ?? '')} сум'),
+              ]);
             }
           }
           return const Text('');

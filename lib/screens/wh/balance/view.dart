@@ -210,17 +210,17 @@ class WHTransactionsBuilder extends StatelessWidget {
         }
       },
       onTap: (context, item) async {
-        print("click ${item.json}");
+        // print("click ${item.json}");
         final record =
             await Api.feathers().get(serviceName: "memories", objectId: item.id, params: {'oid': Api.instance.oid});
 
-        print("record $record");
+        // print("record $record");
         final docId = record['document'];
         if (docId != null) {
           final document =
               await Api.feathers().get(serviceName: "memories", objectId: docId, params: {'oid': Api.instance.oid});
 
-          print("document $document");
+          // print("document $document");
 
           final id = document['_id'] ?? '';
           List<String> parts = id.toString().split('/');
@@ -228,7 +228,7 @@ class WHTransactionsBuilder extends StatelessWidget {
           List<String> ctx = parts.length >= 2 ? parts.sublist(0, parts.length - 1) : [];
           if (ctx.isNotEmpty) {
             final entity = MemoryItem.from(document);
-            print("ctx $ctx");
+            // print("ctx $ctx");
             context.read<UiBloc>().add(ChangeView(ctx, entity: entity));
           }
         }
@@ -313,27 +313,27 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
   void _print() async {
     setState(() => status = "connecting");
     try {
-      print("pressed:");
+      // print("pressed:");
 
       final data = _formKey.currentState?.value;
       if (data == null) {
         return;
       }
 
-      print("data $data");
+      // print("data $data");
 
       final printer = data['printer'];
 
       final ip = printer.json['ip'];
       final port = int.parse(printer.json['port']);
 
-      print("printer $ip $port");
+      // print("printer $ip $port");
 
       final order = await widget.order.enrich([
         fProduct,
       ]);
 
-      print("order ${order.json}");
+      // print("order ${order.json}");
 
       final operationId = order.json['batch']['id'] ?? '';
 
@@ -412,7 +412,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
             position: StyledToastPosition.bottom);
       }
     } catch (e, stacktrace) {
-      print(stacktrace);
+      // print(stacktrace);
       showToast(e.toString(),
           // context: context,
           axis: Axis.horizontal,

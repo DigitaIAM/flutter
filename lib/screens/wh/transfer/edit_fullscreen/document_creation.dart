@@ -24,10 +24,8 @@ class WHTransferDocumentCreation extends StatefulWidget {
   State<StatefulWidget> createState() => _WHTransferDocumentCreationState();
 }
 
-class _WHTransferDocumentCreationState
-    extends State<WHTransferDocumentCreation> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_WHTransferDocumentCreation');
+class _WHTransferDocumentCreationState extends State<WHTransferDocumentCreation> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHTransferDocumentCreation');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -82,9 +80,7 @@ class _WHTransferDocumentCreationState
               ),
               Container(height: 10),
               ElevatedButton(
-                onPressed: status == 'register'
-                    ? () => registerDocument(context)
-                    : null,
+                onPressed: status == 'register' ? () => registerDocument(context) : null,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -109,7 +105,7 @@ class _WHTransferDocumentCreationState
       return;
     }
 
-    print("data $data");
+    // print("data $data");
 
     final date = data['date'] ?? '';
     final from = data['from'] as MemoryItem;
@@ -124,9 +120,8 @@ class _WHTransferDocumentCreationState
       'ctx': ['warehouse', 'transfer', 'document']
     });
 
-    print("record: $record");
+    // print("record: $record");
 
-    context.read<UiBloc>().add(ChangeView(WHTransfer.ctx,
-        action: 'edit', entity: MemoryItem.from(record)));
+    context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, action: 'edit', entity: MemoryItem.from(record)));
   }
 }

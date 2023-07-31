@@ -61,7 +61,7 @@ class WHDispatchGoods extends StatelessWidget {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-          print("item.json ${item.json}");
+          // print("item.json ${item.json}");
 
           var text = '';
 
@@ -136,13 +136,13 @@ class WHDispatchGoods extends StatelessWidget {
       "ctx": const ['printer'],
     });
 
-    print("printers ${response.runtimeType} ${response}");
+    // print("printers ${response.runtimeType} ${response}");
 
     final printers = response['data'];
 
     final children = <Widget>[];
 
-    children.add(Text("Choose the printer"));
+    children.add(const Text("Choose the printer"));
 
     if (printers is List) {
       for (var printer in printers) {
@@ -160,7 +160,7 @@ class WHDispatchGoods extends StatelessWidget {
   }
 
   void printPreparation(String ip, int port, MemoryItem item) async {
-    print("printPreparation: ${item.json}");
+    // print("printPreparation: ${item.json}");
 
     final _doc = await doc.enrich(WHDispatch.schema);
 
@@ -168,6 +168,6 @@ class WHDispatchGoods extends StatelessWidget {
       return await printing(printer, _doc, item, (newStatus) => {});
     });
 
-    print("printResult: $result");
+    // print("printResult: $result");
   }
 }

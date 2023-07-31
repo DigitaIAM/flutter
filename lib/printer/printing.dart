@@ -9,9 +9,9 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
   onStatusChange("registering");
 
   if (!data.isEmpty) {
-    print("data $data");
+    // print("data $data");
 
-    print("doc in fn register: ${doc}");
+    // print("doc in fn register: ${doc}");
 
     final goods = data['goods'] as MemoryItem;
 
@@ -104,7 +104,7 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
         .create(serviceName: 'memories', data: request, params: {'oid': Api.instance.oid, 'ctx': ctx});
 
     final result = MemoryItem.from(response);
-    print("register result: $result");
+    // print("register result: $result");
 
     return result;
   } else {
@@ -117,8 +117,8 @@ Future<PrintResult> printing(
     NetworkPrinter printer, MemoryItem doc, MemoryItem record, void Function(String) onStatusChange) async {
   onStatusChange("printing");
 
-  print("printing doc $doc");
-  print("printing record $record");
+  // print("printing doc $doc");
+  // print("printing record $record");
 
   final goods = record.json['goods'];
   final goodsName = goods is MemoryItem ? goods.name() : (goods['name'] ?? '');
@@ -156,7 +156,7 @@ Future<PrintResult> printing(
     qty = qty['uom'];
   }
 
-  print('QTYUOM: $qtyUom');
+  // print('QTYUOM: $qtyUom');
 
   final Map<String, String> labelData = {
     "материал": goodsName,

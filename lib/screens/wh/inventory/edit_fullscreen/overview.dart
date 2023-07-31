@@ -16,11 +16,11 @@ class WHInventoryOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("context in WHReceiveOverview: $context");
+    // print("context in WHReceiveOverview: $context");
 
     final localization = AppLocalizations.of(context);
 
-    final ctx = const ['warehouse', 'inventory'];
+    const ctx = ['warehouse', 'inventory'];
     final filter = {
       'document': doc.id,
     };
@@ -30,7 +30,7 @@ class WHInventoryOverview extends StatelessWidget {
       fQty.copyWith(width: 1.0),
     ];
 
-    print("WHInventoryOverview doc: $doc");
+    // print("WHInventoryOverview doc: $doc");
 
     final storage = doc.json['storage'] is MemoryItem ? doc.json['storage'].name() : doc.json['storage']['name'] ?? '';
 

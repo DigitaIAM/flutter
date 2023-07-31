@@ -16,11 +16,11 @@ class WHReceiveOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("context in WHReceiveOverview: $context");
+    // print("context in WHReceiveOverview: $context");
 
     final localization = AppLocalizations.of(context);
 
-    final ctx = const ['warehouse', 'receive'];
+    const ctx = ['warehouse', 'receive'];
     final filter = {
       'document': doc.id,
     };
@@ -30,7 +30,7 @@ class WHReceiveOverview extends StatelessWidget {
       fQty.copyWith(width: 1.0),
     ];
 
-    print("WHReceiveOverview doc: $doc");
+    // print("WHReceiveOverview doc: $doc");
 
     final counterparty = doc.json['counterparty'] is MemoryItem
         ? doc.json['counterparty'].name()

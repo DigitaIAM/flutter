@@ -29,7 +29,7 @@ class Api {
   }
 
   Api._internal() {
-    print("page at ${Uri.base}");
+    // print("page at ${Uri.base}");
     if (kDebugMode) {
       print("creating Feathers for $server");
     }

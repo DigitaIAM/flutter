@@ -20,7 +20,7 @@ class WHTransferGoods extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctx = const ['warehouse', 'transfer'];
+    const ctx = ['warehouse', 'transfer'];
     final filter = {
       'document': doc.id,
     };
@@ -60,7 +60,7 @@ class WHTransferGoods extends StatelessWidget {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-          print("item.json ${item.json}");
+          // print("item.json ${item.json}");
 
           var text = '';
 
@@ -136,13 +136,13 @@ class WHTransferGoods extends StatelessWidget {
       "ctx": const ['printer'],
     });
 
-    print("printers ${response.runtimeType} ${response}");
+    // print("printers ${response.runtimeType} ${response}");
 
     final printers = response['data'];
 
     final children = <Widget>[];
 
-    children.add(Text("Choose the printer"));
+    children.add(const Text("Choose the printer"));
 
     if (printers is List) {
       for (var printer in printers) {
@@ -160,14 +160,14 @@ class WHTransferGoods extends StatelessWidget {
   }
 
   void printPreparation(String ip, int port, MemoryItem item) async {
-    print("printPreparation: ${item.json}");
+    // print("printPreparation: ${item.json}");
 
-    final _doc = await doc.enrich(WHTransfer.schema);
+    final d = await doc.enrich(WHTransfer.schema);
 
     final result = await Labels.connect(ip, port, (printer) async {
-      return await printing(printer, _doc, item, (newStatus) => {});
+      return await printing(printer, d, item, (newStatus) => {});
     });
 
-    print("printResult: $result");
+    // print("printResult: $result");
   }
 }

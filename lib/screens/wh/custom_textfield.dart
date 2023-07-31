@@ -24,7 +24,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     _focusNode = FocusNode();
     _focusNode.addListener(() {
       if (!_focusNode.hasFocus) {
-        print("lost focus");
+        // print("lost focus");
         widget.onChanged(_controller.text);
       }
     });

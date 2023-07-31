@@ -16,11 +16,11 @@ class WHTransferOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("context in WHTransferOverview: $context");
+    // print("context in WHTransferOverview: $context");
 
     final localization = AppLocalizations.of(context);
 
-    final ctx = const ['warehouse', 'transfer'];
+    const ctx = ['warehouse', 'transfer'];
     final filter = {
       'document': doc.id,
     };

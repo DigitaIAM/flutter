@@ -57,7 +57,7 @@ class EntityScreens extends StatelessWidget {
   }
 
   List<Widget> smallScreen(BuildContext context, UiState uiState, RequestState state) {
-    print("smallScreen: ${view.anythingToShow()}");
+    // print("smallScreen: ${view.anythingToShow()}");
     const previewFlex = 2;
     int listFlex = 3;
 
@@ -82,7 +82,7 @@ class EntityScreens extends StatelessWidget {
   }
 
   List<Widget> bigScreen(BuildContext context, UiState uiState, RequestState state) {
-    print("bigScreen: ${view.anythingToShow()}");
+    // print("bigScreen: ${view.anythingToShow()}");
     final settings = Provider.of<MySettings>(context);
 
     const previewFlex = 2;

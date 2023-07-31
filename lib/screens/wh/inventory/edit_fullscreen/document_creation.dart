@@ -94,7 +94,7 @@ class _WHInventoryDocumentCreationState extends State<WHInventoryDocumentCreatio
       return;
     }
 
-    print("data $data");
+    // print("data $data");
 
     final date = data['date'] ?? '';
     final storage = data['storage'] as MemoryItem;
@@ -107,7 +107,7 @@ class _WHInventoryDocumentCreationState extends State<WHInventoryDocumentCreatio
       'ctx': ['warehouse', 'inventory', 'document']
     });
 
-    print("record: $record");
+    // print("record: $record");
 
     context.read<UiBloc>().add(ChangeView(WHInventory.ctx, action: 'edit', entity: MemoryItem.from(record)));
   }

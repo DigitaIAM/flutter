@@ -2,7 +2,7 @@ import 'package:nae/printer/network_printer.dart';
 
 class Labels {
   static Future<PrintResult> connect(String ip, int port, Future<PrintResult> Function(NetworkPrinter) onReady) async {
-    print("connecting");
+    // print("connecting");
     // const PaperSize paper = PaperSize.mm80;
     // final profile = await CapabilityProfile.load();
     final printer = NetworkPrinter(); // paper, profile);
@@ -11,7 +11,7 @@ class Labels {
     if (res == PrintResult.success) {
       try {
         final res2 = await onReady(printer);
-        print('Printed with result: ${res.msg}');
+        // print('Printed with result: ${res.msg}');
 
         // // print("flushing");
         // final f = await printer.flush();
@@ -23,14 +23,14 @@ class Labels {
 
         return res2;
       } catch (e, stacktrace) {
-        print("error: $e");
-        print(stacktrace);
+        // print("error: $e");
+        // print(stacktrace);
       } finally {
         printer.disconnect();
       }
     }
 
-    print('Print result: ${res.msg}');
+    // print('Print result: ${res.msg}');
 
     return res;
   }

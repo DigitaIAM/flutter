@@ -25,8 +25,7 @@ class WHReceiveDocumentCreation extends StatefulWidget {
 }
 
 class _WHReceiveDocumentCreationState extends State<WHReceiveDocumentCreation> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveDocumentCreation');
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveDocumentCreation');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
@@ -80,9 +79,7 @@ class _WHReceiveDocumentCreationState extends State<WHReceiveDocumentCreation> {
               ),
               Container(height: 10),
               ElevatedButton(
-                onPressed: status == 'register'
-                    ? () => registerDocument(context)
-                    : null,
+                onPressed: status == 'register' ? () => registerDocument(context) : null,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -107,7 +104,7 @@ class _WHReceiveDocumentCreationState extends State<WHReceiveDocumentCreation> {
       return;
     }
 
-    print("data $data");
+    // print("data $data");
 
     final date = data['date'] ?? '';
     final counterparty = data['counterparty'] as MemoryItem;
@@ -122,9 +119,8 @@ class _WHReceiveDocumentCreationState extends State<WHReceiveDocumentCreation> {
       'ctx': ['warehouse', 'receive', 'document']
     });
 
-    print("record: $record");
+    // print("record: $record");
 
-    context.read<UiBloc>().add(ChangeView(WHReceive.ctx,
-        action: 'edit', entity: MemoryItem.from(record)));
+    context.read<UiBloc>().add(ChangeView(WHReceive.ctx, action: 'edit', entity: MemoryItem.from(record)));
   }
 }

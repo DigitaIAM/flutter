@@ -25,7 +25,7 @@ class ItemDetails extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Edit unit of measure"),
+        title: const Text("Edit unit of measure"),
       ),
       body: Center(child: content),
     );

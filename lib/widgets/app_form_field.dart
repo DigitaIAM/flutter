@@ -88,11 +88,11 @@ class _DecoratedFormFieldState extends State<DecoratedFormField> {
       keyboardType: widget.keyboardType,
       textInputAction: TextInputAction.next,
       onEditingComplete: () {
-        print("onEditingComplete");
+        // print("onEditingComplete");
       },
       onSubmitted: (value) {
-        print("onSubmitted");
-        print(value);
+        // print("onSubmitted");
+        // print(value);
       },
     );
   }

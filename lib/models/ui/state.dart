@@ -1,5 +1,6 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/entity.dart';
@@ -20,7 +21,6 @@ import 'package:nae/screens/wh/receive/screen.dart';
 import 'package:nae/screens/wh/storage/screen.dart';
 import 'package:nae/screens/wh/transfer/screen.dart';
 import 'package:nae/widgets/blank_screen.dart';
-import 'package:flutter/foundation.dart';
 
 part 'state.g.dart';
 
@@ -87,7 +87,7 @@ class UiState extends Equatable {
       ];
 
   Widget entityScreen() {
-    print("entityScreen $currentRoute");
+    // print("entityScreen $currentRoute");
     for (final list in entities) {
       for (final item in list) {
         if (listEquals(currentRoute, item.route())) {
