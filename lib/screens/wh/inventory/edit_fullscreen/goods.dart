@@ -87,7 +87,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
           TextStyle? style;
 
-          if (item.json['_status'] == 'deleted') {
+          if (item.json[sStatus] == 'deleted') {
             style = const TextStyle(
               decoration: TextDecoration.lineThrough,
             );
@@ -117,7 +117,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
           TextStyle? style;
 
-          if (item.json['_status'] == 'deleted') {
+          if (item.json[sStatus] == 'deleted') {
             style = const TextStyle(
               decoration: TextDecoration.lineThrough,
             );
@@ -148,7 +148,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
   void deleteItem(BuildContext context, MemoryItem item) async {
     const ctx = ['warehouse', 'inventory'];
-    final status = item.json['_status'] == 'deleted' ? 'restored' : 'deleted';
+    final status = item.json[sStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {'_status': status};
     // TODO fix schema
     context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));

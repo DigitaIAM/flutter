@@ -154,6 +154,6 @@ class CalculatedType extends Type {
   final Future<String> Function(MemoryItem) eval;
 }
 
-class CheckBoxType extends Type {
-  const CheckBoxType();
+class PopupMenuButtonType extends Type {
+  const PopupMenuButtonType();
 }

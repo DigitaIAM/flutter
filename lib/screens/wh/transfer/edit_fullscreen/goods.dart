@@ -52,7 +52,7 @@ class WHTransferGoods extends StatelessWidget {
 
           TextStyle? style;
 
-          if (item.json['_status'] == 'deleted') {
+          if (item.json[sStatus] == 'deleted') {
             style = const TextStyle(
               decoration: TextDecoration.lineThrough,
             );
@@ -80,7 +80,7 @@ class WHTransferGoods extends StatelessWidget {
 
           TextStyle? style;
 
-          if (item.json['_status'] == 'deleted') {
+          if (item.json[sStatus] == 'deleted') {
             style = const TextStyle(
               decoration: TextDecoration.lineThrough,
             );
@@ -112,7 +112,7 @@ class WHTransferGoods extends StatelessWidget {
 
   void deleteItem(BuildContext context, MemoryItem item) async {
     const ctx = ['warehouse', 'transfer'];
-    final status = item.json['_status'] == 'deleted' ? 'restored' : 'deleted';
+    final status = item.json[sStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {'_status': status};
     // TODO fix schema
     context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));

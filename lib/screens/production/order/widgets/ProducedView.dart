@@ -4,6 +4,7 @@ import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nae/api.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -141,7 +142,7 @@ class _POProducedViewState extends State<POProducedView> {
 
   void deleteItem(BuildContext context, MemoryItem item) async {
     const ctx = ['warehouse', 'transfer'];
-    final status = item.json['_status'] == 'deleted' ? 'restored' : 'deleted';
+    final status = item.json[sStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {'_status': status};
     // TODO fix schema
     context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));

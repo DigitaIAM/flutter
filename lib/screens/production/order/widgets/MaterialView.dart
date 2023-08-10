@@ -99,7 +99,7 @@ class _MaterialViewState extends State<MaterialView> {
 
             TextStyle? style;
 
-            if (item.json['_status'] == 'deleted') {
+            if (item.json[sStatus] == 'deleted') {
               style = const TextStyle(
                 decoration: TextDecoration.lineThrough,
               );
@@ -112,7 +112,7 @@ class _MaterialViewState extends State<MaterialView> {
 
             TextStyle? style;
 
-            if (item.json['_status'] == 'deleted') {
+            if (item.json[sStatus] == 'deleted') {
               style = const TextStyle(
                 decoration: TextDecoration.lineThrough,
               );
@@ -149,7 +149,7 @@ class _MaterialViewState extends State<MaterialView> {
     } else if (openProduced) {
       ctx = ['production', 'material', 'produced'];
     }
-    final status = item.json['_status'] == 'deleted' ? 'restored' : 'deleted';
+    final status = item.json[sStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {'_status': status};
     // TODO fix schema
     context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));

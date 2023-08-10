@@ -72,3 +72,5 @@ const Field fType = Field('type', ReferenceType(['type']));
 // qty = cost / price
 const Field fPrice = Field('price', NumberType());
 const Field fCost = Field('cost', NumberType());
+
+const String sStatus = '_status';

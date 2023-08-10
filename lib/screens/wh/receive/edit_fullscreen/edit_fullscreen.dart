@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:intl/intl.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
@@ -14,7 +15,6 @@ import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/wh/custom_textfield.dart';
-import 'package:nae/screens/wh/delete_button.dart';
 import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/screens/wh/receive/edit_fullscreen/document_creation.dart';
 import 'package:nae/screens/wh/receive/edit_fullscreen/goods.dart';
@@ -22,10 +22,12 @@ import 'package:nae/screens/wh/receive/edit_fullscreen/overview.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
+import 'package:nae/widgets/app_form_date_field.dart';
 import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/autocomplete.dart';
 import 'package:nae/widgets/entity_screens.dart';
+import 'package:nae/widgets/popup_menu_button.dart';
 import 'package:nae/widgets/scaffold_edit.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
@@ -73,6 +75,9 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS> with SingleTickerProv
       final Map<String, dynamic> data = Map.from(state.value);
       // workaround
       data['_id'] = widget.entity.id;
+
+      // workaround
+      data['date'] = DateFormat("yyyy-MM-dd").format(data["date"]);
 
       context
           .read<MemoryBloc>()
@@ -130,10 +135,10 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS> with SingleTickerProv
               entity: getEntity(),
               child: Column(children: [
                 FormCard(children: <Widget>[
-                  DecoratedFormField(
+                  DateField(
                     name: 'date',
                     label: localization.translate("date"),
-                    autofocus: true,
+                    autofocus: false,
                     validator: FormBuilderValidators.compose([
                       FormBuilderValidators.required(),
                     ]),
@@ -219,8 +224,11 @@ class _WHReceiveEditFSState extends State<WHReceiveEditFS> with SingleTickerProv
       final json = Map.of(widget.entity.json);
       json["date"] = Utils.today();
       return MemoryItem(id: widget.entity.id, json: json);
+    } else {
+      final json = Map.of(widget.entity.json);
+      json["date"] = DateTime.parse(json["date"]); //DateFormat("yyyy-MM-dd").format(json["date"]);
+      return MemoryItem(id: widget.entity.id, json: json);
     }
-    return widget.entity;
   }
 }
 
@@ -251,7 +259,7 @@ class _LinesState extends State<Lines> {
       fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
       const Field('cost', NumberType(), path: ['cost', 'number']).copyWith(width: 1.0),
-      const Field('', CheckBoxType())
+      const Field('', PopupMenuButtonType()).copyWith(width: 0.2)
       // fStorage,
     ];
 
@@ -353,7 +361,7 @@ class _LinesState extends State<Lines> {
         ...columns.entries.map((entry) {
           final colIndex = entry.key;
           final column = entry.value;
-          final String? status = item.json['status'];
+          final String? status = item.json[sStatus];
 
           if (column.type is ReferenceType) {
             final type = column.type as ReferenceType;
@@ -430,20 +438,16 @@ class _LinesState extends State<Lines> {
                 editable: status == 'deleted' ? false : column.editable,
               ),
             );
-          } else if (column.type is CheckBoxType && !item.isEmpty) {
+          } else if (column.type is PopupMenuButtonType && !item.isEmpty) {
             return Padding(
               padding: const EdgeInsets.only(right: cTableColumnGap, top: 9),
-              child: DeleteButton(
-                  status: item.json['status'] as String?,
-                  onChanged: (isChecked) {
-                    final Map<String, dynamic> data = {};
-
-                    final status = isChecked == true ? 'deleted' : null;
-
-                    data['status'] = status;
-
-                    patch(context, item, data);
-                  }),
+              child: DocumentPopupMenuButton(
+                docId: widget.document.id,
+                ctx: widget.ctx,
+                schema: widget.schema,
+                item: item,
+                status: status,
+              ),
             );
           } else {
             return Padding(

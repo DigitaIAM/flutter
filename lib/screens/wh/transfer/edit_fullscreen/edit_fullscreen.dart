@@ -15,7 +15,6 @@ import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/wh/custom_textfield.dart';
-import 'package:nae/screens/wh/delete_button.dart';
 import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/document_creation.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/goods.dart';
@@ -28,12 +27,15 @@ import 'package:nae/widgets/app_form_date_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/autocomplete.dart';
 import 'package:nae/widgets/entity_screens.dart';
+import 'package:nae/widgets/popup_menu_button.dart';
 import 'package:nae/widgets/scaffold_edit.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
 class WHTransferEditFS extends EntityHolder {
-  const WHTransferEditFS({super.key, required super.entity}) : super(fullscreen: true);
+  bool showStorages;
+
+  WHTransferEditFS({super.key, required super.entity, this.showStorages = false}) : super(fullscreen: true);
 
   @override
   State<WHTransferEditFS> createState() => _WHTransferEditFSState();
@@ -172,6 +174,7 @@ class _WHTransferEditFSState extends State<WHTransferEditFS> with SingleTickerPr
                       ctx: const ['warehouse', 'transfer'],
                       schema: const [], // TODO
                       document: widget.entity,
+                      showStorages: widget.showStorages,
                     ),
                     // workaround to give some space for dropdown
                     Container(height: 300)
@@ -227,8 +230,9 @@ class Lines extends StatefulWidget {
   final List<String> ctx;
   final List<Field> schema;
   final MemoryItem document;
+  bool showStorages;
 
-  const Lines({super.key, required this.document, required this.ctx, required this.schema});
+  Lines({super.key, required this.document, required this.ctx, required this.schema, this.showStorages = false});
 
   @override
   State<Lines> createState() => _LinesState();
@@ -244,16 +248,22 @@ class _LinesState extends State<Lines> {
       return Container();
     }
 
-    final schema = <Field>[
+    var schema = <Field>[
       // const Field('batch', StringType()),
       fGoods.copyWith(width: 3.0),
       fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
-      const Field('storage_from', ReferenceType(['warehouse', 'storage']), path: ['storage_from']).copyWith(width: 1.0),
-      const Field('storage_into', ReferenceType(['warehouse', 'storage']), path: ['storage_into']).copyWith(width: 1.0),
-      const Field('', CheckBoxType())
       // fStorage,
     ];
+
+    if (widget.showStorages) {
+      schema.add(Field(localization.translate("storage_from"), const ReferenceType(['warehouse', 'storage']),
+          path: ['storage_from']).copyWith(width: 1.0));
+      schema.add(Field(localization.translate("storage_into"), const ReferenceType(['warehouse', 'storage']),
+          path: ['storage_into']).copyWith(width: 1.0));
+    }
+
+    schema.add(const Field('', PopupMenuButtonType()).copyWith(width: 0.2));
 
     final columns = schema.asMap();
 
@@ -353,7 +363,7 @@ class _LinesState extends State<Lines> {
         ...columns.entries.map((entry) {
           final colIndex = entry.key;
           final column = entry.value;
-          final String? status = item.json['_status'];
+          final String? status = item.json[sStatus];
 
           if (column.type is ReferenceType) {
             final type = column.type as ReferenceType;
@@ -434,20 +444,21 @@ class _LinesState extends State<Lines> {
                 editable: status == 'deleted' ? false : column.editable,
               ),
             );
-          } else if (column.type is CheckBoxType && !item.isEmpty) {
+          } else if (column.type is PopupMenuButtonType && !item.isEmpty) {
             return Padding(
               padding: const EdgeInsets.only(right: cTableColumnGap, top: 9),
-              child: DeleteButton(
-                  status: item.json['_status'] as String?,
-                  onChanged: (isChecked) {
-                    final Map<String, dynamic> data = {};
-
-                    final status = isChecked == true ? 'deleted' : null;
-
-                    data['_status'] = status;
-
-                    patch(context, item, data);
-                  }),
+              child: DocumentPopupMenuButton(
+                docId: widget.document.id,
+                ctx: widget.ctx,
+                schema: widget.schema,
+                item: item,
+                status: status,
+                showStorages: () {
+                  setState(() {
+                    widget.showStorages = widget.showStorages == false ? true : false;
+                  });
+                },
+              ),
             );
           } else {
             return Padding(
