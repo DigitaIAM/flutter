@@ -360,7 +360,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
           // workaround for internally calculated data
           final before = list[i];
           for (final pair in before.json.entries) {
-            if (pair.key.startsWith("_")) {
+            // TODO: refactor this workaround
+            if (pair.key.startsWith("_") && pair.key != '_status') {
               saved.json[pair.key] = pair.value;
             }
           }
