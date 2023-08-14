@@ -118,7 +118,7 @@ class _WHStorageEditState extends State<WHStorageEdit> {
               keyboardType: TextInputType.text,
             ),
             DecoratedFormField(
-              name: 'status',
+              name: '_status',
               label: localization.translate("status"),
               autofocus: true,
               validator: FormBuilderValidators.compose([

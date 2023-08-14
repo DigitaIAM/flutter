@@ -20,7 +20,6 @@ class WHStorage extends Entity {
     Field('location', ReferenceType(['warehouse', 'storage'])),
     fName,
     Field('code', StringType()),
-    Field('status', StringType()),
   ];
 
   @override
