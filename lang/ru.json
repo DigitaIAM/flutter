@@ -9,6 +9,7 @@
   "edit": "Редактировать",
   "delete": "удалить",
   "delete-content": "Вы уверены, что хотите удалить?",
+  "delta": "разница",
   "restore": "восстановить",
   "save": "Сохранить",
   "search": "Поиск",
@@ -46,6 +47,12 @@
   "location": "локация",
   "login": "Войти",
   "logout": "Выйти",
+  "material product": "продукция",
+  "materials": "материалы",
+  "materials used": "использованные",
+  "materials produced": "полученные",
+  "used material": "использовано",
+  "produced material": "получено",
   "failed to fetch data": "не удалось получить данные",
   "nothing yet": "пока пусто",
   "create": "создать",
@@ -112,6 +119,6 @@
   "receive": "приход",
   "dispatch": "отгрузка",
   "transfer": "перемещение",
-  "used raw material": "использованный метериал",
+  "used raw material": "использованный материал",
   "produced raw material": "полученный материал"
 }

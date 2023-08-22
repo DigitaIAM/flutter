@@ -70,7 +70,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
     final localization = AppLocalizations.of(context);
 
     final date = widget.entity.json["date"];
-    final area = widget.entity.json["area"];
+    // final area = widget.entity.json["area"]; // not used variable
 
     final editable = date.compareTo(Utils.daysAgo(14)) >= 0;
     // final editable = date == Utils.today() || date == Utils.yesterday() || area.json['type'] == 'roll';
@@ -149,13 +149,14 @@ class ProductionOrderOverview extends StatelessWidget {
     }
 
     final widgets = <Widget>[
+      Text(localization.translate("material product"),
+          textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
       EntityHeader(pairs: [
         // Pair(localization.translate("production order"), memoryItem.json['date'])
         Pair(localization.translate("plan"), order.json['planned'] ?? '-'),
         Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
         Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
       ]),
-      ListDivider(),
       KeyValue(
         label: localization.translate("product"),
         value: order.json['product'].name(),
@@ -177,9 +178,16 @@ class ProductionOrderOverview extends StatelessWidget {
         value: DT.format(order.json['date']),
         icon: const Icon(Icons.question_mark),
       ),
-      ...buildItemsList(order.json['_material']?['used']),
-      ...buildItemsList(order.json['_material']?['produced']),
-      ...buildItemsList(order.json['_delta']),
+      ListDivider(),
+      Text(localization.translate("materials"),
+          textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+      EntityHeader(pairs: [
+        Pair(localization.translate("used material"), order.json['_material']?['sum']?['used'] ?? '-'),
+        Pair(localization.translate("produced material"), order.json['_material']?['sum']?['produced'] ?? '-'),
+        Pair(localization.translate("delta"), order.json['_material']?['sum']?['delta'] ?? '-'),
+      ]),
+      ...buildItemsList(context, order.json['_material']?['used'], "materials used"),
+      ...buildItemsList(context, order.json['_material']?['produced'], "materials produced"),
     ];
 
     return ScrollableListView(
@@ -187,14 +195,19 @@ class ProductionOrderOverview extends StatelessWidget {
     );
   }
 
-  List<Widget> buildItemsList(dynamic data) {
+  List<Widget> buildItemsList(BuildContext context, dynamic data, String label) {
+    final localization = AppLocalizations.of(context);
+
     var children = <Widget>[];
 
     // print('buildItemsList $data');
 
     if (data != null) {
-      children.add(ListDivider());
       if (data is List) {
+        if (data.isNotEmpty) {
+          children.add(Text(localization.translate(label), textAlign: TextAlign.center));
+        }
+
         for (Map item in data) {
           children.add(KeyValue(
             label: item.entries.first.key,
@@ -203,6 +216,10 @@ class ProductionOrderOverview extends StatelessWidget {
           ));
         }
       } else if (data is Map) {
+        if (data.isNotEmpty) {
+          children.add(Text(localization.translate(label), textAlign: TextAlign.center));
+        }
+
         children.add(KeyValue(
           label: data.entries.first.key,
           value: data.entries.first.value,

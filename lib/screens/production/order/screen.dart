@@ -23,6 +23,7 @@ class ProductionOrder extends Entity {
     fArea,
     fOperator,
     fProduct,
+    const Field('thickness', NumberType(), path: ['thickness']).copyWith(width: 0.5),
     const Field('planned', NumberType()),
     // /production/produce[order == order.id]/sum(qty) = pieces
     // /production/produce[order == order.id]/count() = boxes
@@ -88,8 +89,7 @@ class ProductionOrderScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx,
-              action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, action: 'edit', entity: MemoryItem.create()));
         },
         tooltip: AppLocalizations.of(context).translate("new production order"),
         child: Icon(
@@ -114,13 +114,18 @@ class ProductionOrdersListBuilder extends StatelessWidget {
         final id = element.json['date'] ?? '';
         return MemoryItem(id: id, json: {'_id': id, 'name': id});
       },
-      title: (MemoryItem item) =>
-          Text('${name(item.json['area'])}\n${name(item.json['product'])}'),
-      subtitle: (MemoryItem item) => Text(
-          'план: ${item.json['planned']} шт\nвыработка: ${item.json['produced~']}'),
-      onTap: (context, item) => context
-          .read<UiBloc>()
-          .add(ChangeView(ProductionOrder.ctx, entity: item)),
+      title: (MemoryItem item) => Text('${name(item.json['area'])}\n${name(item.json['product'])}'),
+      subtitle: (MemoryItem item) {
+        var text = 'план: ${item.json['planned']} шт'
+            '\nвыработка: ${item.json['produced~']}'
+            '\nоператор: ${item.json['operator'].json?['name'] ?? ''}';
+
+        if (item.json['thickness'] != null) {
+          text = '$text\nтолщина: ${item.json['thickness']}';
+        }
+        return Text(text);
+      },
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, entity: item)),
     );
   }
 }
