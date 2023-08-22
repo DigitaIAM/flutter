@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class ListDivider extends StatelessWidget {
@@ -6,11 +5,11 @@ class ListDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    const color = Colors.red; // TODO change to use theme
+    final color = theme.primaryColorDark;
 
     return Container(
       color: color,
-      child: const Divider(
+      child: Divider(
         color: color,
         thickness: 1.5,
         height: 1.5,

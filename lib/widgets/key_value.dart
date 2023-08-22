@@ -24,7 +24,11 @@ class KeyValue extends StatelessWidget {
         // enabledBorder: const UnderlineInputBorder(
         //   borderSide: BorderSide(color: Color(0xFF6200EE)),
         // ),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide.none,
+        ),
       ),
+      readOnly: true,
     );
   }
 }
