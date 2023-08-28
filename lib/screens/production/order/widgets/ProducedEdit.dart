@@ -377,7 +377,7 @@ class _POProducedEditState extends State<POProducedEdit> {
       final qty = data['qty'] ?? 0;
 
       final recordData = {
-        'order': orderId,
+        'document': orderId,
         'date': date,
         // 'operator': operatorId,
         'control': controlId,
