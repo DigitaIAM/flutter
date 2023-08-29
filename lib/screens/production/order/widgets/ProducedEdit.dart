@@ -374,7 +374,36 @@ class _POProducedEditState extends State<POProducedEdit> {
       // print("control $control");
       final controlId = control.id;
 
-      final qty = data['qty'] ?? 0;
+      var qty = data['qty'] ?? 0;
+
+      final area = widget.order.json['area'] ?? MemoryItem.create();
+
+      if (area.json['type'] == 'roll') {
+        Map<String, dynamic> uom = {};
+        Map<String, dynamic> innerQty = {};
+
+        // get "кг" and "Кор" from db as objects
+        final mass = await Api.feathers().find(serviceName: "memories", query: {
+          "oid": Api.instance.oid,
+          "ctx": ['uom'],
+          "filter": {"name": "кг"},
+        });
+
+        final box = await Api.feathers().find(serviceName: "memories", query: {
+          "oid": Api.instance.oid,
+          "ctx": ['uom'],
+          "filter": {"name": "Кор"},
+        });
+
+        uom['number'] = qty;
+        uom['uom'] = mass['data']?[0]?['_id'];
+        uom['in'] = box['data']?[0]?['_id'];
+
+        innerQty['number'] = 1;
+        innerQty['uom'] = uom;
+
+        qty = innerQty;
+      }
 
       final recordData = {
         'document': orderId,
