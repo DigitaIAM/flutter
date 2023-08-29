@@ -116,12 +116,13 @@ class ProductionOrdersListBuilder extends StatelessWidget {
       },
       title: (MemoryItem item) => Text('${name(item.json['area'])}\n${name(item.json['product'])}'),
       subtitle: (MemoryItem item) {
-        var text = 'план: ${item.json['planned']} шт'
-            '\nвыработка: ${item.json['produced~']}'
-            '\nоператор: ${item.json['operator'].json?['name'] ?? ''}';
+        final json = item.json;
+        var text = 'план: ${json['planned']} шт'
+            '\nвыработка: ${json['produced~']}'
+            '\nоператор: ${json['operator'].json?['name'] ?? ''}';
 
-        if (item.json['thickness'] != null) {
-          text = '$text\nтолщина: ${item.json['thickness']}';
+        if (json['thickness'] != null) {
+          text = '$text\nтолщина: ${json['thickness']}';
         }
         return Text(text);
       },

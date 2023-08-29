@@ -7,6 +7,7 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/utils/date.dart';
 import 'package:nae/utils/number.dart';
 import 'package:nae/widgets/memory_list.dart';
 
@@ -86,8 +87,7 @@ class ListBuilder extends StatelessWidget {
           return Text(fName.resolve(item.json['goods'] ?? '') ?? '');
         } else if (category == 'batch') {
           final strDate = item.json['batch']?['date'] ?? '';
-          final split = strDate.toString().split('-');
-          final date = split.length == 3 ? '${split[2]}.${split[1]}.${split[0]}' : '';
+          final date = DT.pretty(strDate);
 
           return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text(date),
