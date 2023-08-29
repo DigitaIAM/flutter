@@ -13,6 +13,7 @@ import 'package:nae/printer/network_printer.dart';
 import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/share/utils.dart';
+import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
 import 'package:nae/widgets/app_form_field.dart';
@@ -149,6 +150,17 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           ),
           const SizedBox(height: 10),
           DecoratedFormPickerField(
+            ctx: const ['goods', 'category'],
+            name: 'category',
+            label: localization.translate("category"),
+            creatable: false,
+            validator: FormBuilderValidators.compose([
+              // FormBuilderValidators.required(errorText: "выберите категорию"),
+            ]),
+            onSave: (context) {},
+          ),
+          const SizedBox(height: 10),
+          DecoratedFormPickerField(
             ctx: const ['goods'],
             name: 'goods',
             label: localization.translate("goods"),
@@ -158,19 +170,19 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             ]),
             onSave: (context) {},
           ),
-          // DecoratedFormPickerField(
-          //   ctx: const ['goods', 'stock'],
-          //   name: 'batch',
-          //   label: localization.translate("batch"),
-          //   creatable: widget.allowGoodsCreation,
-          //   validator: FormBuilderValidators.compose([
-          //     FormBuilderValidators.required(errorText: "выберите партию"),
-          //   ]),
-          //   onSave: (context) {},
-          // ),
+          DecoratedFormPickerField(
+            ctx: const ['goods', 'stock'],
+            name: 'batch',
+            label: localization.translate("batch"),
+            creatable: widget.allowGoodsCreation,
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(errorText: "выберите партию"),
+            ]),
+            onSave: (context) {},
+          ),
           const SizedBox(height: 10),
           ...qtyUom(context),
-          // ...goodsList(widget.schema),
+          ...goodsList(widget.schema),
         ]),
       ),
     ];
@@ -226,8 +238,10 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
     state.save();
 
-    final goods = state.value['goods'];
     final storage = state.value['storage'];
+    final category = state.value['category'];
+    final goods = state.value['goods'];
+    final batch = state.value['batch'];
 
     if (storage != null || (storage != null && goods != null)) {
       return <Widget>[
@@ -236,7 +250,9 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             height: 230,
             child: BalanceListBuilder(
               storage: storage,
+              category: category,
               goods: goods,
+              batch: batch,
               changeState: (item) {
                 // print("setState ${_formKey.currentState?.fields["goods"]}");
                 // print("changeState: (item) ${item.json}");
@@ -248,13 +264,20 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
                 final batch = item.json['batch'];
                 if (batch != null) {
-                  batch['name'] = batch['barcode'] ?? '?';
-                  // print("batch $batch");
+                  batch['name'] = DT.pretty(batch['date'] ?? '');
                   state.patchValue({"batch": MemoryItem.from(batch)});
+                  var qty = item.json['_balance']?['qty'] ?? '';
+                  state.patchValue({"qty_0": qty});
                 } else {
-                  final baseUom = item.json['uom'];
-                  state.patchValue({"goods": item});
-                  state.patchValue({"uom_0": MemoryItem.from(baseUom)});
+                  final category = item.json['_category'];
+
+                  if (category.toString() == "category") {
+                    state.patchValue({"category": item});
+                  } else {
+                    final baseUom = item.json['uom'];
+                    state.patchValue({"goods": item});
+                    state.patchValue({"uom_0": MemoryItem.from(baseUom)});
+                  }
                 }
               },
             ))
@@ -425,19 +448,20 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 }
 
 class BalanceListBuilder extends StatelessWidget {
-  const BalanceListBuilder({super.key, this.storage, this.goods, required this.changeState});
+  const BalanceListBuilder({super.key, this.storage, this.category, this.goods, this.batch, required this.changeState});
 
   final Function(MemoryItem item) changeState;
 
   final MemoryItem? storage;
+  final MemoryItem? category;
   final MemoryItem? goods;
+  final MemoryItem? batch;
 
   @override
   Widget build(BuildContext context) {
     final schema = <Field>[
       fName.copyWith(width: 3.0),
-      // fUomAtQty.copyWith(width: 0.5, editable: false),
-      fQty.copyWith(width: 1.0),
+      const Field('qty', NumberType(), path: ['_balance', 'qty']),
     ];
 
     Map<String, dynamic> filter = {};
@@ -446,11 +470,17 @@ class BalanceListBuilder extends StatelessWidget {
       filter['storage'] = storage!.json['_uuid'] ?? '';
     }
 
+    if (category != null) {
+      filter['category'] = category!.json['_uuid'] ?? '';
+    }
+
     if (goods != null) {
       filter['goods'] = goods!.json['_uuid'] ?? '';
     }
 
-    // print("build filter $filter");
+    if (batch != null) {
+      filter['batch'] = batch!.json['_uuid'] ?? '';
+    }
 
     const ctx = ['warehouse', 'stock'];
 
@@ -469,27 +499,23 @@ class BalanceListBuilder extends StatelessWidget {
         return bloc;
       },
       child: MemoryList(
-          ctx: ctx,
-          schema: schema,
-          filter: filter,
-          title: (MemoryItem item) {
-            final batch = item.json['batch'];
-            if (batch != null) {
-              var barcode = batch['barcode'] ?? '';
-              if (barcode.length == 12) {
-                final fst = barcode.substring(0, 1);
-                final snd = barcode.substring(1, 7);
-                final trd = barcode.substring(7, 12);
-                barcode = '$fst $snd $trd';
-              }
-              return Text(barcode);
-            }
-            return Text(fName.resolve(item.json) ?? '');
-          },
-          subtitle: (MemoryItem item) {
-            return Text(item.json['_cost']?['qty'] ?? '');
-          },
-          onTap: (context, item) => changeState(item)),
+        ctx: ctx,
+        schema: schema,
+        filter: filter,
+        title: (MemoryItem item) {
+          final batch = item.json['batch'];
+          if (batch != null) {
+            return Text(DT.pretty(batch['date'] ?? ''));
+          }
+          return Text(fName.resolve(item.json) ?? '');
+        },
+        subtitle: (MemoryItem item) {
+          return Text(item.json['_balance']?['qty'] ?? '');
+        },
+        onTap: (context, item) => changeState(item),
+        mode: Mode.mobile,
+        sortByName: true,
+      ),
     );
   }
 }

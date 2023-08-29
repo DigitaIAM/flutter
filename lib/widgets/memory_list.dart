@@ -548,14 +548,26 @@ class _MemoryListState extends State<MemoryList> {
         String la = '';
         String lb = '';
 
-        final ga = a.json['goods'];
-        if (ga != null && ga is MemoryItem) {
-          la = ga.name();
-        }
+        if (a.json['_category'] == 'goods' && b.json['_category'] == 'goods') {
+          final ga = a.json['goods'];
+          if (ga != null && ga is MemoryItem) {
+            la = ga.name();
+          }
 
-        final gb = b.json['goods'];
-        if (gb != null && gb is MemoryItem) {
-          lb = gb.name();
+          final gb = b.json['goods'];
+          if (gb != null && gb is MemoryItem) {
+            lb = gb.name();
+          }
+        } else if (a.json['_category'] == 'batch' && b.json['_category'] == 'batch') {
+          final da = a.json['batch']?['date'];
+          if (da != null) {
+            la = da;
+          }
+
+          final db = b.json['batch']?['date'];
+          if (db != null) {
+            lb = db;
+          }
         }
 
         return la.compareTo(lb);
