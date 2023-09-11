@@ -56,7 +56,7 @@ class DocumentPopupMenuButton extends StatelessWidget {
           final Map<String, dynamic> data = {};
 
           final innerStatus = status == 'deleted' ? null : 'deleted';
-          data[sStatus] = innerStatus;
+          data[cStatus] = innerStatus;
 
           patch(context, item, data);
         } else if (value == 2) {
@@ -70,7 +70,7 @@ class DocumentPopupMenuButton extends StatelessWidget {
 
   void patch(BuildContext context, MemoryItem item, Map<String, dynamic> data) {
     if (item.isNew) {
-      data['document'] = docId;
+      data[cDocument] = docId;
       context.read<MemoryBloc>().add(MemoryCreate('memories', ctx, schema, data));
     } else {
       context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, schema, item.id, data));

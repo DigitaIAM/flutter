@@ -35,12 +35,12 @@ class POProducedEdit extends StatefulWidget {
 
     final record = await doc.enrich([
       fControl,
-      const Field('order', ReferenceType(['production', 'order'])),
+      const Field(cDocument, ReferenceType(['production', 'order'])),
     ]);
 
     MemoryItem orderItem;
     if (orderDoc == null) {
-      orderItem = doc.json['order'];
+      orderItem = doc.json[cDocument] ?? doc.json[cOrder];
     } else {
       orderItem = orderDoc;
     }
@@ -51,38 +51,38 @@ class POProducedEdit extends StatefulWidget {
       fOperator,
     ]);
 
-    final area = order.json['area'];
+    final area = order.json[cArea];
 
     String type = '';
-    if (area.json['type'] == 'roll') {
+    if (area.json[cType] == 'roll') {
       type = 'roll';
-    } else if (area.json['type'] == 'final') {
+    } else if (area.json[cType] == 'final') {
       type = 'final';
     } else {
       type = 'boxed';
     }
 
     // TODO think how to select date
-    final date = order.json['date'] ?? record.json['date'] ?? '';
+    final date = order.json[cDate] ?? record.json[cDate] ?? '';
     final dd = DT.format(date);
 
-    final product = order.json['product'].json;
-    final productName = product['name'] ?? '';
+    final product = order.json[cProduct].json;
+    final productName = product[cName] ?? '';
     final partNumber = product['part_number'] ?? '';
 
-    final operator = order.json['operator'] as MemoryItem?;
+    final operator = order.json[cOperator] as MemoryItem?;
     if (operator == null) {
       throw const FormatException('operator is not selected');
     }
     final operatorName = operator.name();
 
-    final control = record.json['control'] as MemoryItem?;
+    final control = record.json[cControl] as MemoryItem?;
     if (control == null) {
       throw const FormatException('control is not selected');
     }
     final controlName = control.name();
 
-    final qty = record.json['qty'] ?? '';
+    final qty = record.json[cQty] ?? '';
 
     final Map<String, String> labelData;
     if (type == 'roll') {
@@ -143,7 +143,7 @@ class _POProducedEditState extends State<POProducedEdit> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_productionOrderProducedEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
 
   String status = "register";
 
@@ -151,13 +151,13 @@ class _POProducedEditState extends State<POProducedEdit> {
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
-    final area = widget.order.json['area'] ?? MemoryItem.create();
-    // final product = widget.order.json['product'] ?? MemoryItem.create();
+    final area = widget.order.json[cArea] ?? MemoryItem.create();
+    // final product = widget.order.json[cProduct] ?? MemoryItem.create();
 
     List<Widget> fields = [];
-    if (area.json['type'] == 'roll') {
+    if (area.json[cType] == 'roll') {
       fields = rollForm(localization);
-    } else if (area.json['type'] == 'final') {
+    } else if (area.json[cType] == 'final') {
       fields = finalForm(localization);
     } else {
       fields = boxedForm(localization);
@@ -177,8 +177,8 @@ class _POProducedEditState extends State<POProducedEdit> {
               DecoratedFormPickerField(
                 creatable: false,
                 ctx: const ['printer'],
-                name: 'printer',
-                label: localization.translate("printer"),
+                name: cPrinter,
+                label: localization.translate(cPrinter),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -186,8 +186,8 @@ class _POProducedEditState extends State<POProducedEdit> {
                 onSave: (context) {},
               ),
               DecoratedFormField(
-                name: 'date',
-                label: localization.translate("date"),
+                name: cDate,
+                label: localization.translate(cDate),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -229,8 +229,8 @@ class _POProducedEditState extends State<POProducedEdit> {
       DecoratedFormPickerField(
         creatable: false,
         ctx: const ['person'],
-        name: 'control',
-        label: localization.translate("control"),
+        name: cControl,
+        label: localization.translate(cControl),
         autofocus: true,
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.required(),
@@ -248,7 +248,7 @@ class _POProducedEditState extends State<POProducedEdit> {
         keyboardType: TextInputType.number,
       ),
       DecoratedFormField(
-        name: 'qty',
+        name: cQty,
         label: localization.translate("weight"),
         autofocus: true,
         validator: FormBuilderValidators.compose([
@@ -265,8 +265,8 @@ class _POProducedEditState extends State<POProducedEdit> {
       DecoratedFormPickerField(
         creatable: false,
         ctx: const ['person'],
-        name: 'control',
-        label: localization.translate("control"),
+        name: cControl,
+        label: localization.translate(cControl),
         autofocus: true,
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.required(),
@@ -274,7 +274,7 @@ class _POProducedEditState extends State<POProducedEdit> {
         onSave: (context) {},
       ),
       DecoratedFormField(
-        name: 'qty',
+        name: cQty,
         label: localization.translate("qty in box"),
         autofocus: true,
         validator: FormBuilderValidators.compose([
@@ -311,8 +311,8 @@ class _POProducedEditState extends State<POProducedEdit> {
       DecoratedFormPickerField(
         creatable: false,
         ctx: const ['person'],
-        name: 'control',
-        label: localization.translate("control"),
+        name: cControl,
+        label: localization.translate(cControl),
         autofocus: true,
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.required(),
@@ -320,7 +320,7 @@ class _POProducedEditState extends State<POProducedEdit> {
         onSave: (context) {},
       ),
       DecoratedFormField(
-        name: 'qty',
+        name: cQty,
         label: localization.translate("qty in box"),
         autofocus: true,
         validator: FormBuilderValidators.compose([
@@ -342,7 +342,7 @@ class _POProducedEditState extends State<POProducedEdit> {
         return;
       }
 
-      final printer = data['printer'];
+      final printer = data[cPrinter];
       if (printer == null) {
         throw const FormatException('select printer');
       }
@@ -360,57 +360,57 @@ class _POProducedEditState extends State<POProducedEdit> {
 
       final orderId = order.id;
 
-      final date = data['date'] ?? '';
+      final date = data[cDate] ?? '';
 
-      // final operator = order.json['operator'];
+      // final operator = order.json[cOperator];
       // if (operator == null) {
       //   throw const FormatException('operator is not selected');
       // }
 
-      final control = data['control'];
+      final control = data[cControl];
       if (control == null) {
         throw const FormatException('select control');
       }
       // print("control $control");
       final controlId = control.id;
 
-      var qty = data['qty'] ?? 0;
+      var qty = data[cQty] ?? 0;
 
-      final area = widget.order.json['area'] ?? MemoryItem.create();
+      final area = widget.order.json[cArea] ?? MemoryItem.create();
 
-      if (area.json['type'] == 'roll') {
+      if (area.json[cType] == 'roll') {
         Map<String, dynamic> uom = {};
         Map<String, dynamic> innerQty = {};
 
         // get "кг" and "Кор" from db as objects
         final mass = await Api.feathers().find(serviceName: "memories", query: {
           "oid": Api.instance.oid,
-          "ctx": ['uom'],
-          "filter": {"name": "кг"},
+          "ctx": [cUom],
+          "filter": {cName: "кг"},
         });
 
         final box = await Api.feathers().find(serviceName: "memories", query: {
           "oid": Api.instance.oid,
-          "ctx": ['uom'],
-          "filter": {"name": "Кор"},
+          "ctx": [cUom],
+          "filter": {cName: "Кор"},
         });
 
-        uom['number'] = qty;
-        uom['uom'] = mass['data']?[0]?['_id'];
-        uom['in'] = box['data']?[0]?['_id'];
+        uom[cNumber] = qty;
+        uom[cUom] = mass['data']?[0]?[cId];
+        uom['in'] = box['data']?[0]?[cId];
 
-        innerQty['number'] = 1;
-        innerQty['uom'] = uom;
+        innerQty[cNumber] = 1;
+        innerQty[cUom] = uom;
 
         qty = innerQty;
       }
 
       final recordData = {
-        'document': orderId,
-        'date': date,
-        // 'operator': operatorId,
-        'control': controlId,
-        'qty': qty
+        cDocument: orderId,
+        cDate: date,
+        // cOperator: operatorId,
+        cControl: controlId,
+        cQty: qty
       };
 
       final material = data['material'];

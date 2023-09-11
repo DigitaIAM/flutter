@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:nae/api.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/widgets/autocomplete.dart';
 
@@ -68,9 +69,7 @@ class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
               creatable: widget.creatable,
               create: (text) async {
                 final response = await Api.feathers().create(
-                    serviceName: "memories",
-                    data: {'name': text},
-                    params: {"oid": Api.instance.oid, "ctx": widget.ctx});
+                    serviceName: "memories", data: {cName: text}, params: {"oid": Api.instance.oid, "ctx": widget.ctx});
                 // print("response: $response");
                 return MemoryItem.from(response);
               },

@@ -22,7 +22,7 @@ class WHInventoryOverview extends StatelessWidget {
 
     const ctx = ['warehouse', 'inventory'];
     final filter = {
-      'document': doc.id,
+      cDocument: doc.id,
     };
     final schema = <Field>[
       fGoods.copyWith(width: 3.0),
@@ -32,7 +32,7 @@ class WHInventoryOverview extends StatelessWidget {
 
     // print("WHInventoryOverview doc: $doc");
 
-    final storage = doc.json['storage'] is MemoryItem ? doc.json['storage'].name() : doc.json['storage']['name'] ?? '';
+    final storage = doc.json[cStorage] is MemoryItem ? doc.json[cStorage].name() : doc.json[cStorage][cName] ?? '';
 
     return BlocProvider(
       create: (context) {
@@ -49,12 +49,12 @@ class WHInventoryOverview extends StatelessWidget {
       },
       child: Column(children: <Widget>[
         KeyValue(
-          label: localization.translate("date"),
-          value: DT.format(doc.json['date']),
+          label: localization.translate(cDate),
+          value: DT.format(doc.json[cDate]),
           icon: const Icon(Icons.calendar_month),
         ),
         KeyValue(
-          label: localization.translate("storage"),
+          label: localization.translate(cStorage),
           value: storage,
           icon: const Icon(Icons.input),
         ),

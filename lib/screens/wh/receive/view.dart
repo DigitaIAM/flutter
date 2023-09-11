@@ -5,6 +5,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
@@ -79,7 +80,7 @@ class _WHReceiveViewState extends State<WHReceiveView> with SingleTickerProvider
         isScrollable: true,
         tabs: [
           Tab(text: localization.translate("overview")),
-          Tab(text: localization.translate("goods")),
+          Tab(text: localization.translate(cGoods)),
         ],
       ),
       body: Builder(builder: (context) {
@@ -105,7 +106,7 @@ class WHReceiveOverview extends StatelessWidget {
     final localization = AppLocalizations.of(context);
     final widgets = <Widget>[
       EntityHeader(pairs: [
-        Pair(localization.translate("date"), doc.json['date'] ?? '-'),
+        Pair(localization.translate(cDate), doc.json[cDate] ?? '-'),
       ]),
       ListDivider(),
     ];
@@ -129,7 +130,7 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveGoodsEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
 
   String status = "register";
 
@@ -149,8 +150,8 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
             FormCard(isLast: true, children: <Widget>[
               DecoratedFormPickerField(
                 ctx: const ['printer'],
-                name: 'printer',
-                label: localization.translate("printer"),
+                name: cPrinter,
+                label: localization.translate(cPrinter),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -159,8 +160,8 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
               ),
               DecoratedFormPickerField(
                 ctx: const ['warehouse', 'storage'],
-                name: 'storage',
-                label: localization.translate("storage"),
+                name: cStorage,
+                label: localization.translate(cStorage),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -168,9 +169,9 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
                 onSave: (context) {},
               ),
               DecoratedFormPickerField(
-                ctx: const ['goods'],
-                name: 'goods',
-                label: localization.translate("goods"),
+                ctx: const [cGoods],
+                name: cGoods,
+                label: localization.translate(cGoods),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -178,9 +179,9 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
                 onSave: (context) {},
               ),
               DecoratedFormPickerField(
-                ctx: const ['uom'],
-                name: 'uom',
-                label: localization.translate("uom"),
+                ctx: const [cUom],
+                name: cUom,
+                label: localization.translate(cUom),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -188,8 +189,8 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
                 onSave: (context) {},
               ),
               DecoratedFormField(
-                name: 'qty',
-                label: localization.translate("qty"),
+                name: cQty,
+                label: localization.translate(cQty),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -224,8 +225,8 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
         return;
       }
 
-      final ip = data['printer']['ip'];
-      final port = int.parse(data['printer']['port']);
+      final ip = data[cPrinter]['ip'];
+      final port = int.parse(data[cPrinter]['port']);
 
       // print("printer $ip $port");
 
@@ -234,24 +235,24 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
       // print("doc ${doc.json}");
 
       final docId = doc.id;
-      final goods = data['goods'] as MemoryItem;
-      final uom = data['uom'] as MemoryItem;
+      final goods = data[cGoods] as MemoryItem;
+      final uom = data[cUom] as MemoryItem;
 
-      final date = doc.json['date']!;
-      final counterparty = doc.json['counterparty'];
+      final date = doc.json[cDate]!;
+      final counterparty = doc.json[cCounterparty];
 
-      // final operator = data['operator'];
+      // final operator = data[cOperator];
 
-      final qty = data['qty']!;
+      final qty = data[cQty]!;
 
       final result = await Labels.connect(ip, port, (printer) async {
         setState(() => status = "registering");
         final record = await Api.feathers().create(serviceName: 'memories', data: {
-          'document': docId,
-          // 'operator': operator.id,
-          'goods': goods.id,
-          'uom': uom.id,
-          'qty': qty
+          cDocument: docId,
+          // cOperator: operator.id,
+          cGoods: goods.id,
+          cUom: uom.id,
+          cQty: qty
         }, params: {
           'oid': Api.instance.oid,
           'ctx': ['warehouse', 'receive', 'records']
@@ -259,7 +260,7 @@ class _WHReceiveGoodsState extends State<WHReceiveGoods> {
 
         setState(() => status = "printing");
 
-        final id = record['_id'];
+        final id = record[cId];
 
         final dd = DateFormat.yMMMMd().format(DateTime.parse(date));
 

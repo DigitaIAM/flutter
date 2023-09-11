@@ -25,7 +25,7 @@ class CategoryForGoods extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "category";
+  String name() => cCategory;
 
   @override
   IconData icon() => Icons.category_outlined;

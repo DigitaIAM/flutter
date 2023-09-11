@@ -59,19 +59,19 @@ class ListBuilder extends StatelessWidget {
           return o;
         }
         final name = localization.translate(id);
-        final n = MemoryItem(id: id, json: {"_uuid": id, "name": localization.translate(name)});
+        final n = MemoryItem(id: id, json: {cUuid: id, cName: localization.translate(name)});
         cache[id] = n;
         return n;
       },
       groupComparator: (a, b) {
         convert(id) {
-          if (id == 'storage') {
+          if (id == cStorage) {
             return 1;
-          } else if (id == 'category') {
+          } else if (id == cCategory) {
             return 2;
-          } else if (id == 'goods') {
+          } else if (id == cGoods) {
             return 3;
-          } else if (id == 'batch') {
+          } else if (id == cBatch) {
             return 4;
           } else {
             return 5;
@@ -84,9 +84,9 @@ class ListBuilder extends StatelessWidget {
       title: (MemoryItem item) {
         final category = item.json['_category'];
         if (category == 'stock') {
-          return Text(fName.resolve(item.json['goods'] ?? '') ?? '');
-        } else if (category == 'batch') {
-          final strDate = item.json['batch']?['date'] ?? '';
+          return Text(fName.resolve(item.json[cGoods] ?? '') ?? '');
+        } else if (category == cBatch) {
+          final strDate = item.json[cBatch]?[cDate] ?? '';
           final date = DT.pretty(strDate);
 
           return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -102,11 +102,11 @@ class ListBuilder extends StatelessWidget {
         if (category == 'stock') {
           // print("item: ${item.json}");
           return Text('${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
-              '${Number.format(item.json['cost']?['number'] ?? '')} сум');
-          // } else if (category == 'batch') {
+              '${Number.format(item.json[cCost]?[cNumber] ?? '')} сум');
+          // } else if (category == cBatch) {
           //   // print("item: ${item.json}");
-          //   return Text('${item.json['_balance']?['qty'] ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
-          //       '${item.json['_balance']?['cost'] ?? ''} сум');
+          //   return Text('${item.json['_balance']?[cQty] ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
+          //       '${item.json['_balance']?[cCost] ?? ''} сум');
         } else {
           // print("item: ${item.json}");
           final cost = item.json['_cost'];
@@ -120,8 +120,8 @@ class ListBuilder extends StatelessWidget {
             // print("balance: ${balance}");
             if (balance != null) {
               return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text('${balance['qty'] ?? ''} ${fUom.resolve(item.json)?.name() ?? ''}'),
-                Text('${Number.format(balance['cost'] ?? '')} сум'),
+                Text('${balance[cQty] ?? ''} ${fUom.resolve(item.json)?.name() ?? ''}'),
+                Text('${Number.format(balance[cCost] ?? '')} сум'),
               ]);
             }
           }
@@ -133,9 +133,9 @@ class ListBuilder extends StatelessWidget {
         if (category == 'stock') {
           final List<Pair> nf = List.from(filters);
           // print("item: ${item.json}");
-          nf.add(Pair(category, MemoryItem.from(item.json['goods'])));
+          nf.add(Pair(category, MemoryItem.from(item.json[cGoods])));
           down(context, nf);
-        } else if (category == 'batch') {
+        } else if (category == cBatch) {
           return context.read<UiBloc>().add(ChangeView(ctx, entity: item));
         } else {
           final List<Pair> nf = List.from(filters);

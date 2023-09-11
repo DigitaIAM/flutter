@@ -4,6 +4,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -37,7 +38,7 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
 
       final Map<String, dynamic> data = Map.from(state.value);
       // workaround
-      data['_id'] = widget.doc.id;
+      data[cId] = widget.doc.id;
 
       context
           .read<MemoryBloc>()
@@ -52,19 +53,19 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
   Widget build(BuildContext context) {
     final List<Pair> filters = [];
 
-    final storage = widget.doc.json['storage'] is MemoryItem
-        ? widget.doc.json['storage'] as MemoryItem
-        : MemoryItem(id: widget.doc.json['storage']['_id'], json: widget.doc.json['storage']);
+    final storage = widget.doc.json[cStorage] is MemoryItem
+        ? widget.doc.json[cStorage] as MemoryItem
+        : MemoryItem(id: widget.doc.json[cStorage][cId], json: widget.doc.json[cStorage]);
 
-    final storageUuid = storage.json['_uuid'] ?? '';
+    final storageUuid = storage.json[cUuid] ?? '';
 
-    filters.add(Pair('storage', storage));
+    filters.add(Pair(cStorage, storage));
 
     // print("doc: ${widget.doc.json}");
     // print("storage: ${storage.json}");
 
-    final docFilter = {'document': widget.doc.id};
-    final storageFilter = {'storage': storageUuid};
+    final docFilter = {cDocument: widget.doc.id};
+    final storageFilter = {cStorage: storageUuid};
 
     return BlocProvider(
       create: (context) => MemoryBloc(),
@@ -87,10 +88,10 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
               List<MemoryItem> todo = stock.toList();
 
               for (final s in stock) {
-                // print("s name: ${s.json['name']}");
+                // print("s name: ${s.json[cName]}");
                 for (final line in lines) {
                   // print("line name: ${line.json}");
-                  if (s.json['name'] == line.json['goods']['name']) {
+                  if (s.json[cName] == line.json[cGoods][cName]) {
                     todo.remove(s);
                     break;
                   }
@@ -109,9 +110,9 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
                     // leading: const Icon(Icons.account_circle),
-                    title: Text(record.json['name'] ?? ''),
-                    subtitle: Text('${record.json['_cost']['qty'] ?? ''} ${record.json['uom']['name'] ?? ''}, '
-                        '${record.json['_cost']['cost'] ?? ''} сум'),
+                    title: Text(record.json[cName] ?? ''),
+                    subtitle: Text('${record.json['_cost'][cQty] ?? ''} ${record.json[cUom][cName] ?? ''}, '
+                        '${record.json['_cost'][cCost] ?? ''} сум'),
                     // trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
                     onTap: () => popUpRegister(context, record),
                   ),
@@ -141,13 +142,13 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
 
     List<Widget> widgets = [];
 
-    final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()}); // TODO input doc date?
+    final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()}); // TODO input doc date?
 
     widgets.add(const Text('Enter the amount of goods:'));
 
     widgets.add(DecoratedFormField(
-      name: 'qty',
-      label: localization.translate("qty"),
+      name: cQty,
+      label: localization.translate(cQty),
       autofocus: true,
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(),
@@ -192,16 +193,16 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
     // print("inventory_data $data");
     // print("inventory_doc ${widget.doc.json}");
 
-    final qty = data['qty'] ?? '';
+    final qty = data[cQty] ?? '';
 
     if (isNumeric(qty) == true) {
       context.read<MemoryBloc>().add(MemoryCreate("memories", const [
-            'warehouse',
+            cWarehouse,
             'inventory'
           ], const [], {
-            "document": widget.doc.id,
-            "goods": record.id,
-            'qty': {'number': qty}
+            cDocument: widget.doc.id,
+            cGoods: record.id,
+            cQty: {cNumber: qty}
           }));
     } else {
       // print("Wrong value was entered");

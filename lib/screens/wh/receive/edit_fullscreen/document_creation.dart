@@ -4,6 +4,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
@@ -28,7 +29,7 @@ class _WHReceiveDocumentCreationState extends State<WHReceiveDocumentCreation> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHReceiveDocumentCreation');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
 
   String status = "register";
 
@@ -47,8 +48,8 @@ class _WHReceiveDocumentCreationState extends State<WHReceiveDocumentCreation> {
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
               DecoratedFormField(
-                name: 'date',
-                label: localization.translate("date"),
+                name: cDate,
+                label: localization.translate(cDate),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -58,8 +59,8 @@ class _WHReceiveDocumentCreationState extends State<WHReceiveDocumentCreation> {
               ),
               DecoratedFormPickerField(
                 ctx: const ['counterparty'],
-                name: 'counterparty',
-                label: localization.translate("counterparty"),
+                name: cCounterparty,
+                label: localization.translate(cCounterparty),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -68,9 +69,9 @@ class _WHReceiveDocumentCreationState extends State<WHReceiveDocumentCreation> {
               ),
               DecoratedFormPickerField(
                 ctx: const ['warehouse', 'storage'],
-                name: 'storage',
+                name: cStorage,
                 creatable: false,
-                label: localization.translate('storage'),
+                label: localization.translate(cStorage),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -106,14 +107,14 @@ class _WHReceiveDocumentCreationState extends State<WHReceiveDocumentCreation> {
 
     // print("data $data");
 
-    final date = data['date'] ?? '';
-    final counterparty = data['counterparty'] as MemoryItem;
-    final storage = data['storage'] as MemoryItem;
+    final date = data[cDate] ?? '';
+    final counterparty = data[cCounterparty] as MemoryItem;
+    final storage = data[cStorage] as MemoryItem;
 
     final record = await Api.feathers().create(serviceName: 'memories', data: {
-      'date': date,
-      'counterparty': counterparty.id,
-      'storage': storage.id,
+      cDate: date,
+      cCounterparty: counterparty.id,
+      cStorage: storage.id,
     }, params: {
       'oid': Api.instance.oid,
       'ctx': ['warehouse', 'receive', 'document']

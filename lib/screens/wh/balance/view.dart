@@ -55,28 +55,28 @@ class _WHBalanceViewState extends State<WHBalanceView> with SingleTickerProvider
   }
 }
 
-Field fType = Field('type', CalculatedType((MemoryItem rec) async {
-  return rec.json['type'] ?? rec.json['op']?['type'] ?? '';
+Field fType = Field(cType, CalculatedType((MemoryItem rec) async {
+  return rec.json[cType] ?? rec.json['op']?[cType] ?? '';
 }));
 
-Field fQty = Field('qty', CalculatedType((MemoryItem rec) async {
+Field fQty = Field(cQty, CalculatedType((MemoryItem rec) async {
   // print("rec.json ${rec.json}");
-  // print("rec.json['qty'] ${rec.json['qty']}");
+  // print("rec.json[cQty] ${rec.json[cQty]}");
   // print("rec.json['op'] ${rec.json['op']}");
-  // print("rec.json['op']?['qty'] ${rec.json['op']?['qty']}");
-  return rec.json['qty'] ?? rec.json['op']?['qty'] ?? '';
+  // print("rec.json['op']?[cQty] ${rec.json['op']?[cQty]}");
+  return rec.json[cQty] ?? rec.json['op']?[cQty] ?? '';
 }));
 
-Field fCost = Field('cost', CalculatedType((MemoryItem rec) async {
-  return rec.json['cost'] ?? rec.json['op']?['cost'] ?? '';
+Field fCost = Field(cCost, CalculatedType((MemoryItem rec) async {
+  return rec.json[cCost] ?? rec.json['op']?[cCost] ?? '';
 }));
 
 Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
   // print("_rec_: ${rec.json}");
   // print("WHTransactionsBuilder entity: $entity");
-  final t = rec.json['type'];
+  final t = rec.json[cType];
   if (t == 'open_balance' || t == 'close_balance') {
-    return 'balance|${rec.json['date']}';
+    return 'balance|${rec.json[cDate]}';
   } else {
     final response = await Api.feathers().get(
         serviceName: "memories",
@@ -85,7 +85,7 @@ Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
 
     final Map map = response == {} ? response : Map.from(response);
 
-    final id = map['document'] ?? map['order'] ?? "";
+    final id = map[cDocument] ?? map[cOrder] ?? "";
 
     final split = id.toString().split('/');
 
@@ -97,12 +97,12 @@ Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
         params: {"oid": Api.instance.oid, "ctx": ctx}).onError((error, stackTrace) => {});
     final Map<String, dynamic> mapDoc = document == {} ? document : Map.from(document);
 
-    final date = mapDoc['date'] ?? "?";
+    final date = mapDoc[cDate] ?? "?";
 
     String store = '';
     String counterparty = '';
 
-    final mapId = map['_id'] ?? '';
+    final mapId = map[cId] ?? '';
     final mapSplit = mapId.toString().split('/');
 
     var type = mapSplit.length >= 2 ? mapSplit[1] : ctx[1];
@@ -112,14 +112,14 @@ Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
       store = "";
       counterparty = "";
     } else if (type == 'transfer') {
-      store = mapDoc['from']?['name'] ?? "?";
-      counterparty = mapDoc['into']?['name'] ?? "?";
+      store = mapDoc[cFrom]?[cName] ?? "?";
+      counterparty = mapDoc[cInto]?[cName] ?? "?";
     } else if (type == 'receive') {
-      counterparty = mapDoc['counterparty']?['name'] ?? "?";
-      store = mapDoc['storage']?['name'] ?? "?";
+      counterparty = mapDoc[cCounterparty]?[cName] ?? "?";
+      store = mapDoc[cStorage]?[cName] ?? "?";
     } else if (type == 'dispatch') {
-      counterparty = mapDoc['counterparty']?['name'] ?? "?";
-      store = mapDoc['storage']?['name'] ?? "?";
+      counterparty = mapDoc[cCounterparty]?[cName] ?? "?";
+      store = mapDoc[cStorage]?[cName] ?? "?";
     } else if (type == 'material') {
       type = '${mapSplit[2]} $type';
     }
@@ -146,11 +146,11 @@ class WHTransactionsBuilder extends StatelessWidget {
     final goods = fGoods.resolve(entity.json);
 
     final filter = {
-      'dates': {'from': '2022-01-01', 'till': Utils.today()},
-      'storage': store.uuid,
-      'goods': goods.uuid,
-      'batch_id': entity.json['batch']['id'],
-      'batch_date': entity.json['batch']['date'],
+      'dates': {cFrom: '2022-01-01', 'till': Utils.today()},
+      cStorage: store.uuid,
+      cGoods: goods.uuid,
+      'batch_id': entity.json[cBatch]['id'],
+      'batch_date': entity.json[cBatch][cDate],
     };
 
     // print("FILTER: $filter");
@@ -215,14 +215,14 @@ class WHTransactionsBuilder extends StatelessWidget {
             await Api.feathers().get(serviceName: "memories", objectId: item.id, params: {'oid': Api.instance.oid});
 
         // print("record $record");
-        final docId = record['document'];
+        final docId = record[cDocument];
         if (docId != null) {
           final document =
               await Api.feathers().get(serviceName: "memories", objectId: docId, params: {'oid': Api.instance.oid});
 
           // print("document $document");
 
-          final id = document['_id'] ?? '';
+          final id = document[cId] ?? '';
           List<String> parts = id.toString().split('/');
 
           List<String> ctx = parts.length >= 2 ? parts.sublist(0, parts.length - 1) : [];
@@ -254,7 +254,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHBalanceEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
 
   String status = "register";
 
@@ -274,8 +274,8 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
             FormCard(isLast: true, children: <Widget>[
               DecoratedFormPickerField(
                 ctx: const ['printer'],
-                name: 'printer',
-                label: localization.translate("printer"),
+                name: cPrinter,
+                label: localization.translate(cPrinter),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -283,8 +283,8 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
                 onSave: (context) {},
               ),
               DecoratedFormField(
-                name: 'date',
-                label: localization.translate("date"),
+                name: cDate,
+                label: localization.translate(cDate),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -322,7 +322,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
       // print("data $data");
 
-      final printer = data['printer'];
+      final printer = data[cPrinter];
 
       final ip = printer.json['ip'];
       final port = int.parse(printer.json['port']);
@@ -335,7 +335,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
       // print("order ${order.json}");
 
-      final operationId = order.json['batch']['id'] ?? '';
+      final operationId = order.json[cBatch]['id'] ?? '';
 
       final operation = await Api.feathers().get(serviceName: "memories", objectId: operationId, params: {
             "oid": Api.instance.oid,
@@ -345,7 +345,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
       // print("operation $operation");
 
-      final documentId = operation['document'] ?? '';
+      final documentId = operation[cDocument] ?? '';
 
       final split = documentId.toString().split('/');
 
@@ -359,7 +359,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
       // print("document $document");
 
-      final counterpartyId = document['counterparty'] ?? '';
+      final counterpartyId = document[cCounterparty] ?? '';
       final counterparty = await Api.feathers().get(serviceName: "memories", objectId: counterpartyId, params: {
             "oid": Api.instance.oid,
             "ctx": ["counterparty"],
@@ -368,22 +368,22 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
 
       // print("counterparty $counterparty");
 
-      final goods = order.json['goods'].json;
-      final goodsName = goods['name'] ?? '';
-      final goodsUuid = goods['_uuid'] ?? '';
-      final goodsId = goods['_id'] ?? '';
+      final goods = order.json[cGoods].json;
+      final goodsName = goods[cName] ?? '';
+      final goodsUuid = goods[cUuid] ?? '';
+      final goodsId = goods[cId] ?? '';
 
-      final batch = order.json['batch'];
+      final batch = order.json[cBatch];
 
-      final batchDate = batch['date'] ?? '';
-      final batchBarcode = batch['barcode'] ?? '';
+      final batchDate = batch[cDate] ?? '';
+      final batchBarcode = batch[cBarcode] ?? '';
 
-      final supplier = counterparty['name'] ?? '';
+      final supplier = counterparty[cName] ?? '';
 
-      final qty = operation['qty']['number'] ?? 0;
+      final qty = operation[cQty][cNumber] ?? 0;
 
-      final uom = goods['uom'] ?? '';
-      final uomName = uom is MemoryItem ? (uom.json['name'] ?? '') : '';
+      final uom = goods[cUom] ?? '';
+      final uomName = uom is MemoryItem ? (uom.json[cName] ?? '') : '';
 
       final result = await Labels.connect(ip, port, (printer) async {
         setState(() => status = "printing");

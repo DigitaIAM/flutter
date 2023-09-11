@@ -34,7 +34,7 @@ class _MaterialViewState extends State<MaterialView> {
     final theme = Theme.of(context);
     final localization = AppLocalizations.of(context);
 
-    final filter = {'document': widget.order.id};
+    final filter = {cDocument: widget.order.id};
 
     return Column(
       children: <Widget>[
@@ -99,7 +99,7 @@ class _MaterialViewState extends State<MaterialView> {
 
             TextStyle? style;
 
-            if (item.json[sStatus] == 'deleted') {
+            if (item.json[cStatus] == 'deleted') {
               style = const TextStyle(
                 decoration: TextDecoration.lineThrough,
               );
@@ -112,7 +112,7 @@ class _MaterialViewState extends State<MaterialView> {
 
             TextStyle? style;
 
-            if (item.json[sStatus] == 'deleted') {
+            if (item.json[cStatus] == 'deleted') {
               style = const TextStyle(
                 decoration: TextDecoration.lineThrough,
               );
@@ -149,8 +149,8 @@ class _MaterialViewState extends State<MaterialView> {
     } else if (openProduced) {
       ctx = ['production', 'material', 'produced'];
     }
-    final status = item.json[sStatus] == 'deleted' ? 'restored' : 'deleted';
-    final Map<String, dynamic> data = {'_status': status};
+    final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
+    final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
     context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
@@ -184,7 +184,7 @@ class _MaterialViewState extends State<MaterialView> {
     if (printers is List) {
       for (var printer in printers) {
         children.add(ListTile(
-          title: Text(printer['name'] ?? ''),
+          title: Text(printer[cName] ?? ''),
           onTap: () async {
             final ip = printer['ip'];
             final port = int.parse(printer['port']);

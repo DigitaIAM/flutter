@@ -4,6 +4,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
@@ -28,7 +29,7 @@ class _WHTransferDocumentCreationState extends State<WHTransferDocumentCreation>
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHTransferDocumentCreation');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
 
   String status = "register";
 
@@ -47,8 +48,8 @@ class _WHTransferDocumentCreationState extends State<WHTransferDocumentCreation>
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
               DecoratedFormField(
-                name: 'date',
-                label: localization.translate("date"),
+                name: cDate,
+                label: localization.translate(cDate),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -58,9 +59,9 @@ class _WHTransferDocumentCreationState extends State<WHTransferDocumentCreation>
               ),
               DecoratedFormPickerField(
                 ctx: const ['warehouse', 'storage'],
-                name: 'from',
+                name: cFrom,
                 creatable: false,
-                label: localization.translate("from"),
+                label: localization.translate(cFrom),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -69,9 +70,9 @@ class _WHTransferDocumentCreationState extends State<WHTransferDocumentCreation>
               ),
               DecoratedFormPickerField(
                 ctx: const ['warehouse', 'storage'],
-                name: 'into',
+                name: cInto,
                 creatable: false,
-                label: localization.translate('into'),
+                label: localization.translate(cInto),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -107,14 +108,14 @@ class _WHTransferDocumentCreationState extends State<WHTransferDocumentCreation>
 
     // print("data $data");
 
-    final date = data['date'] ?? '';
-    final from = data['from'] as MemoryItem;
-    final into = data['into'] as MemoryItem;
+    final date = data[cDate] ?? '';
+    final from = data[cFrom] as MemoryItem;
+    final into = data[cInto] as MemoryItem;
 
     final record = await Api.feathers().create(serviceName: 'memories', data: {
-      'date': date,
-      'from': from.id,
-      'into': into.id,
+      cDate: date,
+      cFrom: from.id,
+      cInto: into.id,
     }, params: {
       'oid': Api.instance.oid,
       'ctx': ['warehouse', 'transfer', 'document']

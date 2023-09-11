@@ -4,6 +4,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
@@ -28,7 +29,7 @@ class _WHDispatchDocumentCreationState extends State<WHDispatchDocumentCreation>
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHDispatchDocumentCreation');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
 
   String status = "register";
 
@@ -47,8 +48,8 @@ class _WHDispatchDocumentCreationState extends State<WHDispatchDocumentCreation>
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
               DecoratedFormField(
-                name: 'date',
-                label: localization.translate("date"),
+                name: cDate,
+                label: localization.translate(cDate),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -58,9 +59,9 @@ class _WHDispatchDocumentCreationState extends State<WHDispatchDocumentCreation>
               ),
               DecoratedFormPickerField(
                 ctx: const ['warehouse', 'storage'],
-                name: 'storage',
+                name: cStorage,
                 creatable: false,
-                label: localization.translate("storage"),
+                label: localization.translate(cStorage),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -69,9 +70,9 @@ class _WHDispatchDocumentCreationState extends State<WHDispatchDocumentCreation>
               ),
               DecoratedFormPickerField(
                 ctx: const ['counterparty'],
-                name: 'counterparty',
+                name: cCounterparty,
                 creatable: false,
-                label: localization.translate('counterparty'),
+                label: localization.translate(cCounterparty),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -107,14 +108,14 @@ class _WHDispatchDocumentCreationState extends State<WHDispatchDocumentCreation>
 
     // print("data $data");
 
-    final date = data['date'] ?? '';
-    final storage = data['storage'] as MemoryItem;
-    final counterparty = data['counterparty'] as MemoryItem;
+    final date = data[cDate] ?? '';
+    final storage = data[cStorage] as MemoryItem;
+    final counterparty = data[cCounterparty] as MemoryItem;
 
     final record = await Api.feathers().create(serviceName: 'memories', data: {
-      'date': date,
-      'storage': storage.id,
-      'counterparty': counterparty.id,
+      cDate: date,
+      cStorage: storage.id,
+      cCounterparty: counterparty.id,
     }, params: {
       'oid': Api.instance.oid,
       'ctx': ['warehouse', 'dispatch', 'document']

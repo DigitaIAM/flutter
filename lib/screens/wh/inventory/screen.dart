@@ -22,16 +22,16 @@ class WHInventory extends Entity {
     fStorage,
     fCounterparty,
     const Field(
-        'goods',
+        cGoods,
         ListType([
           fStorage,
-          // Field('ref', ReferenceType(['goods'])),
-          // Field('batch', StringType()),
+          // Field('ref', ReferenceType([cGoods])),
+          // Field(cBatch, StringType()),
           fGoods,
           fUomAtQty,
           fQty,
-          // Field('price', NumberType()),
-          // Field('cost', NumberType()),
+          // Field(cPrice, NumberType()),
+          // Field(cCost, NumberType()),
         ]))
   ];
 
@@ -89,11 +89,9 @@ class WHInventoriesScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(WHInventory.ctx,
-              action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(WHInventory.ctx, action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip:
-            AppLocalizations.of(context).translate("new warehouse inventory"),
+        tooltip: AppLocalizations.of(context).translate("new warehouse inventory"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,
@@ -115,8 +113,7 @@ class WHInventoriesListBuilder extends StatelessWidget {
       groupBy: (element) => element,
       title: (MemoryItem item) => Text(fStorage.resolve(item.json)?.name()),
       subtitle: (MemoryItem item) => const Text(''),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(WHInventory.ctx, entity: item)),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(WHInventory.ctx, entity: item)),
     );
   }
 }

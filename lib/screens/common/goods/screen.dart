@@ -14,20 +14,20 @@ import 'package:nae/widgets/scaffold_list.dart';
 import 'edit.dart';
 
 class Goods extends Entity {
-  static const List<String> ctx = ['goods'];
+  static const List<String> ctx = [cGoods];
 
   static List<Field> schema = [
     fCategory,
     fName,
     fUom,
-    Field('qty', CalculatedType((MemoryItem goods) async => goods.balance()))
+    Field(cQty, CalculatedType((MemoryItem goods) async => goods.balance()))
   ];
 
   @override
   List<String> route() => ctx;
 
   @override
-  String name() => "goods";
+  String name() => cGoods;
 
   @override
   IconData icon() => Icons.widgets_outlined;
@@ -77,8 +77,7 @@ class GoodsListBuilder extends StatelessWidget {
       schema: Goods.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => Text(item.balance()),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(Goods.ctx, entity: item)),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(Goods.ctx, entity: item)),
     );
   }
 }
