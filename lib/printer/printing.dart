@@ -1,4 +1,5 @@
 import 'package:nae/api.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
@@ -13,48 +14,48 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
 
     // print("doc in fn register: ${doc}");
 
-    final goods = data['goods'] as MemoryItem;
+    final goods = data[cGoods] as MemoryItem;
 
-    final baseUom = goods.json['uom'];
-    final baseUomId = baseUom is Map ? baseUom['_id'] : baseUom;
+    final baseUom = goods.json[cUom];
+    final baseUomId = baseUom is Map ? baseUom[cId] : baseUom;
 
     MemoryItem? from;
     MemoryItem? into;
     MemoryItem? storage;
 
     if (ctx == const ['warehouse', 'transfer']) {
-      final f = doc.json['from'];
-      final i = doc.json['into'];
+      final f = doc.json[cFrom];
+      final i = doc.json[cInto];
 
       from = f is MemoryItem ? f : MemoryItem.from(f);
       into = i is MemoryItem ? i : MemoryItem.from(i);
     } else if (ctx == const ['warehouse', 'dispatch']) {
-      final storage = doc.json['storage'];
+      final storage = doc.json[cStorage];
       from = storage is MemoryItem ? storage : MemoryItem.from(storage);
 
-      final counterparty = doc.json['counterparty'];
+      final counterparty = doc.json[cCounterparty];
       into = counterparty is MemoryItem ? counterparty : MemoryItem.from(counterparty);
     } else if (ctx == const ['production', 'material', 'produced']) {
-      final area = doc.json['area'];
+      final area = doc.json[cArea];
       from = area is MemoryItem ? area : MemoryItem.from(area);
 
-      final storage = data['storage'];
+      final storage = data[cStorage];
       into = storage is MemoryItem ? storage : MemoryItem.from(storage);
     } else if (ctx == const ['production', 'material', 'used']) {
       // print("used: ${doc.json}");
-      final storage = data['storage'];
+      final storage = data[cStorage];
       from = storage is MemoryItem ? storage : MemoryItem.from(storage);
     } else if (ctx == const ['warehouse', 'inventory']) {
-      storage = doc.json['storage'] is MemoryItem ? doc.json['storage'] : MemoryItem.from(doc.json['storage']);
+      storage = doc.json[cStorage] is MemoryItem ? doc.json[cStorage] : MemoryItem.from(doc.json[cStorage]);
     } else {
-      final counterparty = doc.json['counterparty'];
+      final counterparty = doc.json[cCounterparty];
       from = counterparty is MemoryItem ? counterparty : MemoryItem.from(counterparty);
 
-      final storage = doc.json['storage'];
+      final storage = doc.json[cStorage];
       into = storage is MemoryItem ? storage : MemoryItem.from(storage);
     }
 
-    final quantity = {}; // 'number': number, 'uom': uom.id
+    final quantity = {}; // cNumber: number, cUom: uom.id
     var currentQty = quantity;
     for (var index = 0; index < numberOfQuantities; index++) {
       final uom = data['uom_$index'] as MemoryItem?;
@@ -66,12 +67,12 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
       final qty = data['qty_$index'];
 
       if (index > 0) {
-        final newQty = {'number': qty, 'uom': uom.id, 'in': currentQty['uom']};
-        currentQty['uom'] = newQty;
+        final newQty = {cNumber: qty, cUom: uom.id, 'in': currentQty[cUom]};
+        currentQty[cUom] = newQty;
         currentQty = newQty;
       } else {
-        currentQty['number'] = qty;
-        currentQty['uom'] = uom.id;
+        currentQty[cNumber] = qty;
+        currentQty[cUom] = uom.id;
       }
 
       if (baseUomId == data['uom_$index']?.id) {
@@ -79,16 +80,16 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
       }
     }
 
-    // final category = data['category'] is MemoryItem
-    //     ? data['category']
-    //     : goods.json['category'];
+    // final category = data[cCategory] is MemoryItem
+    //     ? data[cCategory]
+    //     : goods.json[cCategory];
     //
     // final categoryId = category is MemoryItem ? category.id : category;
 
     final request = {
-      'document': doc.id,
-      'goods': goods.id,
-      'qty': quantity,
+      cDocument: doc.id,
+      cGoods: goods.id,
+      cQty: quantity,
     };
     if (from != null) {
       request['storage_from'] = from.id;
@@ -97,7 +98,7 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
       request['storage_into'] = into.id;
     }
     if (storage != null) {
-      request['storage'] = storage.id;
+      request[cStorage] = storage.id;
     }
 
     final response = await Api.feathers()
@@ -120,40 +121,40 @@ Future<PrintResult> printing(
   // print("printing doc $doc");
   // print("printing record $record");
 
-  final goods = record.json['goods'];
-  final goodsName = goods is MemoryItem ? goods.name() : (goods['name'] ?? '');
-  final goodsUuid = goods is MemoryItem ? (goods.json['_uuid'] ?? '') : (goods['_uuid'] ?? '');
-  final goodsId = goods is MemoryItem ? goods.id : (goods['_id'] ?? '');
+  final goods = record.json[cGoods];
+  final goodsName = goods is MemoryItem ? goods.name() : (goods[cName] ?? '');
+  final goodsUuid = goods is MemoryItem ? (goods.json[cUuid] ?? '') : (goods[cUuid] ?? '');
+  final goodsId = goods is MemoryItem ? goods.id : (goods[cId] ?? '');
 
-  final date = doc.json['date']!;
-  // final date = order.json['date'] ?? record.json['date'] ?? '';
+  final date = doc.json[cDate]!;
+  // final date = order.json[cDate] ?? record.json[cDate] ?? '';
   final dd = DT.format(date);
 
   String batchBarcode = '';
   String batchId = '';
   String batchDate = '';
 
-  final batch = record.json['batch'];
+  final batch = record.json[cBatch];
   if (batch != null) {
-    batchBarcode = batch['barcode'] ?? '';
-    batchId = batch['_uuid'] ?? '';
-    batchDate = batch['date'] ?? '';
+    batchBarcode = batch[cBarcode] ?? '';
+    batchId = batch[cUuid] ?? '';
+    batchDate = batch[cDate] ?? '';
   }
 
   var qtyUom = '';
 
-  var qty = record.json['qty'] ?? '';
+  var qty = record.json[cQty] ?? '';
 
   while (qty is Map) {
-    final uom = qty['uom'];
+    final uom = qty[cUom];
     if (uom is Map) {
       if (uom['in'] != null) {
-        qtyUom = '$qtyUom${qty['number']} ${uom['in']['name']}\nпо ';
+        qtyUom = '$qtyUom${qty[cNumber]} ${uom['in'][cName]}\nпо ';
       } else {
-        qtyUom = '$qtyUom${qty['number']} ${uom['name']} ';
+        qtyUom = '$qtyUom${qty[cNumber]} ${uom[cName]} ';
       }
     }
-    qty = qty['uom'];
+    qty = qty[cUom];
   }
 
   // print('QTYUOM: $qtyUom');
@@ -167,19 +168,19 @@ Future<PrintResult> printing(
 
   MemoryItem from = MemoryItem.empty();
 
-  final counterparty = doc.json['counterparty'];
+  final counterparty = doc.json[cCounterparty];
   if (counterparty != null) {
     from = counterparty is MemoryItem ? counterparty : MemoryItem.from(counterparty);
     labelData['поставщик'] = from.name();
   }
 
-  final f = doc.json['from'];
+  final f = doc.json[cFrom];
   if (f != null) {
     from = f is MemoryItem ? f : MemoryItem.from(f);
     labelData[''] = from.name();
   }
 
-  final area = doc.json['area'];
+  final area = doc.json[cArea];
   if (area != null) {
     from = area is MemoryItem ? area : MemoryItem.from(area);
     labelData['участок'] = from.name();

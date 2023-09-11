@@ -69,7 +69,7 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> with SingleTicker
 
       final Map<String, dynamic> data = Map.from(state.value);
       // workaround
-      data['_id'] = widget.entity.id;
+      data[cId] = widget.entity.id;
 
       context.read<MemoryBloc>().add(
           MemorySave("memories", WHInventory.ctx, WHInventory.schema, MemoryItem(id: widget.entity.id, json: data)));
@@ -127,8 +127,8 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> with SingleTicker
               child: Column(children: [
                 FormCard(children: <Widget>[
                   DecoratedFormField(
-                    name: 'date',
-                    label: localization.translate("date"),
+                    name: cDate,
+                    label: localization.translate(cDate),
                     autofocus: true,
                     validator: FormBuilderValidators.compose([
                       FormBuilderValidators.required(),
@@ -138,8 +138,8 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> with SingleTicker
                   ),
                   DecoratedFormPickerField(
                     ctx: const ['warehouse', 'storage'],
-                    name: 'storage',
-                    label: localization.translate("storage"),
+                    name: cStorage,
+                    label: localization.translate(cStorage),
                     autofocus: true,
                     validator: FormBuilderValidators.compose([
                       FormBuilderValidators.required(),
@@ -168,7 +168,7 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> with SingleTicker
               controller: _controller,
               isScrollable: true,
               tabs: [
-                Tab(text: localization.translate("goods")),
+                Tab(text: localization.translate(cGoods)),
                 Tab(text: localization.translate("overview")),
                 // Tab(text: localization.translate("registration")),
                 Tab(text: localization.translate("stock")),
@@ -194,9 +194,9 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS> with SingleTicker
   }
 
   MemoryItem getEntity() {
-    if (widget.entity.isNew && widget.entity.json["date"] == null) {
+    if (widget.entity.isNew && widget.entity.json[cDate] == null) {
       final json = Map.of(widget.entity.json);
-      json["date"] = Utils.today();
+      json[cDate] = Utils.today();
       return MemoryItem(id: widget.entity.id, json: json);
     }
     return widget.entity;
@@ -225,7 +225,7 @@ class _LinesState extends State<Lines> {
     }
 
     final schema = <Field>[
-      // const Field('batch', StringType()),
+      // const Field(cBatch, StringType()),
       fGoods.copyWith(width: 3.0),
       fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
@@ -258,7 +258,7 @@ class _LinesState extends State<Lines> {
           'memories',
           widget.ctx,
           filter: {
-            'document': widget.document.id,
+            cDocument: widget.document.id,
           },
           reverse: true,
           loadAll: true,
@@ -278,17 +278,17 @@ class _LinesState extends State<Lines> {
 
                 // workaround: set uom from product default one
                 for (MemoryItem item in items) {
-                  final goods = item.json['goods'];
+                  final goods = item.json[cGoods];
                   if (goods != null && goods is MemoryItem) {
-                    final uom = goods.json['uom'];
+                    final uom = goods.json[cUom];
                     if (uom != null) {
-                      final qty = item.json['qty'];
+                      final qty = item.json[cQty];
                       if (qty == null) {
-                        item.json['qty'] = {uom: uom};
+                        item.json[cQty] = {uom: uom};
                       } else if (qty is Map) {
-                        final uomAtLine = qty['uom'];
+                        final uomAtLine = qty[cUom];
                         if (uomAtLine == null || (uomAtLine is MemoryItem && uomAtLine.isEmpty)) {
-                          qty['uom'] = uom;
+                          qty[cUom] = uom;
                         }
                       }
                     }
@@ -343,7 +343,7 @@ class _LinesState extends State<Lines> {
                 create: (text) async {
                   final response = await Api.feathers().create(
                     serviceName: "memories",
-                    data: {'name': text},
+                    data: {cName: text},
                     params: {"oid": Api.instance.oid, "ctx": type.ctx},
                   );
                   return MemoryItem.from(response);
@@ -399,7 +399,7 @@ class _LinesState extends State<Lines> {
 
   void patch(BuildContext context, MemoryItem item, Map<String, dynamic> data) {
     if (item.isNew) {
-      data['document'] = widget.document.id;
+      data[cDocument] = widget.document.id;
       context.read<MemoryBloc>().add(MemoryCreate('memories', widget.ctx, widget.schema, data));
     } else {
       context.read<MemoryBloc>().add(MemoryPatch('memories', widget.ctx, widget.schema, item.id, data));

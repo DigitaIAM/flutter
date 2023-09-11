@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -41,7 +42,7 @@ class _GoodsEditState extends State<GoodsEdit> {
     if (state != null && state.saveAndValidate()) {
       final Map<String, dynamic> data = Map.from(state.value);
       // workaround
-      data['_id'] = widget.entity.json['_id'];
+      data[cId] = widget.entity.json[cId];
 
       context
           .read<MemoryBloc>()
@@ -80,8 +81,8 @@ class _GoodsEditState extends State<GoodsEdit> {
           FormCard(isLast: true, children: <Widget>[
             DecoratedFormPickerField(
               ctx: const ['goods', 'category'],
-              name: 'category',
-              label: localization.translate("category"),
+              name: cCategory,
+              label: localization.translate(cCategory),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
@@ -89,8 +90,8 @@ class _GoodsEditState extends State<GoodsEdit> {
               onSave: _onSave,
             ),
             DecoratedFormField(
-              name: 'name',
-              label: localization.translate("name"),
+              name: cName,
+              label: localization.translate(cName),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
@@ -99,9 +100,9 @@ class _GoodsEditState extends State<GoodsEdit> {
               keyboardType: TextInputType.text,
             ),
             DecoratedFormPickerField(
-              ctx: const ['uom'],
-              name: 'uom',
-              label: localization.translate("uom"),
+              ctx: const [cUom],
+              name: cUom,
+              label: localization.translate(cUom),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),

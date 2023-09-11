@@ -22,7 +22,7 @@ class WHTransferOverview extends StatelessWidget {
 
     const ctx = ['warehouse', 'transfer'];
     final filter = {
-      'document': doc.id,
+      cDocument: doc.id,
     };
     final schema = <Field>[
       fGoods.copyWith(width: 3.0),
@@ -32,8 +32,8 @@ class WHTransferOverview extends StatelessWidget {
 
     // print("WHTransferOverview doc: $doc");
 
-    final from = doc.json['from'] is MemoryItem ? doc.json['from'].name() : doc.json['from']['name'] ?? '';
-    final into = doc.json['into'] is MemoryItem ? doc.json['into'].name() : doc.json['into']['name'] ?? '';
+    final from = doc.json[cFrom] is MemoryItem ? doc.json[cFrom].name() : doc.json[cFrom][cName] ?? '';
+    final into = doc.json[cInto] is MemoryItem ? doc.json[cInto].name() : doc.json[cInto][cName] ?? '';
 
     return BlocProvider(
       create: (context) {
@@ -50,17 +50,17 @@ class WHTransferOverview extends StatelessWidget {
       },
       child: Column(children: <Widget>[
         KeyValue(
-          label: localization.translate("date"),
-          value: DT.format(doc.json['date']),
+          label: localization.translate(cDate),
+          value: DT.format(doc.json[cDate]),
           icon: const Icon(Icons.calendar_month),
         ),
         KeyValue(
-          label: localization.translate("from"),
+          label: localization.translate(cFrom),
           value: from,
           icon: const Icon(Icons.output),
         ),
         KeyValue(
-          label: localization.translate("into"),
+          label: localization.translate(cInto),
           value: into,
           icon: const Icon(Icons.input),
         ),

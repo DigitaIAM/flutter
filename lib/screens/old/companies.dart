@@ -1,6 +1,7 @@
 import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/core/my_settings.dart';
 import 'package:prompt_dialog/prompt_dialog.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +39,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
         onPressed: () async {
           String? newName = await prompt(context, title: const Text("New company name"));
           if (newName == null) return;
-          Api.feathers().create(serviceName: "companies", data: {"name": newName});
+          Api.feathers().create(serviceName: "companies", data: {cName: newName});
         },
       ),
       body: SafeArea(
@@ -69,19 +70,17 @@ class _CompaniesPageState extends State<CompaniesPage> {
                               children: [
                                 Expanded(
                                     child: Text(
-                                  rows[index]["name"],
+                                  rows[index][cName],
                                   style: Theme.of(context).textTheme.headline6,
                                 )),
                                 IconButton(
                                     onPressed: () async {
                                       String? newName = await prompt(context,
-                                          title: Text(AppLocalizations.of(context).translate("name")),
-                                          initialValue: rows[index]["name"]);
+                                          title: Text(AppLocalizations.of(context).translate(cName)),
+                                          initialValue: rows[index][cName]);
                                       if (newName == null) return;
                                       Api.feathers().update(
-                                          serviceName: "companies",
-                                          objectId: rows[index]["_id"],
-                                          data: {"name": newName});
+                                          serviceName: "companies", objectId: rows[index][cId], data: {cName: newName});
                                     },
                                     icon: const Icon(Icons.edit, color: Colors.green)),
                                 IconButton(
@@ -94,7 +93,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
                                         textCancel: Text(localization.translate("no")),
                                       )) {
                                         await Api.feathers()
-                                            .remove(serviceName: "companies", objectId: rows[index]["_id"]);
+                                            .remove(serviceName: "companies", objectId: rows[index][cId]);
                                       }
                                     },
                                     icon: const Icon(Icons.delete, color: Colors.red))

@@ -15,7 +15,7 @@ import 'package:nae/widgets/scaffold_list.dart';
 import 'edit.dart';
 
 class Uom extends Entity {
-  static const List<String> ctx = ['uom'];
+  static const List<String> ctx = [cUom];
 
   static const List<Field> schema = [
     fName,
@@ -25,7 +25,7 @@ class Uom extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "uom";
+  String name() => cUom;
 
   @override
   IconData icon() => Icons.square_foot_rounded;
@@ -64,8 +64,7 @@ class UomScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(
-              ChangeView(Uom.ctx, action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(Uom.ctx, action: 'edit', entity: MemoryItem.create()));
         },
         tooltip: AppLocalizations.of(context).translate("new uom"),
         child: Icon(
@@ -88,8 +87,7 @@ class UomListBuilder extends StatelessWidget {
       schema: Uom.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => const Text(''),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(Uom.ctx, entity: item)),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(Uom.ctx, entity: item)),
     );
   }
 }

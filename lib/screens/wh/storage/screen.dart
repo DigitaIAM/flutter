@@ -26,7 +26,7 @@ class WHStorage extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "storage";
+  String name() => cStorage;
 
   @override
   IconData icon() => Icons.shelves; // Icons.place_outlined;

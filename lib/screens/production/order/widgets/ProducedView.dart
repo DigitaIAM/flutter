@@ -33,14 +33,14 @@ class _POProducedViewState extends State<POProducedView> {
 
     final ctx = ['production', 'produce'];
     final schema = [
-      const Field('qty', NumberType()),
+      const Field(cQty, NumberType()),
       Field('code', CalculatedType((MemoryItem bag) async {
         return bag.id.split('T').last;
       }))
     ];
-    final filter = {'order': widget.order.id};
+    final filter = {cDocument: widget.order.id};
 
-    final date = DateTime.parse(widget.order.json['date']).toLocal();
+    final date = DateTime.parse(widget.order.json[cDate]).toLocal();
     final formatter = NumberFormat("00");
 
     return BlocProvider(
@@ -74,7 +74,7 @@ class _POProducedViewState extends State<POProducedView> {
               name = '${DateFormat.MMMMd().format(current)} $name';
             }
 
-            final group = MemoryItem(id: id, json: {"_id": id, "name": name});
+            final group = MemoryItem(id: id, json: {cId: id, cName: name});
             groups.add(group);
 
             final list = items[group] ?? [];
@@ -127,7 +127,7 @@ class _POProducedViewState extends State<POProducedView> {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       leading: const Icon(Icons.catching_pokemon_outlined),
-      title: Text(item.json['qty'].toString()),
+      title: Text(item.json[cQty].toString()),
       subtitle: Text(item.id.split('T').last),
       // trailing: const Icon(Icons.arrow_right),
       // openUsed ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
@@ -142,8 +142,8 @@ class _POProducedViewState extends State<POProducedView> {
 
   void deleteItem(BuildContext context, MemoryItem item) async {
     const ctx = ['warehouse', 'transfer'];
-    final status = item.json[sStatus] == 'deleted' ? 'restored' : 'deleted';
-    final Map<String, dynamic> data = {'_status': status};
+    final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
+    final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
     context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
@@ -163,7 +163,7 @@ class _POProducedViewState extends State<POProducedView> {
   Future<Widget> getPrinters(MemoryItem doc) async {
     final response = await Api.feathers().find(serviceName: "memories", query: {
       "oid": Api.instance.oid,
-      "ctx": const ['printer'],
+      "ctx": const [cPrinter],
     });
 
     // print("printers ${response.runtimeType} ${response}");
@@ -177,7 +177,7 @@ class _POProducedViewState extends State<POProducedView> {
     if (printers is List) {
       for (var printer in printers) {
         children.add(ListTile(
-          title: Text(printer['name'] ?? ''),
+          title: Text(printer[cName] ?? ''),
           onTap: () async {
             final ip = printer['ip'];
             final port = int.parse(printer['port']);

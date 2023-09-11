@@ -22,16 +22,16 @@ class WHReceive extends Entity {
     fCounterparty,
     fStorage,
     const Field(
-        'goods',
+        cGoods,
         ListType([
           fStorage,
-          // Field('ref', ReferenceType(['goods'])),
-          Field('batch', StringType()),
+          // Field('ref', ReferenceType([cGoods])),
+          Field(cBatch, StringType()),
           fGoods,
           fUomAtQty,
           fQty,
-          // Field('price', NumberType()),
-          // Field('cost', NumberType()),
+          // Field(cPrice, NumberType()),
+          // Field(cCost, NumberType()),
         ]))
   ];
 
@@ -110,7 +110,7 @@ class WHReceiveListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHReceive.ctx,
       schema: WHReceive.schema,
-      // groupBy: (element) => element.json['date'] ?? '',
+      // groupBy: (element) => element.json[cDate] ?? '',
       groupBy: (element) => element,
       title: (MemoryItem item) => Text(fCounterparty.resolve(item.json)?.name() ?? ''),
       subtitle: (MemoryItem item) => Text(fStorage.resolve(item.json)?.name() ?? ''),

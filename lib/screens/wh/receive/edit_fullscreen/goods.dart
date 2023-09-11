@@ -22,7 +22,7 @@ class WHReceiveGoods extends StatelessWidget {
   Widget build(BuildContext context) {
     const ctx = ['warehouse', 'receive'];
     final filter = {
-      'document': doc.id,
+      cDocument: doc.id,
     };
     final schema = <Field>[
       fGoods.copyWith(width: 3.0),
@@ -52,7 +52,7 @@ class WHReceiveGoods extends StatelessWidget {
 
           TextStyle? style;
 
-          if (item.json[sStatus] == 'deleted') {
+          if (item.json[cStatus] == 'deleted') {
             style = const TextStyle(
               decoration: TextDecoration.lineThrough,
             );
@@ -64,23 +64,23 @@ class WHReceiveGoods extends StatelessWidget {
 
           var text = '';
 
-          var qty = item.json['qty'] ?? '';
+          var qty = item.json[cQty] ?? '';
 
           while (qty is Map) {
-            final uom = qty['uom'];
+            final uom = qty[cUom];
             if (uom is Map) {
               if (uom['in'] is Map) {
-                text = '$text${qty['number']} ${uom['in']['name']} по ';
+                text = '$text${qty[cNumber]} ${uom['in'][cName]} по ';
               } else {
-                text = '$text${qty['number']} ${uom['name']} ';
+                text = '$text${qty[cNumber]} ${uom[cName]} ';
               }
             }
-            qty = qty['uom'];
+            qty = qty[cUom];
           }
 
           TextStyle? style;
 
-          if (item.json[sStatus] == 'deleted') {
+          if (item.json[cStatus] == 'deleted') {
             style = const TextStyle(
               decoration: TextDecoration.lineThrough,
             );
@@ -111,8 +111,8 @@ class WHReceiveGoods extends StatelessWidget {
 
   void deleteItem(BuildContext context, MemoryItem item) async {
     const ctx = ['warehouse', 'receive'];
-    final status = item.json[sStatus] == 'deleted' ? 'restored' : 'deleted';
-    final Map<String, dynamic> data = {'_status': status};
+    final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
+    final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
     context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
@@ -147,7 +147,7 @@ class WHReceiveGoods extends StatelessWidget {
       for (var printer in printers) {
         final ip = (printer['ip'] ?? '').toString();
         final port = int.parse(printer['port'] ?? '0');
-        children.add(ListTile(title: Text(printer['name'] ?? ''), onTap: () => printPreparation(ip, port, item)));
+        children.add(ListTile(title: Text(printer[cName] ?? ''), onTap: () => printPreparation(ip, port, item)));
       }
     }
 

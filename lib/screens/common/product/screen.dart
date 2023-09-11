@@ -14,13 +14,13 @@ import 'package:nae/widgets/scaffold_list.dart';
 import 'edit.dart';
 
 class Product extends Entity {
-  static const List<String> ctx = ['product'];
+  static const List<String> ctx = [cProduct];
 
   static List<Field> schema = [
     fName,
     const Field('part_number', StringType()),
     fUom,
-    // Field('qty', CalculatedType((MemoryItem product) async => "?")),
+    // Field(cQty, CalculatedType((MemoryItem product) async => "?")),
     fGoods
   ];
 
@@ -28,7 +28,7 @@ class Product extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "product";
+  String name() => cProduct;
 
   @override
   IconData icon() => Icons.catching_pokemon_outlined;
