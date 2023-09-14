@@ -15,6 +15,7 @@ class ScaffoldList extends StatelessWidget {
     super.key,
     required this.entityType,
     required this.appBarTitle,
+    this.buttons,
     required this.body,
     this.onHamburgerLongPress,
     this.floatingActionButton,
@@ -23,6 +24,7 @@ class ScaffoldList extends StatelessWidget {
   final List<String>? entityType;
 
   final Widget appBarTitle;
+  final Widget? buttons;
   final Widget body;
 
   final GestureLongPressCallback? onHamburgerLongPress;
@@ -65,6 +67,8 @@ class ScaffoldList extends StatelessWidget {
             ),
           ),
         );
+      } else if (buttons != null) {
+        leading = Padding(padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 38), child: buttons);
       }
 
       double leadingWidth = (uiState.isDesktop ? 100 : 10) + (cMinInteractiveDimension * (uiState.isMobile ? 1 : 2));
