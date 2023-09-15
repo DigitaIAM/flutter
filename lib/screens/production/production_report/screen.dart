@@ -21,9 +21,7 @@ import 'package:pluto_grid/pluto_grid.dart';
 class ProductionReportView extends Entity {
   static const List<String> ctx = ['report', 'production'];
 
-  static final List<Field> schema = [
-    const Field('document', ReferenceType(['document'])),
-  ];
+  static final List<Field> schema = [];
 
   @override
   List<String> route() => ctx;
@@ -40,7 +38,9 @@ class ProductionReportView extends Entity {
       key: ValueKey('__${name()}'),
       ctx: ctx,
       schema: schema,
-      list: const ProductionReportScreen(),
+      list: ProductionReportScreen(
+        DateTime.now(),
+      ),
       // TODO view document (order) on click
       view: ProductionOrderView(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
@@ -52,20 +52,28 @@ class ProductionReportView extends Entity {
 }
 
 class ProductionReportScreen extends StatefulWidget {
-  const ProductionReportScreen({super.key});
+  const ProductionReportScreen(this.initDate, {super.key});
+
+  final DateTime initDate;
 
   @override
   State<StatefulWidget> createState() => _ProductionReportScreenState();
 }
 
 class _ProductionReportScreenState extends State<ProductionReportScreen> {
+  late DateTime selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedDate = widget.initDate;
+  }
+
   @override
   Widget build(BuildContext context) {
-    DateTime selectedDate = DateTime.now();
-    Widget pageItems = ProductionReportPlutoGrid(selectedDate);
-    DateTime startDate = DateTime.now().subtract(const Duration(days: 365 * 2));
-    DateTime endDate = DateTime.now().add(const Duration(days: 31));
-    // String widgetKeyFormat = "yyyy-MM-dd";
+    Widget pageItems = ProductionReportPlutoGrid(selectedDate, key: UniqueKey());
+    DateTime startDate = selectedDate.subtract(const Duration(days: 365 * 2));
+    DateTime endDate = selectedDate.add(const Duration(days: 31));
 
     return ScaffoldList(
       entityType: null,
@@ -77,7 +85,7 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
         },
       ),
       buttons: const Row(
-        // TODO add widget for choosing month and widget for choosing area
+        // TODO add widget for choosing area
         children: [],
       ),
       // body: const ProductionReportPlutoGrid(),
@@ -87,9 +95,21 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
         selectedDate: selectedDate,
         onDateChange: (_, DateTime date) {
           setState(() {
-            // TODO need some sort of listener to change state?
             selectedDate = date;
-            pageItems = ProductionReportPlutoGrid(date);
+
+            final str = selectedDate.toString().substring(0, 7);
+            final filters = {"date": str};
+            context.read<MemoryBloc>().add(MemoryFetch(
+                  'memories',
+                  const ['production', 'order'],
+                  schema: ProductionReportView.schema,
+                  limit: 100,
+                  // search: widget.search,
+                  filter: {
+                    "\$starts-with": filters,
+                  },
+                  reset: true,
+                ));
           });
         },
         dateStyle: const TextStyle(
@@ -114,9 +134,6 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
 
 class ProductionReportPlutoGrid extends StatefulWidget {
   const ProductionReportPlutoGrid(this.date, {Key? key}) : super(key: key);
-
-  // final void Function(BuildContext) loadMore;
-  // final RequestState stateData;
   final DateTime date;
 
   @override
@@ -126,38 +143,17 @@ class ProductionReportPlutoGrid extends StatefulWidget {
 class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
   PlutoGridStateManager? stateManager;
 
-  late ScrollController _scrollController;
-
-  final List<PlutoColumn> columns = [];
-
-  List<PlutoRow> rows = [];
-
-  final List<PlutoColumnGroup> columnGroups = [];
+  DateTime? selectedDate;
 
   @override
   void initState() {
     super.initState();
+    selectedDate = widget.date;
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return buildPlutoGrid(context);
-  // }
-
-  void loadMore(BuildContext context, RequestState state, Map<String, String> filters) {
-    if (!state.hasReachedMax) {
-      context.read<MemoryBloc>().add(MemoryFetch(
-            'memories',
-            const ['production', 'order'],
-            schema: ProductionReportView.schema,
-            limit: 100,
-            // search: widget.search,
-            filter: {
-              "\$starts-with": filters,
-            },
-            reset: true,
-          ));
-    }
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -187,8 +183,6 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
   }
 
   Widget getTable(UiState uiState) {
-    // final localization = AppLocalizations.of(context);
-
     return BlocBuilder<MemoryBloc, RequestState>(
       // buildWhen: (o, n) {
       //   // isLoading = false;
@@ -197,8 +191,8 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
       //   }
       //   return o.status != n.status;
       // },
+      key: ValueKey('ReportTable_${widget.date}'),
       builder: (context, state) {
-        // print("builder ${state.status}");
         switch (state.status) {
           case RequestStatus.failure:
             return const Center(child: Text('failed to fetch data'));
@@ -214,13 +208,28 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
           //   return buildPlutoGrid(context, uiState, state);
           // }
           case RequestStatus.initiate:
-            final date = widget.date.toString().substring(0, 7);
-            print('__date $date');
+            final date = selectedDate.toString().substring(0, 7);
             loadMore(context, state, {"date": date});
             return const Center(child: Text('loading'));
         }
       },
     );
+  }
+
+  void loadMore(BuildContext context, RequestState state, Map<String, String> filters) {
+    if (!state.hasReachedMax) {
+      context.read<MemoryBloc>().add(MemoryFetch(
+            'memories',
+            const ['production', 'order'],
+            schema: ProductionReportView.schema,
+            limit: 100,
+            // search: widget.search,
+            filter: {
+              "\$starts-with": filters,
+            },
+            reset: true,
+          ));
+    }
   }
 
   List<Set<String>> getDataForColumns(List<MemoryItem> data) {
@@ -266,7 +275,7 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
     return result;
   }
 
-  List<PlutoRow> intoRows(RequestState state, PlutoRow? lastRow) {
+  List<PlutoRow> intoRows(List<PlutoColumn> columns, RequestState state, PlutoRow? lastRow) {
     var items = state.items;
 
     if (lastRow != null) {
@@ -328,6 +337,8 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
     print('_buildPlutoGrid');
     final theme = Theme.of(context);
 
+    final List<PlutoColumn> columns = [];
+
     columns.add(PlutoColumn(
         title: 'date',
         field: 'date',
@@ -340,6 +351,8 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
         type: PlutoColumnType.text(),
         titleTextAlign: PlutoColumnTextAlign.center,
         width: 100));
+
+    final List<PlutoColumnGroup> columnGroups = [];
     columnGroups.add(PlutoColumnGroup(title: 'order', fields: ['date', 'area']));
 
     final columnsData = getDataForColumns(state.items);
@@ -374,7 +387,7 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
       columnGroups.add(PlutoColumnGroup(title: 'produced material', fields: materialProducedGroupFields));
     }
 
-    rows = intoRows(state, null);
+    List<PlutoRow> rows = intoRows(columns, state, null);
 
     final config = PlutoGridConfiguration.dark(
         enterKeyAction: PlutoGridEnterKeyAction.editingAndMoveRight,
@@ -392,6 +405,7 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
         ));
 
     return PlutoGrid(
+      key: UniqueKey(),
       columns: columns,
       rows: rows,
       // rows: [],
