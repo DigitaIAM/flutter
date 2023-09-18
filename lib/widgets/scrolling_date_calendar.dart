@@ -9,6 +9,10 @@ typedef ScrollingDayCalendarBuilder = Widget Function(
   Function onDateChange,
 );
 
+const double height = 50.0;
+const double width = 50.0;
+const double middleWidth = 200.0;
+
 class ScrollingDayCalendar extends StatefulWidget {
   // first date on the pages
   final DateTime startDate;
@@ -23,7 +27,7 @@ class ScrollingDayCalendar extends StatefulWidget {
   final Function onDateChange;
 
   // page widgets to display
-  final Widget pageItems;
+  final Widget? pageItems;
 
   // date format
   final String? displayDateFormat;
@@ -49,7 +53,7 @@ class ScrollingDayCalendar extends StatefulWidget {
 
   const ScrollingDayCalendar({
     super.key,
-    required this.pageItems,
+    this.pageItems,
     required this.startDate,
     required this.endDate,
     required this.selectedDate,
@@ -107,7 +111,7 @@ class _ScrollingDayCalendarState extends State<ScrollingDayCalendar> {
 
   Widget _buildPage(index) {
     if (widget.pageItems != null) {
-      return widget.pageItems;
+      return widget.pageItems!;
     }
     DateTime dateTime = widget.startDate;
     index = index + 1;
@@ -157,8 +161,8 @@ class _ScrollingDayCalendarState extends State<ScrollingDayCalendar> {
         Row(
           children: <Widget>[
             Container(
-              height: 50.0,
-              width: 50.0,
+              height: height,
+              width: width,
               color: widget.dateBackgroundColor ?? Colors.red,
               child: Center(
                 child: MaterialButton(
@@ -178,8 +182,8 @@ class _ScrollingDayCalendarState extends State<ScrollingDayCalendar> {
               ),
             ),
             Container(
-              height: 50.0,
-              width: 90.0,
+              height: height,
+              width: middleWidth,
               color: widget.dateBackgroundColor ?? Colors.red,
               child: Padding(
                 padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
@@ -197,8 +201,8 @@ class _ScrollingDayCalendarState extends State<ScrollingDayCalendar> {
               ),
             ),
             Container(
-              height: 50.0,
-              width: 50.0,
+              height: height,
+              width: width,
               color: widget.dateBackgroundColor ?? Colors.red,
               child: Center(
                 child: MaterialButton(
