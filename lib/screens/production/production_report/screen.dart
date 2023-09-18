@@ -65,7 +65,8 @@ class ProductionReportScreen extends StatefulWidget {
 }
 
 class _ProductionReportScreenState extends State<ProductionReportScreen> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_uomEdit');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_uomEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   late DateTime selectedDate;
@@ -185,7 +186,9 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
                     ),
                   ],
                 )),
-            Expanded(child: ProductionReportPlutoGrid(selectedDate, selectedArea, key: UniqueKey()))
+            Expanded(
+                child: ProductionReportPlutoGrid(selectedDate, selectedArea,
+                    key: UniqueKey()))
           ],
         ));
   }
@@ -222,7 +225,9 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
 }
 
 class ProductionReportPlutoGrid extends StatefulWidget {
-  const ProductionReportPlutoGrid(this.selectedDate, this.selectedArea, {Key? key}) : super(key: key);
+  const ProductionReportPlutoGrid(this.selectedDate, this.selectedArea,
+      {Key? key})
+      : super(key: key);
   final DateTime selectedDate;
   final MemoryItem? selectedArea;
 
@@ -275,7 +280,8 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
           case RequestStatus.initiate:
             if (!(widget.selectedArea?.isEmpty ?? true)) {
               final date = widget.selectedDate.toString().substring(0, 7);
-              final area = widget.selectedArea != null ? widget.selectedArea!.id : '';
+              final area =
+                  widget.selectedArea != null ? widget.selectedArea!.id : '';
               loadMore(context, state, {"date": date, "area": area});
               return const Center(child: Text('loading'));
             } else {
@@ -286,7 +292,8 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
     );
   }
 
-  void loadMore(BuildContext context, RequestState state, Map<String, String> filters) {
+  void loadMore(
+      BuildContext context, RequestState state, Map<String, String> filters) {
     if (!state.hasReachedMax) {
       context.read<MemoryBloc>().add(MemoryFetch(
             'memories',
@@ -302,7 +309,8 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
     }
   }
 
-  List<Set<String>> getDataForColumns(List<MemoryItem> data) {
+List<Set<String>> getDataForColumns(
+      List<MemoryItem> data) {
     List<Set<String>> result = [];
     Set<String> produced = {};
     Set<String> materialUsed = {};
@@ -312,16 +320,24 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
       final json = item.json;
 
       String? product = json['product'];
+      print('_product $product');
       if (product != null) {
-        produced.add(json['product']);
+        // var item = await Api.feathers().get(
+        //     serviceName: "memories",
+        //     objectId: product,
+        //     params: {'oid': Api.instance.oid});
+        // print('item.enrich ${item.json}');
+        // produced.add(item.json['name'] ?? '?');
+        produced.add(product);
       }
 
       Map? material = json['_material'];
+
       if (material != null && material.isNotEmpty) {
         List? used = material['used'];
         if (used != null && used.isNotEmpty) {
           for (Map element in used) {
-            element.forEach((key, _) {
+            element.forEach((key, value) {
               materialUsed.add(key);
             });
           }
@@ -330,7 +346,7 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
         List? produced = material['produced'];
         if (produced != null && produced.isNotEmpty) {
           for (Map element in produced) {
-            element.forEach((key, _) {
+            element.forEach((key, value) {
               materialProduced.add(key);
             });
           }
@@ -345,21 +361,12 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
     return result;
   }
 
-  List<PlutoRow> intoRows(List<PlutoColumn> columns, RequestState state, PlutoRow? lastRow) {
+  List<PlutoRow> intoRows(List<PlutoColumn> columns, RequestState state) {
     var items = state.items;
 
-    if (lastRow != null) {
-      final after = lastRow.cells['_memory_']?.value;
-      if (after != null) {
-        final pos = items.indexOf(after);
-        if (pos >= items.length) {
-          return [];
-        }
-        items = items.sublist(pos + 1);
-      }
-    }
+    Map<String, PlutoCell> sumAll = {'date': PlutoCell(value: 'итого')};
 
-    return List.of(items.map((item) {
+    var result = List.of(items.map((item) {
       Map<String, PlutoCell> cells = {};
 
       for (PlutoColumn column in columns) {
@@ -367,18 +374,33 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
       }
 
       final json = item.json;
+      print('_json $json');
 
-      // print('json[date] ${json['date']}');
-      // final date = DT.pretty(json['date'] ?? '');
-      final date = json['date'] != null ? json['date'].toString().substring(8) : '';
+      final date =
+          json['date'] != null ? json['date'].toString().substring(8) : '';
       cells['date'] = PlutoCell(value: date);
 
-      // cells['area'] = PlutoCell(value: json['area'] ?? '');
-
-      // "produced":{"piece":"1962.4","box":"8"}
       Map? produced = json['produced'];
-      if (produced != null) {
-        cells[json['product']] = PlutoCell(value: '${produced['piece']} шт., ${produced['box']} кор.');
+      if (produced != null && produced.isNotEmpty) {
+        cells['piece ${json['product']}'] = PlutoCell(value: produced['piece']);
+
+        cells['box ${json['product']}'] = PlutoCell(value: produced['box']);
+
+        final piece = double.parse(produced['piece'].toString());
+        if (sumAll['piece ${json['product']}'] != null) {
+          sumAll['piece ${json['product']}'] = PlutoCell(
+              value: sumAll['piece ${json['product']}']!.value + piece);
+        } else {
+          sumAll['piece ${json['product']}'] = PlutoCell(value: piece);
+        }
+
+        final box = double.parse(produced['box'].toString());
+        if (sumAll['box ${json['product']}'] != null) {
+          sumAll['box ${json['product']}'] =
+              PlutoCell(value: sumAll['box ${json['product']}']!.value + box);
+        } else {
+          sumAll['box ${json['product']}'] = PlutoCell(value: box);
+        }
       }
 
       Map? material = json['_material'];
@@ -388,6 +410,14 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
           for (Map element in used) {
             element.forEach((key, value) {
               cells[key] = PlutoCell(value: value);
+
+              final qty = double.parse(value.toString());
+
+              if (sumAll[key] != null) {
+                sumAll[key] = PlutoCell(value: sumAll[key]!.value + qty);
+              } else {
+                sumAll[key] = PlutoCell(value: qty);
+              }
             });
           }
         }
@@ -397,70 +427,123 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
           for (Map element in produced) {
             element.forEach((key, value) {
               cells[key] = PlutoCell(value: value);
+
+              final qty = double.parse(value.toString());
+
+              if (sumAll[key] != null) {
+                sumAll[key] = PlutoCell(value: sumAll[key]!.value + qty);
+              } else {
+                sumAll[key] = PlutoCell(value: qty);
+              }
             });
+          }
+        }
+
+        Map? sum = material['sum'];
+        if (sum != null) {
+          cells['delta'] = PlutoCell(value: sum['delta'] ?? '');
+
+          final qty = double.parse(sum['delta'].toString());
+
+          if (sumAll['delta'] != null) {
+            sumAll['delta'] = PlutoCell(value: sumAll['delta']!.value + qty);
+          } else {
+            sumAll['delta'] = PlutoCell(value: qty);
           }
         }
       }
       return PlutoRow(key: ValueKey(item.id), cells: cells);
     }));
+
+    result.add(PlutoRow(key: const ValueKey('sum'), cells: sumAll));
+
+    return result;
   }
 
-  PlutoGrid buildPlutoGrid(BuildContext context, RequestState state) {
-    print('_buildPlutoGrid');
+  PlutoGrid buildPlutoGrid(
+      BuildContext context, RequestState state) {
+    // print('_buildPlutoGrid');
     final theme = Theme.of(context);
+    final localization = AppLocalizations.of(context);
 
     final List<PlutoColumn> columns = [];
 
+    final text = PlutoColumnType.text();
+
     columns.add(PlutoColumn(
-        title: 'date',
+        title: localization.translate('date'),
         field: 'date',
-        type: PlutoColumnType.text(),
+        type: text,
         titleTextAlign: PlutoColumnTextAlign.center,
         textAlign: PlutoColumnTextAlign.center,
         width: 100));
-    // columns.add(PlutoColumn(
-    //     title: 'area',
-    //     field: 'area',
-    //     type: PlutoColumnType.text(),
-    //     titleTextAlign: PlutoColumnTextAlign.center,
-    //     width: 100));
 
     final List<PlutoColumnGroup> columnGroups = [];
-    columnGroups.add(PlutoColumnGroup(title: 'order', fields: ['date']));
+    // columnGroups.add(PlutoColumnGroup(
+    //     title: localization.translate('order'), fields: ['date']));
 
-    final columnsData = getDataForColumns(state.items);
+    List<Set<String>> columnsData = getDataForColumns(state.items);
 
     // produced items
     List<String> producedGroupFields = [];
     for (String produced in columnsData.elementAt(0)) {
-      columns.add(PlutoColumn(title: produced, field: produced, type: PlutoColumnType.text()));
+      columns.add(PlutoColumn(
+          title: localization.translate('pieces'),
+          field: 'piece $produced',
+          type: text,
+          width: 100));
+      columns.add(PlutoColumn(
+          title: localization.translate('boxes'),
+          field: 'box $produced',
+          type: text,
+          width: 100));
+
+      columnGroups.add(PlutoColumnGroup(
+          title: produced, fields: ['piece $produced', 'box $produced']));
+
+      // columns.add(PlutoColumn(title: produced, field: produced, type: text));
+
       producedGroupFields.add(produced);
     }
     if (producedGroupFields.isNotEmpty) {
-      columnGroups.add(PlutoColumnGroup(title: 'produced', fields: producedGroupFields));
+      columnGroups.add(PlutoColumnGroup(
+          title: localization.translate('product'),
+          fields: producedGroupFields));
     }
 
     // material used items
     List<String> materialUsedGroupFields = [];
     for (String materialUsed in columnsData.elementAt(1)) {
-      columns.add(PlutoColumn(title: materialUsed, field: materialUsed, type: PlutoColumnType.text()));
+      columns.add(
+          PlutoColumn(title: materialUsed, field: materialUsed, type: text));
       materialUsedGroupFields.add(materialUsed);
     }
     if (materialUsedGroupFields.isNotEmpty) {
-      columnGroups.add(PlutoColumnGroup(title: 'used material', fields: materialUsedGroupFields));
+      columnGroups.add(PlutoColumnGroup(
+          title: localization.translate('used material'),
+          fields: materialUsedGroupFields));
     }
 
     // material produced items
     List<String> materialProducedGroupFields = [];
     for (String materialProduced in columnsData.elementAt(2)) {
-      columns.add(PlutoColumn(title: materialProduced, field: materialProduced, type: PlutoColumnType.text()));
+      columns.add(PlutoColumn(
+          title: materialProduced, field: materialProduced, type: text));
       materialProducedGroupFields.add(materialProduced);
     }
     if (materialProducedGroupFields.isNotEmpty) {
-      columnGroups.add(PlutoColumnGroup(title: 'produced material', fields: materialProducedGroupFields));
+      columnGroups.add(PlutoColumnGroup(
+          title: localization.translate('produced material'),
+          fields: materialProducedGroupFields));
     }
 
-    List<PlutoRow> rows = intoRows(columns, state, null);
+    if (materialUsedGroupFields.isNotEmpty ||
+        materialProducedGroupFields.isNotEmpty) {
+      columns.add(PlutoColumn(
+          title: localization.translate('delta'), field: 'delta', type: text));
+    }
+
+    List<PlutoRow> rows = intoRows(columns, state);
 
     final config = PlutoGridConfiguration.dark(
         enterKeyAction: PlutoGridEnterKeyAction.editingAndMoveRight,
@@ -571,7 +654,9 @@ class _InfinityScrollState extends State<InfinityScroll> {
   }
 
   void _eventListener(PlutoGridEvent event) {
-    if (event is PlutoGridCannotMoveCurrentCellEvent && event.direction.isDown && !_isFetching) {
+    if (event is PlutoGridCannotMoveCurrentCellEvent &&
+        event.direction.isDown &&
+        !_isFetching) {
       _update(stateManager.refRows.last);
     } else if (event is PlutoGridChangeColumnSortEvent) {
       _update(null);
