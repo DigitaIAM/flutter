@@ -2,6 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:nae/api.dart';
+import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -11,7 +16,8 @@ import 'package:nae/models/ui/entity.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/production/order/view.dart';
-import 'package:nae/utils/date.dart';
+import 'package:nae/widgets/app_form.dart';
+import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/scaffold_list.dart';
@@ -38,9 +44,7 @@ class ProductionReportView extends Entity {
       key: ValueKey('__${name()}'),
       ctx: ctx,
       schema: schema,
-      list: ProductionReportScreen(
-        DateTime.now(),
-      ),
+      list: ProductionReportScreen(DateTime.now()),
       // TODO view document (order) on click
       view: ProductionOrderView(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
@@ -61,80 +65,166 @@ class ProductionReportScreen extends StatefulWidget {
 }
 
 class _ProductionReportScreenState extends State<ProductionReportScreen> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_uomEdit');
+  final FocusScopeNode _focusNode = FocusScopeNode();
+
   late DateTime selectedDate;
+  MemoryItem? selectedArea;
+  MemoryItem formEntity = MemoryItem.empty();
 
   @override
-  void initState() {
+  initState() {
     super.initState();
+
     selectedDate = widget.initDate;
+
+    print('initState selectedArea ${widget.initDate} $selectedArea');
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget pageItems = ProductionReportPlutoGrid(selectedDate, key: UniqueKey());
+    final localization = AppLocalizations.of(context);
+
+    print('build selectedArea $selectedArea');
+
+    // Widget pageItems = ProductionReportPlutoGrid(selectedDate, key: UniqueKey());
     DateTime startDate = selectedDate.subtract(const Duration(days: 365 * 2));
     DateTime endDate = selectedDate.add(const Duration(days: 31));
 
     return ScaffoldList(
-      entityType: null,
-      appBarTitle: ListFilter(
-        // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
-        filter: null, //state.productionOrderListState.filter,
-        onFilterChanged: (value) {
-          // store.dispatch(FilterProducts(value));
-        },
-      ),
-      buttons: const Row(
-        // TODO add widget for choosing area
-        children: [],
-      ),
-      // body: const ProductionReportPlutoGrid(),
-      body: ScrollingDayCalendar(
-        startDate: startDate,
-        endDate: endDate,
-        selectedDate: selectedDate,
-        onDateChange: (_, DateTime date) {
-          setState(() {
-            selectedDate = date;
+        entityType: null,
+        appBarTitle: ListFilter(
+          // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
+          filter: null, //state.productionOrderListState.filter,
+          onFilterChanged: (value) {
+            // store.dispatch(FilterProducts(value));
+          },
+        ),
+        buttons: const Row(
+          // TODO add widget for choosing area
+          children: [],
+        ),
+        // body: const ProductionReportPlutoGrid(),
+        body: Column(
+          children: [
+            SizedBox(
+                height: 60,
+                child: Row(
+                  children: [
+                    SizedBox(
+                        width: 300,
+                        height: 60,
+                        child: ScrollingDayCalendar(
+                          startDate: startDate,
+                          endDate: endDate,
+                          selectedDate: selectedDate,
+                          onDateChange: (_, DateTime date) {
+                            setState(() {
+                              selectedDate = date;
+                              reset();
+                            });
+                          },
+                          dateStyle: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          // pageItems: pageItems,
+                          displayDateFormat: "MMMM yyyy",
+                          dateBackgroundColor: Colors.grey,
+                          forwardIcon: Icons.arrow_forward,
+                          backwardIcon: Icons.arrow_back,
+                          pageChangeDuration: const Duration(
+                            milliseconds: 400,
+                          ),
+                          noItemsWidget: Container(),
+                        )),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 300,
+                      height: 60,
+                      child: AppForm(
+                        formKey: _formKey,
+                        focusNode: _focusNode,
+                        entity: formEntity,
+                        schema: const [
+                          Field(cArea, ReferenceType([cArea]))
+                        ],
+                        onChanged: () {
+                          final state = _formKey.currentState!;
+                          state.save();
 
-            final str = selectedDate.toString().substring(0, 7);
-            final filters = {"date": str};
-            context.read<MemoryBloc>().add(MemoryFetch(
-                  'memories',
-                  const ['production', 'order'],
-                  schema: ProductionReportView.schema,
-                  limit: 100,
-                  // search: widget.search,
-                  filter: {
-                    "\$starts-with": filters,
-                  },
-                  reset: true,
-                ));
-          });
-        },
-        dateStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-        pageItems: pageItems,
-        displayDateFormat: "MM/yyyy",
-        dateBackgroundColor: Colors.grey,
-        forwardIcon: Icons.arrow_forward,
-        backwardIcon: Icons.arrow_back,
-        pageChangeDuration: const Duration(
-          milliseconds: 400,
-        ),
-        noItemsWidget: const Center(
-          child: Text("No items have been added for this date"), // add buttons etc here to add new items for date
-        ),
-      ),
-    );
+                          MemoryItem? area = state.value['area'];
+                          setState(() {
+                            formEntity = area ?? MemoryItem.empty();
+                            selectedArea = area;
+                            reset();
+                          });
+
+                          debugPrint("report onChanged: $selectedArea");
+                        },
+                        child: DecoratedFormPickerField(
+                          creatable: false,
+                          ctx: const ['production', 'area'],
+                          name: cArea,
+                          label: localization.translate(cArea),
+                          autofocus: true,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                          ]),
+                          onSave: (context) {},
+                          // keyboardType: TextInputType.text,
+                        ),
+                      ),
+                    ),
+                  ],
+                )),
+            Expanded(child: ProductionReportPlutoGrid(selectedDate, selectedArea, key: UniqueKey()))
+          ],
+        ));
+  }
+
+  void reset() {
+    print("load more $selectedArea");
+    if (!(selectedArea?.isEmpty ?? true)) {
+      print("fetching ${selectedArea?.isEmpty ?? false}");
+      final strDate = selectedDate.toString().substring(0, 7);
+      final areaId = selectedArea!.id;
+
+      final filters = {"date": strDate, "area": areaId};
+      context.read<MemoryBloc>().add(MemoryFetch(
+            'memories',
+            const ['production', 'order'],
+            schema: ProductionReportView.schema,
+            limit: 100,
+            // search: widget.search,
+            filter: {
+              "\$starts-with": filters,
+            },
+            reset: true,
+          ));
+    } else {
+      context.read<MemoryBloc>().add(MemoryFetch(
+            'memories',
+            const ['production', 'order'],
+            schema: ProductionReportView.schema,
+            limit: 0,
+            reset: true,
+          ));
+    }
   }
 }
 
 class ProductionReportPlutoGrid extends StatefulWidget {
-  const ProductionReportPlutoGrid(this.date, {Key? key}) : super(key: key);
-  final DateTime date;
+  const ProductionReportPlutoGrid(this.selectedDate, this.selectedArea, {Key? key}) : super(key: key);
+  final DateTime selectedDate;
+  final MemoryItem? selectedArea;
 
   @override
   State<StatefulWidget> createState() => _ProductionReportPlutoGrid();
@@ -142,19 +232,6 @@ class ProductionReportPlutoGrid extends StatefulWidget {
 
 class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
   PlutoGridStateManager? stateManager;
-
-  DateTime? selectedDate;
-
-  @override
-  void initState() {
-    super.initState();
-    selectedDate = widget.date;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -184,14 +261,7 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
 
   Widget getTable(UiState uiState) {
     return BlocBuilder<MemoryBloc, RequestState>(
-      // buildWhen: (o, n) {
-      //   // isLoading = false;
-      //   if (uiState.isMobile) {
-      //     return true;
-      //   }
-      //   return o.status != n.status;
-      // },
-      key: ValueKey('ReportTable_${widget.date}'),
+      key: ValueKey('ReportTable_${widget.selectedDate}'),
       builder: (context, state) {
         switch (state.status) {
           case RequestStatus.failure:
@@ -202,15 +272,15 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
             }
 
             return buildPlutoGrid(context, state);
-          // if ((widget.mode == Mode.auto && uiState.isMobile) || widget.mode == Mode.mobile) {
-          //   return buildList(context, uiState, state);
-          // } else {
-          //   return buildPlutoGrid(context, uiState, state);
-          // }
           case RequestStatus.initiate:
-            final date = selectedDate.toString().substring(0, 7);
-            loadMore(context, state, {"date": date});
-            return const Center(child: Text('loading'));
+            if (!(widget.selectedArea?.isEmpty ?? true)) {
+              final date = widget.selectedDate.toString().substring(0, 7);
+              final area = widget.selectedArea != null ? widget.selectedArea!.id : '';
+              loadMore(context, state, {"date": date, "area": area});
+              return const Center(child: Text('loading'));
+            } else {
+              return const Center(child: Text(''));
+            }
         }
       },
     );
@@ -298,10 +368,12 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
 
       final json = item.json;
 
-      final date = DT.pretty(json['date'] ?? '');
+      // print('json[date] ${json['date']}');
+      // final date = DT.pretty(json['date'] ?? '');
+      final date = json['date'] != null ? json['date'].toString().substring(8) : '';
       cells['date'] = PlutoCell(value: date);
 
-      cells['area'] = PlutoCell(value: json['area'] ?? '');
+      // cells['area'] = PlutoCell(value: json['area'] ?? '');
 
       // "produced":{"piece":"1962.4","box":"8"}
       Map? produced = json['produced'];
@@ -344,16 +416,17 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
         field: 'date',
         type: PlutoColumnType.text(),
         titleTextAlign: PlutoColumnTextAlign.center,
+        textAlign: PlutoColumnTextAlign.center,
         width: 100));
-    columns.add(PlutoColumn(
-        title: 'area',
-        field: 'area',
-        type: PlutoColumnType.text(),
-        titleTextAlign: PlutoColumnTextAlign.center,
-        width: 100));
+    // columns.add(PlutoColumn(
+    //     title: 'area',
+    //     field: 'area',
+    //     type: PlutoColumnType.text(),
+    //     titleTextAlign: PlutoColumnTextAlign.center,
+    //     width: 100));
 
     final List<PlutoColumnGroup> columnGroups = [];
-    columnGroups.add(PlutoColumnGroup(title: 'order', fields: ['date', 'area']));
+    columnGroups.add(PlutoColumnGroup(title: 'order', fields: ['date']));
 
     final columnsData = getDataForColumns(state.items);
 
