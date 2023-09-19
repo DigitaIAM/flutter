@@ -211,8 +211,8 @@ class ProductionOrderOverview extends StatelessWidget {
 
         for (Map item in data) {
           children.add(KeyValue(
-            label: item.entries.first.key,
-            value: item.entries.first.value,
+            label: item['name'] ?? '',
+            value: item['used'] ?? item['produced'] ?? '',
             icon: const Icon(Icons.question_mark),
           ));
         }
@@ -222,8 +222,8 @@ class ProductionOrderOverview extends StatelessWidget {
         }
 
         children.add(KeyValue(
-          label: data.entries.first.key,
-          value: data.entries.first.value,
+          label: data['name'] ?? '',
+          value: data['used'] ?? data['produced'] ?? '',
           icon: const Icon(Icons.question_mark),
         ));
       }
