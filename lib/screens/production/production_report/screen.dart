@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/app_localizations.dart';
-import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -154,7 +153,7 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
                         focusNode: _focusNode,
                         entity: formEntity,
                         schema: const [
-                          Field(cArea, ReferenceType([cArea]))
+                          Field('area', ReferenceType(['area']))
                         ],
                         onChanged: () {
                           final state = _formKey.currentState!;
@@ -172,8 +171,8 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
                         child: DecoratedFormPickerField(
                           creatable: false,
                           ctx: const ['production', 'area'],
-                          name: cArea,
-                          label: localization.translate(cArea),
+                          name: 'area',
+                          label: localization.translate('area'),
                           autofocus: true,
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.required(),
