@@ -17,6 +17,7 @@ class AutocompleteField<T extends Object> extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.creatable = true,
     this.editable = true,
+    this.clearable = true,
     this.deleted = false,
   });
 
@@ -25,6 +26,7 @@ class AutocompleteField<T extends Object> extends StatefulWidget {
 
   final bool creatable;
   final bool editable;
+  final bool clearable;
   final bool deleted;
 
   final InputDecoration? decoration;
@@ -116,7 +118,13 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
                   final item = await widget.create(text);
                   updateSelection(item);
                 })
-            : null,
+            : (widget.clearable && selected != null
+                ? IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () async {
+                      updateSelection(null);
+                    })
+                : null),
       );
     });
   }
