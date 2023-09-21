@@ -32260,7 +32260,7 @@ var $async$J8=A.L(function(b3,b4){if(b3===1)return A.H(b4,r)
 while(true)switch(s){case 0:b2.$1("printing")
 p=t.a
 s=3
-return A.M(b1.fd(A.a([B.a5j,B.a5o],p)),$async$J8)
+return A.M(b1.fd(A.a([B.a5j,B.a5l],p)),$async$J8)
 case 3:o=b4
 s=4
 return A.M(b0.fd(A.a([B.y9,B.pl,B.pm],p)),$async$J8)
@@ -38674,7 +38674,7 @@ $1(a){var s=$.e2
 s=(s==null?$.e2=A.jr(self.window.flutterConfiguration):s).b
 if(s==null)s=null
 else{s=s.canvasKitBaseUrl
-if(s==null)s=null}return(s==null?"https://www.gstatic.com/flutter-canvaskit/9064459a8b0dcd32877107f6002cc429a71659d1/":s)+a},
+if(s==null)s=null}return(s==null?"https://www.gstatic.com/flutter-canvaskit/bd986c5ed20a62dc34b7718c50abc782beae4c33/":s)+a},
 $S:66}
 A.b5r.prototype={
 $1(a){this.a.remove()
@@ -115254,7 +115254,7 @@ $S:0}
 A.AZ.prototype={
 M(){return new A.ahi(B.h)}}
 A.ahi.prototype={
-v(a){var s=null,r=A.P(a),q=A.a(["production","produce"],t.s),p=A.a([B.a5p,new A.ck("code",s,new A.zc(new A.aZK()),1,!0)],t.a),o=t.N,n=A.z(["order",this.a.c.a],o,o),m=A.iN(J.D(this.a.c.b,"date")).abA()
+v(a){var s=null,r=A.P(a),q=A.a(["production","produce"],t.s),p=A.a([B.a5p,new A.ck("code",s,new A.zc(new A.aZK()),1,!0)],t.a),o=t.N,n=A.z(["document",this.a.c.a],o,o),m=A.iN(J.D(this.a.c.b,"date")).abA()
 o=t.O
 return A.ha(A.em(s,new A.aZL(this,A.aBN("00",s),m,r),s,o,t.Qi),new A.aZM(p,q,n),s,o)},
 aHg(a,b){var s=null,r=A.ag(J.bc(J.D(a.b,"qty")),s,s,s,s,s,s,s,s,s)
@@ -135648,9 +135648,12 @@ B.Qm=new A.fW(B.cX,B.ak)
 B.a5j=new A.ck("control",null,B.Qm,1,!0)
 B.akl=A.a(s(["thickness"]),t.s)
 B.a5k=new A.ck("thickness",B.akl,B.fd,1,!0)
+B.ch=A.a(s(["production","order"]),t.s)
+B.aK2=new A.fW(B.ch,B.ak)
+B.a5l=new A.ck("document",null,B.aK2,1,!0)
 B.cW=A.a(s(["goods","category"]),t.s)
 B.aK_=new A.fW(B.cW,B.ak)
-B.a5l=new A.ck("category",null,B.aK_,1,!0)
+B.a5m=new A.ck("category",null,B.aK_,1,!0)
 B.aiu=A.a(s(["goods","uom"]),t.s)
 B.yb=new A.ck("uom",B.aiu,B.ro,1,!0)
 B.cV=A.a(s(["goods"]),t.s)
@@ -135659,12 +135662,9 @@ B.aK4=new A.fW(B.cV,B.aiE)
 B.aU=new A.ck("goods",null,B.aK4,1,!0)
 B.yc=new A.ck("from",null,B.i4,1,!0)
 B.pm=new A.ck("operator",null,B.Qm,1,!0)
-B.a5n=new A.ck("planned",null,B.fd,1,!0)
+B.a5o=new A.ck("planned",null,B.fd,1,!0)
 B.ak_=A.a(s(["qty","number"]),t.s)
 B.bN=new A.ck("qty",B.ak_,B.fd,1,!0)
-B.ch=A.a(s(["production","order"]),t.s)
-B.aK2=new A.fW(B.ch,B.ak)
-B.a5o=new A.ck("order",null,B.aK2,1,!0)
 B.yd=new A.ck("into",null,B.i4,1,!0)
 B.ak0=A.a(s(["qty","uom"]),t.s)
 B.c3=new A.ck("uom",B.ak0,B.ro,1,!0)
@@ -136429,9 +136429,9 @@ B.ae4=A.a(s(["F1","F2","F3","F4"]),t.s)
 B.ae5=A.a(s(["y- MMMM d- EEEE","y- MMMM d","y- MMM d","dd-MM-yy"]),t.s)
 B.ae6=A.a(s(["\u043f\u0440\u0432\u0438 \u043a\u0432\u0430\u0440\u0442\u0430\u043b","\u0434\u0440\u0443\u0433\u0438 \u043a\u0432\u0430\u0440\u0442\u0430\u043b","\u0442\u0440\u0435\u045b\u0438 \u043a\u0432\u0430\u0440\u0442\u0430\u043b","\u0447\u0435\u0442\u0432\u0440\u0442\u0438 \u043a\u0432\u0430\u0440\u0442\u0430\u043b"]),t.s)
 B.ls=A.a(s(["D","S","T","Q","Q","S","S"]),t.s)
-B.a5m=new A.ck("ip",null,B.ez,1,!0)
+B.a5n=new A.ck("ip",null,B.ez,1,!0)
 B.a5f=new A.ck("port",null,B.ez,1,!0)
-B.AA=A.a(s([B.cN,B.a5m,B.a5f]),t.a)
+B.AA=A.a(s([B.cN,B.a5n,B.a5f]),t.a)
 B.AB=A.a(s(["\u0540","\u0553","\u0544","\u0531","\u0544","\u0540","\u0540","\u0555","\u054d","\u0540","\u0546","\u0534"]),t.s)
 B.AC=A.a(s(["S.M.","TM"]),t.s)
 B.ae7=A.a(s(["\u0996\u09cd\u09f0\u09c0\u0983 \u09aa\u09c2\u0983","\u0996\u09cd\u09f0\u09c0\u0983"]),t.s)
@@ -142515,8 +142515,8 @@ p=$.bmP()
 p.aO8(o)
 q.c=p
 return n})
-r($,"bGi","aok",()=>A.a([B.a5l,B.cN,B.kJ,A.GS("qty",A.Fy(new A.axv()),!0,null,1)],t.a))
-s($,"bGU","Ui",()=>A.a([B.iU,B.y9,B.pm,B.pl,B.a5k.ez(0.5),B.a5n,A.GS("produced~",A.Fy(new A.aF8()),!0,null,1)],t.a))
+r($,"bGi","aok",()=>A.a([B.a5m,B.cN,B.kJ,A.GS("qty",A.Fy(new A.axv()),!0,null,1)],t.a))
+s($,"bGU","Ui",()=>A.a([B.iU,B.y9,B.pm,B.pl,B.a5k.ez(0.5),B.a5o,A.GS("produced~",A.Fy(new A.aF8()),!0,null,1)],t.a))
 r($,"bKS","bp2",()=>A.GS("type",A.Fy(new A.b6F()),!0,null,1))
 r($,"bKR","bd6",()=>A.GS("qty",A.Fy(new A.b6E()),!0,null,1))
 r($,"bKP","bd4",()=>A.GS("cost",A.Fy(new A.b6A()),!0,null,1))
