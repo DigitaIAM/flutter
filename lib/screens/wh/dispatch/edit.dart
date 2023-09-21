@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -42,7 +43,7 @@ class _WHDispatchEditState extends State<WHDispatchEdit> {
     if (state != null && state.saveAndValidate()) {
       final Map<String, dynamic> data = Map.from(state.value);
       // workaround
-      data['_id'] = widget.entity.json['_id'];
+      data[cId] = widget.entity.json[cId];
 
       context
           .read<MemoryBloc>()
@@ -82,8 +83,8 @@ class _WHDispatchEditState extends State<WHDispatchEdit> {
         child: ScrollableListView(children: <Widget>[
           FormCard(isLast: true, children: <Widget>[
             DecoratedFormField(
-              name: 'date',
-              label: localization.translate("date"),
+              name: cDate,
+              label: localization.translate(cDate),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
@@ -93,8 +94,8 @@ class _WHDispatchEditState extends State<WHDispatchEdit> {
             ),
             DecoratedFormPickerField(
               ctx: const ['counterparty'],
-              name: 'counterparty',
-              label: localization.translate('counterparty'),
+              name: cCounterparty,
+              label: localization.translate(cCounterparty),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
@@ -104,8 +105,8 @@ class _WHDispatchEditState extends State<WHDispatchEdit> {
             ),
             DecoratedFormPickerField(
               ctx: const ['warehouse', 'storage'],
-              name: 'storage',
-              label: localization.translate("storage"),
+              name: cStorage,
+              label: localization.translate(cStorage),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
@@ -120,9 +121,9 @@ class _WHDispatchEditState extends State<WHDispatchEdit> {
   }
 
   MemoryItem getEntity() {
-    if (widget.entity.isNew && widget.entity.json["date"] == null) {
+    if (widget.entity.isNew && widget.entity.json[cDate] == null) {
       final json = Map.of(widget.entity.json);
-      json["date"] = Utils.today();
+      json[cDate] = Utils.today();
       return MemoryItem(id: widget.entity.id, json: json);
     }
     return widget.entity;

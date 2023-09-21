@@ -3,6 +3,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
@@ -39,7 +40,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsRegistrationEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
 
   String status = "register";
   int numberOfQuantities = 1;
@@ -64,9 +65,9 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
             final value = state.value;
             // debugPrint("onChanged: $value");
 
-            final goods = value['goods'];
+            final goods = value[cGoods];
             if (goods is MemoryItem) {
-              final baseUom = goods.json['uom'];
+              final baseUom = goods.json[cUom];
 
               var firstEmpty = -1;
               var found = false;
@@ -109,8 +110,8 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
                       DecoratedFormPickerField(
                         creatable: false,
                         ctx: const ['printer'],
-                        name: 'printer',
-                        label: localization.translate("printer"),
+                        name: cPrinter,
+                        label: localization.translate(cPrinter),
                         autofocus: true,
                         validator: FormBuilderValidators.compose([
                           // FormBuilderValidators.required(),
@@ -122,8 +123,8 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
               const SizedBox(height: 10),
               DecoratedFormPickerField(
                 ctx: const ['warehouse', 'storage'],
-                name: 'storage',
-                label: localization.translate("storage"),
+                name: cStorage,
+                label: localization.translate(cStorage),
                 creatable: false,
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
@@ -133,9 +134,9 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
               ),
               const SizedBox(height: 10),
               DecoratedFormPickerField(
-                ctx: const ['goods'],
-                name: 'goods',
-                label: localization.translate("goods"),
+                ctx: const [cGoods],
+                name: cGoods,
+                label: localization.translate(cGoods),
                 creatable: widget.allowGoodsCreation,
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
@@ -146,8 +147,8 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
               // const SizedBox(height: 10),
               // DecoratedFormPickerField(
               //   ctx: const ['goods', 'category'],
-              //   name: 'category',
-              //   label: localization.translate("category"),
+              //   name: cCategory,
+              //   label: localization.translate(cCategory),
               //   creatable: widget.allowGoodsCreation,
               //   autofocus: true,
               //   validator: FormBuilderValidators.compose([
@@ -208,9 +209,9 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
         flex: 1,
         child: DecoratedFormPickerField(
           creatable: false,
-          ctx: const ['uom'],
+          ctx: const [cUom],
           name: 'uom_$index',
-          label: localization.translate("uom"),
+          label: localization.translate(cUom),
           autofocus: true,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(errorText: "выберите значение"),
@@ -223,7 +224,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
         flex: 1,
         child: DecoratedFormField(
           name: 'qty_$index',
-          label: localization.translate("qty"),
+          label: localization.translate(cQty),
           autofocus: true,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(),
@@ -274,7 +275,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
 
       // print("registerAndPrintPreparation $data");
 
-      final printer = data['printer'];
+      final printer = data[cPrinter];
       if (printer == null) {
         throw const FormatException('select printer');
       }

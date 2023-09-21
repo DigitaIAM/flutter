@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
 import 'package:nae/api.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/utils/cache.dart';
 
@@ -12,7 +13,7 @@ class MemoryItem extends Equatable {
   final Map<String, dynamic> json;
   final int updatedAt;
 
-  get uuid => json['_uuid'];
+  get uuid => json[cUuid];
 
   get isNew => id == 'new';
 
@@ -32,20 +33,20 @@ class MemoryItem extends Equatable {
     // workaround for product
     final partNumber = json["part_number"];
     if (partNumber is String) {
-      return "$partNumber ${json["name"] ?? ""}";
+      return "$partNumber ${json[cName] ?? ""}";
     }
-    return json["name"] ?? "";
+    return json[cName] ?? "";
   }
 
   String balance() {
     String uomName = "";
-    final uom = json["uom"];
+    final uom = json[cUom];
     if (uom is MemoryItem) {
       uomName = uom.name();
     }
     final balance = json["_balance"];
     if (balance is Map<String, dynamic>) {
-      return "${balance["qty"] ?? ""} $uomName";
+      return "${balance[cQty] ?? ""} $uomName";
     }
     return "-";
   }
@@ -99,7 +100,7 @@ class MemoryItem extends Equatable {
 
         final dynamic value = field.resolve(copy); // copy[name]
         if (value is Map) {
-          if (value is Map<String, dynamic> && value['_id'] != null) {
+          if (value is Map<String, dynamic> && value[cId] != null) {
             field.update(copy, MemoryItem.from(value));
           }
         } else if (value is! MemoryItem) {
@@ -145,7 +146,7 @@ class MemoryItem extends Equatable {
   static empty() => const MemoryItem(id: 'empty', json: {});
 
   static MemoryItem from(Map<String, dynamic> json) => MemoryItem(
-        id: json['_id'] ?? json['id'],
+        id: json[cId] ?? json['id'],
         json: json,
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       );

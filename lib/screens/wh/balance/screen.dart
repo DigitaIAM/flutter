@@ -20,7 +20,7 @@ class WHBalance extends Entity {
     fGoods,
     // fQty,
     fUomAtGoods,
-    // Field('qty', CalculatedType((MemoryItem goods) async => goods.balance()))
+    // Field(cQty, CalculatedType((MemoryItem goods) async => goods.balance()))
   ];
 
   @override

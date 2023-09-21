@@ -27,7 +27,7 @@ class Printer extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "printer";
+  String name() => cPrinter;
 
   @override
   IconData icon() => Icons.print_outlined;
@@ -66,8 +66,7 @@ class PrinterScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(Printer.ctx,
-              action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(Printer.ctx, action: 'edit', entity: MemoryItem.create()));
         },
         tooltip: AppLocalizations.of(context).translate("new printer"),
         child: Icon(
@@ -89,10 +88,8 @@ class UomListBuilder extends StatelessWidget {
       ctx: Printer.ctx,
       schema: Printer.schema,
       title: (MemoryItem item) => Text(item.name()),
-      subtitle: (MemoryItem item) =>
-          Text('${item.json['ip']}:${item.json['port']}'),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(Printer.ctx, entity: item)),
+      subtitle: (MemoryItem item) => Text('${item.json['ip']}:${item.json['port']}'),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(Printer.ctx, entity: item)),
     );
   }
 }

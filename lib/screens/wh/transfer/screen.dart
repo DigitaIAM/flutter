@@ -19,19 +19,19 @@ class WHTransfer extends Entity {
 
   static final List<Field> schema = [
     fDate,
-    const Field('from', ReferenceType(['warehouse', 'storage'])),
-    const Field('into', ReferenceType(['warehouse', 'storage'])),
+    const Field(cFrom, ReferenceType(['warehouse', 'storage'])),
+    const Field(cInto, ReferenceType(['warehouse', 'storage'])),
 //    const Field(
-//        'goods',
+//        cGoods,
 //        ListType([
 //          fStorage,
-//          // Field('ref', ReferenceType(['goods'])),
-//          Field('batch', StringType()),
+//          // Field('ref', ReferenceType([cGoods])),
+//          Field(cBatch, StringType()),
 //          fGoods,
 //          fUomAtQty,
 //          fQty,
-//          // Field('price', NumberType()),
-//          // Field('cost', NumberType()),
+//          // Field(cPrice, NumberType()),
+//          // Field(cCost, NumberType()),
 //        ]))
   ];
 
@@ -89,11 +89,9 @@ class WHTransferScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx,
-              action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip:
-            AppLocalizations.of(context).translate("new warehouse transfer"),
+        tooltip: AppLocalizations.of(context).translate("new warehouse transfer"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,
@@ -112,13 +110,11 @@ class WHTransferListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHTransfer.ctx,
       schema: WHTransfer.schema,
-      // groupBy: (element) => element.json['date'] ?? '',
+      // groupBy: (element) => element.json[cDate] ?? '',
       groupBy: (element) => element,
       title: (MemoryItem item) => Text(fFrom.resolve(item.json)?.name() ?? ''),
-      subtitle: (MemoryItem item) =>
-          Text(fInto.resolve(item.json)?.name() ?? ''),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, entity: item)),
+      subtitle: (MemoryItem item) => Text(fInto.resolve(item.json)?.name() ?? ''),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, entity: item)),
 //          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, entity: item)),
     );
   }

@@ -45,7 +45,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsDispatchEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()});
+  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
 
   String status = "register";
   int numberOfQuantities = 1;
@@ -76,16 +76,16 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           var value = state.value;
           debugPrint("onChanged: $value");
 
-          final storage = value['storage'];
-          final goods = value['goods'];
+          final storage = value[cStorage];
+          final goods = value[cGoods];
 
           if (storage is MemoryItem) {
             setState(() {});
           }
 
           if (goods is MemoryItem) {
-            final baseUom = goods.json['uom'];
-            final baseUomId = baseUom is Map ? baseUom['_id'] : baseUom;
+            final baseUom = goods.json[cUom];
+            final baseUomId = baseUom is Map ? baseUom[cId] : baseUom;
 
             var firstEmpty = -1;
             var found = false;
@@ -127,8 +127,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
                   DecoratedFormPickerField(
                     creatable: false,
                     ctx: const ['printer'],
-                    name: 'printer',
-                    label: localization.translate("printer"),
+                    name: cPrinter,
+                    label: localization.translate(cPrinter),
                     autofocus: true,
                     validator: FormBuilderValidators.compose([
                       // FormBuilderValidators.required(),
@@ -140,8 +140,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           const SizedBox(height: 10),
           DecoratedFormPickerField(
             ctx: const ['warehouse', 'storage'],
-            name: 'storage',
-            label: localization.translate("storage"),
+            name: cStorage,
+            label: localization.translate(cStorage),
             creatable: false,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: "выберите место хранения"),
@@ -151,8 +151,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           const SizedBox(height: 10),
           DecoratedFormPickerField(
             ctx: const ['goods', 'category'],
-            name: 'category',
-            label: localization.translate("category"),
+            name: cCategory,
+            label: localization.translate(cCategory),
             creatable: false,
             validator: FormBuilderValidators.compose([
               // FormBuilderValidators.required(errorText: "выберите категорию"),
@@ -161,9 +161,9 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           ),
           const SizedBox(height: 10),
           DecoratedFormPickerField(
-            ctx: const ['goods'],
-            name: 'goods',
-            label: localization.translate("goods"),
+            ctx: const [cGoods],
+            name: cGoods,
+            label: localization.translate(cGoods),
             creatable: widget.allowGoodsCreation,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: "выберите товар"),
@@ -172,8 +172,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           ),
           DecoratedFormPickerField(
             ctx: const ['goods', 'stock'],
-            name: 'batch',
-            label: localization.translate("batch"),
+            name: cBatch,
+            label: localization.translate(cBatch),
             creatable: widget.allowGoodsCreation,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: "выберите партию"),
@@ -238,10 +238,10 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
     state.save();
 
-    final storage = state.value['storage'];
-    final category = state.value['category'];
-    final goods = state.value['goods'];
-    final batch = state.value['batch'];
+    final storage = state.value[cStorage];
+    final category = state.value[cCategory];
+    final goods = state.value[cGoods];
+    final batch = state.value[cBatch];
 
     if (storage != null || (storage != null && goods != null)) {
       return <Widget>[
@@ -254,7 +254,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
               goods: goods,
               batch: batch,
               changeState: (item) {
-                // print("setState ${_formKey.currentState?.fields["goods"]}");
+                // print("setState ${_formKey.currentState?.fields[cGoods]}");
                 // print("changeState: (item) ${item.json}");
 
                 final state = _formKey.currentState;
@@ -262,20 +262,20 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
                   return;
                 }
 
-                final batch = item.json['batch'];
+                final batch = item.json[cBatch];
                 if (batch != null) {
-                  batch['name'] = DT.pretty(batch['date'] ?? '');
-                  state.patchValue({"batch": MemoryItem.from(batch)});
-                  var qty = item.json['_balance']?['qty'] ?? '';
+                  batch[cName] = DT.pretty(batch[cDate] ?? '');
+                  state.patchValue({cBatch: MemoryItem.from(batch)});
+                  var qty = item.json['_balance']?[cQty] ?? '';
                   state.patchValue({"qty_0": qty});
                 } else {
                   final category = item.json['_category'];
 
-                  if (category.toString() == "category") {
-                    state.patchValue({"category": item});
+                  if (category.toString() == cCategory) {
+                    state.patchValue({cCategory: item});
                   } else {
-                    final baseUom = item.json['uom'];
-                    state.patchValue({"goods": item});
+                    final baseUom = item.json[cUom];
+                    state.patchValue({cGoods: item});
                     state.patchValue({"uom_0": MemoryItem.from(baseUom)});
                   }
                 }
@@ -296,9 +296,9 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
         flex: 1,
         child: DecoratedFormPickerField(
           creatable: false,
-          ctx: const ['uom'],
+          ctx: const [cUom],
           name: 'uom_$index',
-          label: localization.translate("uom"),
+          label: localization.translate(cUom),
           autofocus: true,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(errorText: "выберите значение"),
@@ -311,7 +311,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
         flex: 1,
         child: DecoratedFormField(
           name: 'qty_$index',
-          label: localization.translate("qty"),
+          label: localization.translate(cQty),
           autofocus: true,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(),
@@ -362,7 +362,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
       // print("registerAndPrintPreparation $data");
 
-      final printer = data['printer'];
+      final printer = data[cPrinter];
       if (printer == null) {
         throw const FormatException('select printer');
       }
@@ -461,25 +461,25 @@ class BalanceListBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     final schema = <Field>[
       fName.copyWith(width: 3.0),
-      const Field('qty', NumberType(), path: ['_balance', 'qty']),
+      const Field(cQty, NumberType(), path: ['_balance', cQty]),
     ];
 
     Map<String, dynamic> filter = {};
 
     if (storage != null) {
-      filter['storage'] = storage!.json['_uuid'] ?? '';
+      filter[cStorage] = storage!.json[cUuid] ?? '';
     }
 
     if (category != null) {
-      filter['category'] = category!.json['_uuid'] ?? '';
+      filter[cCategory] = category!.json[cUuid] ?? '';
     }
 
     if (goods != null) {
-      filter['goods'] = goods!.json['_uuid'] ?? '';
+      filter[cGoods] = goods!.json[cUuid] ?? '';
     }
 
     if (batch != null) {
-      filter['batch'] = batch!.json['_uuid'] ?? '';
+      filter[cBatch] = batch!.json[cUuid] ?? '';
     }
 
     const ctx = ['warehouse', 'stock'];
@@ -503,14 +503,14 @@ class BalanceListBuilder extends StatelessWidget {
         schema: schema,
         filter: filter,
         title: (MemoryItem item) {
-          final batch = item.json['batch'];
+          final batch = item.json[cBatch];
           if (batch != null) {
-            return Text(DT.pretty(batch['date'] ?? ''));
+            return Text(DT.pretty(batch[cDate] ?? ''));
           }
           return Text(fName.resolve(item.json) ?? '');
         },
         subtitle: (MemoryItem item) {
-          return Text(item.json['_balance']?['qty'] ?? '');
+          return Text(item.json['_balance']?[cQty] ?? '');
         },
         onTap: (context, item) => changeState(item),
         mode: Mode.mobile,

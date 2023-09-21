@@ -24,7 +24,7 @@ class Counterparty extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "counterparty";
+  String name() => cCounterparty;
 
   @override
   IconData icon() => Icons.work_outline;
@@ -73,9 +73,7 @@ class CounterpartyListBuilder extends StatelessWidget {
       schema: Counterparty.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => const Text(''),
-      onTap: (context, item) => context
-          .read<UiBloc>()
-          .add(ChangeView(Counterparty.ctx, entity: item)),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(Counterparty.ctx, entity: item)),
     );
   }
 }

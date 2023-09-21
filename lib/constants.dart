@@ -21,56 +21,84 @@ const double cTableColumnGap = 16;
 // JavaScript does not support integers, use it detect web environment
 const bool cIsWeb = identical(0, 0.0);
 
-const Field fName = Field('name', StringType());
-const Field fDate = Field('date', DateType());
+const Field fName = Field(cName, StringType());
+const Field fDate = Field(cDate, DateType());
 const Field fWeight = Field('weight', NumberType());
 
 const Field fCounterparty = Field(
-  'counterparty',
+  cCounterparty,
   ReferenceType([
-    'counterparty'
+    cCounterparty
   ], fields: [
     Field('tin', StringType()),
-    Field('name', StringType()),
+    Field(cName, StringType()),
   ]),
 );
 
-const Field fStorage = Field('storage', ReferenceType(['warehouse', 'storage']));
-const Field fArea = Field('area', ReferenceType(['production', 'area']));
+const Field fStorage = Field(cStorage, ReferenceType([cWarehouse, cStorage]));
+const Field fArea = Field(cArea, ReferenceType([cProduction, cArea]));
 
-const Field fFrom = Field('from', ReferenceType(['warehouse', 'storage']));
-const Field fInto = Field('into', ReferenceType(['warehouse', 'storage']));
+const Field fFrom = Field(cFrom, ReferenceType([cWarehouse, cStorage]));
+const Field fInto = Field(cInto, ReferenceType([cWarehouse, cStorage]));
 
-const Field fOperator = Field("operator", ReferenceType(['person']));
-const Field fControl = Field("control", ReferenceType(['person']));
+const Field fOperator = Field(cOperator, ReferenceType([cPerson]));
+const Field fControl = Field(cControl, ReferenceType([cPerson]));
 
-const Field fProduct = Field("product", ReferenceType(['product']));
+const Field fProduct = Field(cProduct, ReferenceType([cProduct]));
 
 const Field fGoods = Field(
-  'goods',
+  cGoods,
   ReferenceType([
-    'goods'
+    cGoods
   ], fields: [
     fName,
     fUom,
     // TODO add relation between `uom` <> `qty.uom`
   ]),
 );
-const Field fCategory = Field("category", ReferenceType(['goods', 'category']));
-const Field fBatch = Field('batch', StringType(), path: ['batch', 'barcode']);
-const Field fQtySingle = Field('qty', NumberType(), path: ['qty']);
-const Field fQty = Field('qty', NumberType(), path: ['qty', 'number']);
-const Field fUomAtGoods = Field('uom', ReferenceType(['uom']), path: ['goods', 'uom']);
-const Field fUomAtQty = Field('uom', ReferenceType(['uom']), path: ['qty', 'uom']);
-const Field fUom = Field('uom', ReferenceType(['uom']));
+const Field fCategory = Field(cCategory, ReferenceType([cGoods, cCategory]));
+const Field fBatch = Field(cBatch, StringType(), path: [cBatch, cBarcode]);
+const Field fQtySingle = Field(cQty, NumberType(), path: [cQty]);
+const Field fQty = Field(cQty, NumberType(), path: [cQty, cNumber]);
+const Field fUomAtGoods = Field(cUom, ReferenceType([cUom]), path: [cGoods, cUom]);
+const Field fUomAtQty = Field(cUom, ReferenceType([cUom]), path: [cQty, cUom]);
+const Field fUom = Field(cUom, ReferenceType([cUom]));
 
-const Field fType = Field('type', ReferenceType(['type']));
+const Field fType = Field(cType, ReferenceType([cType]));
 
 // TODO add relation between `qty`, `price` & `cost`
 // cost = qty * price
 // price = cost / qty
 // qty = cost / price
-const Field fPrice = Field('price', NumberType());
-const Field fCost = Field('cost', NumberType());
+const Field fPrice = Field(cPrice, NumberType());
+const Field fCost = Field(cCost, NumberType());
 
-const String sStatus = '_status';
+const String cStatus = '_status';
+const String cDocument = 'document';
+const String cOrder = 'order';
+const String cGoods = 'goods';
+const String cDate = 'date';
+const String cQty = 'qty';
+const String cCost = 'cost';
+const String cPrice = 'price';
+const String cId = '_id';
+const String cUuid = '_uuid';
+const String cUom = 'uom';
+const String cStorage = 'storage';
+const String cPrinter = 'printer';
+const String cCounterparty = 'counterparty';
+const String cName = 'name';
+const String cWarehouse = 'warehouse';
+const String cArea = 'area';
+const String cProduction = 'production';
+const String cFrom = 'from';
+const String cInto = 'into';
+const String cProduct = 'product';
+const String cPerson = 'person';
+const String cOperator = 'operator';
+const String cControl = 'control';
+const String cCategory = 'category';
+const String cBatch = 'batch';
+const String cBarcode = 'barcode';
+const String cNumber = 'number';
+const String cType = 'type';

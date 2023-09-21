@@ -24,7 +24,7 @@ class Person extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "person";
+  String name() => cPerson;
 
   @override
   IconData icon() => Icons.person_outlined;
@@ -73,8 +73,7 @@ class PersonListBuilder extends StatelessWidget {
       schema: Person.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => const Text(''),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(Person.ctx, entity: item)),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(Person.ctx, entity: item)),
     );
   }
 }

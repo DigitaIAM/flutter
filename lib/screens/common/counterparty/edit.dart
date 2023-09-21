@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -41,7 +42,7 @@ class _CounterpartyEditState extends State<CounterpartyEdit> {
     if (state != null && state.saveAndValidate()) {
       final Map<String, dynamic> data = Map.from(state.value);
       // workaround
-      data['_id'] = widget.entity.json['_id'];
+      data[cId] = widget.entity.json[cId];
 
       context.read<MemoryBloc>().add(
           MemorySave("memories", Counterparty.ctx, Counterparty.schema, MemoryItem(id: widget.entity.id, json: data)));
@@ -81,8 +82,8 @@ class _CounterpartyEditState extends State<CounterpartyEdit> {
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
               DecoratedFormField(
-                name: 'name',
-                label: localization.translate("name"),
+                name: cName,
+                label: localization.translate(cName),
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),

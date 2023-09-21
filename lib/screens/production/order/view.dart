@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
@@ -69,11 +70,11 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
-    final date = widget.entity.json["date"];
-    // final area = widget.entity.json["area"]; // not used variable
+    final date = widget.entity.json[cDate];
+    // final area = widget.entity.json[cArea]; // not used variable
 
     final editable = date.compareTo(Utils.daysAgo(14)) >= 0;
-    // final editable = date == Utils.today() || date == Utils.yesterday() || area.json['type'] == 'roll';
+    // final editable = date == Utils.today() || date == Utils.yesterday() || area.json[cType] == 'roll';
 
     return ScaffoldView(
       appBarBottom: TabBar(
@@ -143,7 +144,7 @@ class ProductionOrderOverview extends StatelessWidget {
     final localization = AppLocalizations.of(context);
 
     String? operatorName;
-    final operator = order.json['operator'];
+    final operator = order.json[cOperator];
     if (operator is MemoryItem) {
       operatorName = operator.name();
     }
@@ -152,30 +153,30 @@ class ProductionOrderOverview extends StatelessWidget {
       Text(localization.translate("material product"),
           textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
       EntityHeader(pairs: [
-        // Pair(localization.translate("production order"), memoryItem.json['date'])
+        // Pair(localization.translate("production order"), memoryItem.json[cDate])
         Pair(localization.translate("plan"), order.json['planned'] ?? '-'),
         Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
         Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
       ]),
       KeyValue(
-        label: localization.translate("product"),
-        value: order.json['product'].name(),
+        label: localization.translate(cProduct),
+        value: order.json[cProduct].name(),
         icon: const Icon(Icons.question_mark),
       ),
       ...additional(context),
       KeyValue(
-        label: localization.translate("area"),
-        value: order.json['area'].name(),
+        label: localization.translate(cArea),
+        value: order.json[cArea].name(),
         icon: const Icon(Icons.question_mark),
       ),
       KeyValue(
-        label: localization.translate("operator"),
+        label: localization.translate(cOperator),
         value: operatorName ?? ' ',
         icon: const Icon(Icons.question_mark),
       ),
       KeyValue(
-        label: localization.translate("date"),
-        value: DT.format(order.json['date']),
+        label: localization.translate(cDate),
+        value: DT.format(order.json[cDate]),
         icon: const Icon(Icons.question_mark),
       ),
       ListDivider(),
@@ -232,8 +233,8 @@ class ProductionOrderOverview extends StatelessWidget {
   }
 
   List<Widget> additional(BuildContext context) {
-    final product = order.json['product'] ?? MemoryItem.empty;
-    if ((product.json['type'] ?? '') == 'roll') {
+    final product = order.json[cProduct] ?? MemoryItem.empty;
+    if ((product.json[cType] ?? '') == 'roll') {
       final localization = AppLocalizations.of(context);
 
       return [

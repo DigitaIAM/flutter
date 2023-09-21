@@ -4,6 +4,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -37,7 +38,7 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   void initState() {
     super.initState();
 
-    final p = widget.entity.json['product'];
+    final p = widget.entity.json[cProduct];
     if (p is MemoryItem) {
       product = p;
     }
@@ -57,10 +58,10 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
       // print("state ${state.value}");
       final Map<String, dynamic> data = Map.from(state.value);
       // workaround
-      data['_id'] = widget.entity.json['_id'];
+      data[cId] = widget.entity.json[cId];
 
       // workaround
-      data['date'] = DateFormat("yyyy-MM-dd").format(data["date"]);
+      data[cDate] = DateFormat("yyyy-MM-dd").format(data[cDate]);
 
       context.read<MemoryBloc>().add(MemorySave(
             "memories",
@@ -109,8 +110,8 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
         child: ScrollableListView(children: <Widget>[
           FormCard(isLast: true, children: <Widget>[
             DateField(
-              name: 'date',
-              label: localization.translate("date"),
+              name: cDate,
+              label: localization.translate(cDate),
               autofocus: false,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
@@ -121,8 +122,8 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
             DecoratedFormPickerField(
               creatable: false,
               ctx: const ['production', 'area'],
-              name: 'area',
-              label: localization.translate('area'),
+              name: cArea,
+              label: localization.translate(cArea),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
@@ -133,8 +134,8 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
             DecoratedFormPickerField(
               creatable: false,
               ctx: const ['person'],
-              name: 'operator',
-              label: localization.translate("operator"),
+              name: cOperator,
+              label: localization.translate(cOperator),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
@@ -144,8 +145,8 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
             DecoratedFormPickerField(
               creatable: false,
               ctx: const ['product'],
-              name: 'product',
-              label: localization.translate("product"),
+              name: cProduct,
+              label: localization.translate(cProduct),
               autofocus: true,
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(),
@@ -177,21 +178,20 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   }
 
   MemoryItem getEntity() {
-    if (widget.entity.isNew && widget.entity.json["date"] == null) {
+    if (widget.entity.isNew && widget.entity.json[cDate] == null) {
       final json = Map.of(widget.entity.json);
-      json["date"] = DateTime.now(); // Utils.today();
+      json[cDate] = DateTime.now(); // Utils.today();
       return MemoryItem(id: widget.entity.id, json: json);
     } else {
       final json = Map.of(widget.entity.json);
-      json["date"] = DateTime.parse(json["date"]); //DateFormat("yyyy-MM-dd").format(json["date"]);
+      json[cDate] = DateTime.parse(json[cDate]); //DateFormat("yyyy-MM-dd").format(json[cDate]);
       return MemoryItem(id: widget.entity.id, json: json);
     }
-    return widget.entity;
   }
 
   List<Widget> additional(BuildContext context) {
     // print("additional");
-    if (product != null && (product!.json['type'] ?? '') == 'roll') {
+    if (product != null && (product!.json[cType] ?? '') == 'roll') {
       final localization = AppLocalizations.of(context);
       return [
         DecoratedFormField(

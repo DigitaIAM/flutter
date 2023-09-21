@@ -1,6 +1,7 @@
 import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/core/my_settings.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -82,7 +83,7 @@ class _CamerasPageState extends State<CamerasPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      rows[index]["name"],
+                                      rows[index][cName],
                                       style: Theme.of(context).textTheme.headline6,
                                     ),
                                     const SizedBox(height: 4),
@@ -98,7 +99,7 @@ class _CamerasPageState extends State<CamerasPage> {
                                   ],
                                 )),
                                 Text(
-                                  rows[index]["status"]["name"] +
+                                  rows[index]["status"][cName] +
                                       "  " +
                                       timeago.format(
                                           DateTime.fromMillisecondsSinceEpoch(rows[index]["status"]["ts"] * 1000)),
@@ -107,7 +108,7 @@ class _CamerasPageState extends State<CamerasPage> {
                                 IconButton(
                                     onPressed: () async {
                                       Dialog myDialog = Dialog(
-                                        child: getDialogBody(settings, rows[index]["_id"], rows[index]),
+                                        child: getDialogBody(settings, rows[index][cId], rows[index]),
                                       );
                                       showDialog(context: context, builder: (BuildContext context) => myDialog);
                                     },
@@ -121,8 +122,7 @@ class _CamerasPageState extends State<CamerasPage> {
                                         textOK: Text(localization.translate("yes")),
                                         textCancel: Text(localization.translate("no")),
                                       )) {
-                                        await Api.feathers()
-                                            .remove(serviceName: "cameras", objectId: rows[index]["_id"]);
+                                        await Api.feathers().remove(serviceName: "cameras", objectId: rows[index][cId]);
                                       }
                                     },
                                     icon: const Icon(Icons.delete, color: Colors.red))
@@ -161,7 +161,7 @@ class _CamerasPageState extends State<CamerasPage> {
     userNameController.text = "";
     passwordController.text = "";
     if (row != null) {
-      nameController.text = row["name"];
+      nameController.text = row[cName];
       devIndexController.text = row["devIndex"];
       protocolController.text = row["protocol"];
       ipController.text = row["ip"];
@@ -183,7 +183,7 @@ class _CamerasPageState extends State<CamerasPage> {
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
                         child: Text(
-                      row == null ? "New camera" : row["name"],
+                      row == null ? "New camera" : row[cName],
                       style: Theme.of(context).textTheme.headline6,
                     )),
                   ),

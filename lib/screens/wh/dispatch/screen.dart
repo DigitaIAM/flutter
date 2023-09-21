@@ -14,7 +14,7 @@ import 'package:nae/widgets/scaffold_list.dart';
 
 import 'edit_fullscreen/edit_fullscreen.dart';
 
-// ['goods'] => ['warehouse','inventory'],
+// [cGoods] => ['warehouse','inventory'],
 //              ['warehouse','receive'],
 //              ['warehouse','transfer'],
 //              ['warehouse','dispatch']
@@ -26,16 +26,16 @@ class WHDispatch extends Entity {
     fCounterparty,
     fStorage,
     const Field(
-        'goods',
+        cGoods,
         ListType([
           fStorage,
-          // Field('ref', ReferenceType(['goods'])),
-          // Field('batch', StringType()),
+          // Field('ref', ReferenceType([cGoods])),
+          // Field(cBatch, StringType()),
           fGoods,
           fUomAtQty,
           fQty,
-          // Field('price', NumberType()),
-          // Field('cost', NumberType()),
+          // Field(cPrice, NumberType()),
+          // Field(cCost, NumberType()),
         ]))
   ];
 
@@ -93,11 +93,9 @@ class WHDispatchScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(WHDispatch.ctx,
-              action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(WHDispatch.ctx, action: 'edit', entity: MemoryItem.create()));
         },
-        tooltip:
-            AppLocalizations.of(context).translate("new warehouse dispatch"),
+        tooltip: AppLocalizations.of(context).translate("new warehouse dispatch"),
         child: Icon(
           Icons.add,
           color: theme.primaryColorLight,
@@ -116,14 +114,11 @@ class WHDispatchListBuilder extends StatelessWidget {
     return MemoryList(
       ctx: WHDispatch.ctx,
       schema: WHDispatch.schema,
-      // groupBy: (element) => element.json['date'] ?? '',
+      // groupBy: (element) => element.json[cDate] ?? '',
       groupBy: (element) => element,
-      title: (MemoryItem item) =>
-          Text(fStorage.resolve(item.json)?.name() ?? ''),
-      subtitle: (MemoryItem item) =>
-          Text(fCounterparty.resolve(item.json)?.name() ?? ''),
-      onTap: (context, item) =>
-          context.read<UiBloc>().add(ChangeView(WHDispatch.ctx, entity: item)),
+      title: (MemoryItem item) => Text(fStorage.resolve(item.json)?.name() ?? ''),
+      subtitle: (MemoryItem item) => Text(fCounterparty.resolve(item.json)?.name() ?? ''),
+      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(WHDispatch.ctx, entity: item)),
     );
   }
 }

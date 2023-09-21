@@ -379,9 +379,9 @@ class _MemoryListState extends State<MemoryList> {
   dynamic groupBy(BuildContext context, String filter, Map element) {
     final localization = AppLocalizations.of(context);
 
-    if (filter == 'date') {
-      return element['date'] ?? '';
-    } else if (filter == 'category') {
+    if (filter == cDate) {
+      return element[cDate] ?? '';
+    } else if (filter == cCategory) {
       return localization.translate(element['_category']) ?? '';
     } else {
       return '';
@@ -548,23 +548,23 @@ class _MemoryListState extends State<MemoryList> {
         String la = '';
         String lb = '';
 
-        if (a.json['_category'] == 'goods' && b.json['_category'] == 'goods') {
-          final ga = a.json['goods'];
+        if (a.json['_category'] == cGoods && b.json['_category'] == cGoods) {
+          final ga = a.json[cGoods];
           if (ga != null && ga is MemoryItem) {
             la = ga.name();
           }
 
-          final gb = b.json['goods'];
+          final gb = b.json[cGoods];
           if (gb != null && gb is MemoryItem) {
             lb = gb.name();
           }
-        } else if (a.json['_category'] == 'batch' && b.json['_category'] == 'batch') {
-          final da = a.json['batch']?['date'];
+        } else if (a.json['_category'] == cBatch && b.json['_category'] == cBatch) {
+          final da = a.json[cBatch]?[cDate];
           if (da != null) {
             la = da;
           }
 
-          final db = b.json['batch']?['date'];
+          final db = b.json[cBatch]?[cDate];
           if (db != null) {
             lb = db;
           }

@@ -42,7 +42,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
       final Map<String, dynamic> data = Map.from(state.value);
       // workaround
-      data['_id'] = widget.doc.id;
+      data[cId] = widget.doc.id;
 
       context
           .read<MemoryBloc>()
@@ -57,7 +57,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
   Widget build(BuildContext context) {
     const ctx = ['warehouse', 'inventory'];
     final filter = {
-      'document': widget.doc.id,
+      cDocument: widget.doc.id,
     };
     final schema = <Field>[
       fGoods.copyWith(width: 3.0),
@@ -87,7 +87,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
           TextStyle? style;
 
-          if (item.json[sStatus] == 'deleted') {
+          if (item.json[cStatus] == 'deleted') {
             style = const TextStyle(
               decoration: TextDecoration.lineThrough,
             );
@@ -99,25 +99,25 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
           var text = '';
 
-          var qty = item.json['qty'] ?? '';
+          var qty = item.json[cQty] ?? '';
 
           while (qty is Map) {
-            final uom = qty['uom'];
+            final uom = qty[cUom];
             if (uom is Map) {
               if (uom['in'] is Map) {
-                text = '$text${qty['number']} ${uom['in']['name']} по ';
+                text = '$text${qty[cNumber]} ${uom['in'][cName]} по ';
               } else {
-                text = '$text${qty['number']} ${uom['name']} ';
+                text = '$text${qty[cNumber]} ${uom[cName]} ';
               }
             } else {
-              text = '$text${qty['number']} ${item.json['goods']?['uom']?['name'] ?? ''}';
+              text = '$text${qty[cNumber]} ${item.json[cGoods]?[cUom]?[cName] ?? ''}';
             }
-            qty = qty['uom'];
+            qty = qty[cUom];
           }
 
           TextStyle? style;
 
-          if (item.json[sStatus] == 'deleted') {
+          if (item.json[cStatus] == 'deleted') {
             style = const TextStyle(
               decoration: TextDecoration.lineThrough,
             );
@@ -148,8 +148,8 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
   void deleteItem(BuildContext context, MemoryItem item) async {
     const ctx = ['warehouse', 'inventory'];
-    final status = item.json[sStatus] == 'deleted' ? 'restored' : 'deleted';
-    final Map<String, dynamic> data = {'_status': status};
+    final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
+    final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
     context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
@@ -184,7 +184,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
       for (var printer in printers) {
         final ip = (printer['ip'] ?? '').toString();
         final port = int.parse(printer['port'] ?? '0');
-        children.add(ListTile(title: Text(printer['name'] ?? ''), onTap: () => printPreparation(ip, port, item)));
+        children.add(ListTile(title: Text(printer[cName] ?? ''), onTap: () => printPreparation(ip, port, item)));
       }
     }
 
@@ -222,13 +222,13 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
     List<Widget> widgets = [];
 
-    final MemoryItem details = MemoryItem(id: '', json: {'date': Utils.today()}); // TODO input doc date?
+    final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()}); // TODO input doc date?
 
     widgets.add(const Text('Enter the amount of goods:'));
 
     widgets.add(DecoratedFormField(
-      name: 'qty',
-      label: localization.translate("qty"),
+      name: cQty,
+      label: localization.translate(cQty),
       autofocus: true,
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(),
@@ -273,16 +273,16 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
     // print("inventory_data $data");
     // print("inventory_doc ${widget.doc.json}");
 
-    final qty = data['qty'] ?? '';
+    final qty = data[cQty] ?? '';
 
     if (isNumeric(qty) == true) {
       // context.read<MemoryBloc>().add(MemoryCreate("memories", const [
       //       'warehouse',
       //       'inventory'
       //     ], const [], {
-      //       "document": widget.doc.id,
-      //       "goods": record.id,
-      //       'qty': {'number': qty}
+      //       cDocument: widget.doc.id,
+      //       cGoods: record.id,
+      //       cQty: {cNumber: qty}
       //     }));
 
       context.read<MemoryBloc>().add(MemoryPatch(
@@ -291,7 +291,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
           const [],
           record.id,
           {
-            'qty': {'number': qty}
+            cQty: {cNumber: qty}
           }));
     } else {
       // print("Wrong value was entered");

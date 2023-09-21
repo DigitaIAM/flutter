@@ -22,7 +22,7 @@ class ProductionArea extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "area";
+  String name() => cArea;
 
   @override
   IconData icon() => Icons.handyman_outlined;

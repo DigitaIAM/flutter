@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:nae/api.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
@@ -50,7 +51,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     //       if (event.type == FeathersJsEventType.created && event.data != null) {
     //         if (event.data is Map<String, dynamic>) {
     //           final json = event.data!;
-    //           final id = json["_id"];
+    //           final id = json[cId];
     //           print("found id:");
     //           print(id);
     //           if (id != null && id is String && id.isNotEmpty) {
@@ -61,7 +62,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     //       } else if (event.type == FeathersJsEventType.updated) {
     //         if (event.data is Map<String, dynamic>) {
     //           final json = event.data!;
-    //           final id = json["_id"];
+    //           final id = json[cId];
     //           print("found id:");
     //           print(id);
     //           if (id != null && id is String && id.isNotEmpty) {
@@ -198,7 +199,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       List<MemoryItem> filtered = [];
       for (MemoryItem item in original) {
         // workaround to cover only one use case
-        final goods = item.json['goods'];
+        final goods = item.json[cGoods];
 
         if (goods != null && goods is MemoryItem) {
           if (goods.name().toLowerCase().contains(query)) {
@@ -265,7 +266,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       // print(e);
       // print(stacktrace);
       // emit(state.copyWith(saveStatus: SaveStatus.failure));
-      emit(state.copyWith(saved: MemoryItem(id: "error", json: {'name': e})));
+      emit(state.copyWith(saved: MemoryItem(id: "error", json: {cName: e})));
     }
   }
 
@@ -321,7 +322,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       // print(e);
       // print(stacktrace);
       // emit(state.copyWith(saveStatus: SaveStatus.failure));
-      emit(state.copyWith(saved: MemoryItem(id: "error", json: {'name': e})));
+      emit(state.copyWith(saved: MemoryItem(id: "error", json: {cName: e})));
     }
   }
 
@@ -330,7 +331,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       "oid": Api.instance.oid,
       "ctx": ctx,
     };
-    final id = data["_id"] as String;
+    final id = data[cId] as String;
     final response = await Api.feathers().update(serviceName: serviceName, objectId: id, data: data, params: params);
     // print("update response:");
     // print(response);
@@ -361,7 +362,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
           final before = list[i];
           for (final pair in before.json.entries) {
             // TODO: refactor this workaround
-            if (pair.key.startsWith("_") && pair.key != '_status') {
+            if (pair.key.startsWith("_") && pair.key != cStatus) {
               saved.json[pair.key] = pair.value;
             }
           }
@@ -382,7 +383,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       //   saved: MemoryItem(id: event.id, json: event.data),
       //   saveStatus: SaveStatus.failure,
       // ));
-      emit(state.copyWith(saved: MemoryItem(id: "error", json: {'name': e})));
+      emit(state.copyWith(saved: MemoryItem(id: "error", json: {cName: e})));
     }
   }
 
