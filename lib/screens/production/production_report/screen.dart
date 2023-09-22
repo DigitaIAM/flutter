@@ -87,7 +87,7 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
     super.dispose();
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
@@ -321,7 +321,7 @@ List<Set<String>> getDataForColumns(
 
       if (product != null) {
         final partNumber = product['part_number'] ?? '';
-        produced.add('${product['name']} $partNumber');
+        produced.add('${product['name'] ?? ''} $partNumber');
       }
 
       Map? material = json['_material'];
@@ -384,17 +384,17 @@ List<Set<String>> getDataForColumns(
         final piece = double.parse(produced['piece'].toString());
         if (sumAll[keyPiece] != null) {
           sumAll[keyPiece] = PlutoCell(
-              value: sumAll[keyPiece]!.value + piece);
+              value: (double.parse(sumAll[keyPiece]!.value) + piece).toStringAsFixed(2));
         } else {
-          sumAll[keyPiece] = PlutoCell(value: piece);
+          sumAll[keyPiece] = PlutoCell(value: piece.toStringAsFixed(2));
         }
 
         final box = double.parse(produced['box'].toString());
         if (sumAll[keyBox] != null) {
           sumAll[keyBox] =
-              PlutoCell(value: sumAll[keyBox]!.value + box);
+              PlutoCell(value: (double.parse(sumAll[keyBox]!.value) + box).toStringAsFixed(2));
         } else {
-          sumAll[keyBox] = PlutoCell(value: box);
+          sumAll[keyBox] = PlutoCell(value: box.toStringAsFixed(2));
         }
       }
 
@@ -411,9 +411,9 @@ List<Set<String>> getDataForColumns(
             final qty = double.parse(used.toString());
 
             if (sumAll[keyUsed] != null) {
-              sumAll[keyUsed] = PlutoCell(value: sumAll[keyUsed]!.value + qty);
+              sumAll[keyUsed] = PlutoCell(value: (double.parse(sumAll[keyUsed]!.value) + qty).toStringAsFixed(2));
             } else {
-              sumAll[keyUsed] = PlutoCell(value: qty);
+              sumAll[keyUsed] = PlutoCell(value: qty.toStringAsFixed(2));
             }
           }
         }
@@ -428,9 +428,9 @@ List<Set<String>> getDataForColumns(
             final qty = double.parse(produced.toString());
 
             if (sumAll[keyProduced] != null) {
-              sumAll[keyProduced] = PlutoCell(value: sumAll[keyProduced]!.value + qty);
+              sumAll[keyProduced] = PlutoCell(value: (double.parse(sumAll[keyProduced]!.value) + qty).toStringAsFixed(2));
             } else {
-              sumAll[keyProduced] = PlutoCell(value: qty);
+              sumAll[keyProduced] = PlutoCell(value: qty.toStringAsFixed(2));
             }
           }
         }

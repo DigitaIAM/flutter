@@ -378,32 +378,27 @@ class _POProducedEditState extends State<POProducedEdit> {
 
       final area = widget.order.json[cArea] ?? MemoryItem.create();
 
-      if (area.json[cType] == 'roll') {
         Map<String, dynamic> uom = {};
         Map<String, dynamic> innerQty = {};
 
-        // get "кг" and "Кор" from db as objects
-        final mass = await Api.feathers().find(serviceName: "memories", query: {
-          "oid": Api.instance.oid,
-          "ctx": [cUom],
-          "filter": {cName: "кг"},
-        });
+        final product = order.json['product'] as MemoryItem;
 
-        final box = await Api.feathers().find(serviceName: "memories", query: {
+        final filter = area.json['type'] == 'roll' ? "Рул" : "Кор";
+
+        final uomIn = await Api.feathers().find(serviceName: "memories", query: {
           "oid": Api.instance.oid,
           "ctx": [cUom],
-          "filter": {cName: "Кор"},
+          "filter": {cName: filter},
         });
 
         uom[cNumber] = qty;
-        uom[cUom] = mass['data']?[0]?[cId];
-        uom['in'] = box['data']?[0]?[cId];
+        uom[cUom] = product.json[cUom]?[cUuid] ?? '';
+        uom['in'] = uomIn['data']?[0]?[cUuid];
 
         innerQty[cNumber] = 1;
         innerQty[cUom] = uom;
 
         qty = innerQty;
-      }
 
       final recordData = {
         cDocument: orderId,

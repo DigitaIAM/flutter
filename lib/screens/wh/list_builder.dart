@@ -11,6 +11,8 @@ import 'package:nae/utils/date.dart';
 import 'package:nae/utils/number.dart';
 import 'package:nae/widgets/memory_list.dart';
 
+const String currency = 'сум';
+
 class Pair {
   final String label;
   final MemoryItem value;
@@ -113,7 +115,7 @@ class ListBuilder extends StatelessWidget {
           if (cost != null) {
             return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               const Text(''),
-              Text('${Number.format(cost)} сум'),
+              Text('${Number.format(cost)} $currency'),
             ]);
           } else {
             final balance = item.json['_balance'];
@@ -121,7 +123,7 @@ class ListBuilder extends StatelessWidget {
             if (balance != null) {
               return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Text('${balance[cQty] ?? ''} ${fUom.resolve(item.json)?.name() ?? ''}'),
-                Text('${Number.format(balance[cCost] ?? '')} сум'),
+                Text('${Number.format(balance[cCost] ?? '')} $currency'),
               ]);
             }
           }
