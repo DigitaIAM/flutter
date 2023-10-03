@@ -60,11 +60,55 @@ Field fType = Field(cType, CalculatedType((MemoryItem rec) async {
 }));
 
 Field fQty = Field(cQty, CalculatedType((MemoryItem rec) async {
-  // print("rec.json ${rec.json}");
-  // print("rec.json[cQty] ${rec.json[cQty]}");
-  // print("rec.json['op'] ${rec.json['op']}");
-  // print("rec.json['op']?[cQty] ${rec.json['op']?[cQty]}");
-  return rec.json[cQty] ?? rec.json['op']?[cQty] ?? '';
+  var text = '';
+  print("_rec_: ${rec.json}");
+  List? list = rec.json[cQty] ?? rec.json['op']?[cQty];
+  print('_list $list');
+  if (list != null && list.isNotEmpty) {
+    for (Map qty in list) {
+      print('_qty $qty');
+      if (text != '') { text = '$text, '; }
+      text = '$text ${qty['number'] ?? ''}';
+      var uom = qty['uom'];
+
+      if (uom is String) {
+        print('uomIsString');
+        var obj = await Api.feathers().get(
+            serviceName: "memories",
+            objectId: uom,
+            params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+        text = '$text ${obj['name'] ?? ''}';
+      } else {
+        print('_uomType ${uom.runtimeType}');
+        while (uom is Map) {
+          var inObj = await Api.feathers().get(
+              serviceName: "memories",
+              objectId: uom['in'] ?? '',
+              params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+
+          text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';
+          print('_uom $uom');
+          if (uom['uom'] is String) {
+            var obj = await Api.feathers().get(
+                serviceName: "memories",
+                objectId: uom['uom'] ?? '',
+                params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+
+            text = '$text ${obj['name'] ?? ''}';
+            break;
+          } else {
+            uom = uom['uom'];
+          }
+        }
+      }
+    }
+  } else {
+    text = '0';
+  }
+  print('_text $text');
+  return text;
+
+  // return rec.json[cQty] ?? rec.json['op']?[cQty] ?? '';
 }));
 
 Field fCost = Field(cCost, CalculatedType((MemoryItem rec) async {
@@ -72,7 +116,6 @@ Field fCost = Field(cCost, CalculatedType((MemoryItem rec) async {
 }));
 
 Field fDesc = Field('description', CalculatedType((MemoryItem rec) async {
-  // print("_rec_: ${rec.json}");
   // print("WHTransactionsBuilder entity: $entity");
   final t = rec.json[cType];
   if (t == 'open_balance' || t == 'close_balance') {
@@ -174,8 +217,12 @@ class WHTransactionsBuilder extends StatelessWidget {
       schema: schema,
       filter: filter,
       title: (MemoryItem item) {
+        var qty = fQty.resolve(item.json);
+        if (qty is List && qty.isEmpty) {
+          qty = '0';
+        }
         return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text("${fQty.resolve(item.json)}"),
+          Text("$qty"),
           Text(Number.format(fCost.resolve(item.json))),
         ]);
       },
