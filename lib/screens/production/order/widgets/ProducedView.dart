@@ -12,6 +12,7 @@ import 'package:nae/models/memory/state.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/widgets/swipe_action.dart';
 
 import 'ProducedEdit.dart';
 
@@ -124,7 +125,7 @@ class _POProducedViewState extends State<POProducedView> {
   }
 
   Widget buildItem(MemoryItem item, ThemeData theme) {
-    return ListTile(
+    final tile = ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       leading: const Icon(Icons.catching_pokemon_outlined),
       title: Text(item.json[cQty].toString()),
@@ -138,10 +139,34 @@ class _POProducedViewState extends State<POProducedView> {
         // });
       },
     );
+
+    final actions = [
+      ItemAction(
+        label: 'delete',
+        icon: Icons.delete_outline,
+        onPressed: (context, item) => deleteItem(context, item),
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.red,
+      ),
+      ItemAction(
+        label: 'print',
+        icon: Icons.print_outlined,
+        onPressed: (context, item) => chooseAndPrint(context, item),
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.blue,
+      ),
+    ];
+
+    return SwipeActionWidget(
+      item: item,
+      actions: actions,
+      // key: key,
+      child: tile,
+    );
   }
 
   void deleteItem(BuildContext context, MemoryItem item) async {
-    const ctx = ['warehouse', 'transfer'];
+    const ctx = ['production', 'produce'];
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
