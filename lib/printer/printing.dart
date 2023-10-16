@@ -67,12 +67,12 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
       final qty = data['qty_$index'];
 
       if (index > 0) {
-        final newQty = {cNumber: qty, cUom: uom.id, 'in': currentQty[cUom]};
+        final newQty = {cNumber: qty, cUom: uom.json[cUuid] ?? uom.id, 'in': currentQty[cUom]};
         currentQty[cUom] = newQty;
         currentQty = newQty;
       } else {
         currentQty[cNumber] = qty;
-        currentQty[cUom] = uom.id;
+        currentQty[cUom] = uom.json[cUuid] ?? uom.id;
       }
 
       if (baseUomId == data['uom_$index']?.id) {
@@ -86,11 +86,17 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
     //
     // final categoryId = category is MemoryItem ? category.id : category;
 
+    MemoryItem? batch = data[cBatch];
+
     final request = {
       cDocument: doc.id,
       cGoods: goods.id,
       cQty: quantity,
     };
+
+    if (batch != null) {
+      request[cBatch] = batch.json;
+    }
     if (from != null) {
       request['storage_from'] = from.id;
     }

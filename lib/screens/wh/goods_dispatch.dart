@@ -48,7 +48,6 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
 
   String status = "register";
-  int numberOfQuantities = 1;
   String registered = '';
 
   @override
@@ -77,48 +76,9 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           debugPrint("onChanged: $value");
 
           final storage = value[cStorage];
-          final goods = value[cGoods];
 
           if (storage is MemoryItem) {
             setState(() {});
-          }
-
-          if (goods is MemoryItem) {
-            final baseUom = goods.json[cUom];
-            final baseUomId = baseUom is Map ? baseUom[cId] : baseUom;
-
-            var firstEmpty = -1;
-            var found = false;
-            var newNumber = numberOfQuantities;
-            for (var index = 0; index < numberOfQuantities; index++) {
-              // TODO fix removal
-              // if (found) {
-              //   state.fields['uom_$index']
-              //       ?.setValue(null, populateForm: false);
-              //   state.fields['qty_$index']
-              //       ?.setValue(null, populateForm: false);
-              // }
-              if (!found && baseUomId == value['uom_$index']?.id) {
-                newNumber = index + 1;
-                found = true;
-              }
-              if (firstEmpty == -1 && value['uom_$index'] == null) {
-                firstEmpty = index;
-              }
-            }
-            if (!found) {
-              if (firstEmpty == -1) {
-                newNumber += 1;
-              } else {
-                newNumber = firstEmpty + 1;
-              }
-            }
-
-            // print("number_of_qties $number_of_qties $newNumber $firstEmpty");
-
-            setState(() {
-              numberOfQuantities = newNumber;
-            });
           }
         },
         child: FormCard(isLast: true, children: <Widget>[
@@ -253,33 +213,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
               category: category,
               goods: goods,
               batch: batch,
-              changeState: (item) {
-                // print("setState ${_formKey.currentState?.fields[cGoods]}");
-                // print("changeState: (item) ${item.json}");
-
-                final state = _formKey.currentState;
-                if (state == null) {
-                  return;
-                }
-
-                final batch = item.json[cBatch];
-                if (batch != null) {
-                  batch[cName] = DT.pretty(batch[cDate] ?? '');
-                  state.patchValue({cBatch: MemoryItem.from(batch)});
-                  var qty = item.json['_balance']?[cQty] ?? '';
-                  state.patchValue({"qty_0": qty});
-                } else {
-                  final category = item.json['_category'];
-
-                  if (category.toString() == cCategory) {
-                    state.patchValue({cCategory: item});
-                  } else {
-                    final baseUom = item.json[cUom];
-                    state.patchValue({cGoods: item});
-                    state.patchValue({"uom_0": MemoryItem.from(baseUom)});
-                  }
-                }
-              },
+              changeState: (item) => changeState(item),
             ))
       ];
     }
@@ -287,49 +221,92 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     return <Widget>[];
   }
 
+  void changeState(MemoryItem item) {
+    // print("setState ${_formKey.currentState?.fields[cGoods]}");
+    // print("changeState: (item) ${item.json}");
+
+    final state = _formKey.currentState;
+    if (state == null) {
+      return;
+    }
+
+    final batch = item.json[cBatch];
+    if (batch != null) {
+      batch[cName] = DT.pretty(batch[cDate] ?? '');
+      state.patchValue({cBatch: MemoryItem.from(batch)});
+      List? qtyList = item.json['_balance']?[cQty];
+      if (qtyList != null) {
+        for (Map qty in qtyList) {
+          state.patchValue({"qty_0": qty["number"] ?? ''});
+          final uom = qty["uom"];
+          if (uom != null) {
+            final uomItem = MemoryItem(
+              id: uom['in']?[cId] ?? uom['in']?['id'] ?? uom[cId] ?? uom['id'],
+              json: uom,
+              updatedAt: DateTime.now().millisecondsSinceEpoch,
+            );
+
+            // workaround for displaying uom name
+            final name = uomItem.json['in']?['name'];
+            if (name != null) {
+              uomItem.json['name'] = name;
+            }
+
+            state.patchValue({"uom_0": uomItem});
+          }
+        }
+      }
+    } else {
+      final category = item.json['_category'];
+
+      if (category.toString() == cCategory) {
+        state.patchValue({cCategory: item});
+      } else {
+        state.patchValue({cGoods: item});
+      }
+    }
+  }
+
   List<Widget> qtyUom(BuildContext context) {
     final localization = AppLocalizations.of(context);
     var children = <Widget>[];
 
-    for (var index = 0; index < numberOfQuantities; index++) {
-      final uom = Expanded(
-        flex: 1,
-        child: DecoratedFormPickerField(
-          creatable: false,
-          ctx: const [cUom],
-          name: 'uom_$index',
-          label: localization.translate(cUom),
-          autofocus: true,
-          validator: FormBuilderValidators.compose([
-            FormBuilderValidators.required(errorText: "выберите значение"),
-          ]),
-          onSave: (context) {},
-        ),
-      );
+    final uom = Expanded(
+      flex: 1,
+      child: DecoratedFormPickerField(
+        creatable: false,
+        ctx: const [cUom],
+        name: 'uom_0',
+        label: localization.translate(cUom),
+        autofocus: true,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(errorText: "выберите значение"),
+        ]),
+        onSave: (context) {},
+      ),
+    );
 
-      final qty = Expanded(
-        flex: 1,
-        child: DecoratedFormField(
-          name: 'qty_$index',
-          label: localization.translate(cQty),
-          autofocus: true,
-          validator: FormBuilderValidators.compose([
-            FormBuilderValidators.required(),
-          ]),
-          onSave: (context) {},
-          keyboardType: TextInputType.number,
-        ),
-      );
+    final qty = Expanded(
+      flex: 1,
+      child: DecoratedFormField(
+        name: 'qty_0',
+        label: localization.translate(cQty),
+        autofocus: true,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(),
+        ]),
+        onSave: (context) {},
+        keyboardType: TextInputType.number,
+      ),
+    );
 
-      children.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [uom, const SizedBox(width: 5), qty],
-        ),
-      );
-      children.add(const SizedBox(height: 10));
-    }
-    // ;
+    children.add(
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [uom, const SizedBox(width: 5), qty],
+      ),
+    );
+    children.add(const SizedBox(height: 10));
 
     return children;
   }
@@ -389,7 +366,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final doc = await widget.doc.enrich(widget.schema);
 
       try {
-        final result = await register(doc, data, numberOfQuantities, widget.ctx, setStatus);
+        final result = await register(doc, data, 1, widget.ctx, setStatus);
 
         if (!(result.isNew || result.isEmpty)) {
           done('register');
@@ -409,7 +386,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(widget.schema);
-        final record = item ?? await register(doc, data, numberOfQuantities, widget.ctx, setStatus);
+        final record = item ?? await register(doc, data, 1, widget.ctx, setStatus);
 
         if (item == null) {
           if (!(record.isEmpty || record.isNew)) {
@@ -510,12 +487,47 @@ class BalanceListBuilder extends StatelessWidget {
           return Text(fName.resolve(item.json) ?? '');
         },
         subtitle: (MemoryItem item) {
-          return Text(item.json['_balance']?[cQty] ?? '');
+          // return Text(item.json['_balance']?[cQty] ?? '');
+          return Text(qtyToText(item.json['_balance']?[cQty]));
         },
         onTap: (context, item) => changeState(item),
         mode: Mode.mobile,
         sortByName: true,
       ),
     );
+  }
+
+  String qtyToText(List<dynamic>? qtyList) {
+    var text = '';
+    if (qtyList != null && qtyList.isNotEmpty) {
+      for (Map qty in qtyList) {
+        if (text != '') {
+          text = '$text, ';
+        }
+        text = '$text ${qty['number'] ?? ''}';
+        var uom = qty['uom'];
+
+        if (uom is String) {
+          text = '$text $uom';
+        } else {
+          while (uom is Map) {
+            if (uom['uom'] == null) {
+              break;
+            }
+            text = '$text ${uom['in']?['name'] ?? ''} по ${uom['number'] ?? ''}';
+            if (uom['uom']?['name'] != null) {
+              text = '$text ${uom['uom']?['name'] ?? ''}';
+              break;
+            } else {
+              uom = uom['uom'];
+            }
+          }
+        }
+      }
+    } else {
+      text = '';
+    }
+    // print('_text $text');
+    return text;
   }
 }
