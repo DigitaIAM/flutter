@@ -108,8 +108,6 @@ class _MaterialViewState extends State<MaterialView> {
             return Text(text, style: style);
           },
           subtitle: (MemoryItem item) {
-            final text = '${fQty.resolve(item.json) ?? ''} ${fUomAtQty.resolve(item.json)?.name() ?? ''}';
-
             TextStyle? style;
 
             if (item.json[cStatus] == 'deleted') {
@@ -118,7 +116,11 @@ class _MaterialViewState extends State<MaterialView> {
               );
             }
 
-            return Text(text, style: style);
+            return FutureBuilder(
+                future: qtyToText(item.json[cQty]),
+                builder: ((context, snapshot) {
+                  return Text(snapshot.data ?? '', style: style);
+                }));
           },
           // onTap: (MemoryItem item) => {},
           actions: [
@@ -140,6 +142,53 @@ class _MaterialViewState extends State<MaterialView> {
         ),
       ),
     );
+  }
+
+  Future<String> qtyToText(Map? qty) async {
+    var text = '';
+    if (qty != null && qty.isNotEmpty) {
+      print('_qty $qty');
+      if (text != '') {
+        text = '$text, ';
+      }
+      text = '$text ${qty['number'] ?? ''}';
+      var uom = qty['uom'];
+
+      if (uom is String) {
+        print('uomIsString');
+        var obj = await Api.feathers().get(
+            serviceName: "memories",
+            objectId: uom,
+            params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+        text = '$text ${obj['name'] ?? ''}';
+      } else {
+        print('_uomType ${uom.runtimeType}');
+        while (uom is Map) {
+          var inObj = await Api.feathers().get(
+              serviceName: "memories",
+              objectId: uom['in'] ?? '',
+              params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+
+          text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';
+          print('_uom $uom');
+          if (uom['uom'] is String) {
+            var obj = await Api.feathers().get(
+                serviceName: "memories",
+                objectId: uom['uom'] ?? '',
+                params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+
+            text = '$text ${obj['name'] ?? ''}';
+            break;
+          } else {
+            uom = uom['uom'];
+          }
+        }
+      }
+    } else {
+      text = '0';
+    }
+    print('_text $text');
+    return text;
   }
 
   void deleteItem(BuildContext context, MemoryItem item) async {

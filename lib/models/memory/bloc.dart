@@ -153,7 +153,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     var query = {
       'oid': Api.instance.oid,
       'ctx': event.ctx,
-      '\$limit': event.limit,
+      '\$limit': event.limit ?? 20,
       '\$skip': startIndex,
       'reverse': event.reverse,
     };
