@@ -5,8 +5,8 @@ import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/utils/date.dart';
 
-Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numberOfQuantities, List ctx,
-    void Function(String) onStatusChange) async {
+Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numberOfQuantities, bool isDispatch,
+    List ctx, void Function(String) onStatusChange) async {
   onStatusChange("registering");
 
   if (!data.isEmpty) {
@@ -66,17 +66,41 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
 
       final qty = data['qty_$index'];
 
-      if (index > 0) {
-        final newQty = {cNumber: qty, cUom: uom.json[cUuid] ?? uom.id, 'in': currentQty[cUom]};
-        currentQty[cUom] = newQty;
-        currentQty = newQty;
-      } else {
+      if (isDispatch) {
         currentQty[cNumber] = qty;
-        currentQty[cUom] = uom.json[cUuid] ?? uom.id;
-      }
 
-      if (baseUomId == data['uom_$index']?.id) {
-        break;
+        if (uom.json['in'] == null) {
+          currentQty[cUom] = uom.json[cUuid] ?? uom.id;
+        } else {
+          currentQty[cUom] = uom.json;
+          currentQty = currentQty[cUom];
+
+          while (currentQty['in'] != null) {
+            currentQty['in'] = currentQty['in'][cUuid];
+            if (currentQty[cUom]['in'] == null) {
+              currentQty[cUom] = currentQty[cUom][cUuid];
+              break;
+            } else {
+              currentQty = currentQty[cUom];
+            }
+            // print("quantity1 $quantity");
+            // print("currentQty1 $currentQty");
+          }
+        }
+        print("quantity $quantity");
+      } else {
+        if (index > 0) {
+          final newQty = {cNumber: qty, cUom: uom.json[cUuid] ?? uom.id, 'in': currentQty[cUom]};
+          currentQty[cUom] = newQty;
+          currentQty = newQty;
+        } else {
+          currentQty[cNumber] = qty;
+          currentQty[cUom] = uom.json['in']?[cUuid] ?? uom.json[cUuid] ?? uom.id;
+        }
+
+        if (baseUomId == data['uom_$index']?.id) {
+          break;
+        }
       }
     }
 
