@@ -302,7 +302,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
       final doc = await widget.doc.enrich(widget.schema);
 
       try {
-        final result = await register(doc, data, numberOfQuantities, widget.ctx, setStatus);
+        final result = await register(doc, data, numberOfQuantities, false, widget.ctx, setStatus);
 
         if (!(result.isNew || result.isEmpty)) {
           done('register');
@@ -322,7 +322,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(widget.schema);
-        final record = item ?? await register(doc, data, numberOfQuantities, widget.ctx, setStatus);
+        final record = item ?? await register(doc, data, numberOfQuantities, false, widget.ctx, setStatus);
 
         if (item == null) {
           if (!(record.isEmpty || record.isNew)) {

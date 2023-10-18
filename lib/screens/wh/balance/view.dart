@@ -59,7 +59,7 @@ Field fType = Field(cType, CalculatedType((MemoryItem rec) async {
   return rec.json[cType] ?? rec.json['op']?[cType] ?? '';
 }));
 
-Field fQty = Field(cQty, CalculatedType((MemoryItem rec) async {
+Field fQty = Field('_qty', CalculatedType((MemoryItem rec) async {
   var text = '';
   print("_rec_: ${rec.json}");
   List? list = rec.json[cQty] ?? rec.json['op']?[cQty];
@@ -67,7 +67,9 @@ Field fQty = Field(cQty, CalculatedType((MemoryItem rec) async {
   if (list != null && list.isNotEmpty) {
     for (Map qty in list) {
       print('_qty $qty');
-      if (text != '') { text = '$text, '; }
+      if (text != '') {
+        text = '$text, ';
+      }
       text = '$text ${qty['number'] ?? ''}';
       var uom = qty['uom'];
 
