@@ -360,14 +360,20 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       return;
     }
     if (state.saveAndValidate()) {
-      final data = state.value;
+      var data = state.value;
 
       // TODO understand is it required
       final doc = await widget.doc.enrich(widget.schema);
 
       try {
-        final result = await register(doc, data, 1, widget.ctx, setStatus);
+        // workaround for normalize data structure
+        MemoryItem? uom = data['uom_0'];
+        // print("registerPreparation_data ${uom?.json}");
+        if (uom?.json['name'] != null) {
+          uom!.json.remove('name');
+        }
 
+        final result = await register(doc, data, 1, true, widget.ctx, setStatus);
         if (!(result.isNew || result.isEmpty)) {
           done('register');
         }
@@ -386,7 +392,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(widget.schema);
-        final record = item ?? await register(doc, data, 1, widget.ctx, setStatus);
+        final record = item ?? await register(doc, data, 1, true, widget.ctx, setStatus);
 
         if (item == null) {
           if (!(record.isEmpty || record.isNew)) {
