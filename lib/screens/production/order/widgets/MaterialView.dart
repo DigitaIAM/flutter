@@ -10,12 +10,10 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
+import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
-import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
-
-import 'ProducedEdit.dart';
 
 class MaterialView extends StatefulWidget {
   final MemoryItem order;
@@ -118,7 +116,7 @@ class _MaterialViewState extends State<MaterialView> {
             }
 
             return FutureBuilder(
-                future: qtyToText(item.json[cQty]),
+                future: qtyToText(item),
                 builder: ((context, snapshot) {
                   return Text(snapshot.data ?? '', style: style);
                 }));
@@ -143,53 +141,6 @@ class _MaterialViewState extends State<MaterialView> {
         ),
       ),
     );
-  }
-
-  Future<String> qtyToText(Map? qty) async {
-    var text = '';
-    if (qty != null && qty.isNotEmpty) {
-      print('_qty $qty');
-      if (text != '') {
-        text = '$text, ';
-      }
-      text = '$text ${qty['number'] ?? ''}';
-      var uom = qty['uom'];
-
-      if (uom is String) {
-        print('uomIsString');
-        var obj = await Api.feathers().get(
-            serviceName: "memories",
-            objectId: uom,
-            params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
-        text = '$text ${obj['name'] ?? ''}';
-      } else {
-        print('_uomType ${uom.runtimeType}');
-        while (uom is Map) {
-          var inObj = await Api.feathers().get(
-              serviceName: "memories",
-              objectId: uom['in'] ?? '',
-              params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
-
-          text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';
-          print('_uom $uom');
-          if (uom['uom'] is String) {
-            var obj = await Api.feathers().get(
-                serviceName: "memories",
-                objectId: uom['uom'] ?? '',
-                params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
-
-            text = '$text ${obj['name'] ?? ''}';
-            break;
-          } else {
-            uom = uom['uom'];
-          }
-        }
-      }
-    } else {
-      text = '0';
-    }
-    print('_text $text');
-    return text;
   }
 
   void deleteItem(BuildContext context, MemoryItem item) async {
@@ -239,8 +190,8 @@ class _MaterialViewState extends State<MaterialView> {
             final ip = printer['ip'];
             final port = int.parse(printer['port']);
 
-            final result = await Labels.connect(
-                ip, port, (printer) async => printingMaterials(printer, widget.order, doc, (newStatus) {}));
+            final result =
+                await Labels.connect(ip, port, (printer) async => printing(printer, widget.order, doc, (newStatus) {}));
 
             if (result != PrintResult.success) {
               showToast(result.msg,
@@ -259,57 +210,5 @@ class _MaterialViewState extends State<MaterialView> {
       mainAxisSize: MainAxisSize.min,
       children: children,
     );
-  }
-
-  static Future<PrintResult> printingMaterials(
-    NetworkPrinter printer,
-    MemoryItem? orderDoc,
-    MemoryItem doc,
-    void Function(String) updateStatus,
-  ) async {
-    updateStatus("printing materials");
-
-    final record = await doc.enrich([
-      const Field(cDocument, ReferenceType(['production', 'order'])),
-    ]);
-
-    MemoryItem orderItem;
-    if (orderDoc == null) {
-      orderItem = doc.json[cDocument] ?? doc.json[cOrder];
-    } else {
-      orderItem = orderDoc;
-    }
-
-    final order = await orderItem.enrich([
-      fOperator,
-    ]);
-
-    final date = order.json[cDate] ?? record.json[cDate] ?? '';
-    final dd = DT.format(date);
-
-    MemoryItem? goods = record.json['goods'];
-    final goodsName = goods?.json[cName] ?? '';
-
-    final operator = order.json[cOperator] as MemoryItem?;
-    if (operator == null) {
-      throw const FormatException('operator is not selected');
-    }
-    final operatorName = operator.name();
-
-    final qty = await POProducedEdit.qtyToText(record);
-
-    final Map<String, String> labelData = {
-      "продукция": goodsName,
-      "дата": dd,
-      "количество": qty,
-      "line1": "",
-      "оператор": operatorName,
-    };
-
-    // print("labelData: $labelData");
-
-    Labels.lines(printer, record.id, labelData);
-
-    return PrintResult.success;
   }
 }

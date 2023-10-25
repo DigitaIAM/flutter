@@ -8,6 +8,7 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
+import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/utils/date.dart';
@@ -25,13 +26,13 @@ class POProducedEdit extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _POProducedEditState();
 
-  static Future<PrintResult> printing(
+  static Future<PrintResult> printingProduce(
     NetworkPrinter printer,
     MemoryItem? orderDoc,
     MemoryItem doc,
     void Function(String) updateStatus,
   ) async {
-    updateStatus("printing");
+    updateStatus("printing produce");
 
     final record = await doc.enrich([
       fControl,
@@ -137,59 +138,6 @@ class POProducedEdit extends StatefulWidget {
     Labels.lines(printer, record.id, labelData);
 
     return PrintResult.success;
-  }
-
-  static Future<String> qtyToText(MemoryItem rec) async {
-    var text = '';
-    // print("_rec_: ${record.json}");
-    Map? map = rec.json[cQty] ?? rec.json['op']?[cQty] ?? '';
-    // print('_list $map');
-    if (map != null && map.isNotEmpty) {
-      // print('_qty $map');
-      if (text != '') {
-        text = '$text, ';
-      }
-      text = '$text ${map['number'] ?? ''}';
-      var uom = map['uom'];
-
-      if (uom is String) {
-        // print('uomIsString');
-        var obj = await Api.feathers().get(
-            serviceName: "memories",
-            objectId: uom,
-            params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
-        text = '$text ${obj['name'] ?? ''}';
-      } else {
-        // print('_uomType ${uom.runtimeType}');
-        while (uom is Map) {
-          var inObj = await Api.feathers().get(
-              serviceName: "memories",
-              objectId: uom['in'] ?? '',
-              params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
-
-          text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';
-          // print('_uom $uom');
-          if (uom['uom'] is String) {
-            var obj = await Api.feathers().get(
-                serviceName: "memories",
-                objectId: uom['uom'] ?? '',
-                params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
-
-            text = '$text ${obj['name'] ?? ''}';
-            break;
-          } else {
-            uom = uom['uom'];
-          }
-        }
-      }
-    } else {
-      text = '0';
-    }
-    // print('_text $text');
-    if (text.characters.first == ' ') {
-      text = text.substring(1);
-    }
-    return text;
   }
 }
 
@@ -496,7 +444,7 @@ class _POProducedEditState extends State<POProducedEdit> {
 
         final record = MemoryItem.from(response);
 
-        return await POProducedEdit.printing(
+        return await POProducedEdit.printingProduce(
           printer,
           widget.order,
           record,

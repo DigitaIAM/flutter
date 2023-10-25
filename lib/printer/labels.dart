@@ -77,7 +77,7 @@ class Labels {
     printer.print_();
   }
 
-  static void lines_with_barcode(NetworkPrinter printer, String goodsName, String goodsUuid, String goodsId,
+  static void linesWithBarcode(NetworkPrinter printer, String goodsName, String goodsUuid, String goodsId,
       String batchBarcode, String batchId, String batchDate, Map<String, String> data) {
     printer.clear();
     printer.codepage(name: "1251");
@@ -97,8 +97,7 @@ class Labels {
 
     for (final entry in data.entries) {
       final name = entry.key;
-      // workaround for cut the string off
-      final value = (entry.value.length > 22) ? entry.value.substring(0, 22) : entry.value;
+      final val = entry.value;
 
       if (name.startsWith("line")) {
         printer.bar(50, y - 1, 710, 3);
@@ -106,35 +105,25 @@ class Labels {
       } else {
         printer.text(245, y, "$name:", font: "3", mx: 1, my: 1, alignment: 3);
 
-        // if (value.length > 20) {
-        //   final split = value.toString().split(' ');
-        //   var line = '';
-        //   line = '$line${split[0]}';
-        //   var count = 0;
-        //   for (String str in split.getRange(1, split.length)) {
-        //     if (line.length + str.length <= 19) {
-        //       line += ' $str';
-        //       printer.text(230, y, " $line", font: "4", mx: 1, my: 1);
-        //       count++;
-        //       y += 30;
-        //     } else {
-        //       if (str == split.last) {
-        //         printer.text(230, y, " $str", font: "4", mx: 1, my: 1);
-        //         count++;
-        //       } else {
-        //         printer.text(230, y, " $line", font: "4", mx: 1, my: 1);
-        //         count++;
-        //         y += 30;
-        //         line = str;
-        //       }
-        //     }
-        //     if (count == 2) {
-        //       break;
-        //     }
-        //   }
-        // } else {
-        printer.text(230, y, " $value", font: "4", mx: 1, my: 1);
-        // }
+        if (val.length > 20) {
+          final len = val.length;
+          final count = (len / 20).ceil();
+          var start = 0;
+          for (var i = 0; i < count; i += 1) {
+            var end = (start + 20) > len ? len : start + 20;
+            var value = val.substring(start, end);
+            if (value.startsWith(' ')) {
+              value = value.substring(1);
+            }
+            printer.text(230, y, " $value", font: "4", mx: 1, my: 1);
+            // print("${val.substring(start, end)}");
+            start += 20;
+            y += 35;
+          }
+        } else {
+          printer.text(230, y, " $val", font: "4", mx: 1, my: 1);
+          // print("$val");
+        }
 
         y += 40;
       }

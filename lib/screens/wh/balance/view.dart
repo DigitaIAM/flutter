@@ -61,12 +61,12 @@ Field fType = Field(cType, CalculatedType((MemoryItem rec) async {
 
 Field fQty = Field('_qty', CalculatedType((MemoryItem rec) async {
   var text = '';
-  print("_rec_: ${rec.json}");
+  // print("_rec_: ${rec.json}");
   List? list = rec.json[cQty] ?? rec.json['op']?[cQty];
-  print('_list $list');
+  // print('_list $list');
   if (list != null && list.isNotEmpty) {
     for (Map qty in list) {
-      print('_qty $qty');
+      // print('_qty $qty');
       if (text != '') {
         text = '$text, ';
       }
@@ -74,14 +74,14 @@ Field fQty = Field('_qty', CalculatedType((MemoryItem rec) async {
       var uom = qty['uom'];
 
       if (uom is String) {
-        print('uomIsString');
+        // print('uomIsString');
         var obj = await Api.feathers().get(
             serviceName: "memories",
             objectId: uom,
             params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
         text = '$text ${obj['name'] ?? ''}';
       } else {
-        print('_uomType ${uom.runtimeType}');
+        // print('_uomType ${uom.runtimeType}');
         while (uom is Map) {
           var inObj = await Api.feathers().get(
               serviceName: "memories",
@@ -89,7 +89,7 @@ Field fQty = Field('_qty', CalculatedType((MemoryItem rec) async {
               params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
 
           text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';
-          print('_uom $uom');
+          // print('_uom $uom');
           if (uom['uom'] is String) {
             var obj = await Api.feathers().get(
                 serviceName: "memories",
@@ -107,7 +107,7 @@ Field fQty = Field('_qty', CalculatedType((MemoryItem rec) async {
   } else {
     text = '0';
   }
-  print('_text $text');
+  // print('_text $text');
   return text;
 
   // return rec.json[cQty] ?? rec.json['op']?[cQty] ?? '';
@@ -447,7 +447,7 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
           "приход от": dd,
         };
 
-        Labels.lines_with_barcode(
+        Labels.linesWithBarcode(
             printer, goodsName, goodsUuid, goodsId, batchBarcode, operationId, batchDate, labelData);
 
         return Future<PrintResult>.value(PrintResult.success);
