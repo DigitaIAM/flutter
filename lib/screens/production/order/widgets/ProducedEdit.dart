@@ -82,7 +82,8 @@ class POProducedEdit extends StatefulWidget {
     }
     final controlName = control.name();
 
-    final qty = record.json[cQty] ?? '';
+    // final qty = record.json[cQty] ?? '';
+    final qty = await qtyToText(record);
 
     final Map<String, String> labelData;
     if (type == 'roll') {
@@ -99,7 +100,7 @@ class POProducedEdit extends StatefulWidget {
         "сырьё": "$material $notes",
         "дата": dd,
         "line1": "",
-        "вес": "$qty кг",
+        "вес": qty,
         "длина": "$length м",
         "line2": "",
         "оператор": operatorName,
@@ -110,7 +111,7 @@ class POProducedEdit extends StatefulWidget {
         "продукция": productName,
         "артикул": partNumber,
         "дата": dd,
-        "количество": "$qty шт",
+        "количество": qty,
         "line1": "",
         "оператор": operatorName,
         "проверил": controlName,
@@ -123,7 +124,7 @@ class POProducedEdit extends StatefulWidget {
         "продукция": productName,
         "артикул": partNumber,
         "дата": dd,
-        "количество": "$qty шт",
+        "количество": qty,
         "line1": "",
         "оператор": operatorName,
         "проверил": controlName,
@@ -136,6 +137,59 @@ class POProducedEdit extends StatefulWidget {
     Labels.lines(printer, record.id, labelData);
 
     return PrintResult.success;
+  }
+
+  static Future<String> qtyToText(MemoryItem rec) async {
+    var text = '';
+    // print("_rec_: ${record.json}");
+    Map? map = rec.json[cQty] ?? rec.json['op']?[cQty] ?? '';
+    // print('_list $map');
+    if (map != null && map.isNotEmpty) {
+      // print('_qty $map');
+      if (text != '') {
+        text = '$text, ';
+      }
+      text = '$text ${map['number'] ?? ''}';
+      var uom = map['uom'];
+
+      if (uom is String) {
+        // print('uomIsString');
+        var obj = await Api.feathers().get(
+            serviceName: "memories",
+            objectId: uom,
+            params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+        text = '$text ${obj['name'] ?? ''}';
+      } else {
+        // print('_uomType ${uom.runtimeType}');
+        while (uom is Map) {
+          var inObj = await Api.feathers().get(
+              serviceName: "memories",
+              objectId: uom['in'] ?? '',
+              params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+
+          text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';
+          // print('_uom $uom');
+          if (uom['uom'] is String) {
+            var obj = await Api.feathers().get(
+                serviceName: "memories",
+                objectId: uom['uom'] ?? '',
+                params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+
+            text = '$text ${obj['name'] ?? ''}';
+            break;
+          } else {
+            uom = uom['uom'];
+          }
+        }
+      }
+    } else {
+      text = '0';
+    }
+    // print('_text $text');
+    if (text.characters.first == ' ') {
+      text = text.substring(1);
+    }
+    return text;
   }
 }
 
@@ -378,27 +432,27 @@ class _POProducedEditState extends State<POProducedEdit> {
 
       final area = widget.order.json[cArea] ?? MemoryItem.create();
 
-        Map<String, dynamic> uom = {};
-        Map<String, dynamic> innerQty = {};
+      Map<String, dynamic> uom = {};
+      Map<String, dynamic> innerQty = {};
 
-        final product = order.json['product'] as MemoryItem;
+      final product = order.json['product'] as MemoryItem;
 
-        final filter = area.json['type'] == 'roll' ? "Рул" : "Кор";
+      final filter = area.json['type'] == 'roll' ? "Рул" : "Кор";
 
-        final uomIn = await Api.feathers().find(serviceName: "memories", query: {
-          "oid": Api.instance.oid,
-          "ctx": [cUom],
-          "filter": {cName: filter},
-        });
+      final uomIn = await Api.feathers().find(serviceName: "memories", query: {
+        "oid": Api.instance.oid,
+        "ctx": [cUom],
+        "filter": {cName: filter},
+      });
 
-        uom[cNumber] = qty;
-        uom[cUom] = product.json[cUom]?[cUuid] ?? '';
-        uom['in'] = uomIn['data']?[0]?[cUuid];
+      uom[cNumber] = qty;
+      uom[cUom] = product.json[cUom]?[cUuid] ?? '';
+      uom['in'] = uomIn['data']?[0]?[cUuid];
 
-        innerQty[cNumber] = 1;
-        innerQty[cUom] = uom;
+      innerQty[cNumber] = 1;
+      innerQty[cUom] = uom;
 
-        qty = innerQty;
+      qty = innerQty;
 
       final recordData = {
         cDocument: orderId,

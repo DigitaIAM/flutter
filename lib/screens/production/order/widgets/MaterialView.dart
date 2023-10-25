@@ -11,6 +11,7 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
 
@@ -239,7 +240,7 @@ class _MaterialViewState extends State<MaterialView> {
             final port = int.parse(printer['port']);
 
             final result = await Labels.connect(
-                ip, port, (printer) async => POProducedEdit.printing(printer, widget.order, doc, (newStatus) {}));
+                ip, port, (printer) async => printingMaterials(printer, widget.order, doc, (newStatus) {}));
 
             if (result != PrintResult.success) {
               showToast(result.msg,
@@ -258,5 +259,57 @@ class _MaterialViewState extends State<MaterialView> {
       mainAxisSize: MainAxisSize.min,
       children: children,
     );
+  }
+
+  static Future<PrintResult> printingMaterials(
+    NetworkPrinter printer,
+    MemoryItem? orderDoc,
+    MemoryItem doc,
+    void Function(String) updateStatus,
+  ) async {
+    updateStatus("printing materials");
+
+    final record = await doc.enrich([
+      const Field(cDocument, ReferenceType(['production', 'order'])),
+    ]);
+
+    MemoryItem orderItem;
+    if (orderDoc == null) {
+      orderItem = doc.json[cDocument] ?? doc.json[cOrder];
+    } else {
+      orderItem = orderDoc;
+    }
+
+    final order = await orderItem.enrich([
+      fOperator,
+    ]);
+
+    final date = order.json[cDate] ?? record.json[cDate] ?? '';
+    final dd = DT.format(date);
+
+    MemoryItem? goods = record.json['goods'];
+    final goodsName = goods?.json[cName] ?? '';
+
+    final operator = order.json[cOperator] as MemoryItem?;
+    if (operator == null) {
+      throw const FormatException('operator is not selected');
+    }
+    final operatorName = operator.name();
+
+    final qty = await POProducedEdit.qtyToText(record);
+
+    final Map<String, String> labelData = {
+      "продукция": goodsName,
+      "дата": dd,
+      "количество": qty,
+      "line1": "",
+      "оператор": operatorName,
+    };
+
+    // print("labelData: $labelData");
+
+    Labels.lines(printer, record.id, labelData);
+
+    return PrintResult.success;
   }
 }
