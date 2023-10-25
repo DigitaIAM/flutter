@@ -9,7 +9,7 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
     List ctx, void Function(String) onStatusChange) async {
   onStatusChange("registering");
 
-  if (!data.isEmpty) {
+  if (data.isNotEmpty) {
     // print("data $data");
 
     // print("doc in fn register: ${doc}");
@@ -171,21 +171,7 @@ Future<PrintResult> printing(
     batchDate = batch[cDate] ?? '';
   }
 
-  var qtyUom = '';
-
-  var qty = record.json[cQty] ?? '';
-
-  while (qty is Map) {
-    final uom = qty[cUom];
-    if (uom is Map) {
-      if (uom['in'] != null) {
-        qtyUom = '$qtyUom${qty[cNumber]} ${uom['in'][cName]}\nпо ';
-      } else {
-        qtyUom = '$qtyUom${qty[cNumber]} ${uom[cName]} ';
-      }
-    }
-    qty = qty[cUom];
-  }
+  final qtyUom = await qtyToText(record);
 
   // print('QTYUOM: $qtyUom');
 
@@ -217,7 +203,60 @@ Future<PrintResult> printing(
   }
 
   // TODO: place length check and line break from lines_with_barcode to this function
-  Labels.lines_with_barcode(printer, goodsName, goodsUuid, goodsId, batchBarcode, batchId, batchDate, labelData);
+  Labels.linesWithBarcode(printer, goodsName, goodsUuid, goodsId, batchBarcode, batchId, batchDate, labelData);
 
   return Future<PrintResult>.value(PrintResult.success);
+}
+
+Future<String> qtyToText(MemoryItem rec) async {
+  var text = '';
+// print("_rec_: ${record.json}");
+  Map? map = rec.json[cQty] ?? rec.json['op']?[cQty] ?? '';
+// print('_list $map');
+  if (map != null && map.isNotEmpty) {
+// print('_qty $map');
+    if (text != '') {
+      text = '$text, ';
+    }
+    text = '$text ${map['number'] ?? ''}';
+    var uom = map['uom'];
+
+    if (uom is String) {
+// print('uomIsString');
+      var obj = await Api.feathers().get(
+          serviceName: "memories",
+          objectId: uom,
+          params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+      text = '$text ${obj['name'] ?? ''}';
+    } else {
+// print('_uomType ${uom.runtimeType}');
+      while (uom is Map) {
+        var inObj = await Api.feathers().get(
+            serviceName: "memories",
+            objectId: uom['in'] ?? '',
+            params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+
+        text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';
+// print('_uom $uom');
+        if (uom['uom'] is String) {
+          var obj = await Api.feathers().get(
+              serviceName: "memories",
+              objectId: uom['uom'] ?? '',
+              params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+
+          text = '$text ${obj['name'] ?? ''}';
+          break;
+        } else {
+          uom = uom['uom'];
+        }
+      }
+    }
+  } else {
+    text = '0';
+  }
+// print('_text $text');
+  if (text.startsWith(' ')) {
+    text = text.substring(1);
+  }
+  return text;
 }

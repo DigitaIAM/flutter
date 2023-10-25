@@ -208,8 +208,8 @@ class _POProducedViewState extends State<POProducedView> {
             final ip = printer['ip'];
             final port = int.parse(printer['port']);
 
-            final result = await Labels.connect(
-                ip, port, (printer) async => POProducedEdit.printing(printer, widget.order, doc, (newStatus) {}));
+            final result = await Labels.connect(ip, port,
+                (printer) async => POProducedEdit.printingProduce(printer, widget.order, doc, (newStatus) {}));
 
             if (result != PrintResult.success) {
               showToast(result.msg,
