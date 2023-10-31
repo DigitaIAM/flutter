@@ -50,6 +50,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   String status = "register";
   String registered = '';
 
+  bool getSingleItems = false;
+
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
@@ -207,12 +209,13 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       return <Widget>[
         // Expanded(child: WHDispatchListBuilder(storage: storage))
         SizedBox(
-            height: 230,
+            height: 350,
             child: BalanceListBuilder(
               storage: storage,
               category: category,
               goods: goods,
               batch: batch,
+              getSingleItems: getSingleItems,
               changeState: (item) => changeState(item),
             ))
       ];
@@ -230,30 +233,52 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       return;
     }
 
+    void fillQty(Map qty) {
+      // print('fn_fillQty $qty');
+      state.patchValue({"qty_0": qty["number"].toString()});
+      final uom = qty["uom"];
+      if (uom != null) {
+        final uomItem = MemoryItem(
+          id: uom['in']?[cId] ?? uom['in']?['id'] ?? uom[cId] ?? uom['id'],
+          json: uom,
+          updatedAt: DateTime.now().millisecondsSinceEpoch,
+        );
+
+        // workaround for displaying uom name
+        final name = uomItem.json['in']?['name'];
+        if (name != null) {
+          uomItem.json['name'] = name;
+        }
+
+        state.patchValue({"uom_0": uomItem});
+      }
+    }
+
+    if (getSingleItems) {
+      Map? qty = item.json['_balance']?[cQty] ?? item.json[cQty];
+      if (qty != null) {
+        fillQty(qty);
+      }
+
+      // setState(() {
+      //   getSingleItems = false;
+      // });
+    }
+
     final batch = item.json[cBatch];
     if (batch != null) {
       batch[cName] = DT.pretty(batch[cDate] ?? '');
       state.patchValue({cBatch: MemoryItem.from(batch)});
-      List? qtyList = item.json['_balance']?[cQty];
+      List? qtyList = item.json['_balance']?[cQty] ?? item.json;
+      print("_qtyList $qtyList");
       if (qtyList != null) {
-        for (Map qty in qtyList) {
-          state.patchValue({"qty_0": qty["number"] ?? ''});
-          final uom = qty["uom"];
-          if (uom != null) {
-            final uomItem = MemoryItem(
-              id: uom['in']?[cId] ?? uom['in']?['id'] ?? uom[cId] ?? uom['id'],
-              json: uom,
-              updatedAt: DateTime.now().millisecondsSinceEpoch,
-            );
-
-            // workaround for displaying uom name
-            final name = uomItem.json['in']?['name'];
-            if (name != null) {
-              uomItem.json['name'] = name;
-            }
-
-            state.patchValue({"uom_0": uomItem});
-          }
+        if (qtyList.length == 1) {
+          Map qty = qtyList.first;
+          fillQty(qty);
+        } else {
+          setState(() {
+            getSingleItems = true;
+          });
         }
       }
     } else {
@@ -261,7 +286,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
       if (category.toString() == cCategory) {
         state.patchValue({cCategory: item});
-      } else {
+      } else if (state.value[cGoods] == null) {
         state.patchValue({cGoods: item});
       }
     }
@@ -431,7 +456,14 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 }
 
 class BalanceListBuilder extends StatelessWidget {
-  const BalanceListBuilder({super.key, this.storage, this.category, this.goods, this.batch, required this.changeState});
+  const BalanceListBuilder(
+      {super.key,
+      this.storage,
+      this.category,
+      this.goods,
+      this.batch,
+      this.getSingleItems = false,
+      required this.changeState});
 
   final Function(MemoryItem item) changeState;
 
@@ -439,6 +471,7 @@ class BalanceListBuilder extends StatelessWidget {
   final MemoryItem? category;
   final MemoryItem? goods;
   final MemoryItem? batch;
+  final bool getSingleItems;
 
   @override
   Widget build(BuildContext context) {
@@ -462,8 +495,10 @@ class BalanceListBuilder extends StatelessWidget {
     }
 
     if (batch != null) {
-      filter[cBatch] = batch!.json[cUuid] ?? '';
+      filter[cBatch] = batch!.json['id'] ?? '';
     }
+
+    filter['getSingleItems'] = getSingleItems;
 
     const ctx = ['warehouse', 'stock'];
 
@@ -487,14 +522,26 @@ class BalanceListBuilder extends StatelessWidget {
         filter: filter,
         title: (MemoryItem item) {
           final batch = item.json[cBatch];
+          if (getSingleItems) {
+            final id = item.json[cId].toString().split('/').last;
+            return Text(id);
+          }
+
           if (batch != null) {
             return Text(DT.pretty(batch[cDate] ?? ''));
           }
           return Text(fName.resolve(item.json) ?? '');
         },
         subtitle: (MemoryItem item) {
-          // return Text(item.json['_balance']?[cQty] ?? '');
-          return Text(qtyToText(item.json['_balance']?[cQty]));
+          final qty = item.json['_balance']?[cQty] ?? item.json[cQty];
+          if (qty != null) {
+            if (qty is List) {
+              return Text(qtyToText(qty));
+            } else if (qty is Map) {
+              return Text(qtyToText([qty]));
+            }
+          }
+          return const Text('');
         },
         onTap: (context, item) => changeState(item),
         mode: Mode.mobile,
@@ -502,38 +549,91 @@ class BalanceListBuilder extends StatelessWidget {
       ),
     );
   }
+}
 
-  String qtyToText(List<dynamic>? qtyList) {
-    var text = '';
-    if (qtyList != null && qtyList.isNotEmpty) {
-      for (Map qty in qtyList) {
-        if (text != '') {
-          text = '$text, ';
-        }
-        text = '$text ${qty['number'] ?? ''}';
-        var uom = qty['uom'];
+class ItemsListBuilder extends StatelessWidget {
+  const ItemsListBuilder({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    this.onTap,
+    required this.items,
+  });
 
-        if (uom is String) {
-          text = '$text $uom';
-        } else {
-          while (uom is Map) {
-            if (uom['uom'] == null) {
-              break;
-            }
-            text = '$text ${uom['in']?['name'] ?? ''} по ${uom['number'] ?? ''}';
-            if (uom['uom']?['name'] != null) {
-              text = '$text ${uom['uom']?['name'] ?? ''}';
-              break;
-            } else {
-              uom = uom['uom'];
-            }
+  final Widget Function(MemoryItem) title;
+  final Widget Function(MemoryItem) subtitle;
+  final Function(BuildContext, MemoryItem)? onTap;
+  final List<dynamic> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: items.length,
+      // controller: _scrollController,
+      itemBuilder: (context, index) {
+        final item = MemoryItem(id: index.toString(), json: items[index]);
+        // if (widget.actions.isEmpty) {
+        return card(context, item);
+        // }
+        // return SwipeActionWidget(
+        //   item: item,
+        //   actions: widget.actions,
+        //   // key: key,
+        //   child: card(context, item),
+        // );
+      },
+    );
+  }
+
+  Widget card(BuildContext context, MemoryItem item) {
+    return Card(
+      elevation: 2.0,
+      margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+        // leading: const Icon(Icons.account_circle),
+        title: title(item),
+        subtitle: subtitle(item),
+        trailing: onTap == null ? null : const Icon(Icons.arrow_forward),
+        onTap: () {
+          onTap?.call(context, item);
+        },
+      ),
+    );
+  }
+}
+
+String qtyToText(List<dynamic>? qtyList) {
+  var text = '';
+  if (qtyList != null && qtyList.isNotEmpty) {
+    for (Map qty in qtyList) {
+      // print('qtyToText $qty');
+      if (text != '') {
+        text = '$text, ';
+      }
+      text = '$text ${qty['number'] ?? ''}';
+      var uom = qty['uom'];
+
+      if (uom is String) {
+        text = '$text $uom';
+      } else {
+        while (uom is Map) {
+          if (uom['uom'] == null) {
+            break;
+          }
+          text = '$text ${uom['in']?['name'] ?? ''} по ${uom['number'] ?? ''}';
+          if (uom['uom']?['name'] != null) {
+            text = '$text ${uom['uom']?['name'] ?? ''}';
+            break;
+          } else {
+            uom = uom['uom'];
           }
         }
       }
-    } else {
-      text = '';
     }
-    // print('_text $text');
-    return text;
+  } else {
+    text = '';
   }
+  // print('_text $text');
+  return text;
 }
