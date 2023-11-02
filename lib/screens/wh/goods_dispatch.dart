@@ -50,7 +50,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   String status = "register";
   String registered = '';
 
-  bool getSingleItems = false;
+  List<dynamic> items = [];
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +205,23 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     final goods = state.value[cGoods];
     final batch = state.value[cBatch];
 
-    if (storage != null || (storage != null && goods != null)) {
+    if (items.isNotEmpty) {
+      return <Widget>[
+        SizedBox(
+            height: 350,
+            child: ItemsListBuilder(
+              items: items,
+              title: (MemoryItem item) {
+                return Text(qtyToText([item.json]));
+              },
+              subtitle: (MemoryItem item) {
+                // return Text(qtyToText(item.json['_balance']?[cQty]));
+                return const Text('');
+              },
+              onTap: (item) => changeState(item),
+            ))
+      ];
+    } else if (storage != null || (storage != null && goods != null)) {
       return <Widget>[
         // Expanded(child: WHDispatchListBuilder(storage: storage))
         SizedBox(
@@ -215,7 +231,6 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
               category: category,
               goods: goods,
               batch: batch,
-              getSingleItems: getSingleItems,
               changeState: (item) => changeState(item),
             ))
       ];
@@ -254,8 +269,9 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       }
     }
 
-    if (getSingleItems) {
-      Map? qty = item.json['_balance']?[cQty] ?? item.json[cQty];
+    if (items.isNotEmpty) {
+      // print('items.isNotEmpty ${item.json}');
+      Map? qty = item.json['_balance']?[cQty] ?? item.json[cQty] ?? item.json;
       if (qty != null) {
         fillQty(qty);
       }
@@ -277,7 +293,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           fillQty(qty);
         } else {
           setState(() {
-            getSingleItems = true;
+            items = qtyList;
           });
         }
       }
@@ -398,6 +414,10 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           uom!.json.remove('name');
         }
 
+        setState(() {
+          items = [];
+        });
+
         final result = await register(doc, data, 1, true, widget.ctx, setStatus);
         if (!(result.isNew || result.isEmpty)) {
           done('register');
@@ -456,14 +476,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 }
 
 class BalanceListBuilder extends StatelessWidget {
-  const BalanceListBuilder(
-      {super.key,
-      this.storage,
-      this.category,
-      this.goods,
-      this.batch,
-      this.getSingleItems = false,
-      required this.changeState});
+  const BalanceListBuilder({super.key, this.storage, this.category, this.goods, this.batch, required this.changeState});
 
   final Function(MemoryItem item) changeState;
 
@@ -471,7 +484,6 @@ class BalanceListBuilder extends StatelessWidget {
   final MemoryItem? category;
   final MemoryItem? goods;
   final MemoryItem? batch;
-  final bool getSingleItems;
 
   @override
   Widget build(BuildContext context) {
@@ -498,8 +510,6 @@ class BalanceListBuilder extends StatelessWidget {
       filter[cBatch] = batch!.json['id'] ?? '';
     }
 
-    filter['getSingleItems'] = getSingleItems;
-
     const ctx = ['warehouse', 'stock'];
 
     return BlocProvider(
@@ -522,10 +532,6 @@ class BalanceListBuilder extends StatelessWidget {
         filter: filter,
         title: (MemoryItem item) {
           final batch = item.json[cBatch];
-          if (getSingleItems) {
-            final id = item.json[cId].toString().split('/').last;
-            return Text(id);
-          }
 
           if (batch != null) {
             return Text(DT.pretty(batch[cDate] ?? ''));
@@ -562,7 +568,7 @@ class ItemsListBuilder extends StatelessWidget {
 
   final Widget Function(MemoryItem) title;
   final Widget Function(MemoryItem) subtitle;
-  final Function(BuildContext, MemoryItem)? onTap;
+  final Function(MemoryItem)? onTap;
   final List<dynamic> items;
 
   @override
@@ -596,7 +602,7 @@ class ItemsListBuilder extends StatelessWidget {
         subtitle: subtitle(item),
         trailing: onTap == null ? null : const Icon(Icons.arrow_forward),
         onTap: () {
-          onTap?.call(context, item);
+          onTap?.call(item);
         },
       ),
     );

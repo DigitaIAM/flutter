@@ -210,11 +210,11 @@ Future<PrintResult> printing(
 
 Future<String> qtyToText(MemoryItem rec) async {
   var text = '';
-// print("_rec_: ${record.json}");
+  // print("_rec_: ${rec.json}");
   Map? map = rec.json[cQty] ?? rec.json['op']?[cQty] ?? '';
-// print('_list $map');
+  // print('_map $map');
   if (map != null && map.isNotEmpty) {
-// print('_qty $map');
+    // print('_qty $map');
     if (text != '') {
       text = '$text, ';
     }
@@ -222,22 +222,31 @@ Future<String> qtyToText(MemoryItem rec) async {
     var uom = map['uom'];
 
     if (uom is String) {
-// print('uomIsString');
+      // print('uomIsString');
       var obj = await Api.feathers().get(
           serviceName: "memories",
           objectId: uom,
           params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
       text = '$text ${obj['name'] ?? ''}';
     } else {
-// print('_uomType ${uom.runtimeType}');
+      // print('_uomType ${uom.runtimeType}');
       while (uom is Map) {
-        var inObj = await Api.feathers().get(
-            serviceName: "memories",
-            objectId: uom['in'] ?? '',
-            params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+        // print('iteration $uom');
+        if (uom['uom'] == null && uom['name'] != null) {
+          text = '$text ${uom['name'] ?? ''}';
+          break;
+        }
+
+        var inObj = uom['name'] != null
+            ? uom
+            : await Api.feathers().get(serviceName: "memories", objectId: uom['in'] ?? '', params: {
+                "oid": Api.instance.oid,
+                "ctx": []
+              }).onError((error, stackTrace) => {print('inObj_error $error, $stackTrace')});
+        // print('inObj $inObj');
 
         text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';
-// print('_uom $uom');
+        // print('_uom $uom');
         if (uom['uom'] is String) {
           var obj = await Api.feathers().get(
               serviceName: "memories",
@@ -254,7 +263,7 @@ Future<String> qtyToText(MemoryItem rec) async {
   } else {
     text = '0';
   }
-// print('_text $text');
+  // print('_text $text');
   if (text.startsWith(' ')) {
     text = text.substring(1);
   }
