@@ -239,10 +239,15 @@ Future<String> qtyToText(MemoryItem rec) async {
 
         var inObj = uom['name'] != null
             ? uom
-            : await Api.feathers().get(serviceName: "memories", objectId: uom['in'] ?? '', params: {
-                "oid": Api.instance.oid,
-                "ctx": []
-              }).onError((error, stackTrace) => {print('inObj_error $error, $stackTrace')});
+            : (uom['in']['name'] != null
+                ? uom['in']
+                : await Api.feathers().get(
+                    serviceName: "memories",
+                    objectId: uom['in'][cUuid] ?? uom['in'] ?? '',
+                    params: {
+                        "oid": Api.instance.oid,
+                        "ctx": []
+                      }).onError((error, stackTrace) => {print('inObj_error $error, $stackTrace')}));
         // print('inObj $inObj');
 
         text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';

@@ -212,7 +212,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             child: ItemsListBuilder(
               items: items,
               title: (MemoryItem item) {
-                return Text(qtyToText([item.json]));
+                return Text(qtyToText(item.json));
               },
               subtitle: (MemoryItem item) {
                 // return Text(qtyToText(item.json['_balance']?[cQty]));
@@ -248,6 +248,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       return;
     }
 
+    // TODO refactoring
     void fillQty(Map qty) {
       // print('fn_fillQty $qty');
       state.patchValue({"qty_0": qty["number"].toString()});
@@ -541,11 +542,7 @@ class BalanceListBuilder extends StatelessWidget {
         subtitle: (MemoryItem item) {
           final qty = item.json['_balance']?[cQty] ?? item.json[cQty];
           if (qty != null) {
-            if (qty is List) {
-              return Text(qtyToText(qty));
-            } else if (qty is Map) {
-              return Text(qtyToText([qty]));
-            }
+            return Text(qtyToText(qty));
           }
           return const Text('');
         },
@@ -609,37 +606,46 @@ class ItemsListBuilder extends StatelessWidget {
   }
 }
 
-String qtyToText(List<dynamic>? qtyList) {
-  var text = '';
-  if (qtyList != null && qtyList.isNotEmpty) {
-    for (Map qty in qtyList) {
-      // print('qtyToText $qty');
-      if (text != '') {
-        text = '$text, ';
+String qtyToText(dynamic listOrMap) {
+  String text = '';
+  if (listOrMap != null) {
+    if (listOrMap is List && listOrMap.isNotEmpty) {
+      for (Map qty in listOrMap) {
+        text = qtyToTextInner(text, qty);
       }
-      text = '$text ${qty['number'] ?? ''}';
-      var uom = qty['uom'];
+    } else if (listOrMap is Map) {
+      text = qtyToTextInner(text, listOrMap);
+    }
+  }
+  return text;
+}
 
-      if (uom is String) {
-        text = '$text $uom';
+String qtyToTextInner(String text, Map qty) {
+  // if (qtyList != null && qtyList.isNotEmpty) {
+  // for (Map qty in qtyList) {
+  // print('qtyToText $qty');
+  if (text != '') {
+    text = '$text, ';
+  }
+  text = '$text ${qty['number'] ?? ''}';
+  var uom = qty['uom'];
+
+  if (uom is String) {
+    text = '$text $uom';
+  } else {
+    while (uom is Map) {
+      if (uom['uom'] == null) {
+        break;
+      }
+      text = '$text ${uom['in']?['name'] ?? ''} по ${uom['number'] ?? ''}';
+      if (uom['uom']?['name'] != null) {
+        text = '$text ${uom['uom']?['name'] ?? ''}';
+        break;
       } else {
-        while (uom is Map) {
-          if (uom['uom'] == null) {
-            break;
-          }
-          text = '$text ${uom['in']?['name'] ?? ''} по ${uom['number'] ?? ''}';
-          if (uom['uom']?['name'] != null) {
-            text = '$text ${uom['uom']?['name'] ?? ''}';
-            break;
-          } else {
-            uom = uom['uom'];
-          }
-        }
+        uom = uom['uom'];
       }
     }
-  } else {
-    text = '';
   }
-  // print('_text $text');
+  // // print('_text $text');
   return text;
 }
