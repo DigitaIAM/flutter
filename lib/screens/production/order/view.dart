@@ -70,7 +70,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
-    final date = widget.entity.json[cDate];
+    final date = widget.entity.json[cDate] ?? '';
     // final area = widget.entity.json[cArea]; // not used variable
 
     final editable = date.compareTo(Utils.daysAgo(14)) >= 0;
@@ -160,13 +160,13 @@ class ProductionOrderOverview extends StatelessWidget {
       ]),
       KeyValue(
         label: localization.translate(cProduct),
-        value: order.json[cProduct].name(),
+        value: order.json[cProduct][cName] ?? order.json[cProduct].name(),
         icon: const Icon(Icons.question_mark),
       ),
       ...additional(context),
       KeyValue(
         label: localization.translate(cArea),
-        value: order.json[cArea].name(),
+        value: order.json[cArea][cName] ?? order.json[cArea].name(),
         icon: const Icon(Icons.question_mark),
       ),
       KeyValue(
@@ -234,7 +234,8 @@ class ProductionOrderOverview extends StatelessWidget {
 
   List<Widget> additional(BuildContext context) {
     final product = order.json[cProduct] ?? MemoryItem.empty;
-    if ((product.json[cType] ?? '') == 'roll') {
+    final type = product is MemoryItem ? product.json[cType] ?? '' : product[cType] ?? '';
+    if (type == 'roll') {
       final localization = AppLocalizations.of(context);
 
       return [

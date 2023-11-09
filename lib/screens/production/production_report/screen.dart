@@ -11,6 +11,7 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
+import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/production/order/view.dart';
@@ -404,16 +405,18 @@ List<Set<String>> getDataForColumns(
         List? used = material['used'];
         if (used != null && used.isNotEmpty) {
           for (Map value in used) {
+            final uom = value['uom']?['name'] ?? '';
             final keyUsed = 'used ${value['name'] ?? ''}';
             final used = value['used'] ?? 0.0;
-            cells[keyUsed] = PlutoCell(value: '$used ${value['uom']?['name'] ?? ''}');
+            cells[keyUsed] = PlutoCell(value: '$used $uom');
 
             final qty = double.parse(used.toString());
 
             if (sumAll[keyUsed] != null) {
-              sumAll[keyUsed] = PlutoCell(value: (double.parse(sumAll[keyUsed]!.value) + qty).toStringAsFixed(2));
+              final old = sumAll[keyUsed]!.value.toString().split(' ');
+              sumAll[keyUsed] = PlutoCell(value: '${(double.parse(old.first) + qty).toStringAsFixed(2)} ${old.last}');
             } else {
-              sumAll[keyUsed] = PlutoCell(value: qty.toStringAsFixed(2));
+              sumAll[keyUsed] = PlutoCell(value: '${qty.toStringAsFixed(2)} $uom');
             }
           }
         }
@@ -421,30 +424,38 @@ List<Set<String>> getDataForColumns(
         List? produced = material['produced'];
         if (produced != null && produced.isNotEmpty) {
           for (Map value in produced) {
+            final uom = value['uom']?['name'] ?? '';
             final keyProduced = 'produced ${value['name'] ?? ''}';
             final produced = value['produced'] ?? 0.0;
-            cells[keyProduced] = PlutoCell(value: '$produced ${value['uom']?['name'] ?? ''}');
+            cells[keyProduced] = PlutoCell(value: '$produced $uom');
 
             final qty = double.parse(produced.toString());
 
             if (sumAll[keyProduced] != null) {
-              sumAll[keyProduced] = PlutoCell(value: (double.parse(sumAll[keyProduced]!.value) + qty).toStringAsFixed(2));
+              final old = sumAll[keyProduced]!.value.toString().split(' ');
+              sumAll[keyProduced] = PlutoCell(value: '${(double.parse(old.first) + qty).toStringAsFixed(2)} ${old.last}');
             } else {
-              sumAll[keyProduced] = PlutoCell(value: qty.toStringAsFixed(2));
+              sumAll[keyProduced] = PlutoCell(value: '${qty.toStringAsFixed(2)} $uom');
             }
           }
         }
 
+        final baseUom = json['product']?['uom']?['name'] ?? '';
+
         Map? sum = material['sum'];
         if (sum != null) {
-          cells['delta'] = PlutoCell(value: sum['delta'] ?? '');
+          final delta = sum['delta'];
+          if (delta != null) {
+            cells['delta'] = PlutoCell(value: '$delta $baseUom');
+          }
 
           final qty = double.parse(sum['delta'].toString());
 
           if (sumAll['delta'] != null) {
-            sumAll['delta'] = PlutoCell(value: sumAll['delta']!.value + qty);
+            final old = sumAll['delta']!.value.toString().split(' ');
+            sumAll['delta'] = PlutoCell(value: '${(double.parse(old.first) + qty).toStringAsFixed(2)} ${old.last}');
           } else {
-            sumAll['delta'] = PlutoCell(value: qty);
+            sumAll['delta'] = PlutoCell(value: '${qty.toStringAsFixed(2)} $baseUom');
           }
         }
       }
@@ -560,6 +571,11 @@ List<Set<String>> getDataForColumns(
           menuBackgroundColor: theme.colorScheme.background,
         ));
 
+    Map items = {};
+    for (var element in state.items) {
+      items[element.id] = element;
+    }
+
     return PlutoGrid(
       key: UniqueKey(),
       columns: columns,
@@ -571,6 +587,14 @@ List<Set<String>> getDataForColumns(
       onLoaded: (PlutoGridOnLoadedEvent event) {
         stateManager = event.stateManager;
         // stateManager?.setSelectingMode(PlutoGridSelectingMode.row);
+      },
+      onRowDoubleTap: (PlutoGridOnRowDoubleTapEvent event) {
+        final str = event.row.key.toString();
+        final len = str.length - 3;
+        final id = event.row.key.toString().substring(3, len);
+        final MemoryItem item = items[id];
+        // print("onRowDoubleTap ${item.json}");
+        context.read<UiBloc>().add(ChangeView(const ['production', 'order'], entity: item));
       },
       // createFooter: (stateManager) => InfinityScroll(
       //   intoRows: intoRows,
