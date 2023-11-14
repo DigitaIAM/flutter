@@ -88,7 +88,7 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
     super.dispose();
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
@@ -308,8 +308,7 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
     }
   }
 
-List<Set<String>> getDataForColumns(
-      List<MemoryItem> data) {
+  List<Set<String>> getDataForColumns(List<MemoryItem> data) {
     List<Set<String>> result = [];
     Set<String> produced = {};
     Set<String> materialUsed = {};
@@ -331,14 +330,14 @@ List<Set<String>> getDataForColumns(
         List? used = material['used'];
         if (used != null && used.isNotEmpty) {
           for (Map value in used) {
-              materialUsed.add(value['name'] ?? '');
+            materialUsed.add(value['name'] ?? '');
           }
         }
 
         List? produced = material['produced'];
         if (produced != null && produced.isNotEmpty) {
           for (Map value in produced) {
-              materialProduced.add(value['name'] ?? '');
+            materialProduced.add(value['name'] ?? '');
           }
         }
       }
@@ -385,15 +384,17 @@ List<Set<String>> getDataForColumns(
         final piece = double.parse(produced['piece'].toString());
         if (sumAll[keyPiece] != null) {
           sumAll[keyPiece] = PlutoCell(
-              value: (double.parse(sumAll[keyPiece]!.value) + piece).toStringAsFixed(2));
+              value: (double.parse(sumAll[keyPiece]!.value) + piece)
+                  .toStringAsFixed(2));
         } else {
           sumAll[keyPiece] = PlutoCell(value: piece.toStringAsFixed(2));
         }
 
         final box = double.parse(produced['box'].toString());
         if (sumAll[keyBox] != null) {
-          sumAll[keyBox] =
-              PlutoCell(value: (double.parse(sumAll[keyBox]!.value) + box).toStringAsFixed(2));
+          sumAll[keyBox] = PlutoCell(
+              value: (double.parse(sumAll[keyBox]!.value) + box)
+                  .toStringAsFixed(2));
         } else {
           sumAll[keyBox] = PlutoCell(value: box.toStringAsFixed(2));
         }
@@ -405,18 +406,30 @@ List<Set<String>> getDataForColumns(
         List? used = material['used'];
         if (used != null && used.isNotEmpty) {
           for (Map value in used) {
+            print('_used $value');
             final uom = value['uom']?['name'] ?? '';
             final keyUsed = 'used ${value['name'] ?? ''}';
-            final used = value['used'] ?? 0.0;
+            // final used = value['used'] ?? 0.0;
+            var used = '0';
+
+            List? usedList = value['used'];
+            if (usedList != null) {
+              final first = usedList.first;
+              used = first['uom']?['number'] ?? first['number'] ?? '0';
+            }
+
             cells[keyUsed] = PlutoCell(value: '$used $uom');
 
             final qty = double.parse(used.toString());
 
             if (sumAll[keyUsed] != null) {
               final old = sumAll[keyUsed]!.value.toString().split(' ');
-              sumAll[keyUsed] = PlutoCell(value: '${(double.parse(old.first) + qty).toStringAsFixed(2)} ${old.last}');
+              sumAll[keyUsed] = PlutoCell(
+                  value:
+                      '${(double.parse(old.first) + qty).toStringAsFixed(2)} ${old.last}');
             } else {
-              sumAll[keyUsed] = PlutoCell(value: '${qty.toStringAsFixed(2)} $uom');
+              sumAll[keyUsed] =
+                  PlutoCell(value: '${qty.toStringAsFixed(2)} $uom');
             }
           }
         }
@@ -426,16 +439,26 @@ List<Set<String>> getDataForColumns(
           for (Map value in produced) {
             final uom = value['uom']?['name'] ?? '';
             final keyProduced = 'produced ${value['name'] ?? ''}';
-            final produced = value['produced'] ?? 0.0;
+            // final produced = value['produced'] ?? 0.0;
+            var produced = '0';
+            List? producedList = value['produced'];
+            if (producedList != null) {
+              final first = producedList.first;
+              produced = first['uom']?['number'] ?? first['number'] ?? '0';
+            }
+
             cells[keyProduced] = PlutoCell(value: '$produced $uom');
 
             final qty = double.parse(produced.toString());
 
             if (sumAll[keyProduced] != null) {
               final old = sumAll[keyProduced]!.value.toString().split(' ');
-              sumAll[keyProduced] = PlutoCell(value: '${(double.parse(old.first) + qty).toStringAsFixed(2)} ${old.last}');
+              sumAll[keyProduced] = PlutoCell(
+                  value:
+                      '${(double.parse(old.first) + qty).toStringAsFixed(2)} ${old.last}');
             } else {
-              sumAll[keyProduced] = PlutoCell(value: '${qty.toStringAsFixed(2)} $uom');
+              sumAll[keyProduced] =
+                  PlutoCell(value: '${qty.toStringAsFixed(2)} $uom');
             }
           }
         }
@@ -453,9 +476,12 @@ List<Set<String>> getDataForColumns(
 
           if (sumAll['delta'] != null) {
             final old = sumAll['delta']!.value.toString().split(' ');
-            sumAll['delta'] = PlutoCell(value: '${(double.parse(old.first) + qty).toStringAsFixed(2)} ${old.last}');
+            sumAll['delta'] = PlutoCell(
+                value:
+                    '${(double.parse(old.first) + qty).toStringAsFixed(2)} ${old.last}');
           } else {
-            sumAll['delta'] = PlutoCell(value: '${qty.toStringAsFixed(2)} $baseUom');
+            sumAll['delta'] =
+                PlutoCell(value: '${qty.toStringAsFixed(2)} $baseUom');
           }
         }
       }
@@ -467,8 +493,7 @@ List<Set<String>> getDataForColumns(
     return result;
   }
 
-  PlutoGrid buildPlutoGrid(
-      BuildContext context, RequestState state) {
+  PlutoGrid buildPlutoGrid(BuildContext context, RequestState state) {
     final theme = Theme.of(context);
     final localization = AppLocalizations.of(context);
 
@@ -491,23 +516,20 @@ List<Set<String>> getDataForColumns(
     List<Set<String>> columnsData = getDataForColumns(state.items);
 
     // workaround
-    final areaName = widget.selectedArea == null ? '' : widget.selectedArea!.json['name'];
-    final titleInner = areaName == 'экструдер' ? 'кг' : localization.translate('pieces');
-    final titleOuter = areaName == 'экструдер' ? 'рулоны' : localization.translate('boxes');
+    final areaName =
+        widget.selectedArea == null ? '' : widget.selectedArea!.json['name'];
+    final titleInner =
+        areaName == 'экструдер' ? 'кг' : localization.translate('pieces');
+    final titleOuter =
+        areaName == 'экструдер' ? 'рулоны' : localization.translate('boxes');
 
     // produced items
     List<String> producedGroupFields = [];
     for (String produced in columnsData.elementAt(0)) {
       columns.add(PlutoColumn(
-          title: titleInner,
-          field: 'piece $produced',
-          type: text,
-          width: 100));
+          title: titleInner, field: 'piece $produced', type: text, width: 100));
       columns.add(PlutoColumn(
-          title: titleOuter,
-          field: 'box $produced',
-          type: text,
-          width: 100));
+          title: titleOuter, field: 'box $produced', type: text, width: 100));
 
       columnGroups.add(PlutoColumnGroup(
           title: produced, fields: ['piece $produced', 'box $produced']));
@@ -525,8 +547,8 @@ List<Set<String>> getDataForColumns(
     // material used items
     List<String> materialUsedGroupFields = [];
     for (String materialUsed in columnsData.elementAt(1)) {
-      columns.add(
-          PlutoColumn(title: materialUsed, field: 'used $materialUsed', type: text));
+      columns.add(PlutoColumn(
+          title: materialUsed, field: 'used $materialUsed', type: text));
       materialUsedGroupFields.add('used $materialUsed');
     }
     if (materialUsedGroupFields.isNotEmpty) {
@@ -539,7 +561,9 @@ List<Set<String>> getDataForColumns(
     List<String> materialProducedGroupFields = [];
     for (String materialProduced in columnsData.elementAt(2)) {
       columns.add(PlutoColumn(
-          title: materialProduced, field: 'produced $materialProduced', type: text));
+          title: materialProduced,
+          field: 'produced $materialProduced',
+          type: text));
       materialProducedGroupFields.add('produced $materialProduced');
     }
     if (materialProducedGroupFields.isNotEmpty) {
@@ -594,7 +618,9 @@ List<Set<String>> getDataForColumns(
         final id = event.row.key.toString().substring(3, len);
         final MemoryItem item = items[id];
         // print("onRowDoubleTap ${item.json}");
-        context.read<UiBloc>().add(ChangeView(const ['production', 'order'], entity: item));
+        context
+            .read<UiBloc>()
+            .add(ChangeView(const ['production', 'order'], entity: item));
       },
       // createFooter: (stateManager) => InfinityScroll(
       //   intoRows: intoRows,

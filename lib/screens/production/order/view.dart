@@ -170,10 +170,12 @@ class ProductionOrderOverview extends StatelessWidget {
       areaName = area[cName];
     }
 
-    var sumUsed = qtyToText(order.json['_material']?['sum']?['used'] ?? '-');
+    var sumUsed =
+        qtyToText(order.json['_material']?['sum']?['used'] ?? '-', true);
     var sumProduced =
-        qtyToText(order.json['_material']?['sum']?['produced'] ?? '-');
-    var sumDelta = qtyToText(order.json['_material']?['sum']?['delta'] ?? '-');
+        qtyToText(order.json['_material']?['sum']?['produced'] ?? '-', true);
+    var sumDelta =
+        qtyToText(order.json['_material']?['sum']?['delta'] ?? '-', true);
 
     final widgets = <Widget>[
       Text(localization.translate("material product"),
@@ -234,7 +236,7 @@ class ProductionOrderOverview extends StatelessWidget {
 
     var children = <Widget>[];
 
-    // print('buildItemsList $data');
+    print('buildItemsList $data');
 
     if (data != null) {
       if (data is List) {
@@ -244,7 +246,7 @@ class ProductionOrderOverview extends StatelessWidget {
         }
 
         for (Map item in data) {
-          final value = qtyToText(item['used'] ?? item['produced'] ?? '');
+          final value = qtyToText(item['used'] ?? item['produced'] ?? '', true);
 
           children.add(KeyValue(
             label: item['name'] ?? '',
@@ -258,7 +260,7 @@ class ProductionOrderOverview extends StatelessWidget {
               Text(localization.translate(label), textAlign: TextAlign.center));
         }
 
-        final value = qtyToText(data['used'] ?? data['produced'] ?? '');
+        final value = qtyToText(data['used'] ?? data['produced'] ?? '', true);
 
         children.add(KeyValue(
           label: data['name'] ?? '',
