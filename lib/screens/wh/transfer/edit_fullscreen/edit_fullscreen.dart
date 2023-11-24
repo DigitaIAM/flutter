@@ -472,7 +472,20 @@ class _LinesState extends State<Lines> {
   }
 
   void patch(BuildContext context, MemoryItem item, Map<String, dynamic> data) {
-    // print("patch $data");
+
+    // print("patch ${item.json}");
+
+    MemoryItem? goods = item.json['goods'];
+
+    if (data['qty'] != null && data['qty']?['uom'] == null && goods?.json['uom'] != null) {
+      final number = data['qty']['number'] ?? data['qty'];
+
+      data['qty']['uom'] = goods!.json['uom'];
+
+      data['qty']['number'] = number;
+    }
+
+    // print("patch2 $data");
     if (item.isNew) {
       data[cDocument] = widget.document.id;
       context.read<MemoryBloc>().add(MemoryCreate('memories', widget.ctx, widget.schema, data));
