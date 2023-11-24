@@ -15,6 +15,7 @@ import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/wh/custom_textfield.dart';
+import 'package:nae/screens/wh/goods_dispatch.dart';
 import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/document_creation.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/goods.dart';
@@ -34,8 +35,9 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 
 class WHTransferEditFS extends EntityHolder {
   bool showStorages;
+  bool chooseFromStocks;
 
-  WHTransferEditFS({super.key, required super.entity, this.showStorages = false}) : super(fullscreen: true);
+  WHTransferEditFS({super.key, required super.entity, this.showStorages = false, this.chooseFromStocks = true}) : super(fullscreen: true);
 
   @override
   State<WHTransferEditFS> createState() => _WHTransferEditFSState();
@@ -167,6 +169,15 @@ class _WHTransferEditFSState extends State<WHTransferEditFS> with SingleTickerPr
                     ]),
                     onSave: _onSave,
                   ),
+                  SizedBox(height: 350, child:
+                    GoodsDispatch(
+                      ctx: const ['warehouse', 'transfer'],
+                      doc: widget.entity,
+                      schema: WHTransfer.schema,
+                      enablePrinting: false,
+                      allowGoodsCreation: false,
+                    )
+                  ),
                 ]),
                 Expanded(
                   child: ScrollableListView(children: <Widget>[
@@ -184,6 +195,7 @@ class _WHTransferEditFSState extends State<WHTransferEditFS> with SingleTickerPr
             ),
           );
         } else {
+
           return ScaffoldView(
             title: localization.translate("warehouse transfer"),
             appBarBottom: TabBar(
@@ -248,10 +260,21 @@ class _LinesState extends State<Lines> {
       return Container();
     }
 
+    Field fieldUom = Field('uom', CalculatedType((MemoryItem rec) async {
+      // var text = '';
+      print("_rec_: ${rec.json}");
+      // String qty = qtyToText(rec.json[cQty] ?? {}, false);
+      // var map = {'uom': qty.trimLeft()};
+
+      return qtyToText(rec.json[cQty] ?? {}, false);
+      // return map;
+    }), path: [cUom]);
+
     var schema = <Field>[
       // const Field(cBatch, StringType()),
       fGoods.copyWith(width: 3.0),
-      fUomAtQty.copyWith(width: 0.5, editable: false),
+      // fUomAtQty.copyWith(width: 0.5, editable: false),
+      fieldUom.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
       // fStorage,
     ];

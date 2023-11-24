@@ -148,7 +148,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           ),
           const SizedBox(height: 10),
           ...qtyUom(context),
-          ...goodsList(widget.schema),
+          ...goodsList(),
         ]),
       ),
     ];
@@ -197,7 +197,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     );
   }
 
-  List<Widget> goodsList(List<Field> schema) {
+  List<Widget> goodsList() {
     final state = _formKey.currentState;
     if (state == null) {
       return <Widget>[];
