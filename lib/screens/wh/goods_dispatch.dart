@@ -144,7 +144,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           ),
           const SizedBox(height: 10),
           ...qtyUom(context),
-          ...goodsList(widget.schema),
+          ...goodsList(),
         ]),
       ),
     ];
@@ -192,7 +192,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     );
   }
 
-  List<Widget> goodsList(List<Field> schema) {
+  List<Widget> goodsList() {
     final state = _formKey.currentState;
     if (state == null) {
       return <Widget>[];
@@ -646,6 +646,10 @@ String qtyToTextInner(String text, Map qty) {
         uom = uom['uom'];
       }
     }
+  }
+  // workaround
+  if (text.characters.first == ' ') {
+    text = text.trimLeft();
   }
   // // print('_text $text');
   return text;
