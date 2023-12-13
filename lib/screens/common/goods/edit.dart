@@ -109,6 +109,16 @@ class _GoodsEditState extends State<GoodsEdit> {
               ]),
               onSave: _onSave,
             ),
+            DecoratedFormField(
+              name: cStatus,
+              label: localization.translate('status'),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.required(),
+              ]),
+              onSave: _onSave,
+              keyboardType: TextInputType.text,
+            ),
           ])
         ]),
       ),

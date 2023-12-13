@@ -336,6 +336,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
         autofocus: true,
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.required(),
+          FormBuilderValidators.numeric(),
         ]),
         onSave: (context) {},
         keyboardType: TextInputType.number,
