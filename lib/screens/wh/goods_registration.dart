@@ -62,6 +62,16 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
               return;
             }
             state.save();
+
+            state.validate(focusOnInvalid: false);
+            setState(() {
+              if (state.errors.isNotEmpty) {
+                status = 'error';
+              } else {
+                status = "register";
+              }
+            });
+
             final value = state.value;
             // debugPrint("onChanged: $value");
 
@@ -228,6 +238,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
           autofocus: true,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(),
+            FormBuilderValidators.numeric(),
           ]),
           onSave: (context) {},
           keyboardType: TextInputType.number,

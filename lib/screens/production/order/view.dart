@@ -23,15 +23,13 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 class ProductionOrderView extends EntityHolder {
   final int tabIndex;
 
-  const ProductionOrderView(
-      {super.key, required super.entity, required this.tabIndex});
+  const ProductionOrderView({super.key, required super.entity, required this.tabIndex});
 
   @override
   State<ProductionOrderView> createState() => _ProductionOrderViewState();
 }
 
-class _ProductionOrderViewState extends State<ProductionOrderView>
-    with SingleTickerProviderStateMixin {
+class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -96,8 +94,7 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
           icon: const Icon(Icons.edit_note_outlined),
           tooltip: localization.translate("edit"),
           onPressed: () {
-            context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx,
-                action: 'edit', entity: widget.entity));
+            context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, action: 'edit', entity: widget.entity));
           },
         ),
       ],
@@ -171,21 +168,17 @@ class ProductionOrderOverview extends StatelessWidget {
     }
 
     var sumUsed = qtyToText(order.json['_material']?['sum']?['used'] ?? '-');
-    var sumProduced =
-        qtyToText(order.json['_material']?['sum']?['produced'] ?? '-');
+    var sumProduced = qtyToText(order.json['_material']?['sum']?['produced'] ?? '-');
     var sumDelta = qtyToText(order.json['_material']?['sum']?['delta'] ?? '-');
 
     final widgets = <Widget>[
       Text(localization.translate("material product"),
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+          textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
       EntityHeader(pairs: [
         // Pair(localization.translate("production order"), memoryItem.json[cDate])
-        Pair(localization.translate("plan"), order.json['planned'] ?? '-'),
-        Pair(localization.translate("produced"),
-            order.json['produced']?['piece'] ?? '-'),
-        Pair(localization.translate("boxes"),
-            order.json['produced']?['box'] ?? '-'),
+        Pair(localization.translate("plan"), order.json['planned']?.toString() ?? '-'),
+        Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
+        Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
       ]),
       KeyValue(
         label: localization.translate(cProduct),
@@ -210,17 +203,14 @@ class ProductionOrderOverview extends StatelessWidget {
       ),
       ListDivider(),
       Text(localization.translate("materials"),
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+          textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
       EntityHeader(pairs: [
         Pair(localization.translate("used material"), sumUsed),
         Pair(localization.translate("produced material"), sumProduced),
         Pair(localization.translate("delta"), sumDelta),
       ]),
-      ...buildItemsList(
-          context, order.json['_material']?['used'], "materials used"),
-      ...buildItemsList(
-          context, order.json['_material']?['produced'], "materials produced"),
+      ...buildItemsList(context, order.json['_material']?['used'], "materials used"),
+      ...buildItemsList(context, order.json['_material']?['produced'], "materials produced"),
     ];
 
     return ScrollableListView(
@@ -228,8 +218,7 @@ class ProductionOrderOverview extends StatelessWidget {
     );
   }
 
-  List<Widget> buildItemsList(
-      BuildContext context, dynamic data, String label) {
+  List<Widget> buildItemsList(BuildContext context, dynamic data, String label) {
     final localization = AppLocalizations.of(context);
 
     var children = <Widget>[];
@@ -239,8 +228,7 @@ class ProductionOrderOverview extends StatelessWidget {
     if (data != null) {
       if (data is List) {
         if (data.isNotEmpty) {
-          children.add(
-              Text(localization.translate(label), textAlign: TextAlign.center));
+          children.add(Text(localization.translate(label), textAlign: TextAlign.center));
         }
 
         for (Map item in data) {
@@ -254,8 +242,7 @@ class ProductionOrderOverview extends StatelessWidget {
         }
       } else if (data is Map) {
         if (data.isNotEmpty) {
-          children.add(
-              Text(localization.translate(label), textAlign: TextAlign.center));
+          children.add(Text(localization.translate(label), textAlign: TextAlign.center));
         }
 
         final value = qtyToText(data['used'] ?? data['produced'] ?? '');
@@ -273,9 +260,7 @@ class ProductionOrderOverview extends StatelessWidget {
 
   List<Widget> additional(BuildContext context) {
     final product = order.json[cProduct] ?? MemoryItem.empty;
-    final type = product is MemoryItem
-        ? product.json[cType] ?? ''
-        : product[cType] ?? '';
+    final type = product is MemoryItem ? product.json[cType] ?? '' : product[cType] ?? '';
     if (type == 'roll') {
       final localization = AppLocalizations.of(context);
 

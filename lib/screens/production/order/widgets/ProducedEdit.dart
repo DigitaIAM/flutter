@@ -171,8 +171,17 @@ class _POProducedEditState extends State<POProducedEdit> {
           formKey: _formKey,
           focusNode: _focusNode,
           onChanged: () {
-            _formKey.currentState!.save();
-            debugPrint("onChanged: ${_formKey.currentState!.value}");
+            final state = _formKey.currentState!;
+            state.save();
+
+            state.validate(focusOnInvalid: false);
+            setState(() {
+              if (state.errors.isNotEmpty) {
+                status = 'error';
+              } else {
+                status = "register";
+              }
+            });
           },
           child: ScrollableListView(children: <Widget>[
             FormCard(isLast: true, children: <Widget>[
@@ -281,6 +290,7 @@ class _POProducedEditState extends State<POProducedEdit> {
         autofocus: true,
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.required(),
+          FormBuilderValidators.integer(),
         ]),
         onSave: (context) {},
         keyboardType: TextInputType.number,
@@ -325,9 +335,7 @@ class _POProducedEditState extends State<POProducedEdit> {
         name: cQty,
         label: localization.translate("qty in box"),
         autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
+        validator: FormBuilderValidators.compose([FormBuilderValidators.required(), FormBuilderValidators.integer()]),
         onSave: (context) {},
         keyboardType: TextInputType.number,
       ),
