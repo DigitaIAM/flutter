@@ -52,6 +52,11 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
   List<dynamic> items = [];
 
+  bool showCategory = false;
+  bool showGoods = false;
+  bool showBatch = false;
+  bool showQtyUom = false;
+
   @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
@@ -76,6 +81,40 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           state.save();
           var value = state.value;
           debugPrint("onChanged: $value");
+
+          if (value[cStorage] == null) {
+            state.removeInternalFieldValue(cCategory);
+            state.removeInternalFieldValue(cGoods);
+            state.removeInternalFieldValue(cBatch);
+            state.removeInternalFieldValue('uom_0');
+            state.removeInternalFieldValue('qty_0');
+          }
+
+          if (value[cCategory] == null) {
+            state.removeInternalFieldValue(cGoods);
+            state.removeInternalFieldValue(cBatch);
+            state.removeInternalFieldValue('uom_0');
+            state.removeInternalFieldValue('qty_0');
+          }
+
+          if (value[cGoods] == null) {
+            state.removeInternalFieldValue(cBatch);
+            state.removeInternalFieldValue('uom_0');
+            state.removeInternalFieldValue('qty_0');
+          }
+
+          if (value[cBatch] == null) {
+            state.removeInternalFieldValue('uom_0');
+            state.removeInternalFieldValue('qty_0');
+          }
+          state.save();
+
+          setState(() {
+            showCategory = value[cCategory] != null;
+            showGoods = value[cGoods] != null;
+            showBatch = value[cBatch] != null;
+            showQtyUom = value['uom_0'] != null;
+          });
 
           final storage = value[cStorage];
 
@@ -120,6 +159,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
               // FormBuilderValidators.required(errorText: "выберите категорию"),
             ]),
             onSave: (context) {},
+            readOnly: true,
+            visible: showCategory,
           ),
           const SizedBox(height: 10),
           DecoratedFormPickerField(
@@ -131,6 +172,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
               FormBuilderValidators.required(errorText: "выберите товар"),
             ]),
             onSave: (context) {},
+            readOnly: true,
+            visible: showGoods,
           ),
           DecoratedFormPickerField(
             ctx: const ['goods', 'stock'],
@@ -141,6 +184,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
               FormBuilderValidators.required(errorText: "выберите партию"),
             ]),
             onSave: (context) {},
+            readOnly: true,
+            visible: showBatch,
           ),
           const SizedBox(height: 10),
           ...qtyUom(context),
@@ -325,6 +370,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           FormBuilderValidators.required(errorText: "выберите значение"),
         ]),
         onSave: (context) {},
+        readOnly: true,
       ),
     );
 
@@ -351,7 +397,11 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     );
     children.add(const SizedBox(height: 10));
 
-    return children;
+    if (showQtyUom) {
+      return children;
+    } else {
+      return [SizedBox(height: 0, child: Column(children: children))];
+    }
   }
 
   void resetDone() {

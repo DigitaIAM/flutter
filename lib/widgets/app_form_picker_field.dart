@@ -22,6 +22,7 @@ class DecoratedFormPickerField extends StatefulWidget {
     this.onChange,
     this.creatable = true,
     this.readOnly = false,
+    this.visible = true,
   });
 
   final List<String> ctx;
@@ -42,6 +43,7 @@ class DecoratedFormPickerField extends StatefulWidget {
 
   final bool creatable;
   final bool readOnly;
+  final bool visible;
 
   @override
   State<DecoratedFormPickerField> createState() => _DecoratedFormPickerFieldState();
@@ -55,7 +57,7 @@ class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
     //     labelText: label,
     //     floatingLabelBehavior: label.isEmpty ? FloatingLabelBehavior.always : FloatingLabelBehavior.auto);
 
-    return FormBuilderField<MemoryItem>(
+    final field = FormBuilderField<MemoryItem>(
       name: widget.name,
       validator: widget.validator,
       onChanged: (val) => debugPrint("onChanged $val"),
@@ -108,33 +110,11 @@ class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
         );
       },
     );
-    // return FormBuilderSearchableDropdown<MemoryItem>(
-    //   name: widget.name,
-    //   popupProps: const PopupProps.menu(showSearchBox: true),
-    //   // decoration: InputDecoration(labelText: AppLocalizations.of(context).translate("label")),
-    //   decoration: inputDecoration,
-    //   // TODO style: Theme.of(context).textTheme.bodyMedium,
-    //   // validator: widget.validator,
-    //   // autovalidateMode: AutovalidateMode.onUserInteraction,
-    //   compareFn: (a, b) => a.id == b.id,
-    //   asyncItems: (text) async {
-    //     print("text: $text");
-    //     final response = await Api.feathers()
-    //         .find(serviceName: "memories", query: {"oid": Api.instance.oid, "ctx": widget.ctx, "search": text});
-    //     return (response['data'] ?? []).map<MemoryItem>((item) => MemoryItem.from(item)).toList();
-    //   },
-    //   itemAsString: (MemoryItem? item) {
-    //     return item?.name() ?? '';
-    //   },
-    //
-    //   valueTransformer: (MemoryItem? item) {
-    //     if (widget.keepAsID) {
-    //       return item?.id;
-    //     } else {
-    //       return item?.json;
-    //     }
-    //   },
-    //   focusNode: widget.focusNode,
-    // );
+
+    if (widget.visible) {
+      return field;
+    } else {
+      return SizedBox(height: 0, child: field);
+    }
   }
 }
