@@ -16,6 +16,7 @@ class DecoratedFormField extends StatefulWidget {
     this.decoration,
     required this.onSave,
     this.readOnly = false,
+    this.visible = true,
   });
 
   final String name;
@@ -34,6 +35,8 @@ class DecoratedFormField extends StatefulWidget {
 
   final InputDecoration? decoration;
   final Function(BuildContext)? onSave;
+
+  final bool visible;
 
   @override
   State<DecoratedFormField> createState() => _DecoratedFormFieldState();
@@ -74,7 +77,7 @@ class _DecoratedFormFieldState extends State<DecoratedFormField> {
       );
     }
 
-    return FormBuilderTextField(
+    final field = FormBuilderTextField(
       name: widget.name,
       // decoration: InputDecoration(labelText: AppLocalizations.of(context).translate("label")),
       decoration: inputDecoration!,
@@ -95,5 +98,11 @@ class _DecoratedFormFieldState extends State<DecoratedFormField> {
         // print(value);
       },
     );
+
+    if (widget.visible) {
+      return field;
+    } else {
+      return SizedBox(height: 0, child: field);
+    }
   }
 }
