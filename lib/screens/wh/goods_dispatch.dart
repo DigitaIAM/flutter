@@ -45,7 +45,16 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsDispatchEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
+  final MemoryItem details = MemoryItem(id: '', json: {
+    cDate: Utils.today(),
+    cStorage: const MemoryItem(id: 'warehouse/storage/2023-02-19T12:00:44.598Z', json: {
+      "location": null,
+      "name": "цех",
+      "code": "023010100001",
+      "_id": "warehouse/storage/2023-02-19T12:00:44.598Z",
+      "_uuid": "9a31caa1-5e84-4cf9-944c-aa0bcd7e0800"
+    })
+  });
 
   String status = "register";
   String registered = '';
@@ -238,17 +247,21 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   }
 
   List<Widget> goodsList() {
+    dynamic storage;
+
     final state = _formKey.currentState;
     if (state == null) {
-      return <Widget>[];
+      storage = details.json[cStorage];
+      if (storage == null) {
+        return <Widget>[];
+      }
+    } else {
+      storage = state.value[cStorage];
     }
 
-    state.save();
-
-    final storage = state.value[cStorage];
-    final category = state.value[cCategory];
-    final goods = state.value[cGoods];
-    final batch = state.value[cBatch];
+    final category = state?.value[cCategory];
+    final goods = state?.value[cGoods];
+    final batch = state?.value[cBatch];
 
     if (items.isNotEmpty) {
       return <Widget>[
@@ -293,6 +306,16 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       return;
     }
 
+    final category = item.json['_category'];
+
+    if (category.toString() == cStorage) {
+      state.patchValue({cStorage: item});
+    } else if (category.toString() == cCategory) {
+      state.patchValue({cCategory: item});
+    } else if (category.toString() == cGoods) {
+      state.patchValue({cGoods: item});
+    }
+
     // TODO refactoring
     void fillQty(Map qty) {
       // print('fn_fillQty $qty');
@@ -321,10 +344,6 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       if (qty != null) {
         fillQty(qty);
       }
-
-      // setState(() {
-      //   getSingleItems = false;
-      // });
     }
 
     final batch = item.json[cBatch];
@@ -342,14 +361,6 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             items = qtyList;
           });
         }
-      }
-    } else {
-      final category = item.json['_category'];
-
-      if (category.toString() == cCategory) {
-        state.patchValue({cCategory: item});
-      } else if (state.value[cGoods] == null) {
-        state.patchValue({cGoods: item});
       }
     }
   }
