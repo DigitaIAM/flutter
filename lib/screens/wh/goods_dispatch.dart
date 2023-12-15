@@ -708,10 +708,9 @@ String qtyToTextInner(String text, Map qty) {
       }
     }
   }
-  // workaround
-  if (text.characters.first == ' ') {
-    text = text.trimLeft();
-  }
+  // workaround for algorithm above
+  text = text.trimLeft();
+
   // // print('_text $text');
   return text;
 }

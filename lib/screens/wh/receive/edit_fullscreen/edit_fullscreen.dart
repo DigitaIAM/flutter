@@ -463,7 +463,7 @@ class _LinesState extends State<Lines> {
   void patch(BuildContext context, MemoryItem item, Map<String, dynamic> data) {
     MemoryItem? goods = item.json['goods'];
 
-    if (data['qty'] != null && data['qty']?['uom'] == null && goods?.json['uom'] != null) {
+    if (goods?.json['uom'] != null && data['qty'] != null && data['qty']?['uom'] == null) {
       final number = data['qty']['number'] ?? data['qty'];
 
       data['qty']['uom'] = goods!.json['uom'];
