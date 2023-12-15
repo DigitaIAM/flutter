@@ -129,7 +129,8 @@ class _POProducedViewState extends State<POProducedView> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       leading: const Icon(Icons.catching_pokemon_outlined),
       // title: Text(item.json[cQty].toString()),
-      title: Text(item.json[cQty]?["uom"]?["number"].toString() ?? ''),
+      title: Text(
+          '${item.json[cQty]?[cUom]?[cNumber].toString() ?? ''} ${item.json['customer'] ?? ''} ${item.json['label'] ?? ''}'),
       subtitle: Text(item.id.split('T').last),
       // trailing: const Icon(Icons.arrow_right),
       // openUsed ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
