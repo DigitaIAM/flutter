@@ -114,7 +114,7 @@ class _GoodsEditState extends State<GoodsEdit> {
               label: localization.translate('status'),
               autofocus: true,
               validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
+                // FormBuilderValidators.required(),
               ]),
               onSave: _onSave,
               keyboardType: TextInputType.text,
