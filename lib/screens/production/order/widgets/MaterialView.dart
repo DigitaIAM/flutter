@@ -118,7 +118,10 @@ class _MaterialViewState extends State<MaterialView> {
             return FutureBuilder(
                 future: qtyToText(item),
                 builder: ((context, snapshot) {
-                  return Text(snapshot.data ?? '', style: style);
+                  final storage = item.json['storage_from']?[cName] ?? '';
+                  final data = snapshot.data ?? '';
+                  final text = storage == '' ? data : '$data, $storage';
+                  return Text(text, style: style);
                 }));
           },
           // onTap: (MemoryItem item) => {},
