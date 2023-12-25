@@ -154,7 +154,8 @@ Future<PrintResult> printing(
   final goods = record.json[cGoods];
   final goodsName = goods is MemoryItem ? goods.name() : (goods[cName] ?? '');
   final goodsUuid = goods is MemoryItem ? (goods.json[cUuid] ?? '') : (goods[cUuid] ?? '');
-  final goodsId = goods is MemoryItem ? goods.id : (goods[cId] ?? '');
+  // final goodsId = goods is MemoryItem ? goods.id : (goods[cId] ?? '');
+  final recordId = record.id;
 
   final date = doc.json[cDate]!;
   // final date = order.json[cDate] ?? record.json[cDate] ?? '';
@@ -169,6 +170,10 @@ Future<PrintResult> printing(
     batchBarcode = batch[cBarcode] ?? '';
     batchId = batch[cUuid] ?? '';
     batchDate = batch[cDate] ?? '';
+  }
+
+  if (batchDate != '') {
+    batchDate = DT.format(batchDate);
   }
 
   final qtyUom = await qtyToText(record);
@@ -202,8 +207,12 @@ Future<PrintResult> printing(
     labelData['участок'] = from.name();
   }
 
+  if (batchDate != '') {
+    labelData['приход'] = batchDate;
+  }
+
   // TODO: place length check and line break from lines_with_barcode to this function
-  Labels.linesWithBarcode(printer, goodsName, goodsUuid, goodsId, batchBarcode, batchId, batchDate, labelData);
+  Labels.linesWithBarcode(printer, goodsName, goodsUuid, recordId, batchBarcode, batchId, batchDate, labelData);
 
   return Future<PrintResult>.value(PrintResult.success);
 }

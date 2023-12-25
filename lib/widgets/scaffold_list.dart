@@ -62,6 +62,9 @@ class ScaffoldList extends StatelessWidget {
             },
             child: IconText(
               text: localization.translate("create"),
+              style: const TextStyle(
+                color: Colors.white,
+              ),
               icon: Icons.add,
               // style: const TextStyle(color: Colors.white),
             ),
