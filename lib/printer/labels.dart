@@ -77,20 +77,20 @@ class Labels {
     printer.print_();
   }
 
-  static void linesWithBarcode(NetworkPrinter printer, String goodsName, String goodsUuid, String goodsId,
+  static void linesWithBarcode(NetworkPrinter printer, String goodsName, String goodsUuid, String id,
       String batchBarcode, String batchId, String batchDate, Map<String, String> data) {
     printer.clear();
     printer.codepage(name: "1251");
     printer.direction();
 
-    printer.qrcode(60, 50, batchId, cellWidth: 7);
+    printer.qrcode(60, 50, goodsUuid, cellWidth: 7);
 
-    printer.qrcode(450, 50, goodsUuid, cellWidth: 7);
+    printer.qrcode(450, 50, batchId, cellWidth: 7);
 
-    printer.text(35, 50, ('$batchId $batchDate'), font: "2", mx: 1, my: 1, rotation: 90);
+    printer.text(35, 50, ('приход от $batchDate'), font: "2", mx: 1, my: 1, rotation: 90);
     printer.bar(50, 10, 2, 780);
 
-    printer.text(780, 50, goodsId, font: "2", mx: 1, my: 1, rotation: 90); // alignment: 3,
+    printer.text(780, 50, id, font: "2", mx: 1, my: 1, rotation: 90); // alignment: 3,
     printer.bar(750, 10, 2, 780);
 
     var y = 350;
@@ -129,9 +129,9 @@ class Labels {
       }
     }
 
-    y += 25;
-
-    printer.barcode_EAN13(225, y, batchBarcode);
+    // y += 25;
+    //
+    // printer.barcode_EAN13(225, y, batchBarcode);
 
     printer.print_();
   }

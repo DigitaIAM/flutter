@@ -125,12 +125,16 @@ class _POProducedViewState extends State<POProducedView> {
   }
 
   Widget buildItem(MemoryItem item, ThemeData theme) {
+    final title = '${item.json[cQty]?[cUom]?[cNumber].toString() ?? ''} ${item.json['customer'] ?? ''} ${item.json['label'] ?? ''}';
+    final subtitle = item.id.split('T').last;
+    final style = item.json[cStatus] == "deleted" ? const TextStyle(decoration: TextDecoration.lineThrough) : const TextStyle();
+
     final tile = ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       leading: const Icon(Icons.catching_pokemon_outlined),
       // title: Text(item.json[cQty].toString()),
-      title: Text('${item.json[cQty]?[cUom]?[cNumber].toString() ?? ''} ${item.json['customer'] ?? ''} ${item.json['label'] ?? ''}'),
-      subtitle: Text(item.id.split('T').last),
+      title: Text(title, style: style),
+      subtitle: Text(subtitle, style: style),
       // trailing: const Icon(Icons.arrow_right),
       // openUsed ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
       onTap: () {
