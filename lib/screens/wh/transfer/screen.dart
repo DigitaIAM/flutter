@@ -111,7 +111,10 @@ class WHTransferListBuilder extends StatelessWidget {
       ctx: WHTransfer.ctx,
       schema: WHTransfer.schema,
       // groupBy: (element) => element.json[cDate] ?? '',
-      groupBy: (element) => element,
+      groupBy: (element) {
+        final id = element.json[cDate] ?? '';
+        return MemoryItem(id: id, json: {cId: id, cName: id});
+      },
       title: (MemoryItem item) => Text(fFrom.resolve(item.json)?.name() ?? ''),
       subtitle: (MemoryItem item) => Text(fInto.resolve(item.json)?.name() ?? ''),
       onTap: (context, item) => context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, entity: item)),
