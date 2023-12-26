@@ -27,6 +27,7 @@ class GoodsDispatch extends StatefulWidget {
   final List<Field> schema;
   final bool enablePrinting;
   final bool allowGoodsCreation;
+  final MemoryItem storage;
 
   const GoodsDispatch({
     super.key,
@@ -35,6 +36,7 @@ class GoodsDispatch extends StatefulWidget {
     required this.schema,
     this.enablePrinting = true,
     this.allowGoodsCreation = true,
+    required this.storage,
   });
 
   @override
@@ -45,16 +47,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsDispatchEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {
-    cDate: Utils.today(),
-    cStorage: const MemoryItem(id: 'warehouse/storage/2023-02-19T12:00:44.598Z', json: {
-      "location": null,
-      "name": "цех",
-      "code": "023010100001",
-      "_id": "warehouse/storage/2023-02-19T12:00:44.598Z",
-      "_uuid": "9a31caa1-5e84-4cf9-944c-aa0bcd7e0800"
-    })
-  });
+  late MemoryItem details;
 
   String status = "register";
   String registered = '';
@@ -67,11 +60,19 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   bool showQtyUom = false;
 
   @override
+  void initState() {
+    super.initState();
+
+    details = MemoryItem(id: '', json: {
+      cDate: Utils.today(),
+      cStorage: widget.storage,
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
     final theme = Theme.of(context);
-
-    // print("Widget build(BuildContext context)");
 
     final widgets = <Widget>[
       if (status != 'register')
@@ -125,11 +126,10 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             showQtyUom = value['uom_0'] != null;
           });
 
-          final storage = value[cStorage];
-
-          if (storage is MemoryItem) {
-            setState(() {});
-          }
+          // final storage = value[cStorage];
+          // if (storage is MemoryItem) {
+          //   setState(() {});
+          // }
         },
         child: FormCard(isLast: true, children: <Widget>[
           ...(widget.enablePrinting
@@ -420,9 +420,27 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   }
 
   void done(String type) {
-    setState(() => registered = type);
+    setState(() {
+      registered = type;
+
+      // workaround as unknown where item resetting to initial
+      showCategory = false;
+      showGoods = false;
+      showBatch = false;
+      showQtyUom = false;
+    });
     Future.delayed(const Duration(seconds: 2), () {
-      setState(() => registered = '');
+      setState(() {
+        registered = '';
+
+        // workaround as unknown where item resetting to initial
+        final storageData = details.json[cStorage];
+        if (storageData is MemoryItem) {
+          final storage = MemoryItem.clone(details.json[cStorage]);
+          storage.json['_category'] = cStorage;
+          changeState(storage);
+        }
+      });
     });
   }
 
@@ -477,9 +495,9 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           uom!.json.remove('name');
         }
 
-        setState(() {
-          items = [];
-        });
+        // setState(() {
+        //   items = [];
+        // });
 
         final result = await register(doc, data, 1, true, widget.ctx, setStatus);
         if (!(result.isNew || result.isEmpty)) {

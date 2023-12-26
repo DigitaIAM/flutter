@@ -118,6 +118,13 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
                 schema: ProductionOrder.schema,
                 enablePrinting: false,
                 allowGoodsCreation: false,
+                storage: const MemoryItem(id: 'warehouse/storage/2023-02-19T12:00:44.598Z', json: {
+                  "location": null,
+                  "name": "цех",
+                  "code": "023010100001",
+                  "_id": "warehouse/storage/2023-02-19T12:00:44.598Z",
+                  "_uuid": "9a31caa1-5e84-4cf9-944c-aa0bcd7e0800"
+                  }),
               ),
               GoodsRegistration(
                 ctx: const ['production', 'material', 'produced'],
