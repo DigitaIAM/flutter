@@ -111,7 +111,10 @@ class WHReceiveListBuilder extends StatelessWidget {
       ctx: WHReceive.ctx,
       schema: WHReceive.schema,
       // groupBy: (element) => element.json[cDate] ?? '',
-      groupBy: (element) => element,
+      groupBy: (element) {
+        final id = element.json[cDate] ?? '';
+        return MemoryItem(id: id, json: {cId: id, cName: id});
+      },
       title: (MemoryItem item) => Text(fCounterparty.resolve(item.json)?.name() ?? ''),
       subtitle: (MemoryItem item) => Text(fStorage.resolve(item.json)?.name() ?? ''),
       onTap: (context, item) => context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
