@@ -15,7 +15,7 @@ import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/wh/custom_textfield.dart';
-import 'package:nae/screens/wh/goods_registration.dart';
+import 'package:nae/screens/wh/goods_dispatch.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/document_creation.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/goods.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/overview.dart';
@@ -201,8 +201,18 @@ class _WHTransferEditFSState extends State<WHTransferEditFS> with SingleTickerPr
                   child: TabBarView(controller: _controller, children: <Widget>[
                     WHTransferGoods(doc: widget.entity),
                     WHTransferOverview(doc: widget.entity),
-                    GoodsRegistration(
-                        ctx: const ['warehouse', 'transfer'], doc: widget.entity, schema: WHTransfer.schema)
+                    GoodsDispatch(
+                        ctx: const ['warehouse', 'transfer'],
+                        doc: widget.entity,
+                        schema: WHTransfer.schema,
+                        storage: const MemoryItem(id: 'warehouse/storage/2023-02-19T12:00:25.151Z', json: {
+                          "location": null,
+                          "name": "склад",
+                          "code": "023010100000",
+                          "_id": "warehouse/storage/2023-02-19T12:00:25.151Z",
+                          "_uuid": "404037f2-3db7-4dae-9884-6a79fd9cd94e"
+                        }),
+                    )
                   ]),
                 ),
               ]);
