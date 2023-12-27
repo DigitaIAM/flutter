@@ -33,6 +33,9 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   MemoryItem? product;
+  MemoryItem? area;
+
+  bool finalProduction = false;
 
   @override
   void initState() {
@@ -41,6 +44,11 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
     final p = widget.entity.json[cProduct];
     if (p is MemoryItem) {
       product = p;
+    }
+
+    final a = widget.entity.json[cArea];
+    if (a is MemoryItem) {
+      area = a;
     }
   }
 
@@ -119,6 +127,14 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
               onSave: _onSave,
               keyboardType: TextInputType.datetime,
             ),
+            Row(children: [
+              Checkbox(value: finalProduction, onChanged: (check) => {
+                setState(() {
+                  finalProduction = check!;
+                })
+              }),
+              const Text('Готовая продукция'),
+            ],),
             DecoratedFormPickerField(
               creatable: false,
               ctx: const ['production', 'area'],
@@ -129,6 +145,11 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
                 FormBuilderValidators.required(),
               ]),
               onSave: _onSave,
+              onChange: (item) {
+                setState(() {
+                  area = item;
+                });
+              },
               // keyboardType: TextInputType.text,
             ),
             DecoratedFormPickerField(
@@ -191,8 +212,8 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
 
   List<Widget> additional(BuildContext context) {
     // print("additional");
+    final localization = AppLocalizations.of(context);
     if (product != null && (product!.json[cType] ?? '') == 'roll') {
-      final localization = AppLocalizations.of(context);
       return [
         DecoratedFormField(
           name: 'material',
@@ -207,6 +228,29 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
         DecoratedFormField(
           name: 'thickness',
           label: localization.translate("thickness"),
+          autofocus: true,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(),
+          ]),
+          onSave: (context) {},
+          keyboardType: TextInputType.text,
+        ),
+      ];
+    } else if (finalProduction || (area != null && (area!.json[cType] ?? '') == 'final')) {
+      return [
+        DecoratedFormField(
+          name: 'customer',
+          label: localization.translate("customer"),
+          autofocus: true,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(),
+          ]),
+          onSave: (context) {},
+          keyboardType: TextInputType.text,
+        ),
+        DecoratedFormField(
+          name: 'label',
+          label: localization.translate("label"),
           autofocus: true,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(),

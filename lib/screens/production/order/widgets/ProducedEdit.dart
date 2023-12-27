@@ -300,26 +300,6 @@ class _POProducedEditState extends State<POProducedEdit> {
 
   List<Widget> finalForm(AppLocalizations localization) {
     return [
-      DecoratedFormField(
-        name: 'customer',
-        label: localization.translate("customer"),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-        keyboardType: TextInputType.text,
-      ),
-      DecoratedFormField(
-        name: 'label',
-        label: localization.translate("label"),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-        keyboardType: TextInputType.text,
-      ),
       DecoratedFormPickerField(
         creatable: false,
         ctx: const ['person'],
@@ -366,7 +346,7 @@ class _POProducedEditState extends State<POProducedEdit> {
         fOperator,
       ]);
 
-      // print("order ${order.json}");
+      print("order ${order.json}");
 
       final orderId = order.id;
 
@@ -433,12 +413,12 @@ class _POProducedEditState extends State<POProducedEdit> {
         recordData['length'] = length;
       }
 
-      final customer = data['customer'];
+      final customer = order.json['customer'] ?? data['customer'];
       if (customer != null) {
         recordData['customer'] = customer;
       }
 
-      final label = data['label'];
+      final label = order.json['label'] ?? data['label'];
       if (label != null) {
         recordData['label'] = label;
       }
@@ -450,9 +430,9 @@ class _POProducedEditState extends State<POProducedEdit> {
           'ctx': ['production', 'produce']
         });
 
-        final record = MemoryItem.from(response);
+      final record = MemoryItem.from(response);
 
-        return await POProducedEdit.printingProduce(
+      return await POProducedEdit.printingProduce(
           printer,
           widget.order,
           record,

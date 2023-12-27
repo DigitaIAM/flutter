@@ -266,12 +266,18 @@ class ProductionOrderOverview extends StatelessWidget {
   }
 
   List<Widget> additional(BuildContext context) {
-    final product = order.json[cProduct] ?? MemoryItem.empty;
-    final type = product is MemoryItem ? product.json[cType] ?? '' : product[cType] ?? '';
-    if (type == 'roll') {
-      final localization = AppLocalizations.of(context);
+    final localization = AppLocalizations.of(context);
 
-      return [
+    List<Widget> additional = [];
+
+    final product = order.json[cProduct] ?? MemoryItem.empty;
+    final productType = product is MemoryItem ? product.json[cType] ?? '' : product[cType] ?? '';
+
+    final customer = order.json['customer'];
+    final label = order.json['label'];
+
+    if (productType == 'roll') {
+      additional.addAll([
         KeyValue(
           label: localization.translate("raw material"),
           value: order.json['material'] ?? '',
@@ -282,8 +288,28 @@ class ProductionOrderOverview extends StatelessWidget {
           value: order.json['thickness'] ?? '',
           icon: const Icon(Icons.question_mark),
         ),
-      ];
+      ]);
     }
-    return [];
+
+    if (customer != null) {
+      additional.add(
+        KeyValue(
+          label: localization.translate("customer"),
+          value: order.json['customer'] ?? '',
+          icon: const Icon(Icons.question_mark),
+        ));
+    }
+
+    if (label != null) {
+      additional.add(
+        KeyValue(
+          label: localization.translate("label"),
+          value: order.json['label'] ?? '',
+          icon: const Icon(Icons.question_mark),
+        )
+      );
+    }
+
+    return additional;
   }
 }
