@@ -123,7 +123,17 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             showCategory = value[cCategory] != null;
             showGoods = value[cGoods] != null;
             showBatch = value[cBatch] != null;
-            showQtyUom = value['uom_0'] != null;
+            // showQtyUom = value['uom_0'] != null;
+
+            // workaround to enable fill in used labels with various uom
+            MemoryItem? goods = value[cGoods];
+            final goodsName = goods?.json[cName].toString() ?? '';
+
+            if (goodsName.startsWith('Этикетка') && value[cBatch] != null) {
+              showQtyUom = true;
+            } else {
+              showQtyUom = value['uom_0'] != null;
+            }
           });
 
           // final storage = value[cStorage];
@@ -381,7 +391,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           FormBuilderValidators.required(errorText: "выберите значение"),
         ]),
         onSave: (context) {},
-        readOnly: true,
+        // readOnly: true,
       ),
     );
 
