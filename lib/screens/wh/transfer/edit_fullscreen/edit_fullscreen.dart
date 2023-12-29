@@ -202,16 +202,16 @@ class _WHTransferEditFSState extends State<WHTransferEditFS> with SingleTickerPr
                     WHTransferGoods(doc: widget.entity),
                     WHTransferOverview(doc: widget.entity),
                     GoodsDispatch(
-                        ctx: const ['warehouse', 'transfer'],
-                        doc: widget.entity,
-                        schema: WHTransfer.schema,
-                        storage: const MemoryItem(id: 'warehouse/storage/2023-02-19T12:00:25.151Z', json: {
-                          "location": null,
-                          "name": "склад",
-                          "code": "023010100000",
-                          "_id": "warehouse/storage/2023-02-19T12:00:25.151Z",
-                          "_uuid": "404037f2-3db7-4dae-9884-6a79fd9cd94e"
-                        }),
+                      ctx: const ['warehouse', 'transfer'],
+                      doc: widget.entity,
+                      schema: WHTransfer.schema,
+                      storage: const MemoryItem(id: 'warehouse/storage/2023-02-19T12:00:25.151Z', json: {
+                        "location": null,
+                        "name": "склад",
+                        "code": "023010100000",
+                        "_id": "warehouse/storage/2023-02-19T12:00:25.151Z",
+                        "_uuid": "404037f2-3db7-4dae-9884-6a79fd9cd94e"
+                      }),
                     )
                   ]),
                 ),
@@ -375,7 +375,37 @@ class _LinesState extends State<Lines> {
           final column = entry.value;
           final String? status = item.json[cStatus];
 
-          if (column.type is ReferenceType) {
+          if (column.type is UomType) {
+            // final type = column.type as UomType;
+            final Map<String, dynamic>? value = column.resolve(item.json);
+            print("value $value");
+            return Padding(
+              padding: const EdgeInsets.only(right: cTableColumnGap),
+              child: AutocompleteField<Map<String, dynamic>>(
+                key: ValueKey('__line_${rowIndex}_${colIndex}_'),
+                editable: status == 'deleted' ? false : column.editable,
+                initialValue: value,
+                // focusNode: _focusNode,
+                create: (text) async {
+                  throw Error();
+                },
+                delegate: (text) async {
+                  throw Error();
+                },
+                displayStringForOption: (item) {
+                  return qtyToText(item);
+                  // return item?.name() ?? '';
+                },
+                itemBuilder: (context, entry) {
+                  return Text(qtyToText(item)); // , style: Theme.of(context).textTheme.displayMedium);
+                },
+                onItemSelected: (entry) async {
+                  throw Error();
+                },
+                deleted: status == 'deleted' ? true : false,
+              ),
+            );
+          } else if (column.type is ReferenceType) {
             final type = column.type as ReferenceType;
             final MemoryItem? value = column.resolve(item.json);
             return Padding(
@@ -529,4 +559,39 @@ class TableHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+String qtyToText(dynamic listOrMap) {
+  if (listOrMap == null) {
+    return '';
+  }
+  String text = '';
+  if (listOrMap != null) {
+    if (listOrMap is List && listOrMap.isNotEmpty) {
+      for (Map qty in listOrMap) {
+        text = qtyToTextInner(text, qty);
+      }
+    } else if (listOrMap is Map) {
+      text = qtyToTextInner(text, listOrMap);
+    }
+  }
+  return text;
+}
+
+String qtyToTextInner(String text, Map qty) {
+  if (text != '') {
+    text = '$text, ';
+  }
+  final factor = qty['in'];
+  if (factor != null) {
+    text = '$text ${factor['name'] ?? ''} по ${qty['number'] ?? ''} ${qty['uom'] ?? ''}';
+  } else {
+    text = '$text ${qty['name'] ?? ''}';
+  }
+
+  // workaround for algorithm above
+  text = text.trimLeft();
+
+  // // print('_text $text');
+  return text;
 }

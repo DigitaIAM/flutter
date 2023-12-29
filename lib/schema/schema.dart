@@ -142,6 +142,13 @@ class ReferenceType extends Type {
   const ReferenceType(this.ctx, {this.fields = const []});
 }
 
+class UomType extends Type {
+  final List<String> ctx;
+  final List<Field> fields;
+
+  const UomType(this.ctx, {this.fields = const []});
+}
+
 class ListType extends Type {
   final List<Field> fields;
 

@@ -687,6 +687,9 @@ class ItemsListBuilder extends StatelessWidget {
 }
 
 String qtyToText(dynamic listOrMap) {
+  if (listOrMap == null) {
+    return '';
+  }
   String text = '';
   if (listOrMap != null) {
     if (listOrMap is List && listOrMap.isNotEmpty) {

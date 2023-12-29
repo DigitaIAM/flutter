@@ -111,7 +111,7 @@ class ListBuilder extends StatelessWidget {
           //   return Text('${item.json['_balance']?[cQty] ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
           //       '${item.json['_balance']?[cCost] ?? ''} сум');
         } else {
-          print("_item: ${item.json}");
+          // print("_item: ${item.json}");
           final cost = item.json['_cost'];
           if (cost != null) {
             return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -126,7 +126,9 @@ class ListBuilder extends StatelessWidget {
               List? list = balance[cQty];
               if (list != null && list.isNotEmpty) {
                 for (Map qty in list) {
-                  if (text != '') { text = '$text, '; }
+                  if (text != '') {
+                    text = '$text, ';
+                  }
                   text = '$text ${qty['number'] ?? ''}';
                   var uom = qty['uom'];
                   if (uom is String) {
