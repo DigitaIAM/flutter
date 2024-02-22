@@ -56,14 +56,14 @@ class EditScaffold extends StatelessWidget {
           return true;
         },
         child: Focus(
-          onKey: (node, event) {
-            if (LogicalKeySet(LogicalKeyboardKey.escape).accepts(event, RawKeyboard.instance)) {
+          onKeyEvent: (node, event) {
+            if (LogicalKeySet(LogicalKeyboardKey.escape).accepts(event, HardwareKeyboard.instance)) {
               onClose(context);
 
               return KeyEventResult.handled;
             } else if (LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyS)
-                    .accepts(event, RawKeyboard.instance) ||
-                const SingleActivator(LogicalKeyboardKey.keyS, control: true).accepts(event, RawKeyboard.instance)) {
+                    .accepts(event, HardwareKeyboard.instance) ||
+                const SingleActivator(LogicalKeyboardKey.keyS, control: true).accepts(event, HardwareKeyboard.instance)) {
               // print("ctrl+s");
               onSave?.call(context);
 

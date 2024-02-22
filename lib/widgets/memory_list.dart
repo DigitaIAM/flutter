@@ -14,7 +14,7 @@ import 'package:nae/schema/schema.dart';
 import 'package:nae/widgets/icon_text.dart';
 import 'package:nae/widgets/swipe_action.dart';
 import 'package:overflow_view/overflow_view.dart';
-import 'package:pluto_grid/pluto_grid.dart';
+import 'package:pluto_grid_plus/pluto_grid_plus.dart';
 
 import '../models/ui/state.dart';
 
