@@ -21,7 +21,7 @@ import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/scaffold_list.dart';
 import 'package:nae/widgets/scrolling_date_calendar.dart';
-import 'package:pluto_grid/pluto_grid.dart';
+import 'package:pluto_grid_plus/pluto_grid_plus.dart';
 
 class ProductionReportView extends Entity {
   static const List<String> ctx = ['report', 'production'];

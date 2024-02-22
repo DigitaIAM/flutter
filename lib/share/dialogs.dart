@@ -76,7 +76,7 @@ Future<dynamic>? showYesNo(BuildContext context, String msg, VoidCallback callba
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                          primary: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                          foregroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       onPressed: () {
                         callbackNo();
                         Navigator.of(context).pop(false);
@@ -94,7 +94,7 @@ Future<dynamic>? showYesNo(BuildContext context, String msg, VoidCallback callba
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                          primary: Colors.blue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                          foregroundColor: Colors.blue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       onPressed: () {
                         callbackYes();
                         Navigator.of(context).pop(true);
@@ -144,7 +144,7 @@ void showAlert(BuildContext context, String msg, {String? okText}) {
             width: 200,
             height: 50,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(primary: Colors.grey),
+              style: ElevatedButton.styleFrom(foregroundColor: Colors.grey),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -188,7 +188,7 @@ void showYesNoCancel(BuildContext context, String msg, VoidCallback callbackYes,
             width: 200,
             height: 50,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(primary: Colors.blue),
+              style: ElevatedButton.styleFrom(foregroundColor: Colors.blue),
               onPressed: () {
                 callbackYes();
                 Navigator.of(context).pop();
@@ -206,7 +206,7 @@ void showYesNoCancel(BuildContext context, String msg, VoidCallback callbackYes,
             width: 200,
             height: 50,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(primary: Colors.red),
+              style: ElevatedButton.styleFrom(foregroundColor: Colors.red),
               onPressed: () {
                 callbackNo();
                 Navigator.of(context).pop();
@@ -224,7 +224,7 @@ void showYesNoCancel(BuildContext context, String msg, VoidCallback callbackYes,
             width: 200,
             height: 50,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(primary: Colors.grey),
+              style: ElevatedButton.styleFrom(foregroundColor: Colors.grey),
               onPressed: () {
                 Navigator.of(context).pop();
               },

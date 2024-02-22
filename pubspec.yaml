@@ -20,7 +20,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.0.29+32
 
 environment:
-  sdk: '>=2.18.5 <3.0.0'
+  sdk: ^3.3.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -77,7 +77,7 @@ dependencies:
   adaptive_breakpoints: ^0.1.6
   #dual_screen: ^1.0.3
   side_navigation: ^1.0.4
-  pluto_grid: ^7.0.2
+  pluto_grid_plus: ^8.3.0
   grouped_list: ^5.1.2
   dropdown_search: ^5.0.6
   #reactive_forms: ^14.2.0
