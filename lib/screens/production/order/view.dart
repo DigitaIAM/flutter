@@ -23,13 +23,15 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 class ProductionOrderView extends EntityHolder {
   final int tabIndex;
 
-  const ProductionOrderView({super.key, required super.entity, required this.tabIndex});
+  const ProductionOrderView(
+      {super.key, required super.entity, required this.tabIndex});
 
   @override
   State<ProductionOrderView> createState() => _ProductionOrderViewState();
 }
 
-class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTickerProviderStateMixin {
+class _ProductionOrderViewState extends State<ProductionOrderView>
+    with SingleTickerProviderStateMixin {
   late TabController _controller;
 
   @override
@@ -94,7 +96,8 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
           icon: const Icon(Icons.edit_note_outlined),
           tooltip: localization.translate("edit"),
           onPressed: () {
-            context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, action: 'edit', entity: widget.entity));
+            context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx,
+                action: 'edit', entity: widget.entity));
           },
         ),
       ],
@@ -118,13 +121,16 @@ class _ProductionOrderViewState extends State<ProductionOrderView> with SingleTi
                 schema: ProductionOrder.schema,
                 enablePrinting: false,
                 allowGoodsCreation: false,
-                storage: const MemoryItem(id: 'warehouse/storage/2023-02-19T12:00:44.598Z', json: {
-                  "location": null,
-                  "name": "цех",
-                  "code": "023010100001",
-                  "_id": "warehouse/storage/2023-02-19T12:00:44.598Z",
-                  "_uuid": "9a31caa1-5e84-4cf9-944c-aa0bcd7e0800"
-                  }),
+                storage: const MemoryItem(
+                  id: 'warehouse/storage/2023-02-19T12:00:44.598Z',
+                  json: {
+                    "location": null,
+                    "name": "цех",
+                    "code": "023010100001",
+                    "_id": "warehouse/storage/2023-02-19T12:00:44.598Z",
+                    "_uuid": "9a31caa1-5e84-4cf9-944c-aa0bcd7e0800"
+                  },
+                ),
               ),
               GoodsRegistration(
                 ctx: const ['production', 'material', 'produced'],
@@ -148,6 +154,7 @@ class ProductionOrderOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final localization = AppLocalizations.of(context);
 
     String? operatorName;
@@ -175,23 +182,29 @@ class ProductionOrderOverview extends StatelessWidget {
     }
 
     var sumUsed = qtyToText(order.json['_material']?['sum']?['used'] ?? '-');
-    var sumProduced = qtyToText(order.json['_material']?['sum']?['produced'] ?? '-');
+    var sumProduced =
+        qtyToText(order.json['_material']?['sum']?['produced'] ?? '-');
     var sumDelta = qtyToText(order.json['_material']?['sum']?['delta'] ?? '-');
 
     final widgets = <Widget>[
-      Text(localization.translate("material product"),
-          textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 10),
+      Text(productName ?? ' ', // localization.translate("material product"),
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       EntityHeader(pairs: [
         // Pair(localization.translate("production order"), memoryItem.json[cDate])
-        Pair(localization.translate("plan"), order.json['planned']?.toString() ?? '-'),
-        Pair(localization.translate("produced"), order.json['produced']?['piece'] ?? '-'),
-        Pair(localization.translate("boxes"), order.json['produced']?['box'] ?? '-'),
+        Pair(localization.translate("plan"),
+            order.json['planned']?.toString() ?? '-'),
+        Pair(localization.translate("produced"),
+            order.json['produced']?['piece'] ?? '-'),
+        Pair(localization.translate("boxes"),
+            order.json['produced']?['box'] ?? '-'),
       ]),
-      KeyValue(
-        label: localization.translate(cProduct),
-        value: productName ?? ' ',
-        icon: const Icon(Icons.question_mark),
-      ),
+      // KeyValue(
+      //   label: localization.translate(cProduct),
+      //   value: productName ?? ' ',
+      //   icon: const Icon(Icons.question_mark),
+      // ),
       ...additional(context),
       KeyValue(
         label: localization.translate(cArea),
@@ -208,16 +221,31 @@ class ProductionOrderOverview extends StatelessWidget {
         value: DT.format(order.json[cDate]),
         icon: const Icon(Icons.question_mark),
       ),
-      ListDivider(),
-      Text(localization.translate("materials"),
-          textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-      EntityHeader(pairs: [
-        Pair(localization.translate("used material"), sumUsed),
-        Pair(localization.translate("produced material"), sumProduced),
-        Pair(localization.translate("delta"), sumDelta),
-      ]),
-      ...buildItemsList(context, order.json['_material']?['used'], "materials used"),
-      ...buildItemsList(context, order.json['_material']?['produced'], "materials produced"),
+      // ListDivider(),
+      Container(
+          color: theme.secondaryHeaderColor,
+          padding:
+              const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
+          child: Align(
+              alignment: Alignment.center,
+              child: Text(localization.translate("materials"),
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.normal,
+                    // color: Colors.white70,
+                  )))),
+
+      // )),
+      // EntityHeader(pairs: [
+      //   Pair(localization.translate("used material"), sumUsed),
+      //   Pair(localization.translate("produced material"), sumProduced),
+      //   Pair(localization.translate("delta"), sumDelta),
+      // ]),
+      ...buildItemsList(
+          context, order.json['_material']?['used'], "materials used"),
+      ...buildItemsList(
+          context, order.json['_material']?['produced'], "materials produced"),
     ];
 
     return ScrollableListView(
@@ -225,7 +253,8 @@ class ProductionOrderOverview extends StatelessWidget {
     );
   }
 
-  List<Widget> buildItemsList(BuildContext context, dynamic data, String label) {
+  List<Widget> buildItemsList(
+      BuildContext context, dynamic data, String label) {
     final localization = AppLocalizations.of(context);
 
     var children = <Widget>[];
@@ -235,10 +264,15 @@ class ProductionOrderOverview extends StatelessWidget {
     if (data != null) {
       if (data is List) {
         if (data.isNotEmpty) {
-          children.add(Text(localization.translate(label), textAlign: TextAlign.center));
+          children.add(Padding(
+            padding: const EdgeInsets.all(5),
+            child:
+                Text(localization.translate(label), textAlign: TextAlign.right),
+          ));
         }
 
         for (Map item in data) {
+          // print("item $item");
           final value = qtyToText(item['used'] ?? item['produced'] ?? '');
 
           children.add(KeyValue(
@@ -249,7 +283,8 @@ class ProductionOrderOverview extends StatelessWidget {
         }
       } else if (data is Map) {
         if (data.isNotEmpty) {
-          children.add(Text(localization.translate(label), textAlign: TextAlign.center));
+          children.add(
+              Text(localization.translate(label), textAlign: TextAlign.right));
         }
 
         final value = qtyToText(data['used'] ?? data['produced'] ?? '');
@@ -267,7 +302,9 @@ class ProductionOrderOverview extends StatelessWidget {
 
   List<Widget> additional(BuildContext context) {
     final product = order.json[cProduct] ?? MemoryItem.empty;
-    final type = product is MemoryItem ? product.json[cType] ?? '' : product[cType] ?? '';
+    final type = product is MemoryItem
+        ? product.json[cType] ?? ''
+        : product[cType] ?? '';
     if (type == 'roll') {
       final localization = AppLocalizations.of(context);
 

@@ -20,7 +20,9 @@ void main() async {
   // await Upgrader.clearSavedSettings();
 
   runApp(MultiProvider(
-    providers: [ChangeNotifierProvider<MySettings>(create: (_) => MySettings(prefs))],
+    providers: [
+      ChangeNotifierProvider<MySettings>(create: (_) => MySettings(prefs))
+    ],
     child: const MyApp(),
   ));
 }
@@ -43,7 +45,8 @@ class MyApp extends StatelessWidget {
               backgroundColor: Colors.white,
               // state.prefState.enableDarkMode ? Colors.white : Colors.black,
               textStyle: const TextStyle(
-                color: Colors.black87, // state.prefState.enableDarkMode ? Colors.black87 : Colors.white,
+                color: Colors.black87,
+                // state.prefState.enableDarkMode ? Colors.black87 : Colors.white,
               ),
               child: MaterialApp(
                 title: "Nae",
@@ -93,9 +96,10 @@ class MyApp extends StatelessWidget {
       ),
     );
 
-    final outlinedButtonTheme = OutlinedButton.styleFrom(
-        foregroundColor: Colors.black87 // state.prefState.enableDarkMode ? Colors.white : Colors.black87,
-        );
+    final outlinedButtonTheme =
+        OutlinedButton.styleFrom(foregroundColor: Colors.black87
+            // state.prefState.enableDarkMode ? Colors.white : Colors.black87,
+            );
 
     return ThemeData(
       colorScheme: ColorScheme.fromSwatch().copyWith(
