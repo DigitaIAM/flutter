@@ -111,6 +111,7 @@
   "counterparty": "контрагент",
   "goods": "товар",
   "stock": "остаток",
+  "movement": "движение",
   "from": "откуда",
   "into": "куда",
   "raw material": "сырьё",

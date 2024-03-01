@@ -108,6 +108,7 @@
   "counterparty": "counterparty",
   "goods": "goods",
   "stock": "stock",
+  "movement": "movement",
   "from": "from",
   "into": "into",
   "raw material": "raw material",
