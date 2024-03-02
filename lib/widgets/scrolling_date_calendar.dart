@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:jiffy/jiffy.dart';
 
 typedef ScrollingDayCalendarBuilder = Widget Function(
   BuildContext context,
@@ -78,35 +79,27 @@ class _ScrollingDayCalendarState extends State<ScrollingDayCalendar> {
   int _totalPages = 0;
   int _currentPage = 0;
   int _previousPage = 0;
-  late DateTime _selectedDate;
+  late Jiffy _selectedDate;
 
   _onPageChange(direction) {
     _currentPage = _pageController.page!.round();
 
     if (_currentPage > _previousPage) {
-      // went forward
-      DateTime newDate = _selectedDate.add(
-        const Duration(days: 31),
-      );
-
+      // forward
       setState(() {
-        _selectedDate = newDate;
+        _selectedDate = _selectedDate.add(months: 1);
       });
     } else {
-      // went back
-      DateTime newDate = _selectedDate.subtract(
-        const Duration(days: 31),
-      );
-
+      // back
       setState(() {
-        _selectedDate = newDate;
+        _selectedDate = _selectedDate.subtract(months: 1);
       });
     }
 
     _previousPage = _pageController.page!.round();
 
     // run page update sent by user
-    widget.onDateChange(direction, _selectedDate);
+    widget.onDateChange(direction, _selectedDate.dateTime);
   }
 
   Widget _buildPage(index) {
@@ -135,10 +128,11 @@ class _ScrollingDayCalendarState extends State<ScrollingDayCalendar> {
   @override
   void initState() {
     // set the selected date
-    _selectedDate = widget.selectedDate;
+    _selectedDate = Jiffy.parseFromDateTime(widget.selectedDate);
 
     // calculate the start page
-    int startingPage = _selectedDate.difference(widget.startDate).inDays.floor();
+    int startingPage =
+        _selectedDate.dateTime.difference(widget.startDate).inDays.floor();
 
     setState(() {
       // set the total number of pages based on start date and end date
@@ -189,7 +183,8 @@ class _ScrollingDayCalendarState extends State<ScrollingDayCalendar> {
                 padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
                 child: Center(
                   child: Text(
-                    DateFormat(widget.displayDateFormat ?? "dd/MM/yyyy").format(_selectedDate),
+                    DateFormat(widget.displayDateFormat ?? "dd/MM/yyyy")
+                        .format(_selectedDate.dateTime),
                     style: widget.dateStyle ??
                         const TextStyle(
                           fontWeight: FontWeight.w500,
@@ -208,7 +203,8 @@ class _ScrollingDayCalendarState extends State<ScrollingDayCalendar> {
                 child: MaterialButton(
                   onPressed: () {
                     _pageController.nextPage(
-                      duration: widget.pageChangeDuration ?? Duration(milliseconds: 700),
+                      duration: widget.pageChangeDuration ??
+                          Duration(milliseconds: 700),
                       curve: Curves.easeIn,
                     );
                   },
