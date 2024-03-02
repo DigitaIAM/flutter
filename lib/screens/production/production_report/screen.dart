@@ -37,7 +37,7 @@ class ProductionReportView extends Entity {
   String name() => "production report";
 
   @override
-  IconData icon() => Icons.production_quantity_limits;
+  IconData icon() => Icons.conveyor_belt;
 
   @override
   Widget screen(String action, MemoryItem entity) {
@@ -80,7 +80,7 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
 
     selectedDate = widget.initDate;
 
-    print('initState selectedArea ${widget.initDate} $selectedArea');
+    // print('initState selectedArea ${widget.initDate} $selectedArea');
   }
 
   @override
@@ -94,7 +94,7 @@ class _ProductionReportScreenState extends State<ProductionReportScreen> {
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
 
-    print('build selectedArea $selectedArea');
+    // print('build selectedArea $selectedArea');
 
     // Widget pageItems = ProductionReportPlutoGrid(selectedDate, key: UniqueKey());
     DateTime startDate = selectedDate.subtract(const Duration(days: 365 * 2));

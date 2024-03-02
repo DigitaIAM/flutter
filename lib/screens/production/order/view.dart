@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/screens/production/order/screen.dart';
@@ -180,6 +181,8 @@ class ProductionOrderOverview extends StatelessWidget {
       areaName = area[cName];
     }
 
+    final produced = Qty.fromJson(order.json['produced']);
+
     final widgets = <Widget>[
       const SizedBox(height: 10),
       Text(productName ?? ' ', // localization.translate("material product"),
@@ -189,10 +192,9 @@ class ProductionOrderOverview extends StatelessWidget {
         // Pair(localization.translate("production order"), memoryItem.json[cDate])
         Pair(localization.translate("plan"),
             order.json['planned']?.toString() ?? '-'),
-        Pair(localization.translate("produced"),
-            order.json['produced']?['piece'] ?? '-'),
-        Pair(localization.translate("boxes"),
-            order.json['produced']?['box'] ?? '-'),
+        Pair(localization.translate("produced"), '${produced.lower}'),
+        Pair((produced.upperUOM?.name() ?? '').toLowerCase(),
+            '${produced.upper}'),
       ]),
       // KeyValue(
       //   label: localization.translate(cProduct),

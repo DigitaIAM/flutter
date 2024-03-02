@@ -151,7 +151,12 @@ class Uom extends Equatable {
       final factor = Decimal.parse(json['number'] ?? '1');
       final deeper = Uom.fromJson(json['uom']);
 
-      return Uom(json['in'], json, (factor, deeper));
+      final id = json['in'];
+      if (id is String) {
+        return Uom(id, json, (factor, deeper));
+      } else {
+        return Uom(id['_uuid'], json, (factor, deeper));
+      }
     }
   }
 
@@ -163,6 +168,15 @@ class Uom extends Equatable {
     });
 
     return MemoryItem.from(response);
+  }
+
+  String name() {
+    // print("name $json");
+    final uom = json['in'];
+    if (uom != null) {
+      return uom['name'];
+    }
+    return json['name'] ?? '';
   }
 
   @override
