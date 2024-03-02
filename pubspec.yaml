@@ -50,6 +50,8 @@ dependencies:
   timeago: ^3.5.0
   country_icons: ^2.0.2
 
+  decimal: ^2.3.3
+
   #flutter_feathersjs: ^4.0.5+1
   flutter_feathersjs:
     git: https://github.com/DigitaIAM/flutter_feathersjs.dart

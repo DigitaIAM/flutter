@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/models/ui/event.dart';
@@ -23,18 +24,37 @@ class ProductionOrder extends Entity {
     fArea,
     fOperator,
     fProduct,
-    const Field('thickness', NumberType(), path: ['thickness']).copyWith(width: 0.5),
+    const Field('thickness', NumberType(), path: ['thickness'])
+        .copyWith(width: 0.5),
     const Field('planned', NumberType()),
     // /production/produce[order == order.id]/sum(qty) = pieces
     // /production/produce[order == order.id]/count() = boxes
     Field(
       'produced~',
       CalculatedType((MemoryItem order) async {
-        final produced = order.json['produced'];
-        if (produced == null) {
-          return '';
+        // print("produced ${order.json['produced']}");
+        final produced = Qty.fromJson(order.json['produced']);
+
+        var text = '';
+
+        final upper = produced.upper;
+        final upperUOM = produced.upperUOM;
+        if (upperUOM != null) {
+          final uom = await upperUOM.resolve();
+          text += '$upper ${uom.name()}';
         }
-        return '${produced['piece']} шт, ${produced['box']} кор';
+
+        final lower = produced.lower;
+        final lowerUOM = produced.lowerUOM;
+        if (lowerUOM != null) {
+          if (text.isNotEmpty) {
+            text += ', ';
+          }
+          final uom = await lowerUOM.resolve();
+          text += '$lower ${uom.name()}';
+        }
+
+        return text;
       }),
     ),
   ];
@@ -89,7 +109,8 @@ class ProductionOrderScreen extends StatelessWidget {
         heroTag: 'product_fab',
         backgroundColor: theme.primaryColorDark,
         onPressed: () {
-          context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, action: 'edit', entity: MemoryItem.create()));
+          context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx,
+              action: 'edit', entity: MemoryItem.create()));
         },
         tooltip: AppLocalizations.of(context).translate("new production order"),
         child: Icon(
@@ -114,7 +135,8 @@ class ProductionOrdersListBuilder extends StatelessWidget {
         final id = element.json[cDate] ?? '';
         return MemoryItem(id: id, json: {cId: id, cName: id});
       },
-      title: (MemoryItem item) => Text('${name(item.json[cArea])}\n${name(item.json[cProduct])}'),
+      title: (MemoryItem item) =>
+          Text('${name(item.json[cArea])}\n${name(item.json[cProduct])}'),
       subtitle: (MemoryItem item) {
         final json = item.json;
         var text = 'план: ${json['planned']} шт'
@@ -126,7 +148,9 @@ class ProductionOrdersListBuilder extends StatelessWidget {
         }
         return Text(text);
       },
-      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, entity: item)),
+      onTap: (context, item) => context
+          .read<UiBloc>()
+          .add(ChangeView(ProductionOrder.ctx, entity: item)),
     );
   }
 }

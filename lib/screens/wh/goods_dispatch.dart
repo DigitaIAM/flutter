@@ -44,7 +44,8 @@ class GoodsDispatch extends StatefulWidget {
 }
 
 class _GoodsDispatchState extends State<GoodsDispatch> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsDispatchEdit');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_goodsDispatchEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   late MemoryItem details;
@@ -76,9 +77,11 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
     final widgets = <Widget>[
       if (status != 'register')
-        Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-          Text(status),
-        ]),
+        Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Text(status),
+            ]),
       AppForm(
         entity: details,
         formKey: _formKey,
@@ -154,7 +157,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             label: localization.translate(cStorage),
             creatable: false,
             validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(errorText: "выберите место хранения"),
+              FormBuilderValidators.required(
+                  errorText: "выберите место хранения"),
             ]),
             onSave: (context) {},
           ),
@@ -212,7 +216,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
                 child: FloatingActionButton(
                   heroTag: 'product_register_and_print',
                   backgroundColor: theme.primaryColorDark,
-                  onPressed: status == 'register' ? registerAndPrintPreparation : null,
+                  onPressed:
+                      status == 'register' ? registerAndPrintPreparation : null,
                   tooltip: localization.translate('and print'.toString()),
                   child: registered == 'registerAndPrint'
                       ? const Icon(Icons.done)
@@ -499,7 +504,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
         //   items = [];
         // });
 
-        final result = await register(doc, data, 1, true, widget.ctx, setStatus);
+        final result =
+            await register(doc, data, 1, true, widget.ctx, setStatus);
         if (!(result.isNew || result.isEmpty)) {
           done('register');
         }
@@ -509,7 +515,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     }
   }
 
-  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data, {MemoryItem? item}) async {
+  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data,
+      {MemoryItem? item}) async {
     resetDone();
 
     setStatus("connecting");
@@ -518,7 +525,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(widget.schema);
-        final record = item ?? await register(doc, data, 1, true, widget.ctx, setStatus);
+        final record =
+            item ?? await register(doc, data, 1, true, widget.ctx, setStatus);
 
         if (item == null) {
           if (!(record.isEmpty || record.isNew)) {
@@ -557,7 +565,13 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 }
 
 class BalanceListBuilder extends StatelessWidget {
-  const BalanceListBuilder({super.key, this.storage, this.category, this.goods, this.batch, required this.changeState});
+  const BalanceListBuilder(
+      {super.key,
+      this.storage,
+      this.category,
+      this.goods,
+      this.batch,
+      required this.changeState});
 
   final Function(MemoryItem item) changeState;
 
@@ -673,7 +687,8 @@ class ItemsListBuilder extends StatelessWidget {
       elevation: 2.0,
       margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
         // leading: const Icon(Icons.account_circle),
         title: title(item),
         subtitle: subtitle(item),
@@ -687,13 +702,16 @@ class ItemsListBuilder extends StatelessWidget {
 }
 
 String qtyToText(dynamic listOrMap) {
+  // print("qtyToText $listOrMap");
   String text = '';
   if (listOrMap != null) {
     if (listOrMap is List && listOrMap.isNotEmpty) {
+      // print("list case");
       for (Map qty in listOrMap) {
         text = qtyToTextInner(text, qty);
       }
     } else if (listOrMap is Map) {
+      // print("map case");
       text = qtyToTextInner(text, listOrMap);
     }
   }
@@ -701,9 +719,7 @@ String qtyToText(dynamic listOrMap) {
 }
 
 String qtyToTextInner(String text, Map qty) {
-  // if (qtyList != null && qtyList.isNotEmpty) {
-  // for (Map qty in qtyList) {
-  // print('qtyToText $qty');
+  // print("qtyToTextInner $text $qty");
   if (text != '') {
     text = '$text, ';
   }
@@ -715,11 +731,14 @@ String qtyToTextInner(String text, Map qty) {
   } else {
     while (uom is Map) {
       if (uom['uom'] == null) {
+        text = '$text ${uom['name'] ?? ''}';
         break;
       }
       text = '$text ${uom['in']?['name'] ?? ''} по ${uom['number'] ?? ''}';
-      if (uom['uom']?['name'] != null) {
-        text = '$text ${uom['uom']?['name'] ?? ''}';
+
+      final label = uom['uom']?['name'];
+      if (label != null) {
+        text = '$text $label';
         break;
       } else {
         uom = uom['uom'];
@@ -728,7 +747,5 @@ String qtyToTextInner(String text, Map qty) {
   }
   // workaround for algorithm above
   text = text.trimLeft();
-
-  // // print('_text $text');
   return text;
 }

@@ -16,7 +16,6 @@ import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/entity_header.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/key_value.dart';
-import 'package:nae/widgets/list_divider.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
@@ -181,11 +180,6 @@ class ProductionOrderOverview extends StatelessWidget {
       areaName = area[cName];
     }
 
-    var sumUsed = qtyToText(order.json['_material']?['sum']?['used'] ?? '-');
-    var sumProduced =
-        qtyToText(order.json['_material']?['sum']?['produced'] ?? '-');
-    var sumDelta = qtyToText(order.json['_material']?['sum']?['delta'] ?? '-');
-
     final widgets = <Widget>[
       const SizedBox(height: 10),
       Text(productName ?? ' ', // localization.translate("material product"),
@@ -273,10 +267,10 @@ class ProductionOrderOverview extends StatelessWidget {
 
         for (Map item in data) {
           // print("item $item");
-          final value = qtyToText(item['used'] ?? item['produced'] ?? '');
+          final value = qtyToText(item['qty'] ?? '');
 
           children.add(KeyValue(
-            label: item['name'] ?? '',
+            label: item['goods']?['name'] ?? '',
             value: value,
             icon: const Icon(Icons.question_mark),
           ));
