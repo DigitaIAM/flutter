@@ -98,6 +98,7 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
     final schema = [
       const Field('store', ReferenceType([cWarehouse, cStorage])),
       fGoods,
+      const Field('open_balance.qty', path: ['open_balance', 'qty'], QtyType()),
     ];
 
     // TODO: implement build
@@ -272,7 +273,7 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
           datacell(
             (2, index),
             // Number.f(item.json['open_balance']?['qty'] ?? ''),
-            item.json['open_balance']?['qty']?.toString() ?? '',
+            item.json['open_balance.qty'].toString(),
             isNumber: true,
           ),
           datacell(

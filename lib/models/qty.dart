@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:nae/api.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/utils/cache.dart';
 
 class Qty {
   const Qty(this.nums);
@@ -128,14 +129,22 @@ class Qty {
     // print("SUM $this + $other = $result");
     return result;
   }
+
+  Future<Qty> enrich(Cache cache) async {
+    for (final nam in nums) {
+      nam.named.resolve_(cache);
+    }
+    return this;
+  }
 }
 
 class Uom extends Equatable {
   final String id;
   final Map<String, dynamic> json;
   final (Decimal, Uom)? deeper;
+  MemoryItem? memory;
 
-  const Uom(this.id, this.json, this.deeper);
+  Uom(this.id, this.json, this.deeper);
 
   static Uom fromJson(dynamic json) {
     // print("Uom.fromJson $json");
@@ -170,7 +179,28 @@ class Uom extends Equatable {
     return MemoryItem.from(response);
   }
 
+  Future<void> resolve_(Cache cache) async {
+    if (memory == null) {
+      var cached = cache.get(id);
+      if (cached == null) {
+        final response = await Api.feathers()
+            .get(serviceName: "memories", objectId: id, params: {
+          "oid": Api.instance.oid,
+          "ctx": [cUom],
+        });
+
+        cached = MemoryItem.from(response);
+        cache.add(cached);
+      }
+      memory = cached;
+    }
+  }
+
   String name() {
+    if (memory != null) {
+      return memory!.name();
+    }
+
     // print("name $json");
     final uom = json['in'];
     if (uom != null) {
@@ -181,11 +211,22 @@ class Uom extends Equatable {
 
   @override
   String toString() {
-    // print("Uom.toString $json");
+    if (memory != null) {
+      if (deeper == null) {
+        return memory!.name();
+      } else {
+        return '${memory!.name()} [${deeper!.$1} ${deeper!.$2.toString()}]';
+      }
+    }
+    print("Uom.toString $json");
     dynamic uom = json;
     var text = '';
 
     while (uom is Map) {
+      if (uom['number'] == null) {
+        text += ' ${nameOrId(uom['uom'])}';
+        break;
+      }
       if (uom['uom'] == null) {
         text += ' ${uom['name'] ?? ''}';
         break;
