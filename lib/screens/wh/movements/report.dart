@@ -95,25 +95,32 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
       GCol('На конец', [Col("кол-во"), Col("сумма")]),
     ];
 
+    final schema = [
+      const Field('store', ReferenceType([cWarehouse, cStorage])),
+      fGoods,
+    ];
+
     // TODO: implement build
     return BlocProvider(
       create: (ctx) {
-        return MemoryBloc(schema: [])
-          ..add(MemoryFetch('inventory', const [], schema: const [], filter: {
-            'dates': {cFrom: '2024-01-01', cTill: Utils.today()},
-            cStorage: '404037f2-3db7-4dae-9884-6a79fd9cd94e',
-          }));
+        return MemoryBloc(schema: schema)
+          ..add(MemoryFetch('inventory', const [],
+              schema: schema,
+              filter: {
+                'dates': {cFrom: '2024-01-01', cTill: Utils.today()},
+                cStorage: '404037f2-3db7-4dae-9884-6a79fd9cd94e',
+              }));
         // ..add(MemoryFetch('memories', const ['warehouse', 'stock']));
       },
       child: BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
-        LinkedHashMap<String, List<MemoryItem>> categories = LinkedHashMap();
-        for (final item in state.items) {
-          categories.update(
-            item.json['_category'],
-            (list) => list..add(item),
-            ifAbsent: () => [item],
-          );
-        }
+        // LinkedHashMap<String, List<MemoryItem>> categories = LinkedHashMap();
+        // for (final item in state.items) {
+        //   categories.update(
+        //     item.json['_category'],
+        //     (list) => list..add(item),
+        //     ifAbsent: () => [item],
+        //   );
+        // }
 
         return Column(children: [
           calendar(context),
@@ -135,18 +142,22 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
             children: [
               Expanded(
                   child: Column(
-                children: categories.entries
-                    .map((e) {
-                      final category = e.key;
-                      final list = e.value;
+                children: state.items
+                    .map((item) {
+                      // final category = e.key;
+                      // final list = e.value;
 
                       List<Widget> rows = [];
-                      rows.add(groupRow(
-                          counter++, localization.translate(category)));
-                      for (final item in list) {
-                        print("item ${item.json}");
-                        rows.add(row(counter++, item));
+                      // rows.add(groupRow(
+                      //     counter++, localization.translate(category)));
+                      // for (final item in e) {
+                      print("item ${item.json}");
+                      if (item.json['goods'].isEmpty) {
+                        rows.add(rowStore(counter++, item));
+                      } else {
+                        rows.add(rowGoods(counter++, item));
                       }
+                      // }
 
                       return rows;
                     })
@@ -203,25 +214,26 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
     );
   }
 
-  Widget row(int index, MemoryItem item) {
+  Widget rowStore(int index, MemoryItem item) {
     return SizedBox(
       height: 30,
       child: Row(
         children: [
-          datacell((1, index), item.json['name'] ?? ''),
+          datacell(
+              (1, index), (item.json['store'] ?? MemoryItem.empty()).name()),
           datacell(
             (2, index),
-            Number.f(item.json['_cost'] ?? ''),
+            '', // Number.f(item.json['open_balance']?['qty'] ?? ''),
             isNumber: true,
           ),
           datacell(
             (3, index),
-            Number.f(item.json['_cost'] ?? ''),
+            Number.f(item.json['open_balance'] ?? ''),
             isNumber: true,
           ),
           datacell(
             (4, index),
-            Number.f(item.json['_cost'] ?? ''),
+            '', // Number.f(item.json['_cost'] ?? ''),
             isNumber: true,
           ),
           datacell(
@@ -243,6 +255,56 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
           datacell(
             (9, index),
             Number.f(item.json['_cost'] ?? ''),
+            isNumber: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget rowGoods(int index, MemoryItem item) {
+    return SizedBox(
+      height: 30,
+      child: Row(
+        children: [
+          datacell(
+              (1, index), (item.json['goods'] ?? MemoryItem.empty()).name()),
+          datacell(
+            (2, index),
+            // Number.f(item.json['open_balance']?['qty'] ?? ''),
+            item.json['open_balance']?['qty']?.toString() ?? '',
+            isNumber: true,
+          ),
+          datacell(
+            (3, index),
+            Number.f(item.json['open_balance']?['cost'] ?? ''),
+            isNumber: true,
+          ),
+          datacell(
+            (4, index),
+            Number.f(item.json['receive']?['qty']?.toString() ?? ''),
+            isNumber: true,
+          ),
+          datacell(
+            (5, index),
+            Number.f(item.json['receive']?['cost'] ?? ''),
+            isNumber: true,
+          ),
+          datacell(
+            (6, index),
+            Number.f(item.json['issue']?['qty']?.toString() ?? ''),
+            isNumber: true,
+          ),
+          datacell(
+            (7, index),
+            Number.f(item.json['issue']['cost'] ?? ''),
+            isNumber: true,
+          ),
+          datacell(
+              (8, index), item.json['close_balance']?['qty']?.toString() ?? ''),
+          datacell(
+            (9, index),
+            Number.f(item.json['close_balance']['cost'] ?? ''),
             isNumber: true,
           ),
         ],

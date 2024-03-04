@@ -113,10 +113,10 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       while (true) {
         final items =
             await _fetch(event, newState.original.length + result.length);
-        print("fetched ${items.length}");
-        for (final item in items) {
-          print("item: ${item.id}");
-        }
+        // print("fetched ${items.length}");
+        // for (final item in items) {
+        //   print("item: ${item.id}");
+        // }
 
         // enrich
         final s = event.schema ?? schema ?? [];
@@ -174,20 +174,21 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
 
     final filter = event.filter;
     if (filter.isNotEmpty) {
-      print("filter $filter");
       query['filter'] = filter;
     }
 
     final response =
         await Api.feathers().find(serviceName: event.serviceName, query: query);
 
-    print('response $response');
+    // print('response $response');
     List<MemoryItem> list = [];
 
     final data = response['data'] as List;
     for (var json in data) {
+      // print('json $json');
       list.add(MemoryItem.from(json));
     }
+    // print('list ${list.length}');
     return list;
   }
 
