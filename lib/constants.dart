@@ -95,6 +95,7 @@ const String cArea = 'area';
 const String cProduction = 'production';
 const String cFrom = 'from';
 const String cInto = 'into';
+const String cTill = 'till';
 const String cProduct = 'product';
 const String cPerson = 'person';
 const String cOperator = 'operator';

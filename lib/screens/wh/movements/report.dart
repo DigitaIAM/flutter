@@ -9,6 +9,7 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/share/utils.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/utils/number.dart';
 import 'package:scrollable_clean_calendar/controllers/clean_calendar_controller.dart';
@@ -98,7 +99,11 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
     return BlocProvider(
       create: (ctx) {
         return MemoryBloc(schema: [])
-          ..add(MemoryFetch('memories', const ['warehouse', 'stock']));
+          ..add(MemoryFetch('inventory', const [], schema: const [], filter: {
+            'dates': {cFrom: '2024-01-01', cTill: Utils.today()},
+            cStorage: '404037f2-3db7-4dae-9884-6a79fd9cd94e',
+          }));
+        // ..add(MemoryFetch('memories', const ['warehouse', 'stock']));
       },
       child: BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
         LinkedHashMap<String, List<MemoryItem>> categories = LinkedHashMap();
@@ -139,7 +144,7 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
                       rows.add(groupRow(
                           counter++, localization.translate(category)));
                       for (final item in list) {
-                        // print("item ${item.json}");
+                        print("item ${item.json}");
                         rows.add(row(counter++, item));
                       }
 
