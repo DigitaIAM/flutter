@@ -261,7 +261,7 @@ class _LinesState extends State<Lines> {
     var schema = <Field>[
       // const Field(cBatch, StringType()),
       fGoods.copyWith(width: 3.0),
-      fUomAtQty.copyWith(width: 0.5),
+      fUomAtQty.copyWith(width: 0.5, editable: false),
       fQty.copyWith(width: 1.0),
       // fStorage,
     ];
