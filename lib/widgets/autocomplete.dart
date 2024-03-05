@@ -100,7 +100,8 @@ class _AutocompleteFieldState<T extends Object> extends State<AutocompleteField<
   void update() {
     final text = _controller.text;
     final initial = widget.displayStringForOption(widget.initialValue);
-    final isNew = text.isNotEmpty && text != initial;
+    final isNew = text.isNotEmpty && selected == null;
+
 
     // print("update: $isNew ${widget.initialValue}");
     // print("$text vs $initial");
