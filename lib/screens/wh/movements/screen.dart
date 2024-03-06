@@ -4,13 +4,12 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/common/uom/edit.dart';
 import 'package:nae/screens/wh/list_builder.dart';
 import 'package:nae/screens/wh/movements/report.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/scaffold_list.dart';
-
-import 'view.dart';
 
 class WHMovement extends Entity {
   static const List<String> ctx = ['warehouse', 'movement'];
@@ -41,11 +40,8 @@ class WHMovement extends Entity {
       ctx: ctx,
       schema: schema,
       list: WHMovementScreen(entity: entity),
-      view: WHMovementView(
-        key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-        entity: entity,
-        // tabIndex: 0,
-      ), // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
+      view: UomEdit(entity: entity),
+      // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
     );
   }
 }
@@ -71,7 +67,7 @@ class _WHMovementScreenState extends State<WHMovementScreen> {
         },
       ),
       floatingActionButton: null,
-      body: MovementReportScreen(),
+      body: WHMovementReportScreen(entity: widget.entity),
       // WHMovementReportScreen(entity: widget.entity),
     );
   }
@@ -89,14 +85,25 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
   // with SingleTickerProviderStateMixin {
   late TabController _controller;
 
-  final List<Pair> _filters = [];
+  final List<MemoryItem> reports = [
+    MemoryItem.from({
+      'id': '1',
+      cName: 'Отчет о движении ТМЦ по складу за февраль 2024 года',
+      'dates': {cFrom: '2024-02-01', cTill: '2024-02-29'},
+      cStorage: '404037f2-3db7-4dae-9884-6a79fd9cd94e',
+      // cGoods: '0cf13464-658f-4405-b540-d4df4d774682',
+      // cBatch: {
+      //   'id': '130d13a0-4d29-402f-acb5-eb3140507257',
+      //   'date': '2024-02-10',
+    }),
+  ];
 
   @override
   void initState() {
     super.initState();
 
     _controller = TabController(
-      vsync: this, length: _filters.length + 1,
+      vsync: this, length: reports.length,
       initialIndex: 0, // widget.isFilter ? 0 : state.WHDispatchUIState.tabIndex
     );
   }
@@ -105,11 +112,11 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
     final oldIndex = _controller.index;
     _controller.dispose();
     _controller = TabController(
-      length: _filters.length + 1,
+      length: reports.length,
       initialIndex: oldIndex,
       vsync: this,
     );
-    _controller.animateTo(_filters.length);
+    _controller.animateTo(reports.length - 1);
   }
 
   @override
@@ -137,14 +144,7 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
                   indicatorColor: theme.appBarTheme.foregroundColor,
                   controller: _controller,
                   isScrollable: true,
-                  tabs: [
-                    Tab(text: localization.translate('movement')),
-                    ..._filters
-                        .map((e) => Tab(
-                            text: localization
-                                .translate(e.value.name().toLowerCase())))
-                        .toList()
-                  ],
+                  tabs: reports.map((e) => Tab(text: e.name())).toList(),
                 ),
               ],
             ),
@@ -168,33 +168,18 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
 
   List<Widget> buildChildren() {
     final List<Widget> widgets = [];
-    widgets.add(MovementReportScreen());
-    //widgets.add(ListBuilder(
-    //   filters: const [],
-    //   down: cb,
-    //   ctx: WHMovement.ctx,
-    //   schema: WHMovement.schema,
-    // ));
 
-    // final List<Pair> pairs = [];
-    // for (final pair in _filters) {
-    //   pairs.add(pair);
-    //   widgets.add(ListBuilder(
-    //     filters: List.from(pairs),
-    //     down: cb,
-    //     ctx: WHMovement.ctx,
-    //     schema: WHMovement.schema,
-    //   ));
-    // }
+    for (final report in reports) {
+      widgets.add(MovementReportScreen(
+        entity: report,
+        cb: (report) => setState(() {
+          print("report ${report.json}");
+          reports.add(report);
+          updateController();
+        }),
+      ));
+    }
 
     return widgets;
-  }
-
-  Future<void> cb(BuildContext context, List<Pair> filters) async {
-    setState(() {
-      _filters.clear();
-      _filters.addAll(filters);
-      updateController();
-    });
   }
 }

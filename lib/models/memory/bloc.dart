@@ -97,7 +97,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
   }
 
   Future<void> _onFetch(MemoryFetch event, Emitter<RequestState> emit) async {
-    print('_onFetching ${state.hasReachedMax}');
+    // print('_onFetching ${state.hasReachedMax}');
     final newState =
         event.reset ? RequestState(DateTime.now(), query: state.query) : state;
 
@@ -176,6 +176,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     if (filter.isNotEmpty) {
       query['filter'] = filter;
     }
+
+    // print("query $query");
 
     final response =
         await Api.feathers().find(serviceName: event.serviceName, query: query);

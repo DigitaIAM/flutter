@@ -16,25 +16,17 @@ import 'package:scrollable_clean_calendar/controllers/clean_calendar_controller.
 import 'package:scrollable_clean_calendar/scrollable_clean_calendar.dart';
 import 'package:scrollable_clean_calendar/utils/enums.dart';
 
+const String openQty = 'open.qty';
+const String receiveQty = 'receive.qty';
+const String issueQty = 'issue.qty';
+const String closeQty = 'close.qty';
+
 class MovementReportScreen extends StatefulWidget {
-  const MovementReportScreen({super.key});
+  const MovementReportScreen(
+      {super.key, required this.entity, required this.cb});
 
-  static const List<String> ctx = ['warehouse', 'movement'];
-
-  static List<Field> schema = [
-    fStorage,
-    fBatch,
-    fGoods,
-    // fQty,
-    fUomAtGoods,
-    // Field(cQty, CalculatedType((MemoryItem goods) async => goods.balance()))
-  ];
-
-  @override
-  List<String> route() => ctx;
-
-  @override
-  String name() => "movement";
+  final MemoryItem entity;
+  final Function(MemoryItem) cb;
 
   @override
   State<MovementReportScreen> createState() => _MovementReportScreenState();
@@ -43,8 +35,6 @@ class MovementReportScreen extends StatefulWidget {
 class _MovementReportScreenState extends State<MovementReportScreen> {
   DateTime fromDate = DateTime.now();
   DateTime? tillDate;
-
-  (int, int)? hoverFocus;
 
   late CleanCalendarController calendarController;
 
@@ -76,6 +66,8 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // print("MovementReportScreen.build");
+
     final localization = AppLocalizations.of(context);
 
     var label = '';
@@ -85,8 +77,6 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
       label = 'с ${DT.f(fromDate)} по ${DT.f(tillDate!)}';
     }
 
-    var counter = 1;
-
     final cols = [
       Col("Название"),
       GCol('На начало', [Col("кол-во"), Col("сумма")]),
@@ -95,34 +85,51 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
       GCol('На конец', [Col("кол-во"), Col("сумма")]),
     ];
 
-    final schema = [
+    var schema = [
       const Field('store', ReferenceType([cWarehouse, cStorage])),
       fGoods,
-      const Field('open_balance.qty', path: ['open_balance', 'qty'], QtyType()),
+      const Field(openQty, path: ['open_balance', 'qty'], QtyType()),
+      const Field(receiveQty, path: ['receive', 'qty'], QtyType()),
+      const Field(issueQty, path: ['issue', 'qty'], QtyType()),
+      const Field(closeQty, path: ['close_balance', 'qty'], QtyType()),
     ];
+
+    final filter = {
+      'dates': {cFrom: '2022-01-01', 'till': Utils.today()},
+      cStorage: widget.entity.json[cStorage],
+      //cGoods: widget.entity.json['goods'],
+      //'batch_id': widget.entity.json[cBatch]['batch_id'],
+      //'batch_date': widget.entity.json[cBatch][cDate],
+    };
+
+    final goods = widget.entity.json['goods'];
+    // print('goods $goods');
+
+    var detailed = false;
+    if (goods != null) {
+      detailed = true;
+
+      filter[cGoods] = goods;
+      filter['batch_id'] = widget.entity.json[cBatch]['id'];
+      filter['batch_date'] = widget.entity.json[cBatch][cDate];
+
+      schema = [
+        fGoods,
+        fFrom,
+        fInto,
+        const Field('qty', QtyType()),
+      ];
+    }
 
     // TODO: implement build
     return BlocProvider(
       create: (ctx) {
         return MemoryBloc(schema: schema)
           ..add(MemoryFetch('inventory', const [],
-              schema: schema,
-              filter: {
-                'dates': {cFrom: '2024-01-01', cTill: Utils.today()},
-                cStorage: '404037f2-3db7-4dae-9884-6a79fd9cd94e',
-              }));
+              schema: schema, filter: filter));
         // ..add(MemoryFetch('memories', const ['warehouse', 'stock']));
       },
       child: BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
-        // LinkedHashMap<String, List<MemoryItem>> categories = LinkedHashMap();
-        // for (final item in state.items) {
-        //   categories.update(
-        //     item.json['_category'],
-        //     (list) => list..add(item),
-        //     ifAbsent: () => [item],
-        //   );
-        // }
-
         return Column(children: [
           calendar(context),
           SizedBox(
@@ -131,42 +138,39 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
-                  'Отчет о движении ТМЦ $label',
+                  "$label",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
+                // Container(
+                //   alignment: FractionalOffset.topRight,
+                //   child: IconButton(
+                //     onPressed: () {
+                //       Navigator.pop(context);
+                //     },
+                //     icon: const Icon(Icons.clear),
+                //   ),
+                // ),
               ],
             ),
           ),
           headline(cols),
           Expanded(
-              child: Row(
+              child: SingleChildScrollView(
+                  child: Row(
             children: [
               Expanded(
                   child: Column(
-                children: state.items
-                    .map((item) {
-                      // final category = e.key;
-                      // final list = e.value;
-
-                      List<Widget> rows = [];
-                      // rows.add(groupRow(
-                      //     counter++, localization.translate(category)));
-                      // for (final item in e) {
-                      print("item ${item.json}");
-                      if (item.json['goods'].isEmpty) {
-                        rows.add(rowStore(counter++, item));
-                      } else {
-                        rows.add(rowGoods(counter++, item));
-                      }
-                      // }
-
-                      return rows;
-                    })
-                    .expand((i) => i)
-                    .toList(),
+                children: state.items.map((item) {
+                  // print("item ${item.json}");
+                  if (detailed) {
+                    return RowDetailedWidget(item: item, cb: widget.cb);
+                  } else {
+                    return RowWidget(item: item, cb: widget.cb);
+                  }
+                }).toList(),
               )),
             ],
-          )),
+          ))),
         ]);
       }),
     );
@@ -209,105 +213,7 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
       height: 30,
       child: Row(
         children: [
-          datacell((1, index), label),
-        ],
-      ),
-    );
-  }
-
-  Widget rowStore(int index, MemoryItem item) {
-    return SizedBox(
-      height: 30,
-      child: Row(
-        children: [
-          datacell(
-              (1, index), (item.json['store'] ?? MemoryItem.empty()).name()),
-          datacell(
-            (2, index),
-            '', // Number.f(item.json['open_balance']?['qty'] ?? ''),
-            isNumber: true,
-          ),
-          datacell(
-            (3, index),
-            Number.f(item.json['open_balance'] ?? ''),
-            isNumber: true,
-          ),
-          datacell(
-            (4, index),
-            '', // Number.f(item.json['_cost'] ?? ''),
-            isNumber: true,
-          ),
-          datacell(
-            (5, index),
-            Number.f(item.json['_cost'] ?? ''),
-            isNumber: true,
-          ),
-          datacell(
-            (6, index),
-            Number.f(item.json['_cost'] ?? ''),
-            isNumber: true,
-          ),
-          datacell(
-            (7, index),
-            Number.f(item.json['_cost'] ?? ''),
-            isNumber: true,
-          ),
-          datacell((8, index), item.json['_cost'] ?? ''),
-          datacell(
-            (9, index),
-            Number.f(item.json['_cost'] ?? ''),
-            isNumber: true,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget rowGoods(int index, MemoryItem item) {
-    return SizedBox(
-      height: 30,
-      child: Row(
-        children: [
-          datacell(
-              (1, index), (item.json['goods'] ?? MemoryItem.empty()).name()),
-          datacell(
-            (2, index),
-            // Number.f(item.json['open_balance']?['qty'] ?? ''),
-            item.json['open_balance.qty'].toString(),
-            isNumber: true,
-          ),
-          datacell(
-            (3, index),
-            Number.f(item.json['open_balance']?['cost'] ?? ''),
-            isNumber: true,
-          ),
-          datacell(
-            (4, index),
-            Number.f(item.json['receive']?['qty']?.toString() ?? ''),
-            isNumber: true,
-          ),
-          datacell(
-            (5, index),
-            Number.f(item.json['receive']?['cost'] ?? ''),
-            isNumber: true,
-          ),
-          datacell(
-            (6, index),
-            Number.f(item.json['issue']?['qty']?.toString() ?? ''),
-            isNumber: true,
-          ),
-          datacell(
-            (7, index),
-            Number.f(item.json['issue']['cost'] ?? ''),
-            isNumber: true,
-          ),
-          datacell(
-              (8, index), item.json['close_balance']?['qty']?.toString() ?? ''),
-          datacell(
-            (9, index),
-            Number.f(item.json['close_balance']['cost'] ?? ''),
-            isNumber: true,
-          ),
+          datacell(label),
         ],
       ),
     );
@@ -366,17 +272,14 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               content,
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.black, fontWeight: FontWeight.bold),
             ),
           ),
         ));
   }
 
-  Widget datacell((int, int) index, String content, {bool isNumber = false}) {
-    final highlighting = hoverFocus != null &&
-        (hoverFocus!.$2 == index.$2 || hoverFocus!.$1 == index.$1);
-
+  Widget datacell(String content, {bool isNumber = false}) {
     Widget text = Text(
       content,
       maxLines: 1,
@@ -394,14 +297,120 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
         child: InkWell(
             onDoubleTap: () {},
             onHover: (val) {
+              // setState(() {
+              //   highlighting = true;
+              // });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+              decoration: BoxDecoration(
+                color: Colors.white70, // highlighting ? Colors.white :
+                border: Border.all(color: Colors.black45, width: 0.4),
+              ),
+              child: Align(
+                alignment: isNumber ? Alignment.centerRight : Alignment.center,
+                heightFactor: 1.5,
+                child: text,
+              ),
+            )));
+  }
+}
+
+class RowWidget extends StatefulWidget {
+  const RowWidget({super.key, required this.item, required this.cb});
+
+  final MemoryItem item;
+  final Function(MemoryItem) cb;
+
+  @override
+  State<RowWidget> createState() => _RowWidgetState();
+}
+
+class _RowWidgetState extends State<RowWidget> {
+  bool highlighting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // print("RowWidget.build");
+    final item = widget.item;
+    return SizedBox(
+      height: 30,
+      child: Row(
+        children: [
+          datacell(item.json['goods'].name()),
+          datacell(
+            item.json[openQty].toString(),
+            isNumber: true,
+          ),
+          datacell(
+            Number.f(item.json['open_balance']?['cost'] ?? ''),
+            isNumber: true,
+          ),
+          datacell(
+            item.json[receiveQty].toString(),
+            isNumber: true,
+          ),
+          datacell(
+            Number.f(item.json['receive']?['cost'] ?? ''),
+            isNumber: true,
+          ),
+          datacell(
+            item.json[issueQty].toString(),
+            isNumber: true,
+          ),
+          datacell(
+            Number.f(item.json['issue']['cost'] ?? ''),
+            isNumber: true,
+          ),
+          datacell(
+            item.json[closeQty].toString(),
+            isNumber: true,
+          ),
+          datacell(
+            Number.f(item.json['close_balance']['cost'] ?? ''),
+            isNumber: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget datacell(String content, {bool isNumber = false}) {
+    Widget text = Text(
+      content,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        color: Colors.black,
+        fontWeight: FontWeight.normal,
+      ),
+    );
+    if (content.length > 20) {
+      text = Tooltip(message: content, child: text);
+    }
+    return Flexible(
+        flex: 5,
+        child: InkWell(
+            onDoubleTap: () {
+              //  print("click ${widget.item.json}");
+              widget.cb(MemoryItem.from({
+                'id': '1',
+                cName: widget.item.json[cGoods].name(),
+                'dates': {cFrom: '2024-02-01', cTill: '2024-02-29'},
+                cStorage: widget.item.json['store'].uuid,
+                cGoods: widget.item.json['goods'].uuid,
+                cBatch: widget.item.json[cBatch]
+              }));
+            },
+            onHover: (val) {
               setState(() {
-                hoverFocus = index;
+                highlighting = val;
               });
             },
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
               decoration: BoxDecoration(
-                color: highlighting ? Colors.white : Colors.white70,
+                color: highlighting ? Colors.white : const Color(0xDDFFFFFF),
                 border: Border.all(color: Colors.black45, width: 0.4),
               ),
               child: Align(
@@ -423,4 +432,138 @@ class GCol extends Col {
   final List<Col> cols;
 
   GCol(super.label, this.cols);
+}
+
+Widget datacell(String content, {bool isNumber = false}) {
+  Widget text = Text(
+    content,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+    style: const TextStyle(
+      color: Colors.black,
+      fontWeight: FontWeight.normal,
+    ),
+  );
+  if (content.length > 20) {
+    text = Tooltip(message: content, child: text);
+  }
+  return Flexible(
+      flex: 5,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+        decoration: BoxDecoration(
+          color: Colors.white70, // highlighting ? Colors.white :
+          border: Border.all(color: Colors.black45, width: 0.4),
+        ),
+        child: Align(
+          alignment: isNumber ? Alignment.centerRight : Alignment.center,
+          heightFactor: 1.5,
+          child: text,
+        ),
+      ));
+}
+
+class RowDetailedWidget extends StatefulWidget {
+  const RowDetailedWidget({super.key, required this.item, required this.cb});
+
+  final MemoryItem item;
+  final Function(MemoryItem) cb;
+
+  @override
+  State<RowDetailedWidget> createState() => _RowDetailedWidget();
+}
+
+class _RowDetailedWidget extends State<RowDetailedWidget> {
+  @override
+  Widget build(BuildContext context) {
+    final item = widget.item;
+    print('json: ${item.json}');
+    final opType = item.json['type'];
+
+    //item.json[openQty].toString(),
+
+    if (opType == 'open_balance') {
+      return SizedBox(
+          height: 30,
+          child: Row(children: [
+            datacell(cName),
+            datacell(
+              item.json['qty'].toString(),
+              isNumber: true,
+            ),
+            datacell(
+              Number.f(item.json['cost'] ?? ''),
+              isNumber: true,
+            ),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+          ]));
+    } else if (opType == 'receive') {
+      return SizedBox(
+          height: 30,
+          child: Row(children: [
+            datacell(item.json['into'].name()),
+            datacell(''),
+            datacell(''),
+            datacell(
+              item.json['qty'].toString(),
+              isNumber: true,
+            ),
+            datacell(
+              Number.f(item.json['cost'] ?? ''),
+              isNumber: true,
+            ),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+          ]));
+    } else if (opType == 'issue') {
+      return SizedBox(
+          height: 30,
+          child: Row(children: [
+            datacell(item.json['into'].name()),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(
+              item.json['qty'].toString(),
+              isNumber: true,
+            ),
+            datacell(
+              Number.f(item.json['cost'] ?? ''),
+              isNumber: true,
+            ),
+            datacell(''),
+            datacell(''),
+          ]));
+    } else if (opType == 'close_balance') {
+      return SizedBox(
+          height: 30,
+          child: Row(children: [
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(
+              item.json['qty'].toString(),
+              isNumber: true,
+            ),
+            datacell(
+              Number.f(item.json['cost'] ?? ''),
+              isNumber: true,
+            ),
+          ]));
+    } else {
+      return const SizedBox(height: 30, child: Row(children: []));
+    }
+  }
 }

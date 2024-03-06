@@ -132,7 +132,7 @@ class Qty {
 
   Future<Qty> enrich(Cache cache) async {
     for (final nam in nums) {
-      nam.named.resolve_(cache);
+      await nam.named.resolve_(cache);
     }
     return this;
   }
@@ -218,7 +218,7 @@ class Uom extends Equatable {
         return '${memory!.name()} [${deeper!.$1} ${deeper!.$2.toString()}]';
       }
     }
-    print("Uom.toString $json");
+    // print("Uom.toString $json");
     dynamic uom = json;
     var text = '';
 
