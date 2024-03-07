@@ -23,20 +23,28 @@ const String closeQty = 'close.qty';
 
 class MovementReportScreen extends StatefulWidget {
   const MovementReportScreen(
-      {super.key, required this.entity, required this.cb});
+      {super.key,
+      required this.entity,
+      required this.cb,
+      required this.closeReport});
 
   final MemoryItem entity;
   final Function(MemoryItem) cb;
+  final Function() closeReport;
 
   @override
   State<MovementReportScreen> createState() => _MovementReportScreenState();
 }
 
-class _MovementReportScreenState extends State<MovementReportScreen> {
+class _MovementReportScreenState extends State<MovementReportScreen>
+    with AutomaticKeepAliveClientMixin {
   DateTime fromDate = DateTime.now();
   DateTime? tillDate;
 
   late CleanCalendarController calendarController;
+
+  @override
+  bool get wantKeepAlive => true;
 
   void setRange(DateTime firstDate, DateTime? secondDate) {
     setState(() {
@@ -66,6 +74,7 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     // print("MovementReportScreen.build");
 
     final localization = AppLocalizations.of(context);
@@ -141,15 +150,15 @@ class _MovementReportScreenState extends State<MovementReportScreen> {
                   "$label",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                // Container(
-                //   alignment: FractionalOffset.topRight,
-                //   child: IconButton(
-                //     onPressed: () {
-                //       Navigator.pop(context);
-                //     },
-                //     icon: const Icon(Icons.clear),
-                //   ),
-                // ),
+                Container(
+                  alignment: FractionalOffset.topRight,
+                  child: IconButton(
+                    onPressed: () {
+                      widget.closeReport();
+                    },
+                    icon: const Icon(Icons.clear),
+                  ),
+                ),
               ],
             ),
           ),
@@ -486,7 +495,7 @@ class _RowDetailedWidget extends State<RowDetailedWidget> {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            datacell(cName),
+            datacell(''),
             datacell(
               item.json['qty'].toString(),
               isNumber: true,

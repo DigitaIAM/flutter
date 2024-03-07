@@ -109,14 +109,21 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
   }
 
   void updateController() {
-    final oldIndex = _controller.index;
+    var oldIndex = _controller.index;
+    if (oldIndex == reports.length) {
+      if (reports.length == 0) {
+        oldIndex = 0;
+      } else {
+        oldIndex = reports.length - 1;
+      }
+    }
     _controller.dispose();
     _controller = TabController(
       length: reports.length,
       initialIndex: oldIndex,
       vsync: this,
     );
-    _controller.animateTo(reports.length - 1);
+    // _controller.animateTo(reports.length - 1);
   }
 
   @override
@@ -170,14 +177,25 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
     final List<Widget> widgets = [];
 
     for (final report in reports) {
-      widgets.add(MovementReportScreen(
-        entity: report,
-        cb: (report) => setState(() {
-          print("report ${report.json}");
-          reports.add(report);
-          updateController();
-        }),
-      ));
+      widgets.add(
+        MovementReportScreen(
+          entity: report,
+          cb: (report) => setState(() {
+            print("report ${report.json}");
+            reports.add(report);
+            updateController();
+            _controller.animateTo(reports.length - 1);
+          }),
+          closeReport: () => setState(() {
+            reports.remove(report);
+            var oldIndex = _controller.index;
+            updateController();
+            if (oldIndex > 0) {
+              _controller.index = oldIndex - 1;
+            }
+          }),
+        ),
+      );
     }
 
     return widgets;
