@@ -3,6 +3,8 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
@@ -11,9 +13,12 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/balance/view.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/utils/number.dart';
+import 'package:nae/widgets/app_form.dart';
+import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:scrollable_clean_calendar/controllers/clean_calendar_controller.dart';
 import 'package:scrollable_clean_calendar/scrollable_clean_calendar.dart';
 import 'package:scrollable_clean_calendar/utils/enums.dart';
@@ -43,6 +48,12 @@ class MovementReportScreen extends StatefulWidget {
 class _MovementReportScreenState extends State<MovementReportScreen>
     with AutomaticKeepAliveClientMixin {
   late CleanCalendarController calendarController;
+
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_uomEdit');
+  final FocusScopeNode _focusNode = FocusScopeNode();
+
+  MemoryItem formEntity = MemoryItem.empty();
 
   @override
   bool get wantKeepAlive => true;
@@ -82,8 +93,6 @@ class _MovementReportScreenState extends State<MovementReportScreen>
   Widget build(BuildContext context) {
     super.build(context);
     // print("MovementReportScreen.build");
-
-    final localization = AppLocalizations.of(context);
 
     print("widget.entity.json ${widget.entity.json}");
     final fromDate = widget.entity.json['dates'][cFrom];
@@ -133,6 +142,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
       filter['batch_date'] = widget.entity.json[cBatch][cDate];
 
       schema = [
+        fDesc,
         fGoods,
         fFrom,
         fInto,
@@ -159,7 +169,9 @@ class _MovementReportScreenState extends State<MovementReportScreen>
           }
         }
         return Column(children: [
-          calendar(context),
+          Row(
+            children: [calendar(context), selectedStore(context)],
+          ),
           SizedBox(
             height: 50,
             child: Row(
@@ -291,67 +303,129 @@ class _MovementReportScreenState extends State<MovementReportScreen>
     );
   }
 
-  Widget titlecell(String content) {
-    return Flexible(
-        flex: 5,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white70,
-            border: Border.all(color: Colors.black45, width: 0.4),
-          ),
-          child: Align(
-            child: Text(
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              content,
-              style: const TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ));
-  }
+  Widget selectedStore(BuildContext context) {
+    final localization = AppLocalizations.of(context);
+    return SizedBox(
+      width: 300,
+      height: 60,
+      child: AppForm(
+        formKey: _formKey,
+        focusNode: _focusNode,
+        entity: formEntity,
+        schema: const [fStorage],
+        onChanged: () {
+          final state = _formKey.currentState!;
+          state.save();
 
-  Widget datacell(String content, {bool isNumber = false}) {
-    Widget text = Text(
-      content,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: Colors.black,
-        fontWeight: FontWeight.normal,
+          MemoryItem? store = state.value[cStorage];
+          setState(() {
+            formEntity = MemoryItem(
+              id: formEntity.id,
+              json: {cStorage: store ?? MemoryItem.empty()},
+            );
+
+            print("object $store");
+            widget.entity.json[cStorage] = store?.uuid;
+            widget.updateReport(widget.entity);
+          });
+
+          // debugPrint("report onChanged: $selectedArea");
+        },
+        child: DecoratedFormPickerField(
+          creatable: false,
+          ctx: const [cWarehouse, cStorage],
+          name: cStorage,
+          label: localization.translate('storage'),
+          autofocus: true,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(),
+          ]),
+          onSave: (context) {},
+          // keyboardType: TextInputType.text,
+        ),
       ),
     );
-    if (content.length > 20) {
-      text = Tooltip(message: content, child: text);
-    }
-    return Flexible(
-        flex: 5,
-        child: InkWell(
-            onDoubleTap: () {},
-            onHover: (val) {
-              // setState(() {
-              //   highlighting = true;
-              // });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-              decoration: BoxDecoration(
-                color: Colors.white70, // highlighting ? Colors.white :
-                border: Border.all(color: Colors.black45, width: 0.4),
-              ),
-              child: Align(
-                alignment: isNumber ? Alignment.centerRight : Alignment.center,
-                heightFactor: 1.5,
-                child: text,
-              ),
-            )));
   }
 }
 
+Widget titlecell(String content) {
+  return Flexible(
+      flex: 5,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white70,
+          border: Border.all(color: Colors.black45, width: 0.4),
+        ),
+        child: Align(
+          child: Text(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            content,
+            style: const TextStyle(
+                color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ));
+}
+
+Widget datacell(String content, {bool isNumber = false}) {
+  Widget text = Text(
+    content,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+    style: const TextStyle(
+      color: Colors.black,
+      fontWeight: FontWeight.normal,
+    ),
+  );
+  if (content.length > 20) {
+    text = Tooltip(message: content, child: text);
+  }
+  return Flexible(
+      flex: 5,
+      child: InkWell(
+          onDoubleTap: () {},
+          onHover: (val) {
+            // setState(() {
+            //   highlighting = true;
+            // });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+            decoration: BoxDecoration(
+              color: Colors.white70, // highlighting ? Colors.white :
+              border: Border.all(color: Colors.black45, width: 0.4),
+            ),
+            child: Align(
+              alignment: isNumber ? Alignment.centerRight : Alignment.center,
+              heightFactor: 3.5,
+              child: text,
+            ),
+          )));
+}
+
 Widget batchcell(String content, String batch, {bool isNumber = false}) {
-  Widget text = ListTile(
-    title: Text(content),
-    subtitle: Text(batch),
+  Widget text = Column(
+    children: [
+      Text(
+        content,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+      Text(
+        batch,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+    ],
   );
   return Flexible(
       flex: 5,
@@ -363,7 +437,7 @@ Widget batchcell(String content, String batch, {bool isNumber = false}) {
         ),
         child: Align(
           alignment: isNumber ? Alignment.centerRight : Alignment.center,
-          heightFactor: 1.5,
+          heightFactor: 3.5,
           child: text,
         ),
       ));
@@ -386,17 +460,15 @@ class _RowWidgetState extends State<RowWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // print("RowWidget.build");
     final item = widget.item;
-    print('itemBatch ${item.json}');
     return SizedBox(
-      height: 30,
+      height: 60,
       child: Row(
         children: [
-          //batch: {barcode: 224021013013, id: 130d13a0-4d29-402f-acb5-eb3140507257, date: 2024-02-10}
-          batchcell(item.json['goods'].name(),
-              item.json['batch']?['date']?.toString() ?? ''),
-          //datacell(item.json['goods'].name()),
+          batchcell(
+            item.json['goods'].name(),
+            item.json['batch']?['date']?.toString() ?? '',
+          ),
           datacell(
             item.json[openQty].toString(),
             isNumber: true,
@@ -451,7 +523,6 @@ class _RowWidgetState extends State<RowWidget> {
         flex: 5,
         child: InkWell(
             onDoubleTap: () {
-              print("click ${widget.item.json}");
               widget.cb(MemoryItem.from({
                 'id': '1',
                 cName: widget.item.json[cGoods].name(),
@@ -474,7 +545,7 @@ class _RowWidgetState extends State<RowWidget> {
               ),
               child: Align(
                 alignment: isNumber ? Alignment.centerRight : Alignment.center,
-                heightFactor: 1.5,
+                heightFactor: 3.5,
                 child: text,
               ),
             )));
@@ -493,7 +564,7 @@ class GCol extends Col {
   GCol(super.label, this.cols);
 }
 
-Widget datacell(String content, {bool isNumber = false}) {
+Widget datacellDetailed(String content, {bool isNumber = false}) {
   Widget text = Text(
     content,
     maxLines: 1,
@@ -545,78 +616,80 @@ class _RowDetailedWidget extends State<RowDetailedWidget> {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            datacell(''),
-            datacell(
+            datacellDetailed(''),
+            datacellDetailed(
               item.json['qty'].toString(),
               isNumber: true,
             ),
-            datacell(
+            datacellDetailed(
               Number.f(item.json['cost'] ?? ''),
               isNumber: true,
             ),
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
           ]));
     } else if (opType == 'receive') {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            datacell(item.json['into'].name()),
-            datacell(''),
-            datacell(''),
-            datacell(
+            datacellDetailed(
+                item.json['description'] ?? ''), // item.json['into'].name()
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(
               item.json['qty'].toString(),
               isNumber: true,
             ),
-            datacell(
-              Number.f(item.json['cost'] ?? ''),
+            datacellDetailed(
+              Number.f(item.json['cost'] ?? 'nothing'),
               isNumber: true,
             ),
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
           ]));
     } else if (opType == 'issue') {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            datacell(item.json['into'].name()),
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(
+            datacellDetailed(item.json['description'] ??
+                'nothing'), // item.json['into'].name()
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(
               item.json['qty'].toString(),
               isNumber: true,
             ),
-            datacell(
+            datacellDetailed(
               Number.f(item.json['cost'] ?? ''),
               isNumber: true,
             ),
-            datacell(''),
-            datacell(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
           ]));
     } else if (opType == 'close_balance') {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(''),
-            datacell(
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(''),
+            datacellDetailed(
               item.json['qty'].toString(),
               isNumber: true,
             ),
-            datacell(
+            datacellDetailed(
               Number.f(item.json['cost'] ?? ''),
               isNumber: true,
             ),

@@ -42,11 +42,14 @@ class _MaterialViewState extends State<MaterialView> {
           elevation: 2.0,
           margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
             // leading: const Icon(Icons.account_circle),
             tileColor: theme.secondaryHeaderColor,
             title: Text(localization.translate("used raw material")),
-            trailing: openUsed ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
+            trailing: openUsed
+                ? const Icon(Icons.arrow_drop_down)
+                : const Icon(Icons.arrow_right),
             onTap: () {
               setState(() {
                 openUsed = !openUsed;
@@ -60,14 +63,17 @@ class _MaterialViewState extends State<MaterialView> {
           elevation: 2.0,
           margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
             // leading: const Icon(Icons.account_circle),
             tileColor: theme.secondaryHeaderColor,
             title: Text(
               localization.translate("produced raw material"),
               style: theme.textTheme.bodyLarge,
             ),
-            trailing: openProduced ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
+            trailing: openProduced
+                ? const Icon(Icons.arrow_drop_down)
+                : const Icon(Icons.arrow_right),
             onTap: () {
               setState(() {
                 openProduced = !openProduced;
@@ -76,7 +82,8 @@ class _MaterialViewState extends State<MaterialView> {
             },
           ),
         ),
-        if (openProduced) buildList(['production', 'material', 'produced'], filter),
+        if (openProduced)
+          buildList(['production', 'material', 'produced'], filter),
       ],
     );
   }
@@ -86,8 +93,8 @@ class _MaterialViewState extends State<MaterialView> {
     return SizedBox(
       height: 300,
       child: BlocProvider(
-        create: (context) =>
-            MemoryBloc(schema: schema)..add(MemoryFetch('memories', ctx, schema: schema, filter: filter)),
+        create: (context) => MemoryBloc(schema: schema)
+          ..add(MemoryFetch('memories', ctx, schema: schema, filter: filter)),
         child: MemoryList(
           mode: Mode.mobile,
           ctx: ctx,
@@ -95,6 +102,7 @@ class _MaterialViewState extends State<MaterialView> {
           filter: filter,
           title: (MemoryItem item) {
             final text = fGoods.resolve(item.json)?.name() ?? '';
+            // print('text $text');
 
             TextStyle? style;
 
@@ -118,9 +126,11 @@ class _MaterialViewState extends State<MaterialView> {
             return FutureBuilder(
                 future: qtyToText(item),
                 builder: ((context, snapshot) {
+                  final dateBatch = item.json['batch']?['date'] ?? '';
                   final storage = item.json['storage_from']?[cName] ?? '';
                   final data = snapshot.data ?? '';
-                  final text = storage == '' ? data : '$data, $storage';
+                  final text =
+                      storage == '' ? data : '$data, $storage, $dateBatch';
                   return Text(text, style: style);
                 }));
           },
@@ -156,7 +166,9 @@ class _MaterialViewState extends State<MaterialView> {
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
-    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
+    context
+        .read<MemoryBloc>()
+        .add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
 
   Future chooseAndPrint(BuildContext context, MemoryItem doc) async {
@@ -193,8 +205,11 @@ class _MaterialViewState extends State<MaterialView> {
             final ip = printer['ip'];
             final port = int.parse(printer['port']);
 
-            final result =
-                await Labels.connect(ip, port, (printer) async => printing(printer, widget.order, doc, (newStatus) {}));
+            final result = await Labels.connect(
+                ip,
+                port,
+                (printer) async =>
+                    printing(printer, widget.order, doc, (newStatus) {}));
 
             if (result != PrintResult.success) {
               showToast(result.msg,
