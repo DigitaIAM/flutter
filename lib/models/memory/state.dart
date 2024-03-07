@@ -1,11 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:nae/models/memory/item.dart';
 
+import 'event.dart';
+
 enum RequestStatus { initiate, success, failure }
 
 class RequestState extends Equatable {
   RequestState(
-    this.created, {
+    this.created,
+    this.event, {
     this.status = RequestStatus.initiate,
     this.original = const <MemoryItem>[],
     this.filtered = const <MemoryItem>[],
@@ -22,6 +25,8 @@ class RequestState extends Equatable {
   final DateTime created;
   final DateTime updated;
 
+  final MemoryEvent? event;
+
   final RequestStatus status;
 
   final List<MemoryItem> original;
@@ -32,13 +37,15 @@ class RequestState extends Equatable {
 
   final MemoryItem? saved;
 
-  List<MemoryItem> get items => (query == null || query!.trim().isEmpty) ? original : filtered;
+  List<MemoryItem> get items =>
+      (query == null || query!.trim().isEmpty) ? original : filtered;
 
   bool isUpdated(MemoryItem entity) {
     return saved != null && saved!.updatedAt > entity.updatedAt;
   }
 
-  RequestState copyWith({
+  RequestState copyWith(
+    MemoryEvent event, {
     RequestStatus? status,
     List<MemoryItem>? original,
     List<MemoryItem>? filtered,
@@ -48,6 +55,7 @@ class RequestState extends Equatable {
   }) {
     return RequestState(
       created,
+      event,
       status: status ?? this.status,
       original: original ?? this.original,
       filtered: filtered ?? original ?? this.original,

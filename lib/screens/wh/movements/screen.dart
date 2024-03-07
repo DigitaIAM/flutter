@@ -180,8 +180,7 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
       widgets.add(
         MovementReportScreen(
           entity: report,
-          cb: (report) => setState(() {
-            print("report ${report.json}");
+          addReport: (report) => setState(() {
             reports.add(report);
             updateController();
             _controller.animateTo(reports.length - 1);
@@ -193,6 +192,11 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
             if (oldIndex > 0) {
               _controller.index = oldIndex - 1;
             }
+          }),
+          updateReport: (report) => setState(() {
+            print("updateReport ${report.json}");
+            final index = reports.indexOf(report);
+            reports[index] = report;
           }),
         ),
       );

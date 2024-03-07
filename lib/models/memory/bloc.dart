@@ -21,7 +21,7 @@ EventTransformer<E> throttleDroppable<E>(Duration duration) {
 
 class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
   MemoryBloc({this.schema, this.reverse = false})
-      : super(RequestState(DateTime.now())) {
+      : super(RequestState(DateTime.now(), null)) {
     // print("init RequestState");
     on<MemorySearch>(_onSearch);
     on<MemorySave>(_onSave);
@@ -98,8 +98,9 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
 
   Future<void> _onFetch(MemoryFetch event, Emitter<RequestState> emit) async {
     // print('_onFetching ${state.hasReachedMax}');
-    final newState =
-        event.reset ? RequestState(DateTime.now(), query: state.query) : state;
+    final newState = event.reset
+        ? RequestState(DateTime.now(), event, query: state.query)
+        : state;
 
     if (newState.hasReachedMax) return;
     try {
@@ -138,9 +139,10 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       }
 
       emit(result.isEmpty
-          ? newState.copyWith(
+          ? newState.copyWith(event,
               status: RequestStatus.success, hasReachedMax: true)
           : newState.copyWith(
+              event,
               status: RequestStatus.success,
               original: List.of(newState.original)..addAll(result),
               hasReachedMax: false,
@@ -149,7 +151,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       // print("ERROR _onFetched:");
       // print(e);
       // print(stacktrace);
-      emit(newState.copyWith(status: RequestStatus.failure));
+      emit(newState.copyWith(event, status: RequestStatus.failure));
     }
   }
 
@@ -203,6 +205,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     final query = originalQuery.toLowerCase();
     if (query.isEmpty) {
       return emit(state.copyWith(
+        event,
         original: original,
       ));
     } else {
@@ -219,6 +222,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       }
 
       return emit(state.copyWith(
+        event,
         original: original,
         filtered: filtered,
         query: originalQuery,
@@ -271,6 +275,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       }
 
       return emit(state.copyWith(
+        event,
         original: list,
         saved: saved,
         // saveStatus: SaveStatus.success,
@@ -280,7 +285,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       // print(e);
       // print(stacktrace);
       // emit(state.copyWith(saveStatus: SaveStatus.failure));
-      emit(state.copyWith(saved: MemoryItem(id: "error", json: {cName: e})));
+      emit(state.copyWith(event,
+          saved: MemoryItem(id: "error", json: {cName: e})));
     }
   }
 
@@ -330,6 +336,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       }
 
       return emit(state.copyWith(
+        event,
         original: list,
         saved: saved,
       ));
@@ -338,7 +345,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       // print(e);
       // print(stacktrace);
       // emit(state.copyWith(saveStatus: SaveStatus.failure));
-      emit(state.copyWith(saved: MemoryItem(id: "error", json: {cName: e})));
+      emit(state.copyWith(event,
+          saved: MemoryItem(id: "error", json: {cName: e})));
     }
   }
 
@@ -391,6 +399,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       }
 
       return emit(state.copyWith(
+        event,
         original: list,
         saved: saved,
       ));
@@ -402,7 +411,8 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
       //   saved: MemoryItem(id: event.id, json: event.data),
       //   saveStatus: SaveStatus.failure,
       // ));
-      emit(state.copyWith(saved: MemoryItem(id: "error", json: {cName: e})));
+      emit(state.copyWith(event,
+          saved: MemoryItem(id: "error", json: {cName: e})));
     }
   }
 
@@ -446,6 +456,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     final List<MemoryItem> list = List.from(state.original);
     list.insert(0, event.item);
     return emit(state.copyWith(
+      event,
       original: list,
     ));
   }
@@ -465,6 +476,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
     }
 
     return emit(state.copyWith(
+      event,
       original: items,
     ));
   }

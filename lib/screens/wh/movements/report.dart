@@ -1,7 +1,9 @@
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
@@ -25,12 +27,14 @@ class MovementReportScreen extends StatefulWidget {
   const MovementReportScreen(
       {super.key,
       required this.entity,
-      required this.cb,
-      required this.closeReport});
+      required this.addReport,
+      required this.closeReport,
+      required this.updateReport});
 
   final MemoryItem entity;
-  final Function(MemoryItem) cb;
+  final Function(MemoryItem) addReport;
   final Function() closeReport;
+  final Function(MemoryItem) updateReport;
 
   @override
   State<MovementReportScreen> createState() => _MovementReportScreenState();
@@ -38,19 +42,21 @@ class MovementReportScreen extends StatefulWidget {
 
 class _MovementReportScreenState extends State<MovementReportScreen>
     with AutomaticKeepAliveClientMixin {
-  DateTime fromDate = DateTime.now();
-  DateTime? tillDate;
-
   late CleanCalendarController calendarController;
 
   @override
   bool get wantKeepAlive => true;
 
   void setRange(DateTime firstDate, DateTime? secondDate) {
-    setState(() {
-      fromDate = firstDate;
-      tillDate = secondDate;
-    });
+    if (secondDate != null) {
+      // setState(() {
+      widget.entity.json['dates'] = {
+        cFrom: DateFormat("yyyy-MM-dd").format(firstDate),
+        cTill: DateFormat("yyyy-MM-dd").format(secondDate),
+      };
+      widget.updateReport(widget.entity);
+      // });
+    }
   }
 
   @override
@@ -79,11 +85,15 @@ class _MovementReportScreenState extends State<MovementReportScreen>
 
     final localization = AppLocalizations.of(context);
 
+    print("widget.entity.json ${widget.entity.json}");
+    final fromDate = widget.entity.json['dates'][cFrom];
+    final tillDate = widget.entity.json['dates'][cTill];
+
     var label = '';
     if (tillDate == null) {
-      label = 'на ${DT.f(fromDate)}';
+      label = 'на ${DT.format(fromDate)}';
     } else {
-      label = 'с ${DT.f(fromDate)} по ${DT.f(tillDate!)}';
+      label = 'с ${DT.format(fromDate)} по ${DT.format(tillDate!)}';
     }
 
     final cols = [
@@ -104,7 +114,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
     ];
 
     final filter = {
-      'dates': {cFrom: '2022-01-01', 'till': Utils.today()},
+      'dates': widget.entity.json['dates'],
       cStorage: widget.entity.json[cStorage],
       //cGoods: widget.entity.json['goods'],
       //'batch_id': widget.entity.json[cBatch]['batch_id'],
@@ -130,6 +140,8 @@ class _MovementReportScreenState extends State<MovementReportScreen>
       ];
     }
 
+    // print("filter $filter");
+
     // TODO: implement build
     return BlocProvider(
       create: (ctx) {
@@ -139,6 +151,13 @@ class _MovementReportScreenState extends State<MovementReportScreen>
         // ..add(MemoryFetch('memories', const ['warehouse', 'stock']));
       },
       child: BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
+        if (state.event is MemoryFetch) {
+          final oldFilter = (state.event as MemoryFetch).filter;
+          if (!mapEquals(filter, oldFilter)) {
+            context.read<MemoryBloc>().add(MemoryFetch('inventory', const [],
+                schema: schema, filter: filter, reset: true));
+          }
+        }
         return Column(children: [
           calendar(context),
           SizedBox(
@@ -172,9 +191,13 @@ class _MovementReportScreenState extends State<MovementReportScreen>
                 children: state.items.map((item) {
                   // print("item ${item.json}");
                   if (detailed) {
-                    return RowDetailedWidget(item: item, cb: widget.cb);
+                    return RowDetailedWidget(item: item, cb: widget.addReport);
                   } else {
-                    return RowWidget(item: item, cb: widget.cb);
+                    return RowWidget(
+                      item: item,
+                      cb: widget.addReport,
+                      report: widget.entity,
+                    );
                   }
                 }).toList(),
               )),
@@ -325,9 +348,32 @@ class _MovementReportScreenState extends State<MovementReportScreen>
   }
 }
 
-class RowWidget extends StatefulWidget {
-  const RowWidget({super.key, required this.item, required this.cb});
+Widget batchcell(String content, String batch, {bool isNumber = false}) {
+  Widget text = ListTile(
+    title: Text(content),
+    subtitle: Text(batch),
+  );
+  return Flexible(
+      flex: 5,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+        decoration: BoxDecoration(
+          color: Colors.white70, // highlighting ? Colors.white :
+          border: Border.all(color: Colors.black45, width: 0.4),
+        ),
+        child: Align(
+          alignment: isNumber ? Alignment.centerRight : Alignment.center,
+          heightFactor: 1.5,
+          child: text,
+        ),
+      ));
+}
 
+class RowWidget extends StatefulWidget {
+  const RowWidget(
+      {super.key, required this.report, required this.item, required this.cb});
+
+  final MemoryItem report;
   final MemoryItem item;
   final Function(MemoryItem) cb;
 
@@ -342,11 +388,15 @@ class _RowWidgetState extends State<RowWidget> {
   Widget build(BuildContext context) {
     // print("RowWidget.build");
     final item = widget.item;
+    print('itemBatch ${item.json}');
     return SizedBox(
       height: 30,
       child: Row(
         children: [
-          datacell(item.json['goods'].name()),
+          //batch: {barcode: 224021013013, id: 130d13a0-4d29-402f-acb5-eb3140507257, date: 2024-02-10}
+          batchcell(item.json['goods'].name(),
+              item.json['batch']?['date']?.toString() ?? ''),
+          //datacell(item.json['goods'].name()),
           datacell(
             item.json[openQty].toString(),
             isNumber: true,
@@ -401,11 +451,11 @@ class _RowWidgetState extends State<RowWidget> {
         flex: 5,
         child: InkWell(
             onDoubleTap: () {
-              //  print("click ${widget.item.json}");
+              print("click ${widget.item.json}");
               widget.cb(MemoryItem.from({
                 'id': '1',
                 cName: widget.item.json[cGoods].name(),
-                'dates': {cFrom: '2024-02-01', cTill: '2024-02-29'},
+                'dates': widget.report.json['dates'],
                 cStorage: widget.item.json['store'].uuid,
                 cGoods: widget.item.json['goods'].uuid,
                 cBatch: widget.item.json[cBatch]
