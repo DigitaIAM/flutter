@@ -122,6 +122,11 @@ class Field {
 
     v[steps[last]] = value;
   }
+
+  @override
+  String toString() {
+    return 'Field[$name] = $type at $path';
+  }
 }
 
 abstract class Type {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -8,10 +9,12 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
 
@@ -89,7 +92,12 @@ class _MaterialViewState extends State<MaterialView> {
   }
 
   Widget buildList(List<String> ctx, Map<String, dynamic> filter) {
-    List<Field> schema = [];
+    List<Field> schema = [
+      const Field('storage_from', ReferenceType([cWarehouse, cStorage])),
+      const Field('storage_into', ReferenceType([cWarehouse, cStorage])),
+      fGoods,
+      fQtyNew
+    ];
     return SizedBox(
       height: 300,
       child: BlocProvider(
@@ -123,16 +131,18 @@ class _MaterialViewState extends State<MaterialView> {
               );
             }
 
-            return FutureBuilder(
-                future: qtyToText(item),
-                builder: ((context, snapshot) {
-                  final dateBatch = item.json['batch']?['date'] ?? '';
-                  final storage = item.json['storage_from']?[cName] ?? '';
-                  final data = snapshot.data ?? '';
-                  final text =
-                      storage == '' ? data : '$data, $storage, $dateBatch';
-                  return Text(text, style: style);
-                }));
+            String dateBatch = item.json['batch']?['date'] ?? '';
+            var storage = item.json['storage_from']?.name() ?? '';
+            if (listEquals(ctx, ['production', 'material', 'produced'])) {
+              storage = item.json['storage_into']?.name() ?? '';
+            }
+            final qty = item.json['qty'].toString();
+            var text = '$qty, $storage';
+            if (dateBatch.isNotEmpty) {
+              text += ', $dateBatch';
+            }
+
+            return Text(text, style: style);
           },
           // onTap: (MemoryItem item) => {},
           actions: [
@@ -149,6 +159,14 @@ class _MaterialViewState extends State<MaterialView> {
               onPressed: (context, item) => chooseAndPrint(context, item),
               foregroundColor: Colors.white,
               backgroundColor: Colors.blue,
+            ),
+            ItemAction(
+              label: 'edit',
+              icon: Icons.edit,
+              onPressed: (context, item) =>
+                  editItem(context, ctx, widget.order, item),
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.green,
             ),
           ],
         ),
@@ -227,6 +245,78 @@ class _MaterialViewState extends State<MaterialView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: children,
+    );
+  }
+
+  void editItem(BuildContext context, List<String> ctx, MemoryItem doc,
+      MemoryItem item) async {
+    print("editItem ${item.json}");
+
+    Map<String, dynamic> data = Map.from(item.json);
+
+    if (listEquals(ctx, ['production', 'material', 'produced'])) {
+      data[cStorage] = item.json['storage_into'];
+    } else if (listEquals(ctx, ['production', 'material', 'used'])) {
+      data[cStorage] = item.json['storage_from'];
+    }
+
+    final qty = item.json['qty'] as Qty;
+    var index = 0;
+    Named? num = qty.nums[0];
+
+    var number = num.number;
+    var uom = num.named;
+
+    data['qty_$index'] = number.toString();
+    data['uom_$index'] = uom.memory;
+    index++;
+
+    while (uom.deeper != null) {
+      number = uom.deeper!.$1;
+      uom = uom.deeper!.$2;
+
+      data['qty_$index'] = number.toString();
+      data['uom_$index'] = uom.id;
+      index++;
+    }
+
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => Dialog(
+        child: SizedBox(
+          width: 700,
+          height: 500,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              Row(children: [
+                SizedBox(
+                  width: 500,
+                  height: 700,
+                  child: GoodsRegistration(
+                    ctx: const ['production', 'material', 'produced'],
+                    doc: doc,
+                    rec: MemoryItem.from(data),
+                    schema: const [fStorage, fGoods, fQty],
+                    enablePrinting: false,
+                    allowGoodsCreation: false,
+                  ),
+                ),
+              ])
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

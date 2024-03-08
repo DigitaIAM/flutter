@@ -505,7 +505,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
         // });
 
         final result =
-            await register(doc, data, 1, true, widget.ctx, setStatus);
+            await register(doc, data, 1, true, widget.ctx, null, setStatus);
         if (!(result.isNew || result.isEmpty)) {
           done('register');
         }
@@ -525,8 +525,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(widget.schema);
-        final record =
-            item ?? await register(doc, data, 1, true, widget.ctx, setStatus);
+        final record = item ??
+            await register(doc, data, 1, true, widget.ctx, null, setStatus);
 
         if (item == null) {
           if (!(record.isEmpty || record.isNew)) {

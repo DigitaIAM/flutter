@@ -324,7 +324,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
               json: {cStorage: store ?? MemoryItem.empty()},
             );
 
-            print("object $store");
+            // print("object $store");
             widget.entity.json[cStorage] = store?.uuid;
             widget.updateReport(widget.entity);
           });

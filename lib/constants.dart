@@ -61,6 +61,9 @@ const Field fCategory = Field(cCategory, ReferenceType([cGoods, cCategory]));
 const Field fBatch = Field(cBatch, StringType(), path: [cBatch, cBarcode]);
 const Field fQtySingle = Field(cQty, NumberType(), path: [cQty]);
 const Field fQty = Field(cQty, NumberType(), path: [cQty, cNumber]);
+
+const Field fQtyNew = Field(cQty, QtyType());
+
 const Field fUomAtGoods =
     Field(cUom, ReferenceType([cUom]), path: [cGoods, cUom]);
 const Field fUomAtQty = Field(cUom, ReferenceType([cUom]), path: [cQty, cUom]);
