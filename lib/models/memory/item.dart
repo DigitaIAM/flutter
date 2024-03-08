@@ -70,8 +70,10 @@ class MemoryItem extends Equatable {
       final value = entry.value;
       if (value is MemoryItem) {
         final id = value.id;
-        assert(id.isNotEmpty && id != 'new');
-        data[key] = id;
+        // assert(id.isNotEmpty && id != 'new');
+        if (id.isNotEmpty && id != 'new') {
+          data[key] = id;
+        }
       } else if (value is Map<String, dynamic>) {
         data[key] = processMap(value);
       } else {

@@ -53,6 +53,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
   void initState() {
     super.initState();
     details = widget.rec ?? MemoryItem(id: '', json: {cDate: Utils.today()});
+    // TODO set numberOfQuantities from data
   }
 
   @override
@@ -86,12 +87,22 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
 
             final goods = value[cGoods];
             if (goods is MemoryItem) {
-              final baseUom = goods.json[cUom];
+              final baseUom = fUom.resolve(goods);
+
+              String? baseUomId;
+              if (baseUom is MemoryItem) {
+                baseUomId = baseUom.id;
+              } else if (baseUom is Map) {
+                baseUomId = baseUom[cId];
+              } else if (baseUom is String) {
+                baseUomId = baseUom;
+              }
 
               var firstEmpty = -1;
               var found = false;
               var newNumber = numberOfQuantities;
               for (var index = 0; index < numberOfQuantities; index++) {
+                print("for $index ${value['uom_$index']?.id}");
                 // TODO fix removal
                 // if (found) {
                 //   state.fields['uom_$index']
@@ -99,9 +110,11 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
                 //   state.fields['qty_$index']
                 //       ?.setValue(null, populateForm: false);
                 // }
-                if (!found && baseUom == value['uom_$index']?.id) {
+                if (!found && baseUomId == value['uom_$index']?.id) {
                   newNumber = index + 1;
                   found = true;
+                  print("found $newNumber");
+                  break;
                 }
                 if (firstEmpty == -1 && value['uom_$index'] == null) {
                   firstEmpty = index;
@@ -118,6 +131,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
               // print("number_of_qties $number_of_qties $newNumber $firstEmpty");
 
               setState(() {
+                print("set numberOfQuantities = $newNumber");
                 numberOfQuantities = newNumber;
               });
             }

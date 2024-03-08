@@ -23,7 +23,15 @@ class Field {
         editable: editable ?? this.editable);
   }
 
-  dynamic resolve(Map<String, dynamic> json) {
+  dynamic resolve(dynamic data) {
+    if (data is MemoryItem) {
+      return resolveFromJson(data.json);
+    } else {
+      return resolveFromJson(data);
+    }
+  }
+
+  dynamic resolveFromJson(Map<String, dynamic> json) {
     // print("resolve: $path $name $json");
     dynamic value;
     dynamic result;

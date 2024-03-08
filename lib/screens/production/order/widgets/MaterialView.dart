@@ -286,7 +286,7 @@ class _MaterialViewState extends State<MaterialView> {
       builder: (BuildContext context) => Dialog(
         child: SizedBox(
           width: 500,
-          height: 350,
+          height: 500,
           child: Column(children: [
             Row(
               children: [
