@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -284,37 +285,35 @@ class _MaterialViewState extends State<MaterialView> {
       context: context,
       builder: (BuildContext context) => Dialog(
         child: SizedBox(
-          width: 700,
-          height: 500,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              Row(children: [
-                SizedBox(
-                  width: 500,
-                  height: 700,
-                  child: GoodsRegistration(
-                    ctx: const ['production', 'material', 'produced'],
-                    doc: doc,
-                    rec: MemoryItem.from(data),
-                    schema: const [fStorage, fGoods, fQty],
-                    enablePrinting: false,
-                    allowGoodsCreation: false,
-                  ),
+          width: 500,
+          height: 350,
+          child: Column(children: [
+            Row(
+              children: [
+                const Spacer(),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Icon(Icons.close),
                 ),
-              ])
-            ],
-          ),
+              ],
+            ),
+            Expanded(
+              child: SizedBox(
+                width: 500,
+                height: 400,
+                child: GoodsRegistration(
+                  ctx: const ['production', 'material', 'produced'],
+                  doc: doc,
+                  rec: MemoryItem.from(data),
+                  schema: const [fStorage, fGoods, fQty],
+                  enablePrinting: false,
+                  allowGoodsCreation: false,
+                ),
+              ),
+            )
+          ]),
         ),
       ),
     );
