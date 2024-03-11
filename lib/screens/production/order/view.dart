@@ -201,7 +201,7 @@ class ProductionOrderOverview extends StatelessWidget {
       //   value: productName ?? ' ',
       //   icon: const Icon(Icons.question_mark),
       // ),
-      ...additional(context),
+      ...additional1(context),
       KeyValue(
         label: localization.translate(cArea),
         value: areaName ?? ' ',
@@ -212,6 +212,7 @@ class ProductionOrderOverview extends StatelessWidget {
         value: operatorName ?? ' ',
         icon: const Icon(Icons.question_mark),
       ),
+      ...additional2(context),
       KeyValue(
         label: localization.translate(cDate),
         value: DT.format(order.json[cDate]),
@@ -296,7 +297,7 @@ class ProductionOrderOverview extends StatelessWidget {
     return children;
   }
 
-  List<Widget> additional(BuildContext context) {
+  List<Widget> additional1(BuildContext context) {
     final product = order.json[cProduct] ?? MemoryItem.empty;
     final type = product is MemoryItem
         ? product.json[cType] ?? ''
@@ -313,6 +314,33 @@ class ProductionOrderOverview extends StatelessWidget {
         KeyValue(
           label: localization.translate("thickness"),
           value: order.json['thickness'] ?? '',
+          icon: const Icon(Icons.question_mark),
+        ),
+      ];
+    }
+    return [];
+  }
+
+  List<Widget> additional2(BuildContext context) {
+    final product = order.json[cProduct] ?? MemoryItem.empty;
+    final type = product is MemoryItem
+        ? product.json[cType] ?? ''
+        : product[cType] ?? '';
+    if (type != 'roll') {
+      final localization = AppLocalizations.of(context);
+
+      String? packerName;
+      final packer = order.json[cPacker];
+      if (packer is MemoryItem) {
+        packerName = packer.name();
+      } else if (packer is Map) {
+        packerName = packer[cName];
+      }
+
+      return [
+        KeyValue(
+          label: localization.translate(cPacker),
+          value: packerName ?? ' ',
           icon: const Icon(Icons.question_mark),
         ),
       ];

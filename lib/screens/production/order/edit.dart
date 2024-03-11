@@ -29,7 +29,8 @@ class ProductionOrderEdit extends EntityHolder {
 }
 
 class _ProductionOrderEditState extends State<ProductionOrderEdit> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_productionOrderEdit');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_productionOrderEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   MemoryItem? product;
@@ -101,7 +102,9 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
       onClose: routerBack,
       onCancel: routerBack,
       onSave: _onSave,
-      afterSave: (context, entity) => context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx, entity: entity)),
+      afterSave: (context, entity) => context
+          .read<UiBloc>()
+          .add(ChangeView(ProductionOrder.ctx, entity: entity)),
       body: AppForm(
         schema: ProductionOrder.schema,
         formKey: _formKey,
@@ -142,6 +145,19 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
               ]),
               onSave: (context) {},
             ),
+            (product != null && (product!.json[cType] ?? '') != 'roll')
+                ? DecoratedFormPickerField(
+                    creatable: false,
+                    ctx: const ['person'],
+                    name: cPacker,
+                    label: localization.translate(cPacker),
+                    autofocus: true,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    onSave: (context) {},
+                  )
+                : Container(),
             DecoratedFormPickerField(
               creatable: false,
               ctx: const ['product'],
@@ -184,7 +200,8 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
       return MemoryItem(id: widget.entity.id, json: json);
     } else {
       final json = Map.of(widget.entity.json);
-      json[cDate] = DateTime.parse(json[cDate]); //DateFormat("yyyy-MM-dd").format(json[cDate]);
+      json[cDate] = DateTime.parse(
+          json[cDate]); //DateFormat("yyyy-MM-dd").format(json[cDate]);
       return MemoryItem(id: widget.entity.id, json: json);
     }
   }
