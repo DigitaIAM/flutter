@@ -7,8 +7,8 @@ const RESOURCES = {"assets/AssetManifest.bin": "8c355050ede79bc293d662bb3269a912
 "assets/AssetManifest.bin.json": "4290739096313b5929797485fd991cf5",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
 "assets/NOTICES": "2ff0c4500593b5a65121525bafbcc5bd",
-"assets/lang/ru.json": "d4a344952e7a7b05ed2d2fb40bd369a1",
-"assets/lang/en.json": "20f3c1e0485f8f33f8b65a1bb50df170",
+"assets/lang/ru.json": "ba7662113b3b895078e893251b52eff3",
+"assets/lang/en.json": "764c8d4da9df912ca3a33b3583042026",
 "assets/lang/tj.json": "575eeb59ac7c2455c16b6ba544fa0dd3",
 "assets/lang/uz.json": "575eeb59ac7c2455c16b6ba544fa0dd3",
 "assets/AssetManifest.json": "1c872e5196a90ca328dabb39c82c8e2b",
@@ -1311,9 +1311,9 @@ const RESOURCES = {"assets/AssetManifest.bin": "8c355050ede79bc293d662bb3269a912
 "favicon.png": "5dcef449791fa27946b3d35ad8803796",
 "flutter.js": "c71a09214cb6f5f8996a531350400a9a",
 "manifest.json": "cc639d9f50fe38b9ac3c52e484273343",
-"index.html": "993d82886fa67973836451e8f18cd80c",
-"/": "993d82886fa67973836451e8f18cd80c",
-"main.dart.js": "4b8050a4c626b172c1f0c822ef316286",
+"index.html": "e2b42f41be0bd950aca7c86e169db725",
+"/": "e2b42f41be0bd950aca7c86e169db725",
+"main.dart.js": "a3ebfba8c8b69fb86ed1e39d26972348",
 "CNAME": "c0a3a48049271b6e45ca3272ccdd38c8"};
 // The application shell files that are downloaded before a service worker can
 // start.
