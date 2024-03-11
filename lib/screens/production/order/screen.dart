@@ -21,18 +21,10 @@ class ProductionOrder extends Entity {
 
   static final List<Field> schema = [
     fDate,
-    fArea,
-    fOperator,
-    fProduct,
-    const Field('thickness', NumberType(), path: ['thickness'])
-        .copyWith(width: 0.5),
     const Field('planned', NumberType()),
-    // /production/produce[order == order.id]/sum(qty) = pieces
-    // /production/produce[order == order.id]/count() = boxes
     Field(
       'produced~',
       CalculatedType((MemoryItem order) async {
-        // print("produced ${order.json['produced']}");
         final produced = Qty.fromJson(order.json['produced']);
 
         var text = '';
@@ -57,6 +49,12 @@ class ProductionOrder extends Entity {
         return text;
       }),
     ),
+    fProduct,
+    fArea,
+    fOperator,
+    fPacker,
+    const Field('thickness', NumberType(), path: ['thickness'])
+        .copyWith(width: 0.5),
   ];
 
   @override
@@ -141,7 +139,8 @@ class ProductionOrdersListBuilder extends StatelessWidget {
         final json = item.json;
         var text = 'план: ${json['planned']} шт'
             '\nвыработка: ${json['produced~']}'
-            '\nоператор: ${json[cOperator].json?[cName] ?? ''}';
+            '\nоператор: ${json[cOperator].json?[cName] ?? ''}'
+            '\nупаковщик: ${json[cPacker].json?[cName] ?? ''}';
 
         if (json['thickness'] != null) {
           text = '$text\nтолщина: ${json['thickness']}';
