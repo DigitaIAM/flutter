@@ -288,6 +288,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
                     width: 500,
                     height: 700,
                     child: ScrollableCleanCalendar(
+                      locale: 'ru',
                       calendarController: calendarController,
                       layout: Layout.BEAUTY,
                       calendarCrossAxisSpacing: 0,

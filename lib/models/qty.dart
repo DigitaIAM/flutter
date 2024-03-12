@@ -90,10 +90,20 @@ class Qty {
     return null;
   }
 
+  bool error() {
+    for (final num in nums) {
+      if (num.error()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @override
   String toString() {
     // print("Qty.toString $nums");
     var text = '';
+
     for (final num in nums) {
       if (text.isNotEmpty) {
         text += ', ';
@@ -101,7 +111,12 @@ class Qty {
       // print("num ${num.number}");
       text += '${num.number.toString()} ${num.named.toString()}';
     }
-    return text;
+
+    if (error()) {
+      return '!? $text';
+    } else {
+      return text;
+    }
   }
 
   Qty operator +(Qty other) {
@@ -142,9 +157,10 @@ class Uom extends Equatable {
   final String id;
   final Map<String, dynamic> json;
   final (Decimal, Uom)? deeper;
+  final bool haveError;
   MemoryItem? memory;
 
-  Uom(this.id, this.json, this.deeper);
+  Uom(this.id, this.json, this.deeper, {this.haveError = false});
 
   static Uom fromJson(dynamic json) {
     // print("Uom.fromJson $json");
@@ -167,6 +183,16 @@ class Uom extends Equatable {
         return Uom(id['_uuid'], json, (factor, deeper));
       }
     }
+  }
+
+  bool error() {
+    if (haveError) {
+      return true;
+    }
+    if (deeper != null) {
+      return deeper!.$2.error();
+    }
+    return false;
   }
 
   Future<MemoryItem> resolve() async {
@@ -265,12 +291,27 @@ String nameOrId(dynamic json) {
 class Named {
   final Decimal number;
   final Uom named;
+  final bool haveError;
 
-  Named({required this.number, required this.named});
+  Named({required this.number, required this.named, this.haveError = false});
 
   static Named fromJson(dynamic json) {
-    final number = Decimal.parse(json['number']);
+    bool error = false;
+    String str = json['number'] ?? '';
+    var number = Decimal.tryParse(str);
+    if (number == null) {
+      error = true;
+      number = Decimal.parse(str.replaceAll(',', '.').trim());
+    }
 
-    return Named(number: number, named: Uom.fromJson(json['uom']));
+    return Named(
+        number: number, named: Uom.fromJson(json['uom']), haveError: error);
+  }
+
+  bool error() {
+    if (haveError) {
+      return true;
+    }
+    return named.error();
   }
 }

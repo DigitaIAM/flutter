@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -99,8 +98,7 @@ class _MaterialViewState extends State<MaterialView> {
       fGoods,
       fQtyNew
     ];
-    return SizedBox(
-      height: 300,
+    return Expanded(
       child: BlocProvider(
         create: (context) => MemoryBloc(schema: schema)
           ..add(MemoryFetch('memories', ctx, schema: schema, filter: filter)),
@@ -111,7 +109,6 @@ class _MaterialViewState extends State<MaterialView> {
           filter: filter,
           title: (MemoryItem item) {
             final text = fGoods.resolve(item.json)?.name() ?? '';
-            // print('text $text');
 
             TextStyle? style;
 
