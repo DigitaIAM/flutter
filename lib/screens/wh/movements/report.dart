@@ -94,7 +94,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
     super.build(context);
     // print("MovementReportScreen.build");
 
-    print("widget.entity.json ${widget.entity.json}");
+    // print("widget.entity.json ${widget.entity.json}");
     final fromDate = widget.entity.json['dates'][cFrom];
     final tillDate = widget.entity.json['dates'][cTill];
 

@@ -97,7 +97,7 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
   }
 
   Future<void> _onFetch(MemoryFetch event, Emitter<RequestState> emit) async {
-    // print('_onFetching ${state.hasReachedMax}');
+    // print('_onFetching max: ${state.hasReachedMax}, reset: ${event.reset}');
     final newState = event.reset
         ? RequestState(DateTime.now(), event, query: state.query)
         : state;

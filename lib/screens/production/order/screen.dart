@@ -2,16 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
+import 'package:nae/models/memory/bloc.dart';
+import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/qty.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_list.dart';
+import 'package:scrollable_clean_calendar/controllers/clean_calendar_controller.dart';
+import 'package:scrollable_clean_calendar/scrollable_clean_calendar.dart';
+import 'package:scrollable_clean_calendar/utils/enums.dart';
 
 import 'edit.dart';
 import 'view.dart';
@@ -88,11 +94,69 @@ class ProductionOrder extends Entity {
   }
 }
 
-class ProductionOrderScreen extends StatelessWidget {
+class ProductionOrderScreen extends StatefulWidget {
   const ProductionOrderScreen({super.key});
 
   @override
+  State<ProductionOrderScreen> createState() => _ProductionOrderScreenState();
+}
+
+class _ProductionOrderScreenState extends State<ProductionOrderScreen> {
+  late CleanCalendarController calendarController;
+
+  DateTime selectedDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+
+    calendarController = CleanCalendarController(
+      rangeMode: false,
+      minDate: DateTime.now().subtract(const Duration(days: 365)),
+      maxDate: DateTime.now().add(const Duration(days: 1)),
+      // onRangeSelected: setRange,
+      onDayTapped: (date) {
+        // print("onDayTapped $date");
+        setState(() {
+          selectedDate = date;
+          context.read<MemoryBloc>().add(
+                MemoryFetch(
+                  'memories',
+                  ProductionOrder.ctx,
+                  schema: ProductionOrder.schema,
+                  filter: {'date': date.toYMD()},
+                  reset: true,
+                ),
+              );
+        });
+      },
+      onPreviousMinDateTapped: (date) {},
+      onAfterMaxDateTapped: (date) {},
+      weekdayStart: DateTime.monday,
+      initialDateSelected: selectedDate,
+      initialFocusDate: selectedDate,
+    );
+  }
+
+  Widget calendar(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Flexible(
+          child: ScrollableCleanCalendar(
+            locale: 'ru',
+            calendarController: calendarController,
+            layout: Layout.BEAUTY,
+            calendarCrossAxisSpacing: 0,
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // print("_ProductionOrderScreen.build $selectedDate");
     final theme = Theme.of(context);
     return ScaffoldList(
       entityType: ProductionOrder.ctx,
@@ -116,18 +180,30 @@ class ProductionOrderScreen extends StatelessWidget {
           color: theme.primaryColorLight,
         ),
       ),
-      body: const ProductionOrdersListBuilder(),
+      body: Row(
+        children: [
+          SizedBox(width: 300, child: calendar(context)),
+          Flexible(
+              flex: 2, child: ProductionOrdersListBuilder(date: selectedDate)),
+        ],
+      ),
     );
   }
 }
 
 class ProductionOrdersListBuilder extends StatelessWidget {
-  const ProductionOrdersListBuilder({super.key});
+  const ProductionOrdersListBuilder({super.key, required this.date});
+
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
+    // print("ProductionOrdersListBuilder.build $date");
     return MemoryList(
+      key: ValueKey('__po_${date.toYMD()}'),
+      mode: Mode.mobile,
       ctx: ProductionOrder.ctx,
+      filter: {'date': date.toYMD()},
       schema: ProductionOrder.schema,
       groupBy: (element) {
         final id = element.json[cDate] ?? '';
