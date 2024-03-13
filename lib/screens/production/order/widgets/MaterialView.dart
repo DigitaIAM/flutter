@@ -1,7 +1,10 @@
+import 'dart:js_interop';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
@@ -10,10 +13,13 @@ import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/qty.dart';
+import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/production/order/screen.dart';
+import 'package:nae/screens/wh/goods_dispatch.dart';
 import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
@@ -95,6 +101,7 @@ class _MaterialViewState extends State<MaterialView> {
     List<Field> schema = [
       const Field('storage_from', ReferenceType([cWarehouse, cStorage])),
       const Field('storage_into', ReferenceType([cWarehouse, cStorage])),
+      fCategoryAtGoods,
       fGoods,
       fQtyNew
     ];
@@ -248,14 +255,21 @@ class _MaterialViewState extends State<MaterialView> {
 
   void editItem(BuildContext context, List<String> ctx, MemoryItem doc,
       MemoryItem item) async {
-    print("editItem ${item.json}");
+    // print("editItem ${item.json}");
 
     Map<String, dynamic> data = Map.from(item.json);
+    String dateBatch = item.json['batch']?['date'] ?? '';
 
+    bool receive = true;
     if (listEquals(ctx, ['production', 'material', 'produced'])) {
       data[cStorage] = item.json['storage_into'];
+      receive = true;
     } else if (listEquals(ctx, ['production', 'material', 'used'])) {
       data[cStorage] = item.json['storage_from'];
+      data[cCategory] = data[cGoods].json[cCategory];
+      data[cBatch] =
+          data[cBatch] == null ? null : MemoryItem.from(data[cBatch]);
+      receive = false;
     }
 
     final qty = item.json['qty'] as Qty;
@@ -278,39 +292,60 @@ class _MaterialViewState extends State<MaterialView> {
       index++;
     }
 
+    final uiBloc = context.read<UiBloc>();
+
     showDialog<String>(
       context: context,
-      builder: (BuildContext context) => Dialog(
-        child: SizedBox(
-          width: 500,
-          height: 500,
-          child: Column(children: [
-            Row(
-              children: [
-                const Spacer(),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Icon(Icons.close),
-                ),
-              ],
-            ),
-            Expanded(
-              child: SizedBox(
-                width: 500,
-                height: 400,
-                child: GoodsRegistration(
-                  ctx: const ['production', 'material', 'produced'],
-                  doc: doc,
-                  rec: MemoryItem.from(data),
-                  schema: const [fStorage, fGoods, fQty],
-                  enablePrinting: false,
-                  allowGoodsCreation: false,
-                ),
+      builder: (BuildContext context) => BlocProvider(
+        create: (ctx) => UiBloc(uiBloc.state),
+        child: Dialog(
+          child: SizedBox(
+            width: 500,
+            height: 500,
+            child: Column(children: [
+              Row(
+                children: [
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(Icons.close),
+                  ),
+                ],
               ),
-            )
-          ]),
+              Expanded(
+                child: SizedBox(
+                    width: 500,
+                    height: 400,
+                    child: Column(children: [
+                      Expanded(
+                        child: receive
+                            ? GoodsRegistration(
+                                ctx: const [
+                                  'production',
+                                  'material',
+                                  'produced'
+                                ],
+                                doc: doc,
+                                rec: MemoryItem.from(data),
+                                schema: const [fStorage, fGoods, fQty],
+                                enablePrinting: false,
+                                allowGoodsCreation: false,
+                              )
+                            : GoodsDispatch(
+                                ctx: const ['production', 'material', 'used'],
+                                doc: doc,
+                                rec: MemoryItem.from(data),
+                                schema: ProductionOrder.schema,
+                                enablePrinting: false,
+                                allowGoodsCreation: false,
+                              ),
+                      )
+                    ])),
+              )
+            ]),
+          ),
         ),
       ),
     );

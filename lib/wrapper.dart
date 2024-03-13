@@ -19,7 +19,7 @@ class _WrapperState extends State<Wrapper> {
   @override
   void initState() {
     super.initState();
-    bloc = UiBloc();
+    bloc = UiBloc.create();
   }
 
   @override
