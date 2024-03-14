@@ -82,7 +82,8 @@ class WHBalanceScreen extends EntityHolder {
   State<WHBalanceScreen> createState() => _WHBalanceScreenState();
 }
 
-class _WHBalanceScreenState extends State<WHBalanceScreen> with TickerProviderStateMixin {
+class _WHBalanceScreenState extends State<WHBalanceScreen>
+    with TickerProviderStateMixin {
   // with SingleTickerProviderStateMixin {
   late TabController _controller;
 
@@ -136,7 +137,9 @@ class _WHBalanceScreenState extends State<WHBalanceScreen> with TickerProviderSt
                   isScrollable: true,
                   tabs: [
                     Tab(text: localization.translate('stock')),
-                    ..._filters.map((e) => Tab(text: localization.translate(e.value.name().toLowerCase()))).toList()
+                    ..._filters.map((e) => Tab(
+                        text: localization
+                            .translate(e.value.name().toLowerCase())))
                   ],
                 ),
               ],

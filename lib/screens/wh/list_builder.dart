@@ -21,7 +21,13 @@ class Pair {
 }
 
 class ListBuilder extends StatelessWidget {
-  const ListBuilder({super.key, required this.filters, required this.down, required this.ctx, required this.schema});
+  const ListBuilder({
+    super.key,
+    required this.filters,
+    required this.down,
+    required this.ctx,
+    required this.schema,
+  });
 
   final List<Pair> filters;
   final Future<dynamic> Function(BuildContext context, List<Pair>) down;
@@ -61,7 +67,8 @@ class ListBuilder extends StatelessWidget {
           return o;
         }
         final name = localization.translate(id);
-        final n = MemoryItem(id: id, json: {cUuid: id, cName: localization.translate(name)});
+        final n = MemoryItem(
+            id: id, json: {cUuid: id, cName: localization.translate(name)});
         cache[id] = n;
         return n;
       },
@@ -91,10 +98,12 @@ class ListBuilder extends StatelessWidget {
           final strDate = item.json[cBatch]?[cDate] ?? '';
           final date = DT.pretty(strDate);
 
-          return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(date),
-            Text('${fStorage.resolve(item.json)?.name() ?? ''}'),
-          ]);
+          return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(date),
+                Text('${fStorage.resolve(item.json)?.name() ?? ''}'),
+              ]);
         } else {
           return Text(fName.resolve(item.json) ?? '');
         }
@@ -104,7 +113,8 @@ class ListBuilder extends StatelessWidget {
         if (category == 'stock') {
           // print("item: ${item.json}");
           // TODO what should we see here?
-          return Text('${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
+          return Text(
+              '${fQty.resolve(item.json) ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
               '${Number.format(item.json[cCost]?[cNumber] ?? '')} сум');
           // } else if (category == cBatch) {
           //   // print("item: ${item.json}");
@@ -114,10 +124,12 @@ class ListBuilder extends StatelessWidget {
           print("_item: ${item.json}");
           final cost = item.json['_cost'];
           if (cost != null) {
-            return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              const Text(''),
-              Text('${Number.format(cost)} $currency'),
-            ]);
+            return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(''),
+                  Text('${Number.format(cost)} $currency'),
+                ]);
           } else {
             final balance = item.json['_balance'];
             // print("balance: ${balance}");
@@ -126,7 +138,9 @@ class ListBuilder extends StatelessWidget {
               List? list = balance[cQty];
               if (list != null && list.isNotEmpty) {
                 for (Map qty in list) {
-                  if (text != '') { text = '$text, '; }
+                  if (text != '') {
+                    text = '$text, ';
+                  }
                   text = '$text ${qty['number'] ?? ''}';
                   var uom = qty['uom'];
                   if (uom is String) {
@@ -137,7 +151,8 @@ class ListBuilder extends StatelessWidget {
                         text = '$text ${uom['name']}';
                         break;
                       } else {
-                        text = '$text ${uom['in']?['name'] ?? ''} по ${uom['number'] ?? ''}';
+                        text =
+                            '$text ${uom['in']?['name'] ?? ''} по ${uom['number'] ?? ''}';
                         uom = uom['uom'] ?? uom;
                       }
                     }
@@ -145,11 +160,13 @@ class ListBuilder extends StatelessWidget {
                 }
               }
 
-              return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                // Text('${balance[cQty] ?? ''} ${fUom.resolve(item.json)?.name() ?? ''}'),
-                Text(text),
-                Text('${Number.format(balance[cCost] ?? '')} $currency'),
-              ]);
+              return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Text('${balance[cQty] ?? ''} ${fUom.resolve(item.json)?.name() ?? ''}'),
+                    Text(text),
+                    Text('${Number.format(balance[cCost] ?? '')} $currency'),
+                  ]);
             }
           }
           return const Text('');

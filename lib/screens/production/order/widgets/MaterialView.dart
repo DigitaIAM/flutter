@@ -101,6 +101,7 @@ class _MaterialViewState extends State<MaterialView> {
     List<Field> schema = [
       const Field('storage_from', ReferenceType([cWarehouse, cStorage])),
       const Field('storage_into', ReferenceType([cWarehouse, cStorage])),
+      fStorage,
       fCategoryAtGoods,
       fGoods,
       fQtyNew
@@ -136,11 +137,15 @@ class _MaterialViewState extends State<MaterialView> {
               );
             }
 
-            String dateBatch = item.json['batch']?['date'] ?? '';
-            var storage = item.json['storage_from']?.name() ?? '';
-            if (listEquals(ctx, ['production', 'material', 'produced'])) {
-              storage = item.json['storage_into']?.name() ?? '';
+            var storage = item.json[cStorage]?.name();
+            if ((item.json[cStorage] as MemoryItem).isEmpty) {
+              storage = item.json['storage_from']?.name() ?? '';
+              if (listEquals(ctx, ['production', 'material', 'produced'])) {
+                storage = item.json['storage_into']?.name() ?? '';
+              }
             }
+
+            String dateBatch = item.json['batch']?['date'] ?? '';
             final qty = item.json['qty'].toString();
             var text = '$qty, $storage';
             if (dateBatch.isNotEmpty) {
@@ -258,14 +263,19 @@ class _MaterialViewState extends State<MaterialView> {
     // print("editItem ${item.json}");
 
     Map<String, dynamic> data = Map.from(item.json);
-    String dateBatch = item.json['batch']?['date'] ?? '';
+
+    if ((item.json[cStorage] as MemoryItem).isEmpty) {
+      if (listEquals(ctx, ['production', 'material', 'produced'])) {
+        data[cStorage] = item.json['storage_into'];
+      } else if (listEquals(ctx, ['production', 'material', 'used'])) {
+        data[cStorage] = item.json['storage_from'];
+      }
+    }
 
     bool receive = true;
     if (listEquals(ctx, ['production', 'material', 'produced'])) {
-      data[cStorage] = item.json['storage_into'];
       receive = true;
     } else if (listEquals(ctx, ['production', 'material', 'used'])) {
-      data[cStorage] = item.json['storage_from'];
       data[cCategory] = data[cGoods].json[cCategory];
       data[cBatch] =
           data[cBatch] == null ? null : MemoryItem.from(data[cBatch]);
@@ -307,9 +317,7 @@ class _MaterialViewState extends State<MaterialView> {
                 children: [
                   const Spacer(),
                   TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: () => Navigator.pop(context),
                     child: const Icon(Icons.close),
                   ),
                 ],
@@ -332,6 +340,13 @@ class _MaterialViewState extends State<MaterialView> {
                                 schema: const [fStorage, fGoods, fQty],
                                 enablePrinting: false,
                                 allowGoodsCreation: false,
+                                afterSave: () {
+                                  setState(() {
+                                    openProduced = false;
+                                    openUsed = false;
+                                  });
+                                  Navigator.pop(context);
+                                },
                               )
                             : GoodsDispatch(
                                 ctx: const ['production', 'material', 'used'],
@@ -340,6 +355,13 @@ class _MaterialViewState extends State<MaterialView> {
                                 schema: ProductionOrder.schema,
                                 enablePrinting: false,
                                 allowGoodsCreation: false,
+                                afterSave: () {
+                                  setState(() {
+                                    openProduced = false;
+                                    openUsed = false;
+                                  });
+                                  Navigator.pop(context);
+                                },
                               ),
                       )
                     ])),

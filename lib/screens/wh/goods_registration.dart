@@ -24,6 +24,8 @@ class GoodsRegistration extends StatefulWidget {
   final bool enablePrinting;
   final bool allowGoodsCreation;
 
+  final Function()? afterSave;
+
   const GoodsRegistration({
     super.key,
     required this.ctx,
@@ -32,6 +34,7 @@ class GoodsRegistration extends StatefulWidget {
     this.rec,
     this.enablePrinting = true,
     this.allowGoodsCreation = true,
+    this.afterSave,
   });
 
   @override
@@ -47,7 +50,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
 
   String status = "register";
   int numberOfQuantities = 1;
-  String registered = '';
+  bool registered = false;
 
   @override
   void initState() {
@@ -202,12 +205,14 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
                     onPressed:
                         status == 'register' ? registerPreparation : null,
                     tooltip: localization.translate('register'.toString()),
-                    child: registered == 'register'
+                    child: registered
                         ? const Icon(Icons.done)
-                        : Icon(
-                            widget.rec == null ? Icons.add : Icons.edit,
-                            color: theme.primaryColorLight,
-                          ),
+                        : (status == 'register'
+                            ? Icon(
+                                widget.rec == null ? Icons.add : Icons.edit,
+                                color: theme.primaryColorLight,
+                              )
+                            : const Icon(Icons.save)),
                   ),
                   ...(widget.enablePrinting
                       ? [
@@ -219,12 +224,14 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
                                 : null,
                             tooltip:
                                 localization.translate('and print'.toString()),
-                            child: registered == 'registerAndPrint'
+                            child: registered
                                 ? const Icon(Icons.done)
-                                : Icon(
-                                    Icons.print,
-                                    color: theme.primaryColorLight,
-                                  ),
+                                : (status == 'register'
+                                    ? Icon(
+                                        Icons.print,
+                                        color: theme.primaryColorLight,
+                                      )
+                                    : const Icon(Icons.save)),
                           )
                         ]
                       : []),
@@ -291,13 +298,32 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
   }
 
   void resetDone() {
-    setState(() => registered = '');
+    setState(() {
+      status = 'saving';
+      registered = false;
+    });
   }
 
-  void done(String type) {
-    setState(() => registered = type);
+  void done(bool completed) {
+    if (completed) {
+      if (widget.afterSave != null) {
+        widget.afterSave?.call();
+        return;
+      }
+    }
+    setState(() {
+      if (completed) {
+        registered = completed;
+        status = "saved";
+      } else {
+        status = "error";
+      }
+    });
     Future.delayed(const Duration(seconds: 2), () {
-      setState(() => registered = '');
+      setState(() {
+        status = "register";
+        registered = false;
+      });
     });
   }
 
@@ -306,7 +332,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
   }
 
   void registerAndPrintPreparation() async {
-    resetDone();
+    // resetDone();
 
     final state = _formKey.currentState;
     if (state == null) {
@@ -333,27 +359,26 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
   void registerPreparation() async {
     resetDone();
 
-    final state = _formKey.currentState;
-    if (state == null) {
-      // TODO raise error instead
-      return;
-    }
-    if (state.saveAndValidate()) {
-      final data = state.value;
+    var completed = true;
+    try {
+      final state = _formKey.currentState;
+      if (state == null) {
+        // TODO raise error instead
+        return;
+      }
+      if (state.saveAndValidate()) {
+        final data = state.value;
 
-      // TODO understand is it required
-      final doc = await widget.doc.enrich(widget.schema);
+        // TODO understand is it required
+        final doc = await widget.doc.enrich(widget.schema);
 
-      try {
         final result = await register(doc, data, numberOfQuantities, false,
             widget.ctx, widget.rec?.id, setStatus);
 
-        if (!(result.isNew || result.isEmpty)) {
-          done('register');
-        }
-      } finally {
-        setStatus("register");
+        completed = !(result.isNew || result.isEmpty);
       }
+    } finally {
+      done(completed);
     }
   }
 
@@ -361,9 +386,10 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
       {MemoryItem? item}) async {
     resetDone();
 
-    setStatus("connecting");
-
+    var completed = true;
     try {
+      setStatus("connecting");
+
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(widget.schema);
@@ -371,11 +397,11 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
             await register(doc, data, numberOfQuantities, false, widget.ctx,
                 widget.rec?.id, setStatus);
 
-        if (item == null) {
-          if (!(record.isEmpty || record.isNew)) {
-            done('registerAndPrint');
-          }
-        }
+        // if (item == null) {
+        //   if (!(record.isEmpty || record.isNew)) {
+        //     done('registerAndPrint');
+        //   }
+        // }
 
         // print("registerAndPrint record: $record");
 
@@ -387,6 +413,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
       });
 
       if (result != PrintResult.success) {
+        completed = false;
         showToast(result.msg,
             // context: context,
             axis: Axis.horizontal,
@@ -394,6 +421,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
             position: StyledToastPosition.bottom);
       }
     } catch (e) {
+      completed = false;
       // , stacktrace
       // print(stacktrace);
       showToast(e.toString(),
@@ -402,7 +430,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
           alignment: Alignment.center,
           position: StyledToastPosition.bottom);
     } finally {
-      setStatus("register");
+      done(completed);
     }
   }
 }

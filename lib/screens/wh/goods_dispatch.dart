@@ -30,6 +30,8 @@ class GoodsDispatch extends StatefulWidget {
   final bool allowGoodsCreation;
   final MemoryItem? storage;
 
+  final Function()? afterSave;
+
   const GoodsDispatch({
     super.key,
     required this.ctx,
@@ -39,6 +41,7 @@ class GoodsDispatch extends StatefulWidget {
     this.enablePrinting = true,
     this.allowGoodsCreation = true,
     this.storage,
+    this.afterSave,
   });
 
   @override
@@ -445,6 +448,12 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   }
 
   void done(String type) {
+    if (type == 'register') {
+      if (widget.afterSave != null) {
+        widget.afterSave?.call();
+        return;
+      }
+    }
     setState(() {
       registered = type;
 

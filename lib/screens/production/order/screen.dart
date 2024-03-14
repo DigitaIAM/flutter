@@ -112,7 +112,8 @@ class _ProductionOrderScreenState extends State<ProductionOrderScreen> {
 
     calendarController = CleanCalendarController(
       rangeMode: false,
-      minDate: DateTime.now().subtract(const Duration(days: 365)),
+      minDate: DateTime(2023, 1, 1),
+      // minDate: DateTime.now().subtract(const Duration(days: 365)),
       maxDate: DateTime.now().add(const Duration(days: 1)),
       // onRangeSelected: setRange,
       onDayTapped: (date) {

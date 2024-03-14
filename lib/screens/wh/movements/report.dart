@@ -14,7 +14,6 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/wh/balance/view.dart';
-import 'package:nae/share/utils.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/utils/number.dart';
 import 'package:nae/widgets/app_form.dart';
@@ -75,7 +74,8 @@ class _MovementReportScreenState extends State<MovementReportScreen>
     super.initState();
 
     calendarController = CleanCalendarController(
-      minDate: DateTime.now().subtract(const Duration(days: 365)),
+      // DateTime.now().subtract(const Duration(days: 365)),
+      minDate: DateTime(2023, 1, 1),
       maxDate: DateTime.now().add(const Duration(days: 365)),
       onRangeSelected: setRange,
       onDayTapped: (date) {},

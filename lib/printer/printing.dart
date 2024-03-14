@@ -79,12 +79,18 @@ Future<MemoryItem> register(
       }
     }
 
-    Map<String, dynamic> request = Map.from(data);
-    request.removeWhere((k, v) => k.startsWith("qty_"));
-    request.removeWhere((k, v) => k.startsWith("uom_"));
+    Map<String, dynamic> request = {}; // Map.from(data);
+    // request.removeWhere((k, v) => k.startsWith("qty_"));
+    // request.removeWhere((k, v) => k.startsWith("uom_"));
 
     request[cDocument] = doc.id;
+    request[cStorage] = data[cStorage].id;
+    request[cGoods] = data[cGoods].id;
+    if (data[cBatch] != null) {
+      request[cBatch] = data[cBatch].json;
+    }
     request[cQty] = quantity;
+    print('request $request');
 
     dynamic response;
     if (id == null) {

@@ -29,7 +29,9 @@ class ScaffoldView extends StatelessWidget {
       icon: const Icon(Icons.close),
       onPressed: () {
         if (onClose == null) {
-          context.read<UiBloc>().add(ChangeView(const [], action: 'view'));
+          final bloc = context.read<UiBloc>();
+          final state = bloc.state;
+          bloc.add(ChangeView(state.currentRoute, action: 'view'));
         } else {
           onClose?.call();
         }
