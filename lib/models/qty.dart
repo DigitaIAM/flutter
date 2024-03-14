@@ -214,11 +214,15 @@ class Uom extends Equatable {
           "oid": Api.instance.oid,
           "ctx": [cUom],
         });
+        //  print('response $response');
 
         cached = MemoryItem.from(response);
         cache.add(cached);
       }
       memory = cached;
+    }
+    if (deeper != null) {
+      deeper!.$2.resolve_(cache);
     }
   }
 
