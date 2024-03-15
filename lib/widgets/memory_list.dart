@@ -355,7 +355,7 @@ class _MemoryListState extends State<MemoryList> {
         stickyHeaderBackgroundColor: Theme.of(context).secondaryHeaderColor,
         controller: _scrollController,
         groupSeparatorBuilder: (MemoryItem value) => Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(1.0),
           child: Text(
             value.name(),
             textAlign: TextAlign.center,
@@ -409,10 +409,11 @@ class _MemoryListState extends State<MemoryList> {
   Widget card(BuildContext context, MemoryItem item) {
     return Card(
       elevation: 2.0,
-      margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+      margin: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0),
       child: ListTile(
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+            // const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
         // leading: const Icon(Icons.account_circle),
         title: widget.title(item),
         subtitle: widget.subtitle(item),
