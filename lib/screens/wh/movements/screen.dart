@@ -5,7 +5,6 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/common/uom/edit.dart';
-import 'package:nae/screens/wh/list_builder.dart';
 import 'package:nae/screens/wh/movements/report.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
@@ -194,7 +193,7 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
             }
           }),
           updateReport: (report) => setState(() {
-            print("updateReport ${report.json}");
+            // print("updateReport ${report.json}");
             final index = reports.indexOf(report);
             reports[index] = report;
           }),
