@@ -15,8 +15,9 @@ import 'package:nae/widgets/swipe_action.dart';
 
 class WHTransferGoods extends StatelessWidget {
   final MemoryItem doc;
+  final Mode mode;
 
-  const WHTransferGoods({super.key, required this.doc});
+  const WHTransferGoods({super.key, required this.doc, this.mode = Mode.auto});
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +45,7 @@ class WHTransferGoods extends StatelessWidget {
         return bloc;
       },
       child: MemoryList(
+        mode: mode,
         ctx: ctx,
         filter: filter,
         schema: schema,
@@ -115,7 +117,9 @@ class WHTransferGoods extends StatelessWidget {
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
-    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
+    context
+        .read<MemoryBloc>()
+        .add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
 
   Future drawPrinterList(BuildContext context, MemoryItem item) async {
@@ -148,7 +152,9 @@ class WHTransferGoods extends StatelessWidget {
       for (var printer in printers) {
         final ip = (printer['ip'] ?? '').toString();
         final port = int.parse(printer['port'] ?? '0');
-        children.add(ListTile(title: Text(printer[cName] ?? ''), onTap: () => printPreparation(ip, port, item)));
+        children.add(ListTile(
+            title: Text(printer[cName] ?? ''),
+            onTap: () => printPreparation(ip, port, item)));
       }
     }
 
