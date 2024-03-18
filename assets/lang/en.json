@@ -108,6 +108,7 @@
   "counterparty": "counterparty",
   "goods": "goods",
   "stock": "stock",
+  "movement": "movement",
   "from": "from",
   "into": "into",
   "raw material": "raw material",
@@ -120,5 +121,7 @@
   "dispatch": "dispatch",
   "transfer": "transfer",
   "used raw material": "used raw material",
-  "produced raw material": "produced raw material"
+  "produced raw material": "produced raw material",
+  "registration" : "registration",
+  "edit production order": "edit production order"
 }
