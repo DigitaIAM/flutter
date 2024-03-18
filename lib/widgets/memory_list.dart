@@ -80,6 +80,7 @@ class MemoryList extends StatefulWidget {
   final Widget Function(MemoryItem) title;
   final Widget Function(MemoryItem) subtitle;
   final Function(BuildContext, MemoryItem)? onTap;
+  final Function(BuildContext, MemoryItem)? onDoubleTap;
 
   final List<ItemAction> actions;
 
@@ -90,6 +91,7 @@ class MemoryList extends StatefulWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
+    this.onDoubleTap,
     this.groupBy,
     this.groupComparator,
     this.sortByName = false,
@@ -407,20 +409,26 @@ class _MemoryListState extends State<MemoryList> {
   }
 
   Widget card(BuildContext context, MemoryItem item) {
-    return Card(
-      elevation: 2.0,
-      margin: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0),
-      child: ListTile(
-        contentPadding:
-            // const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-        // leading: const Icon(Icons.account_circle),
-        title: widget.title(item),
-        subtitle: widget.subtitle(item),
-        trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
-        onTap: () {
-          widget.onTap?.call(context, item);
-        },
+    return InkWell(
+      onDoubleTap: () {
+        widget.onDoubleTap?.call(context, item);
+      },
+      child: Card(
+        elevation: 2.0,
+        margin: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0),
+        child: ListTile(
+          contentPadding:
+              // const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+              const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+          // leading: const Icon(Icons.account_circle),
+          title: widget.title(item),
+          subtitle: widget.subtitle(item),
+          trailing:
+              widget.onTap == null ? null : const Icon(Icons.arrow_forward),
+          onTap: () {
+            widget.onTap?.call(context, item);
+          },
+        ),
       ),
     );
   }

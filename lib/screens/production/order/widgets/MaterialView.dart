@@ -1,10 +1,9 @@
-import 'dart:js_interop';
+
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
@@ -154,7 +153,9 @@ class _MaterialViewState extends State<MaterialView> {
 
             return Text(text, style: style);
           },
-          // onTap: (MemoryItem item) => {},
+          onDoubleTap: (context, item) {
+            editItem(context, ctx, widget.order, item);
+          },
           actions: [
             ItemAction(
               label: 'delete',
@@ -282,25 +283,7 @@ class _MaterialViewState extends State<MaterialView> {
       receive = false;
     }
 
-    final qty = item.json['qty'] as Qty;
-    var index = 0;
-    Named? num = qty.nums[0];
-
-    var number = num.number;
-    var uom = num.named;
-
-    data['qty_$index'] = number.toString();
-    data['uom_$index'] = uom.memory;
-    index++;
-
-    while (uom.deeper != null) {
-      number = uom.deeper!.$1;
-      uom = uom.deeper!.$2;
-
-      data['qty_$index'] = number.toString();
-      data['uom_$index'] = uom.id;
-      index++;
-    }
+    (item.json['qty'] as Qty).toData(data);
 
     final uiBloc = context.read<UiBloc>();
 

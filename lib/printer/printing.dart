@@ -84,13 +84,17 @@ Future<MemoryItem> register(
     // request.removeWhere((k, v) => k.startsWith("uom_"));
 
     request[cDocument] = doc.id;
-    request[cStorage] = data[cStorage].id;
+    if (ctx == const ['production', 'material', 'produced'] ||
+        ctx == const ['production', 'material', 'used']) {
+      request[cStorage] = data[cStorage].id;
+    }
     request[cGoods] = data[cGoods].id;
-    if (data[cBatch] != null) {
-      request[cBatch] = data[cBatch].json;
+    final batch = data[cBatch];
+    if (batch != null) {
+      request[cBatch] = {'id': batch.json['id'], 'date': batch.json['date']};
     }
     request[cQty] = quantity;
-    print('request $request');
+    print('save request $request');
 
     dynamic response;
     if (id == null) {

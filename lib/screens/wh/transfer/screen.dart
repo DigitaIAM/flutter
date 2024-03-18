@@ -16,6 +16,7 @@ import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_list.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import 'edit.dart';
 import 'edit_fullscreen/edit_fullscreen_mobile.dart';
 
 class WHTransfer extends Entity {
@@ -56,10 +57,15 @@ class WHTransfer extends Entity {
       ctx: ctx,
       schema: schema,
       list: const WHTransferScreen(),
-      view: WHTransferEditMobile(
-        key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-        entity: entity,
-      ),
+      view: action == 'view'
+          ? WHTransferEditMobile(
+              key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+              entity: entity,
+            )
+          : WHTransferEdit(
+              key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+              entity: entity,
+            ),
       // view: WHTransferEditFS(
       //   key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
       //   entity: entity,

@@ -522,17 +522,6 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final doc = await widget.doc.enrich(widget.schema);
 
       try {
-        // workaround for normalize data structure
-        MemoryItem? uom = data['uom_0'];
-        // print("registerPreparation_data ${uom?.json}");
-        if (uom?.json['name'] != null) {
-          uom!.json.remove('name');
-        }
-
-        // setState(() {
-        //   items = [];
-        // });
-
         final result = await register(
             doc, data, 1, true, widget.ctx, widget.rec?.id, setStatus);
         if (!(result.isNew || result.isEmpty)) {

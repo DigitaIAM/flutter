@@ -13,6 +13,7 @@ class Qty {
   static Qty zero() => const Qty([]);
 
   static Qty fromJson(dynamic json) {
+    //  print("Qty.fromJson $json");
     if (json == null) {
       return Qty.zero();
     }
@@ -20,6 +21,7 @@ class Qty {
     List<Named> nums = [];
     if (json != null) {
       if (json is List) {
+        //  print("list case");
         for (Map<String, dynamic> o in json) {
           nums.add(Named.fromJson(o));
         }
@@ -28,6 +30,7 @@ class Qty {
         nums.add(Named.fromJson(json));
       }
     }
+    // print("Qty.fromJson done");
     return Qty(nums);
   }
 
@@ -151,6 +154,27 @@ class Qty {
     }
     return this;
   }
+
+  void toData(Map<String, dynamic> data) {
+    var index = 0;
+    Named? num = nums[0];
+
+    var number = num.number;
+    var uom = num.named;
+
+    data['qty_$index'] = number.toString();
+    data['uom_$index'] = uom.memory;
+    index++;
+
+    while (uom.deeper != null) {
+      number = uom.deeper!.$1;
+      uom = uom.deeper!.$2;
+
+      data['qty_$index'] = number.toString();
+      data['uom_$index'] = uom.id;
+      index++;
+    }
+  }
 }
 
 class Uom extends Equatable {
@@ -165,7 +189,14 @@ class Uom extends Equatable {
   static Uom fromJson(dynamic json) {
     // print("Uom.fromJson $json");
 
-    if (json is String) {
+    if (json == null) {
+      return Uom(
+          '',
+          const {
+            'uom': {'name': '?'}
+          },
+          null);
+    } else if (json is String) {
       return Uom(json, {'uom': json}, null);
     } else {
       final uuid = json['_uuid'];
@@ -206,6 +237,11 @@ class Uom extends Equatable {
   }
 
   Future<void> resolve_(Cache cache) async {
+    // workaround for unknown
+    if (id == '') {
+      return;
+    }
+
     if (memory == null) {
       var cached = cache.get(id);
       if (cached == null) {
@@ -300,13 +336,16 @@ class Named {
   Named({required this.number, required this.named, this.haveError = false});
 
   static Named fromJson(dynamic json) {
+    //print("Named.fromJson $json");
     bool error = false;
-    String str = json['number'] ?? '';
+    String str = json['number']?.toString() ?? '';
     var number = Decimal.tryParse(str);
     if (number == null) {
       error = true;
       number = Decimal.parse(str.replaceAll(',', '.').trim());
     }
+
+    // print("number $number");
 
     return Named(
         number: number, named: Uom.fromJson(json['uom']), haveError: error);

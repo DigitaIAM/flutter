@@ -27,6 +27,7 @@ import 'package:nae/widgets/app_form_date_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/autocomplete.dart';
 import 'package:nae/widgets/entity_screens.dart';
+import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/popup_menu_button.dart';
 import 'package:nae/widgets/scaffold_edit.dart';
 import 'package:nae/widgets/scaffold_view.dart';
@@ -204,7 +205,10 @@ class _WHTransferEditFSState extends State<WHTransferEditFS>
               return Column(children: <Widget>[
                 Expanded(
                   child: TabBarView(controller: _controller, children: <Widget>[
-                    WHTransferGoods(doc: widget.entity),
+                    WHTransferGoods(
+                      doc: widget.entity,
+                      mode: Mode.mobile,
+                    ),
                     WHTransferOverview(doc: widget.entity),
                     GoodsDispatch(
                       ctx: const ['warehouse', 'transfer'],

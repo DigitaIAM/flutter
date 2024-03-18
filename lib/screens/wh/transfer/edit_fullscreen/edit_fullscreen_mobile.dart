@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
@@ -10,14 +11,21 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/screens/wh/goods_dispatch.dart';
+import 'package:nae/screens/wh/transfer/edit.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/document_creation.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/goods.dart';
 import 'package:nae/screens/wh/transfer/edit_fullscreen/overview.dart';
 import 'package:nae/screens/wh/transfer/screen.dart';
 import 'package:nae/share/utils.dart';
+import 'package:nae/utils/date.dart';
+import 'package:nae/widgets/app_form.dart';
+import 'package:nae/widgets/app_form_card.dart';
+import 'package:nae/widgets/app_form_field.dart';
+import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
+import 'package:nae/widgets/scrollable_list_view.dart';
 
 class WHTransferEditMobile extends EntityHolder {
   final bool showStorages;
@@ -67,7 +75,8 @@ class _WHTransferEditMobileState extends State<WHTransferEditMobile>
       data[cId] = widget.entity.id;
 
       // workaround
-      data[cDate] = DateFormat("yyyy-MM-dd").format(data[cDate]);
+      data[cDate] = DT.format(data[cDate]);
+      //DateFormat("yyyy-MM-dd").format(data[cDate]);
 
       context.read<MemoryBloc>().add(MemorySave("memories", WHTransfer.ctx,
           WHTransfer.schema, MemoryItem(id: widget.entity.id, json: data)));
@@ -114,7 +123,8 @@ class _WHTransferEditMobileState extends State<WHTransferEditMobile>
       }
 
       return ScaffoldView(
-        title: localization.translate("warehouse transfer"),
+        title:
+            "${localization.translate("warehouse transfer")} ${DT.format(widget.entity.json[cDate])}",
         appBarBottom: TabBar(
           controller: _controller,
           isScrollable: true,
@@ -124,11 +134,24 @@ class _WHTransferEditMobileState extends State<WHTransferEditMobile>
             Tab(text: localization.translate("registration")),
           ],
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.edit_note_outlined),
+            tooltip: localization.translate("edit"),
+            onPressed: () {
+              context.read<UiBloc>().add(ChangeView(WHTransfer.ctx,
+                  action: 'edit', entity: widget.entity));
+            },
+          ),
+        ],
         body: Builder(builder: (context) {
           return Column(children: <Widget>[
             Expanded(
               child: TabBarView(controller: _controller, children: <Widget>[
-                WHTransferGoods(doc: widget.entity, mode: Mode.mobile),
+                WHTransferGoods(
+                  doc: widget.entity,
+                  mode: Mode.mobile,
+                ),
                 WHTransferOverview(doc: widget.entity),
                 GoodsDispatch(
                   ctx: const ['warehouse', 'transfer'],

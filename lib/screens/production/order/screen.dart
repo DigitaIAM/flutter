@@ -15,9 +15,7 @@ import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_list.dart';
-import 'package:scrollable_clean_calendar/controllers/clean_calendar_controller.dart';
-import 'package:scrollable_clean_calendar/scrollable_clean_calendar.dart';
-import 'package:scrollable_clean_calendar/utils/enums.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 import 'edit.dart';
 import 'view.dart';
@@ -102,56 +100,42 @@ class ProductionOrderScreen extends StatefulWidget {
 }
 
 class _ProductionOrderScreenState extends State<ProductionOrderScreen> {
-  late CleanCalendarController calendarController;
+  // late CleanCalendarController calendarController;
 
-  DateTime selectedDate = DateTime.now();
-
-  @override
-  void initState() {
-    super.initState();
-
-    calendarController = CleanCalendarController(
-      rangeMode: false,
-      minDate: DateTime(2023, 1, 1),
-      // minDate: DateTime.now().subtract(const Duration(days: 365)),
-      maxDate: DateTime.now().add(const Duration(days: 1)),
-      // onRangeSelected: setRange,
-      onDayTapped: (date) {
-        // print("onDayTapped $date");
-        setState(() {
-          selectedDate = date;
-          context.read<MemoryBloc>().add(
-                MemoryFetch(
-                  'memories',
-                  ProductionOrder.ctx,
-                  schema: ProductionOrder.schema,
-                  filter: {'date': date.toYMD()},
-                  reset: true,
-                ),
-              );
-        });
-      },
-      onPreviousMinDateTapped: (date) {},
-      onAfterMaxDateTapped: (date) {},
-      weekdayStart: DateTime.monday,
-      initialDateSelected: selectedDate,
-      initialFocusDate: selectedDate,
-    );
-  }
+  // DateTime selectedDate = DateTime.now();
+  DateTime _selectedDay = DateTime.now();
 
   Widget calendar(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Flexible(
-          child: ScrollableCleanCalendar(
-            locale: 'ru',
-            calendarController: calendarController,
-            layout: Layout.BEAUTY,
-            calendarCrossAxisSpacing: 0,
-          ),
-        ),
-      ],
+    return TableCalendar(
+      locale: 'ru',
+      headerStyle: const HeaderStyle(
+        formatButtonVisible: false,
+        titleCentered: true,
+      ),
+      startingDayOfWeek: StartingDayOfWeek.monday,
+      firstDay: DateTime(2023, 1, 1),
+      lastDay: DateTime.now().add(const Duration(days: 1)),
+      focusedDay: _selectedDay,
+      calendarFormat: CalendarFormat.month,
+      selectedDayPredicate: (day) {
+        return isSameDay(_selectedDay, day);
+      },
+      onDaySelected: (selectedDay, focusedDay) {
+        if (!isSameDay(_selectedDay, selectedDay)) {
+          setState(() {
+            _selectedDay = selectedDay;
+            context.read<MemoryBloc>().add(
+                  MemoryFetch(
+                    'memories',
+                    ProductionOrder.ctx,
+                    schema: ProductionOrder.schema,
+                    filter: {'date': selectedDay.toYMD()},
+                    reset: true,
+                  ),
+                );
+          });
+        }
+      },
     );
   }
 
@@ -185,7 +169,7 @@ class _ProductionOrderScreenState extends State<ProductionOrderScreen> {
         children: [
           SizedBox(width: 300, child: calendar(context)),
           Flexible(
-              flex: 2, child: ProductionOrdersListBuilder(date: selectedDate)),
+              flex: 2, child: ProductionOrdersListBuilder(date: _selectedDay)),
         ],
       ),
     );
