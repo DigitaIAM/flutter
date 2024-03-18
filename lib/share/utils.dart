@@ -6,7 +6,9 @@ import 'package:uuid/uuid.dart';
 class Utils {
   static final Utils _singleton = Utils._internal();
 
-  static Map<String, String> httpSimpleJsonHeader(String token, String db, String login, String psw) => {
+  static Map<String, String> httpSimpleJsonHeader(
+          String token, String db, String login, String psw) =>
+      {
         "Content-Type": "application/json; charset=utf-8",
         "Authorization": token,
         "db": db,
@@ -18,16 +20,20 @@ class Utils {
   static DateFormat format_YYYY_MM_dd = DateFormat('yyyy-MM-dd');
   static DateFormat format_yyyy_MM_dd_hh_mm = DateFormat('yyyy-MM-dd HH:mm');
   static DateFormat format_dd_MM_yyyy_hh_mm = DateFormat('dd.MM.yyyy HH:mm');
-  static DateFormat format_dd_MM_yyyy_hh_mm_ss = DateFormat('dd.MM.yyyy HH:mm:ss');
+  static DateFormat format_dd_MM_yyyy_hh_mm_ss =
+      DateFormat('dd.MM.yyyy HH:mm:ss');
   static DateFormat format_dd_MM = DateFormat('dd.MM');
   static DateFormat format_dd_MM_yyyy = DateFormat('dd.MM.yyyy');
 
   static DateFormat format_hh_mm = DateFormat('HH:mm');
   static DateFormat format_hh_mm_ss = DateFormat('HH:mm:ss');
-  static NumberFormat num_format_0_00 = NumberFormat.simpleCurrency(name: "", decimalDigits: 2);
-  static NumberFormat num_format_0 = NumberFormat.simpleCurrency(name: "", decimalDigits: 0);
+  static NumberFormat num_format_0_00 =
+      NumberFormat.simpleCurrency(name: "", decimalDigits: 2);
+  static NumberFormat num_format_0 =
+      NumberFormat.simpleCurrency(name: "", decimalDigits: 0);
 
-  static NumberFormat num_format_current = NumberFormat.simpleCurrency(name: "", decimalDigits: 0);
+  static NumberFormat num_format_current =
+      NumberFormat.simpleCurrency(name: "", decimalDigits: 0);
 
   static String myDateFormat(DateFormat f, DateTime val) {
     return f.format(val);
@@ -107,7 +113,9 @@ class Utils {
   static double calculateDistance(lat1, lon1, lat2, lon2) {
     var p = 0.017453292519943295;
     var c = cos;
-    var a = 0.5 - c((lat2 - lat1) * p) / 2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+    var a = 0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
     return 12742 * asin(sqrt(a));
   }
 
@@ -137,10 +145,18 @@ class Utils {
   }
 
   static String yesterday() {
-    return DateFormat("yyyy-MM-dd").format(DateTime.now().subtract(const Duration(days: 1)));
+    return DateFormat("yyyy-MM-dd")
+        .format(DateTime.now().subtract(const Duration(days: 1)));
   }
 
   static String daysAgo(int days) {
-    return DateFormat("yyyy-MM-dd").format(DateTime.now().subtract(Duration(days: days)));
+    return DateFormat("yyyy-MM-dd")
+        .format(DateTime.now().subtract(Duration(days: days)));
+  }
+}
+
+extension DTFunctions on DateTime {
+  String toYMD() {
+    return DateFormat("yyyy-MM-dd").format(this);
   }
 }

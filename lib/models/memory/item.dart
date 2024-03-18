@@ -23,7 +23,10 @@ class MemoryItem extends Equatable {
   List<Object> get props => [id, updatedAt];
 
   MemoryItem.clone(MemoryItem item)
-      : this(id: item.id, json: jsonDecode(jsonEncode(item.json)), updatedAt: item.updatedAt);
+      : this(
+            id: item.id,
+            json: jsonDecode(jsonEncode(item.json)),
+            updatedAt: item.updatedAt);
 
   MemoryItem clone() {
     return MemoryItem.clone(this);
@@ -67,8 +70,10 @@ class MemoryItem extends Equatable {
       final value = entry.value;
       if (value is MemoryItem) {
         final id = value.id;
-        assert(id.isNotEmpty && id != 'new');
-        data[key] = id;
+        // assert(id.isNotEmpty && id != 'new');
+        if (id.isNotEmpty && id != 'new') {
+          data[key] = id;
+        }
       } else if (value is Map<String, dynamic>) {
         data[key] = processMap(value);
       } else {
@@ -95,6 +100,14 @@ class MemoryItem extends Equatable {
         if (copy[name] == null) {
           copy[name] = await type.eval(MemoryItem(id: id, json: copy));
         }
+      } else if (field.type is QtyType) {
+        final name = field.name;
+        // final type = field.type as QtyType;
+
+        final qty = field.resolve(copy);
+        if (qty != null) {
+          copy[name] = await qty.enrich(cache);
+        }
       } else if (field.type is ReferenceType) {
         final type = field.type as ReferenceType;
 
@@ -112,7 +125,8 @@ class MemoryItem extends Equatable {
                 // copy[name] = cached;
                 field.update(copy, cached);
               } else {
-                final response = await Api.feathers().get(serviceName: "memories", objectId: id, params: {
+                final response = await Api.feathers()
+                    .get(serviceName: "memories", objectId: id, params: {
                   "oid": Api.instance.oid,
                   "ctx": type.ctx,
                 });
@@ -138,7 +152,8 @@ class MemoryItem extends Equatable {
       }
     }
 
-    return MemoryItem(id: id, json: copy, updatedAt: DateTime.now().millisecondsSinceEpoch);
+    return MemoryItem(
+        id: id, json: copy, updatedAt: DateTime.now().millisecondsSinceEpoch);
   }
 
   static create() => const MemoryItem(id: 'new', json: {});

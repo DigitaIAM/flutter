@@ -15,14 +15,17 @@ EventTransformer<E> throttleDroppable<E>(Duration duration) {
 }
 
 class UiBloc extends Bloc<UiEvent, UiState> {
-  UiBloc()
-      : super(UiState(
-          isDesktop: isDesktopOS() || isWeb(),
-          mediaQueryData: MediaQueryData.fromWindow(WidgetsBinding.instance.window),
-        )) {
+  factory UiBloc.create() {
+    return UiBloc(UiState(
+      isDesktop: isDesktopOS() || isWeb(),
+      mediaQueryData: MediaQueryData.fromView(WidgetsBinding.instance.window),
+    ));
+  }
+
+  UiBloc(UiState state) : super(state) {
     on<ChangeView>(
       (ChangeView event, Emitter<UiState> emit) {
-        print("on ChangeView $event");
+        // print("on ChangeView $event");
         emit(state.copyWith(
           currentRoute: event.ctx.isNotEmpty ? event.ctx : state.currentRoute,
           action: event.action,

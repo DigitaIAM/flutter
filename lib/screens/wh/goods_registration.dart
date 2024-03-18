@@ -19,17 +19,22 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 class GoodsRegistration extends StatefulWidget {
   final List<String> ctx;
   final MemoryItem doc;
+  final MemoryItem? rec;
   final List<Field> schema;
   final bool enablePrinting;
   final bool allowGoodsCreation;
+
+  final Function()? afterSave;
 
   const GoodsRegistration({
     super.key,
     required this.ctx,
     required this.doc,
     required this.schema,
+    this.rec,
     this.enablePrinting = true,
     this.allowGoodsCreation = true,
+    this.afterSave,
   });
 
   @override
@@ -37,14 +42,22 @@ class GoodsRegistration extends StatefulWidget {
 }
 
 class _GoodsRegistrationState extends State<GoodsRegistration> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_goodsRegistrationEdit');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_goodsRegistrationEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
+  MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
 
   String status = "register";
   int numberOfQuantities = 1;
-  String registered = '';
+  bool registered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    details = widget.rec ?? MemoryItem(id: '', json: {cDate: Utils.today()});
+    // TODO set numberOfQuantities from data
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,12 +90,22 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
 
             final goods = value[cGoods];
             if (goods is MemoryItem) {
-              final baseUom = goods.json[cUom];
+              final baseUom = fUom.resolve(goods);
+
+              String? baseUomId;
+              if (baseUom is MemoryItem) {
+                baseUomId = baseUom.id;
+              } else if (baseUom is Map) {
+                baseUomId = baseUom[cId];
+              } else if (baseUom is String) {
+                baseUomId = baseUom;
+              }
 
               var firstEmpty = -1;
               var found = false;
               var newNumber = numberOfQuantities;
               for (var index = 0; index < numberOfQuantities; index++) {
+                print("for $index ${value['uom_$index']?.id}");
                 // TODO fix removal
                 // if (found) {
                 //   state.fields['uom_$index']
@@ -90,9 +113,11 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
                 //   state.fields['qty_$index']
                 //       ?.setValue(null, populateForm: false);
                 // }
-                if (!found && baseUom == value['uom_$index']?.id) {
+                if (!found && baseUomId == value['uom_$index']?.id) {
                   newNumber = index + 1;
                   found = true;
+                  print("found $newNumber");
+                  break;
                 }
                 if (firstEmpty == -1 && value['uom_$index'] == null) {
                   firstEmpty = index;
@@ -109,6 +134,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
               // print("number_of_qties $number_of_qties $newNumber $firstEmpty");
 
               setState(() {
+                print("set numberOfQuantities = $newNumber");
                 numberOfQuantities = newNumber;
               });
             }
@@ -138,7 +164,8 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
                 creatable: false,
                 autofocus: true,
                 validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(errorText: "выберите место хранения"),
+                  FormBuilderValidators.required(
+                      errorText: "выберите место хранения"),
                 ]),
                 onSave: (context) {},
               ),
@@ -169,40 +196,52 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
               const SizedBox(height: 10),
               ...qtyUom(context),
             ]),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-              FloatingActionButton(
-                heroTag: 'product_register',
-                backgroundColor: theme.primaryColorDark,
-                onPressed: status == 'register' ? registerPreparation : null,
-                tooltip: localization.translate('register'.toString()),
-                child: registered == 'register'
-                    ? const Icon(Icons.done)
-                    : Icon(
-                        Icons.add,
-                        color: theme.primaryColorLight,
-                      ),
-              ),
-              ...(widget.enablePrinting
-                  ? [
-                      FloatingActionButton(
-                        heroTag: 'product_register_and_print',
-                        backgroundColor: theme.primaryColorDark,
-                        onPressed: status == 'register' ? registerAndPrintPreparation : null,
-                        tooltip: localization.translate('and print'.toString()),
-                        child: registered == 'registerAndPrint'
-                            ? const Icon(Icons.done)
-                            : Icon(
-                                Icons.print,
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  FloatingActionButton(
+                    heroTag: 'product_register',
+                    backgroundColor: theme.primaryColorDark,
+                    onPressed:
+                        status == 'register' ? registerPreparation : null,
+                    tooltip: localization.translate('register'.toString()),
+                    child: registered
+                        ? const Icon(Icons.done)
+                        : (status == 'register'
+                            ? Icon(
+                                widget.rec == null ? Icons.add : Icons.edit,
                                 color: theme.primaryColorLight,
-                              ),
-                      )
-                    ]
-                  : []),
-            ]),
+                              )
+                            : const Icon(Icons.save)),
+                  ),
+                  ...(widget.enablePrinting
+                      ? [
+                          FloatingActionButton(
+                            heroTag: 'product_register_and_print',
+                            backgroundColor: theme.primaryColorDark,
+                            onPressed: status == 'register'
+                                ? registerAndPrintPreparation
+                                : null,
+                            tooltip:
+                                localization.translate('and print'.toString()),
+                            child: registered
+                                ? const Icon(Icons.done)
+                                : (status == 'register'
+                                    ? Icon(
+                                        Icons.print,
+                                        color: theme.primaryColorLight,
+                                      )
+                                    : const Icon(Icons.save)),
+                          )
+                        ]
+                      : []),
+                ]),
             if (status != 'register')
-              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                Text(status),
-              ]),
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Text(status),
+                  ]),
           ]))
     ];
     return ScrollableListView(
@@ -259,13 +298,32 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
   }
 
   void resetDone() {
-    setState(() => registered = '');
+    setState(() {
+      status = 'saving';
+      registered = false;
+    });
   }
 
-  void done(String type) {
-    setState(() => registered = type);
+  void done(bool completed) {
+    if (completed) {
+      if (widget.afterSave != null) {
+        widget.afterSave?.call();
+        return;
+      }
+    }
+    setState(() {
+      if (completed) {
+        registered = completed;
+        status = "saved";
+      } else {
+        status = "error";
+      }
+    });
     Future.delayed(const Duration(seconds: 2), () {
-      setState(() => registered = '');
+      setState(() {
+        status = "register";
+        registered = false;
+      });
     });
   }
 
@@ -274,7 +332,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
   }
 
   void registerAndPrintPreparation() async {
-    resetDone();
+    // resetDone();
 
     final state = _formKey.currentState;
     if (state == null) {
@@ -301,45 +359,49 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
   void registerPreparation() async {
     resetDone();
 
-    final state = _formKey.currentState;
-    if (state == null) {
-      // TODO raise error instead
-      return;
-    }
-    if (state.saveAndValidate()) {
-      final data = state.value;
-
-      // TODO understand is it required
-      final doc = await widget.doc.enrich(widget.schema);
-
-      try {
-        final result = await register(doc, data, numberOfQuantities, false, widget.ctx, setStatus);
-
-        if (!(result.isNew || result.isEmpty)) {
-          done('register');
-        }
-      } finally {
-        setStatus("register");
+    var completed = true;
+    try {
+      final state = _formKey.currentState;
+      if (state == null) {
+        // TODO raise error instead
+        return;
       }
+      if (state.saveAndValidate()) {
+        final data = state.value;
+
+        // TODO understand is it required
+        final doc = await widget.doc.enrich(widget.schema);
+
+        final result = await register(doc, data, numberOfQuantities, false,
+            widget.ctx, widget.rec?.id, setStatus);
+
+        completed = !(result.isNew || result.isEmpty);
+      }
+    } finally {
+      done(completed);
     }
   }
 
-  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data, {MemoryItem? item}) async {
+  Future<void> registerAndPrint(String ip, int port, Map<String, dynamic> data,
+      {MemoryItem? item}) async {
     resetDone();
 
-    setStatus("connecting");
-
+    var completed = true;
     try {
+      setStatus("connecting");
+
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(widget.schema);
-        final record = item ?? await register(doc, data, numberOfQuantities, false, widget.ctx, setStatus);
+        final record = item ??
+            await register(doc, data, numberOfQuantities, false, widget.ctx,
+                widget.rec?.id, setStatus);
 
-        if (item == null) {
-          if (!(record.isEmpty || record.isNew)) {
-            done('registerAndPrint');
-          }
-        }
+        // if (item == null) {
+        //   if (!(record.isEmpty || record.isNew)) {
+        //     done('registerAndPrint');
+        //   }
+        // }
 
         // print("registerAndPrint record: $record");
 
@@ -351,6 +413,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
       });
 
       if (result != PrintResult.success) {
+        completed = false;
         showToast(result.msg,
             // context: context,
             axis: Axis.horizontal,
@@ -358,6 +421,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
             position: StyledToastPosition.bottom);
       }
     } catch (e) {
+      completed = false;
       // , stacktrace
       // print(stacktrace);
       showToast(e.toString(),
@@ -366,7 +430,7 @@ class _GoodsRegistrationState extends State<GoodsRegistration> {
           alignment: Alignment.center,
           position: StyledToastPosition.bottom);
     } finally {
-      setStatus("register");
+      done(completed);
     }
   }
 }

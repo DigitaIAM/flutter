@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:nae/api.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/utils/cache.dart';
 
 class Qty {
   const Qty(this.nums);
@@ -12,6 +13,7 @@ class Qty {
   static Qty zero() => const Qty([]);
 
   static Qty fromJson(dynamic json) {
+    //  print("Qty.fromJson $json");
     if (json == null) {
       return Qty.zero();
     }
@@ -19,6 +21,7 @@ class Qty {
     List<Named> nums = [];
     if (json != null) {
       if (json is List) {
+        //  print("list case");
         for (Map<String, dynamic> o in json) {
           nums.add(Named.fromJson(o));
         }
@@ -27,6 +30,7 @@ class Qty {
         nums.add(Named.fromJson(json));
       }
     }
+    // print("Qty.fromJson done");
     return Qty(nums);
   }
 
@@ -89,10 +93,20 @@ class Qty {
     return null;
   }
 
+  bool error() {
+    for (final num in nums) {
+      if (num.error()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @override
   String toString() {
     // print("Qty.toString $nums");
     var text = '';
+
     for (final num in nums) {
       if (text.isNotEmpty) {
         text += ', ';
@@ -100,7 +114,12 @@ class Qty {
       // print("num ${num.number}");
       text += '${num.number.toString()} ${num.named.toString()}';
     }
-    return text;
+
+    if (error()) {
+      return '!? $text';
+    } else {
+      return text;
+    }
   }
 
   Qty operator +(Qty other) {
@@ -128,19 +147,56 @@ class Qty {
     // print("SUM $this + $other = $result");
     return result;
   }
+
+  Future<Qty> enrich(Cache cache) async {
+    for (final nam in nums) {
+      await nam.named.resolve_(cache);
+    }
+    return this;
+  }
+
+  void toData(Map<String, dynamic> data) {
+    var index = 0;
+    Named? num = nums[0];
+
+    var number = num.number;
+    var uom = num.named;
+
+    data['qty_$index'] = number.toString();
+    data['uom_$index'] = uom.memory;
+    index++;
+
+    while (uom.deeper != null) {
+      number = uom.deeper!.$1;
+      uom = uom.deeper!.$2;
+
+      data['qty_$index'] = number.toString();
+      data['uom_$index'] = uom.id;
+      index++;
+    }
+  }
 }
 
 class Uom extends Equatable {
   final String id;
   final Map<String, dynamic> json;
   final (Decimal, Uom)? deeper;
+  final bool haveError;
+  MemoryItem? memory;
 
-  const Uom(this.id, this.json, this.deeper);
+  Uom(this.id, this.json, this.deeper, {this.haveError = false});
 
   static Uom fromJson(dynamic json) {
     // print("Uom.fromJson $json");
 
-    if (json is String) {
+    if (json == null) {
+      return Uom(
+          '',
+          const {
+            'uom': {'name': '?'}
+          },
+          null);
+    } else if (json is String) {
       return Uom(json, {'uom': json}, null);
     } else {
       final uuid = json['_uuid'];
@@ -160,6 +216,16 @@ class Uom extends Equatable {
     }
   }
 
+  bool error() {
+    if (haveError) {
+      return true;
+    }
+    if (deeper != null) {
+      return deeper!.$2.error();
+    }
+    return false;
+  }
+
   Future<MemoryItem> resolve() async {
     final response = await Api.feathers()
         .get(serviceName: "memories", objectId: id, params: {
@@ -170,7 +236,37 @@ class Uom extends Equatable {
     return MemoryItem.from(response);
   }
 
+  Future<void> resolve_(Cache cache) async {
+    // workaround for unknown
+    if (id == '') {
+      return;
+    }
+
+    if (memory == null) {
+      var cached = cache.get(id);
+      if (cached == null) {
+        final response = await Api.feathers()
+            .get(serviceName: "memories", objectId: id, params: {
+          "oid": Api.instance.oid,
+          "ctx": [cUom],
+        });
+        //  print('response $response');
+
+        cached = MemoryItem.from(response);
+        cache.add(cached);
+      }
+      memory = cached;
+    }
+    if (deeper != null) {
+      deeper!.$2.resolve_(cache);
+    }
+  }
+
   String name() {
+    if (memory != null) {
+      return memory!.name();
+    }
+
     // print("name $json");
     final uom = json['in'];
     if (uom != null) {
@@ -181,11 +277,22 @@ class Uom extends Equatable {
 
   @override
   String toString() {
+    if (memory != null) {
+      if (deeper == null) {
+        return memory!.name();
+      } else {
+        return '${memory!.name()} [${deeper!.$1} ${deeper!.$2.toString()}]';
+      }
+    }
     // print("Uom.toString $json");
     dynamic uom = json;
     var text = '';
 
     while (uom is Map) {
+      if (uom['number'] == null) {
+        text += ' ${nameOrId(uom['uom'])}';
+        break;
+      }
       if (uom['uom'] == null) {
         text += ' ${uom['name'] ?? ''}';
         break;
@@ -224,12 +331,30 @@ String nameOrId(dynamic json) {
 class Named {
   final Decimal number;
   final Uom named;
+  final bool haveError;
 
-  Named({required this.number, required this.named});
+  Named({required this.number, required this.named, this.haveError = false});
 
   static Named fromJson(dynamic json) {
-    final number = Decimal.parse(json['number']);
+    //print("Named.fromJson $json");
+    bool error = false;
+    String str = json['number']?.toString() ?? '';
+    var number = Decimal.tryParse(str);
+    if (number == null) {
+      error = true;
+      number = Decimal.parse(str.replaceAll(',', '.').trim());
+    }
 
-    return Named(number: number, named: Uom.fromJson(json['uom']));
+    // print("number $number");
+
+    return Named(
+        number: number, named: Uom.fromJson(json['uom']), haveError: error);
+  }
+
+  bool error() {
+    if (haveError) {
+      return true;
+    }
+    return named.error();
   }
 }

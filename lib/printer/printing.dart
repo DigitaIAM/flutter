@@ -5,8 +5,14 @@ import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/utils/date.dart';
 
-Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numberOfQuantities, bool isDispatch,
-    List ctx, void Function(String) onStatusChange) async {
+Future<MemoryItem> register(
+    MemoryItem doc,
+    Map<String, dynamic> data,
+    int numberOfQuantities,
+    bool isDispatch,
+    List ctx,
+    String? id,
+    void Function(String) onStatusChange) async {
   onStatusChange("registering");
 
   if (data.isNotEmpty) {
@@ -18,42 +24,6 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
 
     final baseUom = goods.json[cUom];
     final baseUomId = baseUom is Map ? baseUom[cId] : baseUom;
-
-    MemoryItem? from;
-    MemoryItem? into;
-    MemoryItem? storage;
-
-    if (ctx == const ['warehouse', 'transfer']) {
-      final f = doc.json[cFrom];
-      final i = doc.json[cInto];
-
-      from = f is MemoryItem ? f : MemoryItem.from(f);
-      into = i is MemoryItem ? i : MemoryItem.from(i);
-    } else if (ctx == const ['warehouse', 'dispatch']) {
-      final storage = doc.json[cStorage];
-      from = storage is MemoryItem ? storage : MemoryItem.from(storage);
-
-      final counterparty = doc.json[cCounterparty];
-      into = counterparty is MemoryItem ? counterparty : MemoryItem.from(counterparty);
-    } else if (ctx == const ['production', 'material', 'produced']) {
-      final area = doc.json[cArea];
-      from = area is MemoryItem ? area : MemoryItem.from(area);
-
-      final storage = data[cStorage];
-      into = storage is MemoryItem ? storage : MemoryItem.from(storage);
-    } else if (ctx == const ['production', 'material', 'used']) {
-      // print("used: ${doc.json}");
-      final storage = data[cStorage];
-      from = storage is MemoryItem ? storage : MemoryItem.from(storage);
-    } else if (ctx == const ['warehouse', 'inventory']) {
-      storage = doc.json[cStorage] is MemoryItem ? doc.json[cStorage] : MemoryItem.from(doc.json[cStorage]);
-    } else {
-      final counterparty = doc.json[cCounterparty];
-      from = counterparty is MemoryItem ? counterparty : MemoryItem.from(counterparty);
-
-      final storage = doc.json[cStorage];
-      into = storage is MemoryItem ? storage : MemoryItem.from(storage);
-    }
 
     final quantity = {}; // cNumber: number, cUom: uom.id
     var currentQty = quantity;
@@ -90,12 +60,17 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
         print("quantity $quantity");
       } else {
         if (index > 0) {
-          final newQty = {cNumber: qty, cUom: uom.json[cUuid] ?? uom.id, 'in': currentQty[cUom]};
+          final newQty = {
+            cNumber: qty,
+            cUom: uom.json[cUuid] ?? uom.id,
+            'in': currentQty[cUom]
+          };
           currentQty[cUom] = newQty;
           currentQty = newQty;
         } else {
           currentQty[cNumber] = qty;
-          currentQty[cUom] = uom.json['in']?[cUuid] ?? uom.json[cUuid] ?? uom.id;
+          currentQty[cUom] =
+              uom.json['in']?[cUuid] ?? uom.json[cUuid] ?? uom.id;
         }
 
         if (baseUomId == data['uom_$index']?.id) {
@@ -104,35 +79,36 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
       }
     }
 
-    // final category = data[cCategory] is MemoryItem
-    //     ? data[cCategory]
-    //     : goods.json[cCategory];
-    //
-    // final categoryId = category is MemoryItem ? category.id : category;
+    Map<String, dynamic> request = {}; // Map.from(data);
+    // request.removeWhere((k, v) => k.startsWith("qty_"));
+    // request.removeWhere((k, v) => k.startsWith("uom_"));
 
-    MemoryItem? batch = data[cBatch];
-
-    final request = {
-      cDocument: doc.id,
-      cGoods: goods.id,
-      cQty: quantity,
-    };
-
+    request[cDocument] = doc.id;
+    if (ctx == const ['production', 'material', 'produced'] ||
+        ctx == const ['production', 'material', 'used']) {
+      request[cStorage] = data[cStorage].id;
+    }
+    request[cGoods] = data[cGoods].id;
+    final batch = data[cBatch];
     if (batch != null) {
-      request[cBatch] = batch.json;
+      request[cBatch] = {'id': batch.json['id'], 'date': batch.json['date']};
     }
-    if (from != null) {
-      request['storage_from'] = from.id;
-    }
-    if (into != null) {
-      request['storage_into'] = into.id;
-    }
-    if (storage != null) {
-      request[cStorage] = storage.id;
-    }
+    request[cQty] = quantity;
+    print('save request $request');
 
-    final response = await Api.feathers()
-        .create(serviceName: 'memories', data: request, params: {'oid': Api.instance.oid, 'ctx': ctx});
+    dynamic response;
+    if (id == null) {
+      response = await Api.feathers().create(
+          serviceName: 'memories',
+          data: request,
+          params: {'oid': Api.instance.oid, 'ctx': ctx});
+    } else {
+      response = await Api.feathers().update(
+          serviceName: 'memories',
+          objectId: id,
+          data: request,
+          params: {'oid': Api.instance.oid, 'ctx': ctx});
+    }
 
     final result = MemoryItem.from(response);
     // print("register result: $result");
@@ -144,8 +120,8 @@ Future<MemoryItem> register(MemoryItem doc, Map<String, dynamic> data, int numbe
   }
 }
 
-Future<PrintResult> printing(
-    NetworkPrinter printer, MemoryItem doc, MemoryItem record, void Function(String) onStatusChange) async {
+Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
+    MemoryItem record, void Function(String) onStatusChange) async {
   onStatusChange("printing");
 
   // print("printing doc $doc");
@@ -153,7 +129,8 @@ Future<PrintResult> printing(
 
   final goods = record.json[cGoods];
   final goodsName = goods is MemoryItem ? goods.name() : (goods[cName] ?? '');
-  final goodsUuid = goods is MemoryItem ? (goods.json[cUuid] ?? '') : (goods[cUuid] ?? '');
+  final goodsUuid =
+      goods is MemoryItem ? (goods.json[cUuid] ?? '') : (goods[cUuid] ?? '');
   // final goodsId = goods is MemoryItem ? goods.id : (goods[cId] ?? '');
   final recordId = record.id;
 
@@ -191,7 +168,9 @@ Future<PrintResult> printing(
 
   final counterparty = doc.json[cCounterparty];
   if (counterparty != null) {
-    from = counterparty is MemoryItem ? counterparty : MemoryItem.from(counterparty);
+    from = counterparty is MemoryItem
+        ? counterparty
+        : MemoryItem.from(counterparty);
     labelData['поставщик'] = from.name();
   }
 
@@ -212,7 +191,8 @@ Future<PrintResult> printing(
   }
 
   // TODO: place length check and line break from lines_with_barcode to this function
-  Labels.linesWithBarcode(printer, goodsName, goodsUuid, recordId, batchBarcode, batchId, batchDate, labelData);
+  Labels.linesWithBarcode(printer, goodsName, goodsUuid, recordId, batchBarcode,
+      batchId, batchDate, labelData);
 
   return Future<PrintResult>.value(PrintResult.success);
 }
@@ -235,7 +215,10 @@ Future<String> qtyToText(MemoryItem rec) async {
       var obj = await Api.feathers().get(
           serviceName: "memories",
           objectId: uom,
-          params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+          params: {
+            "oid": Api.instance.oid,
+            "ctx": []
+          }).onError((error, stackTrace) => {});
       text = '$text ${obj['name'] ?? ''}';
     } else {
       // print('_uomType ${uom.runtimeType}');
@@ -256,7 +239,8 @@ Future<String> qtyToText(MemoryItem rec) async {
                     params: {
                         "oid": Api.instance.oid,
                         "ctx": []
-                      }).onError((error, stackTrace) => {print('inObj_error $error, $stackTrace')}));
+                      }).onError((error, stackTrace) =>
+                    {print('inObj_error $error, $stackTrace')}));
         // print('inObj $inObj');
 
         text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';
@@ -265,7 +249,10 @@ Future<String> qtyToText(MemoryItem rec) async {
           var obj = await Api.feathers().get(
               serviceName: "memories",
               objectId: uom['uom'] ?? '',
-              params: {"oid": Api.instance.oid, "ctx": []}).onError((error, stackTrace) => {});
+              params: {
+                "oid": Api.instance.oid,
+                "ctx": []
+              }).onError((error, stackTrace) => {});
 
           text = '$text ${obj['name'] ?? ''}';
           break;

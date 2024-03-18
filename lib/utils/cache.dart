@@ -17,6 +17,7 @@ class Cache {
 
   void add(MemoryItem item) {
     _cache[item.id] = item;
+    _cache[item.uuid] = item;
   }
 
   MemoryItem? get(String id) {

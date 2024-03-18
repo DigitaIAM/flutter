@@ -1,4 +1,5 @@
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 
 class Field {
   final String name;
@@ -9,19 +10,29 @@ class Field {
 
   final bool editable;
 
-  const Field(this.name, this.type, {this.path, this.width = 1.0, this.editable = true});
+  const Field(this.name, this.type,
+      {this.path, this.width = 1.0, this.editable = true});
 
   Field copyWith({
     double? width,
     bool? editable,
   }) {
-    return Field(name, type, path: path, width: width ?? this.width, editable: editable ?? this.editable);
+    return Field(name, type,
+        path: path,
+        width: width ?? this.width,
+        editable: editable ?? this.editable);
   }
 
-  dynamic resolve(Map<String, dynamic> json) {
-    // print("resolve: ");
-    // print('$path $name');
-    // print(json);
+  dynamic resolve(dynamic data) {
+    if (data is MemoryItem) {
+      return resolveFromJson(data.json);
+    } else {
+      return resolveFromJson(data);
+    }
+  }
+
+  dynamic resolveFromJson(Map<String, dynamic> json) {
+    // print("resolve: $path $name $json");
     dynamic value;
     dynamic result;
     if (path != null) {
@@ -52,7 +63,9 @@ class Field {
   }
 
   dynamic enrich(dynamic v) {
-    if (type is ReferenceType) {
+    if (type is QtyType) {
+      return Qty.fromJson(v);
+    } else if (type is ReferenceType) {
       if (v is MemoryItem) {
         return v;
       } else if (v is Map<String, dynamic>) {
@@ -117,6 +130,11 @@ class Field {
 
     v[steps[last]] = value;
   }
+
+  @override
+  String toString() {
+    return 'Field[$name] = $type at $path';
+  }
 }
 
 abstract class Type {
@@ -140,6 +158,10 @@ class ReferenceType extends Type {
   final List<Field> fields;
 
   const ReferenceType(this.ctx, {this.fields = const []});
+}
+
+class QtyType extends Type {
+  const QtyType();
 }
 
 class ListType extends Type {

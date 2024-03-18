@@ -17,7 +17,7 @@ import 'package:nae/screens/settings/printer/screen.dart';
 import 'package:nae/screens/wh/balance/screen.dart';
 import 'package:nae/screens/wh/dispatch/screen.dart';
 import 'package:nae/screens/wh/inventory/screen.dart';
-import 'package:nae/screens/wh/list_builder.dart';
+import 'package:nae/screens/wh/movements/screen.dart';
 import 'package:nae/screens/wh/receive/screen.dart';
 import 'package:nae/screens/wh/storage/screen.dart';
 import 'package:nae/screens/wh/transfer/screen.dart';
@@ -35,7 +35,6 @@ class UiState extends Equatable {
     this.action = 'view',
     this.entity = const MemoryItem(id: '', json: {}),
     // this.entityId = '',
-    this.filters = const [],
     this.isDesktop = true,
     this.isMenuVisible = true,
     this.isMenuCollapsed = false,
@@ -54,7 +53,6 @@ class UiState extends Equatable {
   final List<String> currentRoute;
   final String action;
   final MemoryItem entity;
-  final List<Pair> filters;
 
   // final String entityId;
 
@@ -73,7 +71,8 @@ class UiState extends Equatable {
   final List<List<Entity>> entities = [
     [ProductionOrder()],
     [ProductionReportView()],
-    [WHBalance(), WHReceive(), WHTransfer(), WHDispatch(), WHInventory()],
+    [WHBalance(), WHMovement()],
+    [WHReceive(), WHTransfer(), WHDispatch(), WHInventory()],
     [Product(), Goods(), CategoryForGoods(), Uom()],
     [WHStorage(), ProductionArea()],
     [Counterparty(), Person()],

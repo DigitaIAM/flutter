@@ -4,15 +4,14 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/schema/schema.dart';
-import 'package:nae/screens/wh/list_builder.dart';
+import 'package:nae/screens/common/uom/edit.dart';
+import 'package:nae/screens/wh/movements/report.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/scaffold_list.dart';
 
-import 'view.dart';
-
-class WHBalance extends Entity {
-  static const List<String> ctx = ['warehouse', 'stock'];
+class WHMovement extends Entity {
+  static const List<String> ctx = ['warehouse', 'movement'];
 
   static List<Field> schema = [
     fStorage,
@@ -27,10 +26,10 @@ class WHBalance extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "stock";
+  String name() => "movement";
 
   @override
-  IconData icon() => Icons.widgets_outlined;
+  IconData icon() => Icons.assignment_outlined;
 
   @override
   Widget screen(String action, MemoryItem entity) {
@@ -39,24 +38,21 @@ class WHBalance extends Entity {
       // ${DateTime.now().toString()}__
       ctx: ctx,
       schema: schema,
-      list: WHStockScreen(entity: entity),
-      view: WHBalanceView(
-        key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-        entity: entity,
-        tabIndex: 0,
-      ), // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
+      list: WHMovementScreen(entity: entity),
+      view: UomEdit(entity: entity),
+      // action == "edit" ? UomEdit(entity: entity) : UomView(entity: entity),
     );
   }
 }
 
-class WHStockScreen extends EntityHolder {
-  const WHStockScreen({super.key, required super.entity});
+class WHMovementScreen extends EntityHolder {
+  const WHMovementScreen({super.key, required super.entity});
 
   @override
-  State<WHStockScreen> createState() => _WHStockScreenState();
+  State<WHMovementScreen> createState() => _WHMovementScreenState();
 }
 
-class _WHStockScreenState extends State<WHStockScreen> {
+class _WHMovementScreenState extends State<WHMovementScreen> {
   @override
   Widget build(BuildContext context) {
     // final theme = Theme.of(context);
@@ -70,44 +66,63 @@ class _WHStockScreenState extends State<WHStockScreen> {
         },
       ),
       floatingActionButton: null,
-      body: WHBalanceScreen(entity: widget.entity),
+      body: WHMovementReportScreen(entity: widget.entity),
+      // WHMovementReportScreen(entity: widget.entity),
     );
   }
 }
 
-class WHBalanceScreen extends EntityHolder {
-  const WHBalanceScreen({super.key, required super.entity});
+class WHMovementReportScreen extends EntityHolder {
+  const WHMovementReportScreen({super.key, required super.entity});
 
   @override
-  State<WHBalanceScreen> createState() => _WHBalanceScreenState();
+  State<WHMovementReportScreen> createState() => _WHMovementReportScreenState();
 }
 
-class _WHBalanceScreenState extends State<WHBalanceScreen>
+class _WHMovementReportScreenState extends State<WHMovementReportScreen>
     with TickerProviderStateMixin {
   // with SingleTickerProviderStateMixin {
   late TabController _controller;
 
-  final List<Pair> _filters = [];
+  final List<MemoryItem> reports = [
+    MemoryItem.from({
+      'id': '1',
+      cName: 'Отчет о движении ТМЦ по складу за февраль 2024 года',
+      'dates': {cFrom: '2024-02-01', cTill: '2024-02-29'},
+      cStorage: '404037f2-3db7-4dae-9884-6a79fd9cd94e',
+      // cGoods: '0cf13464-658f-4405-b540-d4df4d774682',
+      // cBatch: {
+      //   'id': '130d13a0-4d29-402f-acb5-eb3140507257',
+      //   'date': '2024-02-10',
+    }),
+  ];
 
   @override
   void initState() {
     super.initState();
 
     _controller = TabController(
-      vsync: this, length: _filters.length + 1,
+      vsync: this, length: reports.length,
       initialIndex: 0, // widget.isFilter ? 0 : state.WHDispatchUIState.tabIndex
     );
   }
 
   void updateController() {
-    final oldIndex = _controller.index;
+    var oldIndex = _controller.index;
+    if (oldIndex == reports.length) {
+      if (reports.length == 0) {
+        oldIndex = 0;
+      } else {
+        oldIndex = reports.length - 1;
+      }
+    }
     _controller.dispose();
     _controller = TabController(
-      length: _filters.length + 1,
+      length: reports.length,
       initialIndex: oldIndex,
       vsync: this,
     );
-    _controller.animateTo(_filters.length);
+    // _controller.animateTo(reports.length - 1);
   }
 
   @override
@@ -135,12 +150,7 @@ class _WHBalanceScreenState extends State<WHBalanceScreen>
                   indicatorColor: theme.appBarTheme.foregroundColor,
                   controller: _controller,
                   isScrollable: true,
-                  tabs: [
-                    Tab(text: localization.translate('stock')),
-                    ..._filters.map((e) => Tab(
-                        text: localization
-                            .translate(e.value.name().toLowerCase())))
-                  ],
+                  tabs: reports.map((e) => Tab(text: e.name())).toList(),
                 ),
               ],
             ),
@@ -164,32 +174,33 @@ class _WHBalanceScreenState extends State<WHBalanceScreen>
 
   List<Widget> buildChildren() {
     final List<Widget> widgets = [];
-    widgets.add(ListBuilder(
-      filters: const [],
-      down: cb,
-      ctx: WHBalance.ctx,
-      schema: WHBalance.schema,
-    ));
 
-    final List<Pair> pairs = [];
-    for (final pair in _filters) {
-      pairs.add(pair);
-      widgets.add(ListBuilder(
-        filters: List.from(pairs),
-        down: cb,
-        ctx: WHBalance.ctx,
-        schema: WHBalance.schema,
-      ));
+    for (final report in reports) {
+      widgets.add(
+        MovementReportScreen(
+          entity: report,
+          addReport: (report) => setState(() {
+            reports.add(report);
+            updateController();
+            _controller.animateTo(reports.length - 1);
+          }),
+          closeReport: () => setState(() {
+            reports.remove(report);
+            var oldIndex = _controller.index;
+            updateController();
+            if (oldIndex > 0) {
+              _controller.index = oldIndex - 1;
+            }
+          }),
+          updateReport: (report) => setState(() {
+            // print("updateReport ${report.json}");
+            final index = reports.indexOf(report);
+            reports[index] = report;
+          }),
+        ),
+      );
     }
 
     return widgets;
-  }
-
-  Future<void> cb(BuildContext context, List<Pair> filters) async {
-    setState(() {
-      _filters.clear();
-      _filters.addAll(filters);
-      updateController();
-    });
   }
 }

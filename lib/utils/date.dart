@@ -2,7 +2,11 @@ import 'package:intl/intl.dart';
 
 class DT {
   static String format(String date) {
-    return DateFormat.yMMMMd('ru').format(DateTime.parse(date));
+    return f(DateTime.parse(date));
+  }
+
+  static String f(DateTime date) {
+    return DateFormat.yMMMMd('ru').format(date);
   }
 
   static String pretty(String date) {

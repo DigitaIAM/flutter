@@ -24,7 +24,8 @@ IconData? getActionIcon(String action) {
 }
 
 class MemoryBlocHolder extends StatefulWidget {
-  const MemoryBlocHolder({super.key, this.schema, this.init, required this.child});
+  const MemoryBlocHolder(
+      {super.key, this.schema, this.init, required this.child});
 
   final List<Field>? schema;
   final Function(MemoryBloc bloc)? init;
@@ -79,6 +80,7 @@ class MemoryList extends StatefulWidget {
   final Widget Function(MemoryItem) title;
   final Widget Function(MemoryItem) subtitle;
   final Function(BuildContext, MemoryItem)? onTap;
+  final Function(BuildContext, MemoryItem)? onDoubleTap;
 
   final List<ItemAction> actions;
 
@@ -89,6 +91,7 @@ class MemoryList extends StatefulWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
+    this.onDoubleTap,
     this.groupBy,
     this.groupComparator,
     this.sortByName = false,
@@ -183,7 +186,9 @@ class _MemoryListState extends State<MemoryList> {
               curve: Curves.easeInOutCubic,
               child: Row(children: [
                 if (uiState.isDesktop) ...[
-                  const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text("")
+                  const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Text("")
                       // isList
                       //   ? '($countSelected)'
                       //   : localization.countSelected
@@ -199,7 +204,8 @@ class _MemoryListState extends State<MemoryList> {
                                 (action) => OutlinedButton(
                                   child: IconText(
                                     icon: getActionIcon(action),
-                                    text: AppLocalizations.of(context).translate(action),
+                                    text: AppLocalizations.of(context)
+                                        .translate(action),
                                   ),
                                   onPressed: () {
                                     // handleEntitiesActions(entities, action);
@@ -211,7 +217,8 @@ class _MemoryListState extends State<MemoryList> {
                           builder: (context, remaining) {
                             return PopupMenuButton<String>(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
                                   child: Row(
                                     children: [
                                       Text(
@@ -222,8 +229,10 @@ class _MemoryListState extends State<MemoryList> {
                                       const SizedBox(width: 4),
                                       Icon(
                                         Icons.arrow_drop_down,
-                                        color: theme.textTheme.bodySmall?.color ??
-                                            Colors.white, // enableDarkMode ? Colors.white : Colors.black
+                                        color: theme
+                                                .textTheme.bodySmall?.color ??
+                                            Colors
+                                                .white, // enableDarkMode ? Colors.white : Colors.black
                                       ),
                                     ],
                                   ),
@@ -233,12 +242,18 @@ class _MemoryListState extends State<MemoryList> {
                                   // widget.onClearMultiselect();
                                 },
                                 itemBuilder: (BuildContext context) {
-                                  return actions.toList().sublist(actions.length - remaining).map((action) {
+                                  return actions
+                                      .toList()
+                                      .sublist(actions.length - remaining)
+                                      .map((action) {
                                     return PopupMenuItem<String>(
                                       value: action,
                                       child: Row(
                                         children: <Widget>[
-                                          Icon(getActionIcon(action), color: Theme.of(context).colorScheme.secondary),
+                                          Icon(getActionIcon(action),
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary),
                                           const SizedBox(width: 16.0),
                                           Text(localization.translate(action)),
                                         ],
@@ -283,24 +298,27 @@ class _MemoryListState extends State<MemoryList> {
         if (uiState.isMobile) {
           return true;
         }
-        return o.status != n.status;
+        return o.created != n.created || o.status != n.status;
       },
       builder: (context, state) {
         // print("builder ${state.status}");
         switch (state.status) {
           case RequestStatus.failure:
-            return Center(child: Text(localization.translate('failed to fetch data')));
+            return Center(
+                child: Text(localization.translate('failed to fetch data')));
           case RequestStatus.success:
             if (state.items.isEmpty) {
               return Center(child: Text(localization.translate('nothing yet')));
             }
-            if ((widget.mode == Mode.auto && uiState.isMobile) || widget.mode == Mode.mobile) {
+            if ((widget.mode == Mode.auto && uiState.isMobile) ||
+                widget.mode == Mode.mobile) {
               return buildList(context, uiState, state);
             } else {
               return buildPlutoGrid(context, uiState, state);
             }
           case RequestStatus.initiate:
-            if ((widget.mode == Mode.auto && uiState.isMobile) || widget.mode == Mode.mobile) {
+            if ((widget.mode == Mode.auto && uiState.isMobile) ||
+                widget.mode == Mode.mobile) {
               // trigger initial load
               loadMore(uiState, state);
               return const Center(child: CircularProgressIndicator());
@@ -330,14 +348,16 @@ class _MemoryListState extends State<MemoryList> {
       return GroupedListView<MemoryItem, MemoryItem>(
         elements: items,
         groupBy: widget.groupBy!,
-        groupComparator: widget.groupComparator ?? (g1, g2) => g2.name().compareTo(g1.name()),
-        itemComparator: (item1, item2) => item1.name().toLowerCase().compareTo(item2.name().toLowerCase()),
+        groupComparator: widget.groupComparator ??
+            (g1, g2) => g2.name().compareTo(g1.name()),
+        itemComparator: (item1, item2) =>
+            item1.name().toLowerCase().compareTo(item2.name().toLowerCase()),
         order: GroupedListOrder.ASC,
         useStickyGroupSeparators: true,
         stickyHeaderBackgroundColor: Theme.of(context).secondaryHeaderColor,
         controller: _scrollController,
         groupSeparatorBuilder: (MemoryItem value) => Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(1.0),
           child: Text(
             value.name(),
             textAlign: TextAlign.center,
@@ -389,26 +409,36 @@ class _MemoryListState extends State<MemoryList> {
   }
 
   Widget card(BuildContext context, MemoryItem item) {
-    return Card(
-      elevation: 2.0,
-      margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-        // leading: const Icon(Icons.account_circle),
-        title: widget.title(item),
-        subtitle: widget.subtitle(item),
-        trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
-        onTap: () {
-          widget.onTap?.call(context, item);
-        },
+    return InkWell(
+      onDoubleTap: () {
+        widget.onDoubleTap?.call(context, item);
+      },
+      child: Card(
+        elevation: 2.0,
+        margin: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0),
+        child: ListTile(
+          contentPadding:
+              // const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+              const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+          // leading: const Icon(Icons.account_circle),
+          title: widget.title(item),
+          subtitle: widget.subtitle(item),
+          trailing:
+              widget.onTap == null ? null : const Icon(Icons.arrow_forward),
+          onTap: () {
+            widget.onTap?.call(context, item);
+          },
+        ),
       ),
     );
   }
 
-  PlutoGrid buildPlutoGrid(BuildContext context, UiState uiState, RequestState state) {
+  PlutoGrid buildPlutoGrid(
+      BuildContext context, UiState uiState, RequestState state) {
     final localization = AppLocalizations.of(context);
 
-    final List<PlutoColumn> columns = widget.schema.where((field) => field.type is! ListType).map((field) {
+    final List<PlutoColumn> columns =
+        widget.schema.where((field) => field.type is! ListType).map((field) {
       PlutoColumnType type = PlutoColumnType.text();
       bool isNumber = false;
       if (field.type is NumberType) {
@@ -424,7 +454,8 @@ class _MemoryListState extends State<MemoryList> {
         title: localization.translate(field.name.replaceAll('~', '')),
         field: field.name,
         type: type,
-        textAlign: isNumber ? PlutoColumnTextAlign.end : PlutoColumnTextAlign.start,
+        textAlign:
+            isNumber ? PlutoColumnTextAlign.end : PlutoColumnTextAlign.start,
       );
     }).toList();
 
@@ -558,7 +589,8 @@ class _MemoryListState extends State<MemoryList> {
           if (gb != null && gb is MemoryItem) {
             lb = gb.name();
           }
-        } else if (a.json['_category'] == cBatch && b.json['_category'] == cBatch) {
+        } else if (a.json['_category'] == cBatch &&
+            b.json['_category'] == cBatch) {
           final da = a.json[cBatch]?[cDate];
           if (da != null) {
             la = da;
@@ -778,7 +810,9 @@ class _InfinityScrollState extends State<InfinityScroll> {
   }
 
   void _eventListener(PlutoGridEvent event) {
-    if (event is PlutoGridCannotMoveCurrentCellEvent && event.direction.isDown && !_isFetching) {
+    if (event is PlutoGridCannotMoveCurrentCellEvent &&
+        event.direction.isDown &&
+        !_isFetching) {
       _update(stateManager.refRows.last);
     } else if (event is PlutoGridChangeColumnSortEvent) {
       _update(null);

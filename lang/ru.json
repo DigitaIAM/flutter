@@ -101,7 +101,7 @@
   "warehouse dispatch": "расходная накладная",
   "new warehouse dispatch": "новая расходная накладная",
   "edit warehouse dispatch": "редактирование расходной накладной",
-  "warehouse inventory": "акт инвенторизации",
+  "warehouse inventory": "акт инвентаризации",
   "status": "статус",
   "storage": "место хранения",
   "storage_from": "отправлено из",
@@ -111,6 +111,7 @@
   "counterparty": "контрагент",
   "goods": "товар",
   "stock": "остаток",
+  "movement": "движение",
   "from": "откуда",
   "into": "куда",
   "raw material": "сырьё",
@@ -123,5 +124,7 @@
   "dispatch": "отгрузка",
   "transfer": "перемещение",
   "used raw material": "использованный материал",
-  "produced raw material": "полученный материал"
+  "produced raw material": "полученный материал",
+  "registration": "регистрация",
+  "edit production order": "редактирование сменного задания"
 }

@@ -1,3 +1,6 @@
+
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -8,10 +11,15 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
+import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/production/order/screen.dart';
+import 'package:nae/screens/wh/goods_dispatch.dart';
+import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
 
@@ -42,11 +50,14 @@ class _MaterialViewState extends State<MaterialView> {
           elevation: 2.0,
           margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
             // leading: const Icon(Icons.account_circle),
             tileColor: theme.secondaryHeaderColor,
             title: Text(localization.translate("used raw material")),
-            trailing: openUsed ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
+            trailing: openUsed
+                ? const Icon(Icons.arrow_drop_down)
+                : const Icon(Icons.arrow_right),
             onTap: () {
               setState(() {
                 openUsed = !openUsed;
@@ -60,14 +71,17 @@ class _MaterialViewState extends State<MaterialView> {
           elevation: 2.0,
           margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
             // leading: const Icon(Icons.account_circle),
             tileColor: theme.secondaryHeaderColor,
             title: Text(
               localization.translate("produced raw material"),
               style: theme.textTheme.bodyLarge,
             ),
-            trailing: openProduced ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
+            trailing: openProduced
+                ? const Icon(Icons.arrow_drop_down)
+                : const Icon(Icons.arrow_right),
             onTap: () {
               setState(() {
                 openProduced = !openProduced;
@@ -76,18 +90,25 @@ class _MaterialViewState extends State<MaterialView> {
             },
           ),
         ),
-        if (openProduced) buildList(['production', 'material', 'produced'], filter),
+        if (openProduced)
+          buildList(['production', 'material', 'produced'], filter),
       ],
     );
   }
 
   Widget buildList(List<String> ctx, Map<String, dynamic> filter) {
-    List<Field> schema = [];
-    return SizedBox(
-      height: 300,
+    List<Field> schema = [
+      const Field('storage_from', ReferenceType([cWarehouse, cStorage])),
+      const Field('storage_into', ReferenceType([cWarehouse, cStorage])),
+      fStorage,
+      fCategoryAtGoods,
+      fGoods,
+      fQtyNew
+    ];
+    return Expanded(
       child: BlocProvider(
-        create: (context) =>
-            MemoryBloc(schema: schema)..add(MemoryFetch('memories', ctx, schema: schema, filter: filter)),
+        create: (context) => MemoryBloc(schema: schema)
+          ..add(MemoryFetch('memories', ctx, schema: schema, filter: filter)),
         child: MemoryList(
           mode: Mode.mobile,
           ctx: ctx,
@@ -115,16 +136,26 @@ class _MaterialViewState extends State<MaterialView> {
               );
             }
 
-            return FutureBuilder(
-                future: qtyToText(item),
-                builder: ((context, snapshot) {
-                  final storage = item.json['storage_from']?[cName] ?? '';
-                  final data = snapshot.data ?? '';
-                  final text = storage == '' ? data : '$data, $storage';
-                  return Text(text, style: style);
-                }));
+            var storage = item.json[cStorage]?.name();
+            if ((item.json[cStorage] as MemoryItem).isEmpty) {
+              storage = item.json['storage_from']?.name() ?? '';
+              if (listEquals(ctx, ['production', 'material', 'produced'])) {
+                storage = item.json['storage_into']?.name() ?? '';
+              }
+            }
+
+            String dateBatch = item.json['batch']?['date'] ?? '';
+            final qty = item.json['qty'].toString();
+            var text = '$qty, $storage';
+            if (dateBatch.isNotEmpty) {
+              text += ', $dateBatch';
+            }
+
+            return Text(text, style: style);
           },
-          // onTap: (MemoryItem item) => {},
+          onDoubleTap: (context, item) {
+            editItem(context, ctx, widget.order, item);
+          },
           actions: [
             ItemAction(
               label: 'delete',
@@ -139,6 +170,14 @@ class _MaterialViewState extends State<MaterialView> {
               onPressed: (context, item) => chooseAndPrint(context, item),
               foregroundColor: Colors.white,
               backgroundColor: Colors.blue,
+            ),
+            ItemAction(
+              label: 'edit',
+              icon: Icons.edit,
+              onPressed: (context, item) =>
+                  editItem(context, ctx, widget.order, item),
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.green,
             ),
           ],
         ),
@@ -156,7 +195,9 @@ class _MaterialViewState extends State<MaterialView> {
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
-    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
+    context
+        .read<MemoryBloc>()
+        .add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
 
   Future chooseAndPrint(BuildContext context, MemoryItem doc) async {
@@ -193,8 +234,11 @@ class _MaterialViewState extends State<MaterialView> {
             final ip = printer['ip'];
             final port = int.parse(printer['port']);
 
-            final result =
-                await Labels.connect(ip, port, (printer) async => printing(printer, widget.order, doc, (newStatus) {}));
+            final result = await Labels.connect(
+                ip,
+                port,
+                (printer) async =>
+                    printing(printer, widget.order, doc, (newStatus) {}));
 
             if (result != PrintResult.success) {
               showToast(result.msg,
@@ -212,6 +256,103 @@ class _MaterialViewState extends State<MaterialView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: children,
+    );
+  }
+
+  void editItem(BuildContext context, List<String> ctx, MemoryItem doc,
+      MemoryItem item) async {
+    // print("editItem ${item.json}");
+
+    Map<String, dynamic> data = Map.from(item.json);
+
+    if ((item.json[cStorage] as MemoryItem).isEmpty) {
+      if (listEquals(ctx, ['production', 'material', 'produced'])) {
+        data[cStorage] = item.json['storage_into'];
+      } else if (listEquals(ctx, ['production', 'material', 'used'])) {
+        data[cStorage] = item.json['storage_from'];
+      }
+    }
+
+    bool receive = true;
+    if (listEquals(ctx, ['production', 'material', 'produced'])) {
+      receive = true;
+    } else if (listEquals(ctx, ['production', 'material', 'used'])) {
+      data[cCategory] = data[cGoods].json[cCategory];
+      data[cBatch] =
+          data[cBatch] == null ? null : MemoryItem.from(data[cBatch]);
+      receive = false;
+    }
+
+    (item.json['qty'] as Qty).toData(data);
+
+    final uiBloc = context.read<UiBloc>();
+
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => BlocProvider(
+        create: (ctx) => UiBloc(uiBloc.state),
+        child: Dialog(
+          child: SizedBox(
+            width: 500,
+            height: 500,
+            child: Column(children: [
+              Row(
+                children: [
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: SizedBox(
+                    width: 500,
+                    height: 400,
+                    child: Column(children: [
+                      Expanded(
+                        child: receive
+                            ? GoodsRegistration(
+                                ctx: const [
+                                  'production',
+                                  'material',
+                                  'produced'
+                                ],
+                                doc: doc,
+                                rec: MemoryItem.from(data),
+                                schema: const [fStorage, fGoods, fQty],
+                                enablePrinting: false,
+                                allowGoodsCreation: false,
+                                afterSave: () {
+                                  setState(() {
+                                    openProduced = false;
+                                    openUsed = false;
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              )
+                            : GoodsDispatch(
+                                ctx: const ['production', 'material', 'used'],
+                                doc: doc,
+                                rec: MemoryItem.from(data),
+                                schema: ProductionOrder.schema,
+                                enablePrinting: false,
+                                allowGoodsCreation: false,
+                                afterSave: () {
+                                  setState(() {
+                                    openProduced = false;
+                                    openUsed = false;
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                      )
+                    ])),
+              )
+            ]),
+          ),
+        ),
+      ),
     );
   }
 }

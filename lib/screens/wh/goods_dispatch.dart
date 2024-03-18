@@ -24,19 +24,24 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 class GoodsDispatch extends StatefulWidget {
   final List<String> ctx;
   final MemoryItem doc;
+  final MemoryItem? rec;
   final List<Field> schema;
   final bool enablePrinting;
   final bool allowGoodsCreation;
-  final MemoryItem storage;
+  final MemoryItem? storage;
+
+  final Function()? afterSave;
 
   const GoodsDispatch({
     super.key,
     required this.ctx,
     required this.doc,
+    this.rec,
     required this.schema,
     this.enablePrinting = true,
     this.allowGoodsCreation = true,
-    required this.storage,
+    this.storage,
+    this.afterSave,
   });
 
   @override
@@ -59,15 +64,31 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   bool showGoods = false;
   bool showBatch = false;
   bool showQtyUom = false;
+  // bool showStorage = false;
 
   @override
   void initState() {
     super.initState();
 
-    details = MemoryItem(id: '', json: {
-      cDate: Utils.today(),
-      cStorage: widget.storage,
-    });
+    if (widget.rec == null) {
+      if (widget.storage == null) {
+        details = MemoryItem(id: '', json: {
+          cDate: Utils.today(),
+        });
+      } else {
+        details = MemoryItem(id: '', json: {
+          cDate: Utils.today(),
+          cStorage: widget.storage,
+        });
+      }
+    } else {
+      details = widget.rec!;
+
+      showCategory = details.json[cCategory] != null;
+      showGoods = details.json[cGoods] != null;
+      showBatch = details.json[cBatch] != null;
+      showQtyUom = details.json['uom_0'] != null;
+    }
   }
 
   @override
@@ -135,21 +156,18 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           // }
         },
         child: FormCard(isLast: true, children: <Widget>[
-          ...(widget.enablePrinting
-              ? [
-                  DecoratedFormPickerField(
-                    creatable: false,
-                    ctx: const ['printer'],
-                    name: cPrinter,
-                    label: localization.translate(cPrinter),
-                    autofocus: true,
-                    validator: FormBuilderValidators.compose([
-                      // FormBuilderValidators.required(),
-                    ]),
-                    onSave: (context) {},
-                  )
-                ]
-              : []),
+          if (widget.enablePrinting)
+            DecoratedFormPickerField(
+              creatable: false,
+              ctx: const ['printer'],
+              name: cPrinter,
+              label: localization.translate(cPrinter),
+              autofocus: true,
+              validator: FormBuilderValidators.compose([
+                // FormBuilderValidators.required(),
+              ]),
+              onSave: (context) {},
+            ),
           const SizedBox(height: 10),
           DecoratedFormPickerField(
             ctx: const ['warehouse', 'storage'],
@@ -237,10 +255,15 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
               tooltip: localization.translate('register'.toString()),
               child: registered == 'register'
                   ? const Icon(Icons.done)
-                  : Icon(
-                      Icons.add,
-                      color: theme.primaryColorLight,
-                    ),
+                  : widget.rec == null
+                      ? Icon(
+                          Icons.add,
+                          color: theme.primaryColorLight,
+                        )
+                      : Icon(
+                          Icons.edit,
+                          color: theme.primaryColorLight,
+                        ),
             ),
           ),
         ],
@@ -425,6 +448,12 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   }
 
   void done(String type) {
+    if (type == 'register') {
+      if (widget.afterSave != null) {
+        widget.afterSave?.call();
+        return;
+      }
+    }
     setState(() {
       registered = type;
 
@@ -493,19 +522,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final doc = await widget.doc.enrich(widget.schema);
 
       try {
-        // workaround for normalize data structure
-        MemoryItem? uom = data['uom_0'];
-        // print("registerPreparation_data ${uom?.json}");
-        if (uom?.json['name'] != null) {
-          uom!.json.remove('name');
-        }
-
-        // setState(() {
-        //   items = [];
-        // });
-
-        final result =
-            await register(doc, data, 1, true, widget.ctx, setStatus);
+        final result = await register(
+            doc, data, 1, true, widget.ctx, widget.rec?.id, setStatus);
         if (!(result.isNew || result.isEmpty)) {
           done('register');
         }
@@ -525,8 +543,8 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       final result = await Labels.connect(ip, port, (printer) async {
         // TODO understand is it required
         final doc = await widget.doc.enrich(widget.schema);
-        final record =
-            item ?? await register(doc, data, 1, true, widget.ctx, setStatus);
+        final record = item ??
+            await register(doc, data, 1, true, widget.ctx, null, setStatus);
 
         if (item == null) {
           if (!(record.isEmpty || record.isNew)) {

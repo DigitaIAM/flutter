@@ -30,10 +30,14 @@ class WHTransferOverview extends StatelessWidget {
       fQty.copyWith(width: 1.0),
     ];
 
-    // print("WHTransferOverview doc: $doc");
+    //print("WHTransferOverview doc: $doc");
 
-    final from = doc.json[cFrom] is MemoryItem ? doc.json[cFrom].name() : doc.json[cFrom][cName] ?? '';
-    final into = doc.json[cInto] is MemoryItem ? doc.json[cInto].name() : doc.json[cInto][cName] ?? '';
+    final from = doc.json[cFrom] is MemoryItem
+        ? doc.json[cFrom].name()
+        : doc.json[cFrom][cName] ?? '';
+    final into = doc.json[cInto] is MemoryItem
+        ? doc.json[cInto].name()
+        : doc.json[cInto][cName] ?? '';
 
     return BlocProvider(
       create: (context) {

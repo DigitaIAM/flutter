@@ -6,28 +6,39 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
+import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/goods_dispatch.dart';
 import 'package:nae/screens/wh/transfer/screen.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
 
-class WHTransferGoods extends StatelessWidget {
+class WHTransferGoods extends StatefulWidget {
   final MemoryItem doc;
+  final Mode mode;
 
-  const WHTransferGoods({super.key, required this.doc});
+  const WHTransferGoods({super.key, required this.doc, this.mode = Mode.auto});
 
+  @override
+  State<StatefulWidget> createState() => _WHTransferGoods();
+}
+
+class _WHTransferGoods extends State<WHTransferGoods> {
   @override
   Widget build(BuildContext context) {
     const ctx = ['warehouse', 'transfer'];
     final filter = {
-      cDocument: doc.id,
+      cDocument: widget.doc.id,
     };
     final schema = <Field>[
+      fCategoryAtGoods,
       fGoods.copyWith(width: 3.0),
       // fUomAtQty.copyWith(width: 0.5, editable: false),
-      fQty.copyWith(width: 1.0),
+      // fQty.copyWith(width: 1.0),
+      fQtyNew.copyWith(width: 1.0),
     ];
 
     return BlocProvider(
@@ -44,6 +55,7 @@ class WHTransferGoods extends StatelessWidget {
         return bloc;
       },
       child: MemoryList(
+        mode: widget.mode,
         ctx: ctx,
         filter: filter,
         schema: schema,
@@ -62,21 +74,7 @@ class WHTransferGoods extends StatelessWidget {
         subtitle: (MemoryItem item) {
           // print("item.json ${item.json}");
 
-          var text = '';
-
-          var qty = item.json[cQty] ?? '';
-
-          while (qty is Map) {
-            final uom = qty[cUom];
-            if (uom is Map) {
-              if (uom['in'] is Map) {
-                text = '$text${qty[cNumber]} ${uom['in'][cName]} по ';
-              } else {
-                text = '$text${qty[cNumber]} ${uom[cName]} ';
-              }
-            }
-            qty = qty[cUom];
-          }
+          var text = item.json[cQty]?.toString() ?? '';
 
           TextStyle? style;
 
@@ -90,6 +88,9 @@ class WHTransferGoods extends StatelessWidget {
         // onTap: (MemoryItem item) => context
         //     .read<UiBloc>()
         //     .add(ChangeView(WHTransfer.ctx, entity: item)),
+        onDoubleTap: (context, item) {
+          editItem(context, ctx, widget.doc, item);
+        },
         actions: [
           ItemAction(
             label: 'delete',
@@ -105,6 +106,14 @@ class WHTransferGoods extends StatelessWidget {
             foregroundColor: Colors.white,
             backgroundColor: Colors.blue,
           ),
+          ItemAction(
+            label: 'edit',
+            icon: Icons.edit,
+            onPressed: (context, item) =>
+                editItem(context, ctx, widget.doc, item),
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.green,
+          ),
         ],
       ),
     );
@@ -115,7 +124,9 @@ class WHTransferGoods extends StatelessWidget {
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
-    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
+    context
+        .read<MemoryBloc>()
+        .add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
 
   Future drawPrinterList(BuildContext context, MemoryItem item) async {
@@ -148,7 +159,9 @@ class WHTransferGoods extends StatelessWidget {
       for (var printer in printers) {
         final ip = (printer['ip'] ?? '').toString();
         final port = int.parse(printer['port'] ?? '0');
-        children.add(ListTile(title: Text(printer[cName] ?? ''), onTap: () => printPreparation(ip, port, item)));
+        children.add(ListTile(
+            title: Text(printer[cName] ?? ''),
+            onTap: () => printPreparation(ip, port, item)));
       }
     }
 
@@ -162,12 +175,83 @@ class WHTransferGoods extends StatelessWidget {
   void printPreparation(String ip, int port, MemoryItem item) async {
     // print("printPreparation: ${item.json}");
 
-    final d = await doc.enrich(WHTransfer.schema);
+    final d = await widget.doc.enrich(WHTransfer.schema);
 
     final result = await Labels.connect(ip, port, (printer) async {
       return await printing(printer, d, item, (newStatus) => {});
     });
 
     // print("printResult: $result");
+  }
+
+  void editItem(BuildContext context, List<String> ctx, MemoryItem doc,
+      MemoryItem item) async {
+    //print("docu ${doc.json}");
+    // print("item ${item.json}");
+
+    Map<String, dynamic> data = {};
+
+    data[cId] = item.id;
+    data[cUuid] = item.uuid;
+    data[cStorage] = doc.json[cFrom];
+    data[cGoods] = item.json[cGoods];
+    data[cCategory] = data[cGoods].json[cCategory];
+    data[cBatch] =
+        item.json[cBatch] == null ? null : MemoryItem.from(item.json[cBatch]);
+    (item.json['qty'] as Qty).toData(data);
+
+    print("data $data");
+
+    final uiBloc = context.read<UiBloc>();
+
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => BlocProvider(
+        create: (ctx) => UiBloc(uiBloc.state),
+        child: Dialog(
+          child: SizedBox(
+            width: 500,
+            height: 500,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: SizedBox(
+                    width: 500,
+                    height: 400,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: GoodsDispatch(
+                            ctx: const ['warehouse', 'transfer'],
+                            doc: widget.doc,
+                            rec: MemoryItem.from(data),
+                            schema: WHTransfer.schema,
+                            enablePrinting: false,
+                            allowGoodsCreation: false,
+                            afterSave: () {
+                              setState(() {});
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

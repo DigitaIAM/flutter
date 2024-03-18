@@ -58,9 +58,15 @@ const Field fGoods = Field(
   ]),
 );
 const Field fCategory = Field(cCategory, ReferenceType([cGoods, cCategory]));
+const Field fCategoryAtGoods = Field(
+    cCategory, ReferenceType([cGoods, cCategory]),
+    path: [cGoods, cCategory]);
 const Field fBatch = Field(cBatch, StringType(), path: [cBatch, cBarcode]);
 const Field fQtySingle = Field(cQty, NumberType(), path: [cQty]);
 const Field fQty = Field(cQty, NumberType(), path: [cQty, cNumber]);
+
+const Field fQtyNew = Field(cQty, QtyType());
+
 const Field fUomAtGoods =
     Field(cUom, ReferenceType([cUom]), path: [cGoods, cUom]);
 const Field fUomAtQty = Field(cUom, ReferenceType([cUom]), path: [cQty, cUom]);
@@ -95,6 +101,7 @@ const String cArea = 'area';
 const String cProduction = 'production';
 const String cFrom = 'from';
 const String cInto = 'into';
+const String cTill = 'till';
 const String cProduct = 'product';
 const String cPerson = 'person';
 const String cOperator = 'operator';
