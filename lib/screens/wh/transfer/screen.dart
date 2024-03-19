@@ -11,9 +11,10 @@ import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/entity_screens.dart';
-import 'package:nae/widgets/list_filter.dart';
+
 import 'package:nae/widgets/memory_list.dart';
-import 'package:nae/widgets/scaffold_list.dart';
+
+import 'package:nae/widgets/scaffold_list_calendar.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import 'edit.dart';
@@ -56,7 +57,27 @@ class WHTransfer extends Entity {
       // _${DateTime.now().toString()}__'),
       ctx: ctx,
       schema: schema,
-      list: const WHTransferScreen(),
+      list: ScaffoldListCalendar(
+        entityType: WHTransfer.ctx,
+        newBtn: (context) {
+          context.read<UiBloc>().add(ChangeView(WHTransfer.ctx,
+              action: 'edit', entity: MemoryItem.create()));
+        },
+        newBtnTooltip: (context) =>
+            AppLocalizations.of(context).translate("new warehouse transfer"),
+        onDateChange: (context, date) {
+          context.read<MemoryBloc>().add(
+                MemoryFetch(
+                  'memories',
+                  WHTransfer.ctx,
+                  schema: WHTransfer.schema,
+                  filter: {'date': date.toYMD()},
+                  reset: true,
+                ),
+              );
+        },
+        listBuilder: (date) => WHTransferListBuilder(date: date),
+      ),
       view: action == 'view'
           ? WHTransferEditMobile(
               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
@@ -80,90 +101,6 @@ class WHTransfer extends Entity {
 //               entity: entity,
 //               tabIndex: 0,
 //             ),
-    );
-  }
-}
-
-class WHTransferScreen extends StatefulWidget {
-  const WHTransferScreen({super.key});
-
-  @override
-  State<WHTransferScreen> createState() => _WHTransferScreenState();
-}
-
-class _WHTransferScreenState extends State<WHTransferScreen> {
-  _WHTransferScreenState();
-
-  DateTime _selectedDay = DateTime.now();
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return ScaffoldList(
-        entityType: WHTransfer.ctx,
-        appBarTitle: ListFilter(
-          // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
-          filter: null, //state.WHTransferListState.filter,
-          onFilterChanged: (value) {
-            // store.dispatch(FilterProducts(value));
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'product_fab',
-          backgroundColor: theme.primaryColorDark,
-          onPressed: () {
-            context.read<UiBloc>().add(ChangeView(WHTransfer.ctx,
-                action: 'edit', entity: MemoryItem.create()));
-          },
-          tooltip:
-              AppLocalizations.of(context).translate("new warehouse transfer"),
-          child: Icon(
-            Icons.add,
-            color: theme.primaryColorLight,
-          ),
-        ),
-        body: Row(
-          children: [
-            SizedBox(width: 300, child: calendar(context)),
-            Expanded(
-              child: WHTransferListBuilder(
-                date: _selectedDay,
-              ),
-            ),
-          ],
-        ));
-  }
-
-  Widget calendar(BuildContext context) {
-    return TableCalendar(
-      locale: 'ru',
-      headerStyle: const HeaderStyle(
-        formatButtonVisible: false,
-        titleCentered: true,
-      ),
-      startingDayOfWeek: StartingDayOfWeek.monday,
-      firstDay: DateTime(2023, 1, 1),
-      lastDay: DateTime.now().add(const Duration(days: 1)),
-      focusedDay: _selectedDay,
-      calendarFormat: CalendarFormat.month,
-      selectedDayPredicate: (day) {
-        return isSameDay(_selectedDay, day);
-      },
-      onDaySelected: (selectedDay, focusedDay) {
-        if (!isSameDay(_selectedDay, selectedDay)) {
-          setState(() {
-            _selectedDay = selectedDay;
-            context.read<MemoryBloc>().add(
-                  MemoryFetch(
-                    'memories',
-                    WHTransfer.ctx,
-                    schema: WHTransfer.schema,
-                    filter: {'date': selectedDay.toYMD()},
-                    reset: true,
-                  ),
-                );
-          });
-        }
-      },
     );
   }
 }

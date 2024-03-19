@@ -12,10 +12,10 @@ import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/entity_screens.dart';
-import 'package:nae/widgets/list_filter.dart';
+
 import 'package:nae/widgets/memory_list.dart';
-import 'package:nae/widgets/scaffold_list.dart';
-import 'package:table_calendar/table_calendar.dart';
+
+import 'package:nae/widgets/scaffold_list_calendar.dart';
 
 import 'edit.dart';
 import 'view.dart';
@@ -77,7 +77,27 @@ class ProductionOrder extends Entity {
       // _${DateTime.now().toString()}__'),
       ctx: ctx,
       schema: schema,
-      list: const ProductionOrderScreen(),
+      list: ScaffoldListCalendar(
+        entityType: ProductionOrder.ctx,
+        newBtn: (context) {
+          context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx,
+              action: 'edit', entity: MemoryItem.create()));
+        },
+        newBtnTooltip: (context) =>
+            AppLocalizations.of(context).translate("new production order"),
+        onDateChange: (context, date) {
+          context.read<MemoryBloc>().add(
+                MemoryFetch(
+                  'memories',
+                  ProductionOrder.ctx,
+                  schema: ProductionOrder.schema,
+                  filter: {'date': date.toYMD()},
+                  reset: true,
+                ),
+              );
+        },
+        listBuilder: (date) => ProductionOrdersListBuilder(date: date),
+      ),
       view: action == "edit"
           ? ProductionOrderEdit(
               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
@@ -88,90 +108,6 @@ class ProductionOrder extends Entity {
               entity: entity,
               tabIndex: 0,
             ),
-    );
-  }
-}
-
-class ProductionOrderScreen extends StatefulWidget {
-  const ProductionOrderScreen({super.key});
-
-  @override
-  State<ProductionOrderScreen> createState() => _ProductionOrderScreenState();
-}
-
-class _ProductionOrderScreenState extends State<ProductionOrderScreen> {
-  // late CleanCalendarController calendarController;
-
-  // DateTime selectedDate = DateTime.now();
-  DateTime _selectedDay = DateTime.now();
-
-  Widget calendar(BuildContext context) {
-    return TableCalendar(
-      locale: 'ru',
-      headerStyle: const HeaderStyle(
-        formatButtonVisible: false,
-        titleCentered: true,
-      ),
-      startingDayOfWeek: StartingDayOfWeek.monday,
-      firstDay: DateTime(2023, 1, 1),
-      lastDay: DateTime.now().add(const Duration(days: 1)),
-      focusedDay: _selectedDay,
-      calendarFormat: CalendarFormat.month,
-      selectedDayPredicate: (day) {
-        return isSameDay(_selectedDay, day);
-      },
-      onDaySelected: (selectedDay, focusedDay) {
-        if (!isSameDay(_selectedDay, selectedDay)) {
-          setState(() {
-            _selectedDay = selectedDay;
-            context.read<MemoryBloc>().add(
-                  MemoryFetch(
-                    'memories',
-                    ProductionOrder.ctx,
-                    schema: ProductionOrder.schema,
-                    filter: {'date': selectedDay.toYMD()},
-                    reset: true,
-                  ),
-                );
-          });
-        }
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // print("_ProductionOrderScreen.build $selectedDate");
-    final theme = Theme.of(context);
-    return ScaffoldList(
-      entityType: ProductionOrder.ctx,
-      appBarTitle: ListFilter(
-        // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
-        filter: null, //state.productionOrderListState.filter,
-        onFilterChanged: (value) {
-          // store.dispatch(FilterProducts(value));
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'product_fab',
-        backgroundColor: theme.primaryColorDark,
-        onPressed: () {
-          context.read<UiBloc>().add(ChangeView(ProductionOrder.ctx,
-              action: 'edit', entity: MemoryItem.create()));
-        },
-        tooltip: AppLocalizations.of(context).translate("new production order"),
-        child: Icon(
-          Icons.add,
-          color: theme.primaryColorLight,
-        ),
-      ),
-      body: Row(
-        children: [
-          SizedBox(width: 300, child: calendar(context)),
-          Flexible(
-              flex: 2, child: ProductionOrdersListBuilder(date: _selectedDay)),
-        ],
-      ),
     );
   }
 }
