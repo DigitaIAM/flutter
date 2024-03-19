@@ -58,7 +58,8 @@ class ScaffoldList extends StatelessWidget {
             //   backgroundColor: MaterialStateProperty.all(theme.primaryColor)
             // ),
             onPressed: () {
-              context.read<UiBloc>().add(ChangeView(entityType!, action: 'edit', entity: MemoryItem.create()));
+              context.read<UiBloc>().add(ChangeView(entityType!,
+                  action: 'edit', entity: MemoryItem.create()));
             },
             child: IconText(
               text: localization.translate("create"),
@@ -71,10 +72,14 @@ class ScaffoldList extends StatelessWidget {
           ),
         );
       } else if (buttons != null) {
-        leading = Padding(padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 38), child: buttons);
+        leading = Padding(
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 38),
+          child: buttons,
+        );
       }
 
-      double leadingWidth = (uiState.isDesktop ? 100 : 10) + (cMinInteractiveDimension * (uiState.isMobile ? 1 : 2));
+      double leadingWidth = (uiState.isDesktop ? 100 : 10) +
+          (cMinInteractiveDimension * (uiState.isMobile ? 1 : 2));
 
       return WillPopScope(
         onWillPop: () async {
@@ -82,7 +87,9 @@ class ScaffoldList extends StatelessWidget {
           return false;
         },
         child: Scaffold(
-          drawer: uiState.isMobile || uiState.isMenuFloated ? const MenuDrawerBuilder() : null,
+          drawer: uiState.isMobile || uiState.isMenuFloated
+              ? const MenuDrawerBuilder()
+              : null,
           appBar: AppBar(
               centerTitle: false,
               automaticallyImplyLeading: false,

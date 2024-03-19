@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/models/ui/state.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import 'list_filter.dart';
@@ -20,7 +23,7 @@ class ScaffoldListCalendar extends StatefulWidget {
   final String Function(BuildContext)? newBtnTooltip;
 
   final Function(BuildContext, DateTime) onDateChange;
-  final Widget Function(DateTime) listBuilder;
+  final Widget Function(DateTime?) listBuilder;
 
   @override
   State<ScaffoldListCalendar> createState() => _ScaffoldListCalendarState();
@@ -34,49 +37,54 @@ class _ScaffoldListCalendarState extends State<ScaffoldListCalendar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return ScaffoldList(
-        entityType: widget.entityType,
-        appBarTitle: ListFilter(
-          // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
-          filter: null, //state.WHTransferListState.filter,
-          onFilterChanged: (value) {
-            // store.dispatch(FilterProducts(value));
-          },
-        ),
-        floatingActionButton: widget.newBtn == null
-            ? null
-            : FloatingActionButton(
-                heroTag: 'product_fab',
-                backgroundColor: theme.primaryColorDark,
-                onPressed: () => widget.newBtn?.call(context),
-                tooltip: widget.newBtnTooltip?.call(context),
-                child: Icon(
-                  Icons.add,
-                  color: theme.primaryColorLight,
-                ),
-              ),
-        body: Row(
-          children: [
-            SizedBox(width: 300, child: calendar(context)),
-            Flexible(
-              flex: 1,
-              child: widget.listBuilder(_selectedDay),
-            ),
-            // Flexible(flex: 1, child: Container()),
-            // Expanded(
-            //   child: widget.listBuilder(_selectedDay),
-            // ),
-          ],
-        ));
-  }
 
-  // body: Row(
-  //         children: [
-  //           SizedBox(width: 300, child: calendar(context)),
-  //           Flexible(
-  //               flex: 2, child: ProductionOrdersListBuilder(date: _selectedDay)),
-  //         ],
-  //       ),
+    return BlocBuilder<UiBloc, UiState>(
+      builder: (context, uiState) {
+        Widget body = Container();
+        if (uiState.isDesktop) {
+          body = Row(
+            children: [
+              SizedBox(width: 300, child: calendar(context)),
+              Flexible(
+                flex: 1,
+                child: widget.listBuilder(_selectedDay),
+              ),
+              // Flexible(flex: 1, child: Container()),
+              // Expanded(
+              //   child: widget.listBuilder(_selectedDay),
+              // ),
+            ],
+          );
+        } else {
+          body = widget.listBuilder(null);
+        }
+
+        return ScaffoldList(
+          entityType: widget.entityType,
+          appBarTitle: ListFilter(
+            // key: ValueKey('__filter_${state.ListState.filterClearedAt}__'),
+            filter: null, //state.WHTransferListState.filter,
+            onFilterChanged: (value) {
+              // store.dispatch(FilterProducts(value));
+            },
+          ),
+          floatingActionButton: widget.newBtn == null
+              ? null
+              : FloatingActionButton(
+                  heroTag: 'product_fab',
+                  backgroundColor: theme.primaryColorDark,
+                  onPressed: () => widget.newBtn?.call(context),
+                  tooltip: widget.newBtnTooltip?.call(context),
+                  child: Icon(
+                    Icons.add,
+                    color: theme.primaryColorLight,
+                  ),
+                ),
+          body: body,
+        );
+      },
+    );
+  }
 
   Widget calendar(BuildContext context) {
     return TableCalendar(

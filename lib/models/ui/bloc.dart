@@ -22,7 +22,7 @@ class UiBloc extends Bloc<UiEvent, UiState> {
     ));
   }
 
-  UiBloc(UiState state) : super(state) {
+  UiBloc(super.initialState) {
     on<ChangeView>(
       (ChangeView event, Emitter<UiState> emit) {
         // print("on ChangeView $event");

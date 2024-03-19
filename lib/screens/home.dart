@@ -37,7 +37,8 @@ class _HomePageState extends State<HomePage> {
       if (uiState.showMenu) const MenuDrawerBuilder(),
       Expanded(
         child: AppBorder(
-          isLeft: uiState.showMenu && (!uiState.isFullScreen || showFilterSidebar),
+          isLeft:
+              uiState.showMenu && (!uiState.isFullScreen || showFilterSidebar),
           child: uiState.entityScreen(),
         ),
       ),

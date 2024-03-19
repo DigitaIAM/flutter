@@ -115,16 +115,16 @@ class ProductionOrder extends Entity {
 class ProductionOrdersListBuilder extends StatelessWidget {
   const ProductionOrdersListBuilder({super.key, required this.date});
 
-  final DateTime date;
+  final DateTime? date;
 
   @override
   Widget build(BuildContext context) {
     // print("ProductionOrdersListBuilder.build $date");
     return MemoryList(
-      key: ValueKey('__po_${date.toYMD()}'),
+      key: ValueKey('__po_${date?.toYMD() ?? ''}'),
       mode: Mode.mobile,
       ctx: ProductionOrder.ctx,
-      filter: {'date': date.toYMD()},
+      filter: date == null ? {} : {'date': date!.toYMD()},
       schema: ProductionOrder.schema,
       groupBy: (element) {
         final id = element.json[cDate] ?? '';

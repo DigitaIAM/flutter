@@ -100,7 +100,8 @@ class WHDispatch extends Entity {
 
 class WHDispatchListBuilder extends StatelessWidget {
   const WHDispatchListBuilder({super.key, required this.date});
-  final DateTime date;
+
+  final DateTime? date;
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +109,7 @@ class WHDispatchListBuilder extends StatelessWidget {
       mode: Mode.mobile,
       ctx: WHDispatch.ctx,
       schema: WHDispatch.schema,
-      filter: {'data': date.toYMD()},
+      filter: date == null ? {} : {'date': date!.toYMD()},
       // groupBy: (element) => element.json[cDate] ?? '',
       groupBy: (element) {
         final id = element.json[cDate] ?? '';
