@@ -74,7 +74,13 @@ class _WHTransferGoods extends State<WHTransferGoods> {
         subtitle: (MemoryItem item) {
           // print("item.json ${item.json}");
 
-          var text = item.json[cQty]?.toString() ?? '';
+          String dateBatch = item.json['batch']?['date'] ?? '';
+          final qty = item.json['qty'].toString();
+
+          var text = '$qty ';
+          if (dateBatch.isNotEmpty) {
+            text += ', $dateBatch';
+          }
 
           TextStyle? style;
 
