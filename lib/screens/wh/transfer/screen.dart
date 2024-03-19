@@ -108,7 +108,7 @@ class WHTransfer extends Entity {
 class WHTransferListBuilder extends StatelessWidget {
   const WHTransferListBuilder({super.key, required this.date});
 
-  final DateTime date;
+  final DateTime? date;
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +116,7 @@ class WHTransferListBuilder extends StatelessWidget {
       mode: Mode.mobile,
       ctx: WHTransfer.ctx,
       schema: WHTransfer.schema,
-      filter: {'data': date.toYMD()},
+      filter: date == null ? {} : {'date': date!.toYMD()},
       // groupBy: (element) => element.json[cDate] ?? '',
       groupBy: (element) {
         final id = element.json[cDate] ?? '';

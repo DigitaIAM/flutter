@@ -96,7 +96,8 @@ class WHReceive extends Entity {
 
 class WHReceiveListBuilder extends StatelessWidget {
   const WHReceiveListBuilder({super.key, required this.date});
-  final DateTime date;
+
+  final DateTime? date;
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +105,7 @@ class WHReceiveListBuilder extends StatelessWidget {
       mode: Mode.mobile,
       ctx: WHReceive.ctx,
       schema: WHReceive.schema,
-      filter: {'data': date.toYMD()},
+      filter: date == null ? {} : {'date': date!.toYMD()},
       // groupBy: (element) => element.json[cDate] ?? '',
       groupBy: (element) {
         final id = element.json[cDate] ?? '';
