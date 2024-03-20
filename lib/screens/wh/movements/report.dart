@@ -28,12 +28,13 @@ const String issueQty = 'issue.qty';
 const String closeQty = 'close.qty';
 
 class MovementReportScreen extends StatefulWidget {
-  const MovementReportScreen(
-      {super.key,
-      required this.entity,
-      required this.addReport,
-      required this.closeReport,
-      required this.updateReport});
+  const MovementReportScreen({
+    super.key,
+    required this.entity,
+    required this.addReport,
+    required this.closeReport,
+    required this.updateReport,
+  });
 
   final MemoryItem entity;
   final Function(MemoryItem) addReport;
@@ -122,6 +123,8 @@ class _MovementReportScreenState extends State<MovementReportScreen>
       const Field(closeQty, path: ['close_balance', 'qty'], QtyType()),
     ];
 
+    print("report ${widget.entity.json}");
+
     final filter = {
       'dates': widget.entity.json['dates'],
       cStorage: widget.entity.json[cStorage],
@@ -135,22 +138,26 @@ class _MovementReportScreenState extends State<MovementReportScreen>
 
     var detailed = false;
     if (goods != null) {
-      detailed = true;
-
       filter[cGoods] = goods;
-      filter['batch_id'] = widget.entity.json[cBatch]['id'];
-      filter['batch_date'] = widget.entity.json[cBatch][cDate];
 
-      schema = [
-        fDesc,
-        fGoods,
-        fFrom,
-        fInto,
-        const Field('qty', QtyType()),
-      ];
+      final batch = widget.entity.json[cBatch];
+      if (batch != null) {
+        detailed = true;
+
+        filter['batch_id'] = batch['id'];
+        filter['batch_date'] = batch[cDate];
+
+        schema = [
+          fDesc,
+          fGoods,
+          fFrom,
+          fInto,
+          const Field('qty', QtyType()),
+        ];
+      }
     }
 
-    // print("filter $filter");
+    print("filter $filter");
 
     // TODO: implement build
     return BlocProvider(
@@ -200,14 +207,14 @@ class _MovementReportScreenState extends State<MovementReportScreen>
             children: [
               Expanded(
                   child: Column(
-                children: state.items.map((item) {
+                children: sort(state.items).map((item) {
                   // print("item ${item.json}");
                   if (detailed) {
                     return RowDetailedWidget(item: item, cb: widget.addReport);
                   } else {
                     return RowWidget(
                       item: item,
-                      cb: widget.addReport,
+                      addReport: widget.addReport,
                       report: widget.entity,
                     );
                   }
@@ -236,7 +243,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
 
   Widget groupcell(GCol group) {
     return Flexible(
-      flex: 10,
+      flex: 5,
       child: Column(
         children: [
           Expanded(
@@ -347,6 +354,30 @@ class _MovementReportScreenState extends State<MovementReportScreen>
       ),
     );
   }
+
+  List<MemoryItem> sort(List<MemoryItem> items) {
+    List<MemoryItem> local = List.from(items);
+
+    local.sort((a, b) {
+      String la = '';
+      String lb = '';
+
+      la = a.json['store'].name();
+      lb = b.json['store'].name();
+
+      final sc = la.compareTo(lb);
+      if (sc == 0) {
+        la = a.json['goods'].name();
+        lb = b.json['goods'].name();
+
+        return la.compareTo(lb);
+      } else {
+        return sc;
+      }
+    });
+
+    return local;
+  }
 }
 
 Widget titlecell(String content) {
@@ -405,7 +436,7 @@ Widget datacell(String content, {bool isNumber = false}) {
           )));
 }
 
-Widget batchcell(String content, String batch, {bool isNumber = false}) {
+Widget namecell(String content, String batch, {bool isNumber = false}) {
   Widget text = Column(
     children: [
       Text(
@@ -429,7 +460,7 @@ Widget batchcell(String content, String batch, {bool isNumber = false}) {
     ],
   );
   return Flexible(
-      flex: 5,
+      flex: 10,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
         decoration: BoxDecoration(
@@ -446,11 +477,14 @@ Widget batchcell(String content, String batch, {bool isNumber = false}) {
 
 class RowWidget extends StatefulWidget {
   const RowWidget(
-      {super.key, required this.report, required this.item, required this.cb});
+      {super.key,
+      required this.report,
+      required this.item,
+      required this.addReport});
 
   final MemoryItem report;
   final MemoryItem item;
-  final Function(MemoryItem) cb;
+  final Function(MemoryItem) addReport;
 
   @override
   State<RowWidget> createState() => _RowWidgetState();
@@ -466,7 +500,7 @@ class _RowWidgetState extends State<RowWidget> {
       height: 60,
       child: Row(
         children: [
-          batchcell(
+          namecell(
             item.json['goods'].name(),
             item.json['batch']?['date']?.toString() ?? '',
           ),
@@ -491,7 +525,7 @@ class _RowWidgetState extends State<RowWidget> {
             isNumber: true,
           ),
           datacell(
-            Number.f(item.json['issue']['cost'] ?? ''),
+            Number.f(item.json['issue']?['cost'] ?? ''),
             isNumber: true,
           ),
           datacell(
@@ -499,7 +533,7 @@ class _RowWidgetState extends State<RowWidget> {
             isNumber: true,
           ),
           datacell(
-            Number.f(item.json['close_balance']['cost'] ?? ''),
+            Number.f(item.json['close_balance']?['cost'] ?? ''),
             isNumber: true,
           ),
         ],
@@ -524,14 +558,22 @@ class _RowWidgetState extends State<RowWidget> {
         flex: 5,
         child: InkWell(
             onDoubleTap: () {
-              widget.cb(MemoryItem.from({
+              print("onDoubleTap ${widget.item.json}");
+
+              final json = {
                 'id': '1',
                 cName: widget.item.json[cGoods].name(),
                 'dates': widget.report.json['dates'],
                 cStorage: widget.item.json['store'].uuid,
                 cGoods: widget.item.json['goods'].uuid,
-                cBatch: widget.item.json[cBatch]
-              }));
+              };
+
+              final batch = widget.item.json[cBatch];
+              if (batch != null) {
+                json[cBatch] = batch;
+              }
+
+              widget.addReport(MemoryItem.from(json));
             },
             onHover: (val) {
               setState(() {
@@ -608,7 +650,7 @@ class _RowDetailedWidget extends State<RowDetailedWidget> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-    print('json: ${item.json}');
+    print('Detailed: ${item.json}');
     final opType = item.json['type'];
 
     //item.json[openQty].toString(),
