@@ -38,7 +38,8 @@ class MemoryItem extends Equatable {
     if (partNumber is String) {
       return "$partNumber ${json[cName] ?? ""}";
     }
-    return json[cName] ?? "";
+    // workaround: use 'date' as name for batch objects
+    return json[cName] ?? json[cDate] ?? "";
   }
 
   String balance() {
