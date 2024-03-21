@@ -107,7 +107,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
     }
 
     final cols = [
-      Col("Название"),
+      Col("Наименование"),
       GCol('На начало', [Col("кол-во"), Col("сумма")]),
       GCol('Приход', [Col("кол-во"), Col("сумма")]),
       GCol('Расход', [Col("кол-во"), Col("сумма")]),
@@ -157,7 +157,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
       }
     }
 
-    print("filter $filter");
+    //print("filter $filter");
 
     // TODO: implement build
     return BlocProvider(
@@ -207,7 +207,8 @@ class _MovementReportScreenState extends State<MovementReportScreen>
             children: [
               Expanded(
                   child: Column(
-                children: sort(state.items).map((item) {
+                children:
+                    (detailed ? state.items : sort(state.items)).map((item) {
                   // print("item ${item.json}");
                   if (detailed) {
                     return RowDetailedWidget(item: item, cb: widget.addReport);
@@ -334,6 +335,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
 
             // print("object $store");
             widget.entity.json[cStorage] = store?.uuid;
+            widget.entity.json[cName] = store?.name() ?? '';
             widget.updateReport(widget.entity);
           });
 
@@ -436,20 +438,11 @@ Widget datacell(String content, {bool isNumber = false}) {
           )));
 }
 
-Widget namecell(String content, String batch, {bool isNumber = false}) {
+Widget namecell(String content, {bool isNumber = false}) {
   Widget text = Column(
     children: [
       Text(
         content,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.normal,
-        ),
-      ),
-      Text(
-        batch,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(
@@ -468,7 +461,7 @@ Widget namecell(String content, String batch, {bool isNumber = false}) {
           border: Border.all(color: Colors.black45, width: 0.4),
         ),
         child: Align(
-          alignment: isNumber ? Alignment.centerRight : Alignment.center,
+          alignment: isNumber ? Alignment.centerRight : Alignment.topLeft,
           heightFactor: 3.5,
           child: text,
         ),
@@ -476,11 +469,12 @@ Widget namecell(String content, String batch, {bool isNumber = false}) {
 }
 
 class RowWidget extends StatefulWidget {
-  const RowWidget(
-      {super.key,
-      required this.report,
-      required this.item,
-      required this.addReport});
+  const RowWidget({
+    super.key,
+    required this.report,
+    required this.item,
+    required this.addReport,
+  });
 
   final MemoryItem report;
   final MemoryItem item;
@@ -496,14 +490,20 @@ class _RowWidgetState extends State<RowWidget> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
+    var label = '';
+    if (item.json[cBatch] != null) {
+      label = item.json[cBatch]?[cDate]?.toString() ?? '';
+    } else if (item[cGoods]?.isNotEmpty) {
+      label = item[cGoods]?.name() ?? '';
+    } else {
+      label = item[cStorage]?.name() ?? '';
+    }
+    print('item ${item.json}');
     return SizedBox(
-      height: 60,
+      height: 45,
       child: Row(
         children: [
-          namecell(
-            item.json['goods'].name(),
-            item.json['batch']?['date']?.toString() ?? '',
-          ),
+          namecell(label),
           datacell(
             item.json[openQty].toString(),
             isNumber: true,
@@ -558,14 +558,22 @@ class _RowWidgetState extends State<RowWidget> {
         flex: 5,
         child: InkWell(
             onDoubleTap: () {
-              print("onDoubleTap ${widget.item.json}");
+              print('onDoubleTap ${widget.item}');
+              var label = '';
+              if (widget.item[cBatch] != null) {
+                label = widget.item.json[cBatch]?[cDate]?.toString() ?? '';
+              } else if (widget.item[cGoods]?.isNotEmpty) {
+                label = widget.item[cGoods]?.name() ?? '';
+              } else {
+                label = widget.item[cStorage]?.name() ?? '';
+              }
 
               final json = {
-                'id': '1',
-                cName: widget.item.json[cGoods].name(),
+                'id': '2',
+                cName: label,
                 'dates': widget.report.json['dates'],
-                cStorage: widget.item.json['store'].uuid,
-                cGoods: widget.item.json['goods'].uuid,
+                cStorage: widget.item['store']?.uuid,
+                cGoods: widget.item['goods']?.uuid,
               };
 
               final batch = widget.item.json[cBatch];
@@ -605,6 +613,36 @@ class GCol extends Col {
   final List<Col> cols;
 
   GCol(super.label, this.cols);
+}
+
+Widget documentcell(String content, {bool isNumber = false}) {
+  Widget text = Column(
+    children: [
+      Text(
+        content,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+    ],
+  );
+  return Flexible(
+      flex: 10,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+        decoration: BoxDecoration(
+          color: Colors.white70, // highlighting ? Colors.white :
+          border: Border.all(color: Colors.black45, width: 0.4),
+        ),
+        child: Align(
+          alignment: isNumber ? Alignment.centerRight : Alignment.topLeft,
+          heightFactor: 3.5,
+          child: text,
+        ),
+      ));
 }
 
 Widget datacellDetailed(String content, {bool isNumber = false}) {
@@ -650,16 +688,13 @@ class _RowDetailedWidget extends State<RowDetailedWidget> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-    print('Detailed: ${item.json}');
     final opType = item.json['type'];
-
-    //item.json[openQty].toString(),
 
     if (opType == 'open_balance') {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            datacellDetailed(''),
+            documentcell(''),
             datacellDetailed(
               item.json['qty'].toString(),
               isNumber: true,
@@ -679,7 +714,7 @@ class _RowDetailedWidget extends State<RowDetailedWidget> {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            datacellDetailed(
+            documentcell(
                 item.json['description'] ?? ''), // item.json['into'].name()
             datacellDetailed(''),
             datacellDetailed(''),
@@ -700,7 +735,7 @@ class _RowDetailedWidget extends State<RowDetailedWidget> {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            datacellDetailed(item.json['description'] ??
+            documentcell(item.json['description'] ??
                 'nothing'), // item.json['into'].name()
             datacellDetailed(''),
             datacellDetailed(''),
@@ -721,7 +756,7 @@ class _RowDetailedWidget extends State<RowDetailedWidget> {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            datacellDetailed(''),
+            documentcell(''),
             datacellDetailed(''),
             datacellDetailed(''),
             datacellDetailed(''),
