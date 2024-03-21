@@ -19,6 +19,8 @@ class MemoryItem extends Equatable {
 
   get isEmpty => json.isEmpty;
 
+  get isNotEmpty => !isEmpty;
+
   @override
   List<Object> get props => [id, updatedAt];
 
@@ -32,13 +34,24 @@ class MemoryItem extends Equatable {
     return MemoryItem.clone(this);
   }
 
+  MemoryItem? operator [](Object? key) {
+    final o = json[key];
+    if (o is MemoryItem) {
+      return o;
+    } else if (o is Map<String, dynamic>) {
+      return MemoryItem.from(o);
+    }
+    return null;
+  }
+
   String name() {
     // workaround for product
     final partNumber = json["part_number"];
     if (partNumber is String) {
       return "$partNumber ${json[cName] ?? ""}";
     }
-    return json[cName] ?? "";
+    // workaround: use 'date' as name for batch objects
+    return json[cName] ?? json[cDate] ?? "";
   }
 
   String balance() {
