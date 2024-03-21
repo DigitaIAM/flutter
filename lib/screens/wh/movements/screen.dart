@@ -87,9 +87,9 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
   final List<MemoryItem> reports = [
     MemoryItem.from({
       'id': '1',
-      cName: 'Отчет о движении ТМЦ по складу',
-      'dates': {cFrom: '2024-02-01', cTill: '2024-02-29'},
-      cStorage: '404037f2-3db7-4dae-9884-6a79fd9cd94e',
+      cName: '',
+      'dates': {cFrom: '2024-03-01', cTill: '2024-03-31'},
+      //cStorage: '404037f2-3db7-4dae-9884-6a79fd9cd94e',
       // cGoods: '0cf13464-658f-4405-b540-d4df4d774682',
       // cBatch: {
       //   'id': '130d13a0-4d29-402f-acb5-eb3140507257',
