@@ -461,7 +461,7 @@ Widget namecell(String content, {bool isNumber = false}) {
           border: Border.all(color: Colors.black45, width: 0.4),
         ),
         child: Align(
-          alignment: isNumber ? Alignment.centerRight : Alignment.topLeft,
+          alignment: isNumber ? Alignment.centerRight : Alignment.centerLeft,
           heightFactor: 3.5,
           child: text,
         ),
