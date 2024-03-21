@@ -123,7 +123,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
       const Field(closeQty, path: ['close_balance', 'qty'], QtyType()),
     ];
 
-    print("report ${widget.entity.json}");
+    // print("report ${widget.entity.json}");
 
     final filter = {
       'dates': widget.entity.json['dates'],
@@ -498,7 +498,7 @@ class _RowWidgetState extends State<RowWidget> {
     } else {
       label = item[cStorage]?.name() ?? '';
     }
-    print('item ${item.json}');
+    //print('item ${item.json}');
     return SizedBox(
       height: 45,
       child: Row(
@@ -558,7 +558,7 @@ class _RowWidgetState extends State<RowWidget> {
         flex: 5,
         child: InkWell(
             onDoubleTap: () {
-              print('onDoubleTap ${widget.item}');
+              // print('onDoubleTap ${widget.item}');
               var label = '';
               if (widget.item[cBatch] != null) {
                 label = widget.item.json[cBatch]?[cDate]?.toString() ?? '';
@@ -615,65 +615,6 @@ class GCol extends Col {
   GCol(super.label, this.cols);
 }
 
-Widget documentcell(String content, {bool isNumber = false}) {
-  Widget text = Column(
-    children: [
-      Text(
-        content,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.normal,
-        ),
-      ),
-    ],
-  );
-  return Flexible(
-      flex: 10,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-        decoration: BoxDecoration(
-          color: Colors.white70, // highlighting ? Colors.white :
-          border: Border.all(color: Colors.black45, width: 0.4),
-        ),
-        child: Align(
-          alignment: isNumber ? Alignment.centerRight : Alignment.topLeft,
-          heightFactor: 3.5,
-          child: text,
-        ),
-      ));
-}
-
-Widget datacellDetailed(String content, {bool isNumber = false}) {
-  Widget text = Text(
-    content,
-    maxLines: 1,
-    overflow: TextOverflow.ellipsis,
-    style: const TextStyle(
-      color: Colors.black,
-      fontWeight: FontWeight.normal,
-    ),
-  );
-  if (content.length > 20) {
-    text = Tooltip(message: content, child: text);
-  }
-  return Flexible(
-      flex: 5,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-        decoration: BoxDecoration(
-          color: Colors.white70, // highlighting ? Colors.white :
-          border: Border.all(color: Colors.black45, width: 0.4),
-        ),
-        child: Align(
-          alignment: isNumber ? Alignment.centerRight : Alignment.center,
-          heightFactor: 1.5,
-          child: text,
-        ),
-      ));
-}
-
 class RowDetailedWidget extends StatefulWidget {
   const RowDetailedWidget({super.key, required this.item, required this.cb});
 
@@ -694,80 +635,80 @@ class _RowDetailedWidget extends State<RowDetailedWidget> {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            documentcell(''),
-            datacellDetailed(
+            namecell(''),
+            datacell(
               item.json['qty'].toString(),
               isNumber: true,
             ),
-            datacellDetailed(
+            datacell(
               Number.f(item.json['cost'] ?? ''),
               isNumber: true,
             ),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
           ]));
     } else if (opType == 'receive') {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            documentcell(
+            namecell(
                 item.json['description'] ?? ''), // item.json['into'].name()
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(
+            datacell(''),
+            datacell(''),
+            datacell(
               item.json['qty'].toString(),
               isNumber: true,
             ),
-            datacellDetailed(
+            datacell(
               Number.f(item.json['cost'] ?? 'nothing'),
               isNumber: true,
             ),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
           ]));
     } else if (opType == 'issue') {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            documentcell(item.json['description'] ??
+            namecell(item.json['description'] ??
                 'nothing'), // item.json['into'].name()
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(
               item.json['qty'].toString(),
               isNumber: true,
             ),
-            datacellDetailed(
+            datacell(
               Number.f(item.json['cost'] ?? ''),
               isNumber: true,
             ),
-            datacellDetailed(''),
-            datacellDetailed(''),
+            datacell(''),
+            datacell(''),
           ]));
     } else if (opType == 'close_balance') {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            documentcell(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(''),
-            datacellDetailed(
+            namecell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(''),
+            datacell(
               item.json['qty'].toString(),
               isNumber: true,
             ),
-            datacellDetailed(
+            datacell(
               Number.f(item.json['cost'] ?? ''),
               isNumber: true,
             ),
