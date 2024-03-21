@@ -19,6 +19,8 @@ class MemoryItem extends Equatable {
 
   get isEmpty => json.isEmpty;
 
+  get isNotEmpty => !isEmpty;
+
   @override
   List<Object> get props => [id, updatedAt];
 
@@ -30,6 +32,16 @@ class MemoryItem extends Equatable {
 
   MemoryItem clone() {
     return MemoryItem.clone(this);
+  }
+
+  MemoryItem? operator [](Object? key) {
+    final o = json[key];
+    if (o is MemoryItem) {
+      return o;
+    } else if (o is Map<String, dynamic>) {
+      return MemoryItem.from(o);
+    }
+    return null;
   }
 
   String name() {

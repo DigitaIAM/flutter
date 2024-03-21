@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -137,10 +135,15 @@ class _MaterialViewState extends State<MaterialView> {
             }
 
             var storage = item.json[cStorage]?.name();
-            if ((item.json[cStorage] as MemoryItem).isEmpty) {
-              storage = item.json['storage_from']?.name() ?? '';
+            if (item[cStorage]?.isEmpty) {
+              storage = item['storage_from']?.name() ?? '';
               if (listEquals(ctx, ['production', 'material', 'produced'])) {
-                storage = item.json['storage_into']?.name() ?? '';
+                storage = item['storage_into']?.name() ?? '';
+              }
+
+              if ((item['storage_from']?.isNotEmpty ?? false) ||
+                  (item['storage_into']?.isNotEmpty ?? false)) {
+                storage += ' ⚠ ';
               }
             }
 
@@ -265,11 +268,11 @@ class _MaterialViewState extends State<MaterialView> {
 
     Map<String, dynamic> data = Map.from(item.json);
 
-    if ((item.json[cStorage] as MemoryItem).isEmpty) {
+    if (item[cStorage]?.isEmpty) {
       if (listEquals(ctx, ['production', 'material', 'produced'])) {
-        data[cStorage] = item.json['storage_into'];
+        data[cStorage] = item['storage_into'];
       } else if (listEquals(ctx, ['production', 'material', 'used'])) {
-        data[cStorage] = item.json['storage_from'];
+        data[cStorage] = item['storage_from'];
       }
     }
 
@@ -278,8 +281,7 @@ class _MaterialViewState extends State<MaterialView> {
       receive = true;
     } else if (listEquals(ctx, ['production', 'material', 'used'])) {
       data[cCategory] = data[cGoods].json[cCategory];
-      data[cBatch] =
-          data[cBatch] == null ? null : MemoryItem.from(data[cBatch]);
+      data[cBatch] = item[cBatch];
       receive = false;
     }
 
