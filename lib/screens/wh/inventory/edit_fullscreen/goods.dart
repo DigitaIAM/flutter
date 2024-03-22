@@ -22,15 +22,17 @@ import 'package:nae/widgets/swipe_action.dart';
 
 class WHInventoryGoods extends StatefulWidget {
   final MemoryItem doc;
+  final Mode mode;
 
-  const WHInventoryGoods({super.key, required this.doc});
+  const WHInventoryGoods({super.key, required this.doc, this.mode = Mode.auto});
 
   @override
   State<StatefulWidget> createState() => _WHInventoryGoodsState();
 }
 
 class _WHInventoryGoodsState extends State<WHInventoryGoods> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHInventoryGoodsState');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHInventoryGoodsState');
 
   final FocusScopeNode _focusNode = FocusScopeNode();
 
@@ -44,9 +46,8 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
       // workaround
       data[cId] = widget.doc.id;
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", WHInventory.ctx, WHInventory.schema, MemoryItem(id: widget.doc.id, json: data)));
+      context.read<MemoryBloc>().add(MemorySave("memories", WHInventory.ctx,
+          WHInventory.schema, MemoryItem(id: widget.doc.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -110,7 +111,8 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
                 text = '$text${qty[cNumber]} ${uom[cName]} ';
               }
             } else {
-              text = '$text${qty[cNumber]} ${item.json[cGoods]?[cUom]?[cName] ?? ''}';
+              text =
+                  '$text${qty[cNumber]} ${item.json[cGoods]?[cUom]?[cName] ?? ''}';
             }
             qty = qty[cUom];
           }
@@ -151,7 +153,9 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
-    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
+    context
+        .read<MemoryBloc>()
+        .add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
 
   Future drawPrinterList(BuildContext context, MemoryItem item) async {
@@ -184,7 +188,9 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
       for (var printer in printers) {
         final ip = (printer['ip'] ?? '').toString();
         final port = int.parse(printer['port'] ?? '0');
-        children.add(ListTile(title: Text(printer[cName] ?? ''), onTap: () => printPreparation(ip, port, item)));
+        children.add(ListTile(
+            title: Text(printer[cName] ?? ''),
+            onTap: () => printPreparation(ip, port, item)));
       }
     }
 
@@ -222,7 +228,8 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
     List<Widget> widgets = [];
 
-    final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()}); // TODO input doc date?
+    final MemoryItem details = MemoryItem(
+        id: '', json: {cDate: Utils.today()}); // TODO input doc date?
 
     widgets.add(const Text('Enter the amount of goods:'));
 

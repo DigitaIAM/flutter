@@ -26,7 +26,8 @@ class WHInventoryShowStock extends StatefulWidget {
 }
 
 class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHInventoryShowStockState');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHInventoryShowStockState');
 
   final FocusScopeNode _focusNode = FocusScopeNode();
 
@@ -40,9 +41,8 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
       // workaround
       data[cId] = widget.doc.id;
 
-      context
-          .read<MemoryBloc>()
-          .add(MemorySave("memories", WHInventory.ctx, WHInventory.schema, MemoryItem(id: widget.doc.id, json: data)));
+      context.read<MemoryBloc>().add(MemorySave("memories", WHInventory.ctx,
+          WHInventory.schema, MemoryItem(id: widget.doc.id, json: data)));
     } else {
       debugPrint(_formKey.currentState?.value.toString());
       debugPrint('validation failed');
@@ -55,13 +55,15 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
 
     final storage = widget.doc.json[cStorage] is MemoryItem
         ? widget.doc.json[cStorage] as MemoryItem
-        : MemoryItem(id: widget.doc.json[cStorage][cId], json: widget.doc.json[cStorage]);
+        : MemoryItem(
+            id: widget.doc.json[cStorage][cId],
+            json: widget.doc.json[cStorage]);
 
     final storageUuid = storage.json[cUuid] ?? '';
 
     filters.add(Pair(cStorage, storage));
 
-    // print("doc: ${widget.doc.json}");
+    //print("doc: ${widget.doc.json}");
     // print("storage: ${storage.json}");
 
     final docFilter = {cDocument: widget.doc.id};
@@ -69,14 +71,17 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
 
     return BlocProvider(
       create: (context) => MemoryBloc(),
-      child: BlocBuilder<MemoryBloc, RequestState>(builder: (context, stockState) {
-        context.read<MemoryBloc>().add(
-            MemoryFetch('memories', const ['warehouse', 'stock'], schema: WHInventory.schema, filter: storageFilter));
+      child:
+          BlocBuilder<MemoryBloc, RequestState>(builder: (context, stockState) {
+        context.read<MemoryBloc>().add(MemoryFetch(
+            'memories', const ['warehouse', 'stock'],
+            schema: WHInventory.schema, filter: storageFilter));
         return BlocProvider(
           create: (context) => MemoryBloc(),
           child: BlocBuilder<MemoryBloc, RequestState>(
             builder: (context, linesState) {
-              context.read<MemoryBloc>().add(MemoryFetch('memories', const ['warehouse', 'inventory'],
+              context.read<MemoryBloc>().add(MemoryFetch(
+                  'memories', const ['warehouse', 'inventory'],
                   schema: WHInventory.schema, filter: docFilter));
 
               final stock = stockState.items;
@@ -106,12 +111,15 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
                 // print("record: ${record.json}");
                 todoList.add(Card(
                   elevation: 2.0,
-                  margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 5.0, vertical: 5.0),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10.0, vertical: 5.0),
                     // leading: const Icon(Icons.account_circle),
                     title: Text(record.json[cName] ?? ''),
-                    subtitle: Text('${record.json['_cost'][cQty] ?? ''} ${record.json[cUom][cName] ?? ''}, '
+                    subtitle: Text(
+                        '${record.json['_cost'][cQty] ?? ''} ${record.json[cUom][cName] ?? ''}, '
                         '${record.json['_cost'][cCost] ?? ''} сум'),
                     // trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
                     onTap: () => popUpRegister(context, record),
@@ -142,7 +150,8 @@ class _WHInventoryShowStockState extends State<WHInventoryShowStock> {
 
     List<Widget> widgets = [];
 
-    final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()}); // TODO input doc date?
+    final MemoryItem details = MemoryItem(
+        id: '', json: {cDate: Utils.today()}); // TODO input doc date?
 
     widgets.add(const Text('Enter the amount of goods:'));
 

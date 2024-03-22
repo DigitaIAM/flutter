@@ -72,11 +72,7 @@ class UiState extends Equatable {
     [ProductionOrder()],
     [ProductionReportView()],
     [WHBalance(), WHMovement()],
-    [
-      WHReceive(),
-      WHTransfer(),
-      WHDispatch(),
-    ], // WHInventory()],
+    [WHReceive(), WHTransfer(), WHDispatch(), WHInventory()],
     [Product(), Goods(), CategoryForGoods(), Uom()],
     [WHStorage(), ProductionArea()],
     [Counterparty(), Person()],
