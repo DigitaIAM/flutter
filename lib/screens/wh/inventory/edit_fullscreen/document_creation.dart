@@ -89,13 +89,9 @@ class _WHInventoryDocumentCreationState extends State<WHInventoryDocumentCreatio
   Future<dynamic> registerDocument(BuildContext context) async {
     final data = _formKey.currentState?.value;
 
-    // print("data type ${data.runtimeType}");
-
     if (data == null) {
       return;
     }
-
-    // print("data $data");
 
     final date = data[cDate] ?? '';
     final storage = data[cStorage] as MemoryItem;
@@ -107,8 +103,6 @@ class _WHInventoryDocumentCreationState extends State<WHInventoryDocumentCreatio
       'oid': Api.instance.oid,
       'ctx': ['warehouse', 'inventory', 'document']
     });
-
-    // print("record: $record");
 
     context.read<UiBloc>().add(ChangeView(WHInventory.ctx, action: 'edit', entity: MemoryItem.from(record)));
   }
