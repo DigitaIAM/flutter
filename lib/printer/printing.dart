@@ -1,6 +1,7 @@
 import 'package:nae/api.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/utils/date.dart';
@@ -198,6 +199,10 @@ Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
 }
 
 Future<String> qtyToText(MemoryItem rec) async {
+  if (rec.json[cQty] is Qty) {
+    return rec.json[cQty].toString();
+  }
+
   var text = '';
   // print("_rec_: ${rec.json}");
   Map? map = rec.json[cQty] ?? rec.json['op']?[cQty] ?? '';
