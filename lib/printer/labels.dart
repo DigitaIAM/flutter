@@ -1,7 +1,11 @@
 import 'package:nae/printer/network_printer.dart';
 
 class Labels {
-  static Future<PrintResult> connect(String ip, int port, Future<PrintResult> Function(NetworkPrinter) onReady) async {
+  static Future<PrintResult> connect(
+    String ip,
+    int port,
+    Future<PrintResult> Function(NetworkPrinter) onReady,
+  ) async {
     // print("connecting");
     // const PaperSize paper = PaperSize.mm80;
     // final profile = await CapabilityProfile.load();
@@ -35,7 +39,11 @@ class Labels {
     return res;
   }
 
-  static void lines(NetworkPrinter printer, String id, Map<String, String> data) {
+  static void lines(
+    NetworkPrinter printer,
+    String id,
+    Map<String, String> data,
+  ) {
     printer.clear();
     printer.codepage(name: "1251");
     printer.direction();
@@ -47,7 +55,8 @@ class Labels {
     printer.dmatrix(50, 100, 144, 144, id);
 
     printer.qrcode(450, 50, id, cellWidth: 7);
-    printer.text(780, 50, id, font: "2", mx: 1, my: 1, rotation: 90); // alignment: 3,
+    // alignment: 3,
+    printer.text(780, 50, id, font: "2", mx: 1, my: 1, rotation: 90);
     printer.bar(750, 10, 2, 780);
 
     // - printer.qrcode(
@@ -77,8 +86,16 @@ class Labels {
     printer.print_();
   }
 
-  static void linesWithBarcode(NetworkPrinter printer, String goodsName, String goodsUuid, String id,
-      String batchBarcode, String batchId, String batchDate, Map<String, String> data) {
+  static void linesWithBarcode(
+    NetworkPrinter printer,
+    String goodsName,
+    String goodsUuid,
+    String id,
+    String batchBarcode,
+    String batchId,
+    String batchDate,
+    Map<String, String> data,
+  ) {
     printer.clear();
     printer.codepage(name: "1251");
     printer.direction();
@@ -87,10 +104,12 @@ class Labels {
 
     printer.qrcode(450, 50, batchId, cellWidth: 7);
 
-    printer.text(35, 50, ('приход от $batchDate'), font: "2", mx: 1, my: 1, rotation: 90);
+    printer.text(35, 50, ('приход от $batchDate'),
+        font: "2", mx: 1, my: 1, rotation: 90);
     printer.bar(50, 10, 2, 780);
 
-    printer.text(780, 50, id, font: "2", mx: 1, my: 1, rotation: 90); // alignment: 3,
+    // alignment: 3,
+    printer.text(780, 50, id, font: "2", mx: 1, my: 1, rotation: 90);
     printer.bar(750, 10, 2, 780);
 
     var y = 350;

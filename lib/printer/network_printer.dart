@@ -6,7 +6,8 @@ import 'package:windows1251/windows1251.dart';
 class NetworkPrinter {
   late Socket _socket;
 
-  Future<PrintResult> connect(String host, {int port = 9100, Duration timeout = const Duration(seconds: 5)}) async {
+  Future<PrintResult> connect(String host,
+      {int port = 9100, Duration timeout = const Duration(seconds: 5)}) async {
     try {
       _socket = await Socket.connect(host, port, timeout: timeout);
       // _socket.setOption(SocketOption.tcpNoDelay, true);
@@ -88,7 +89,9 @@ class NetworkPrinter {
     String mode = 'A',
     int rotation = 0,
   }) {
-    sendCommand('QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,M2,"$content"\r\n');
+    sendCommand(
+      'QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,M2,"$content"\r\n',
+    );
   }
 
   void text(
@@ -105,7 +108,9 @@ class NetworkPrinter {
     // 2 : Center
     // 3 : Right
   }) {
-    sendCommand('TEXT $x,$y,"$font",$rotation,$mx,$my,$alignment,"$content"\r\n');
+    sendCommand(
+      'TEXT $x,$y,"$font",$rotation,$mx,$my,$alignment,"$content"\r\n',
+    );
   }
 
   void barcode_EAN13(
@@ -118,7 +123,9 @@ class NetworkPrinter {
     int narrow = 4,
     int wide = 2,
   }) {
-    sendCommand('BARCODE $x,$y, "EAN13",$height,$humanReadable,$rotation,$narrow,$wide,"$barcode"\r\n');
+    sendCommand(
+      'BARCODE $x,$y, "EAN13",$height,$humanReadable,$rotation,$narrow,$wide,"$barcode"\r\n',
+    );
   }
 
   void feed(int i) {
