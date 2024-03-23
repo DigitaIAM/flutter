@@ -9,9 +9,12 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
+import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/goods_dispatch.dart';
 import 'package:nae/screens/wh/inventory/screen.dart';
 import 'package:nae/screens/wh/receive/screen.dart';
 import 'package:nae/share/utils.dart';
@@ -61,9 +64,10 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
       cDocument: widget.doc.id,
     };
     final schema = <Field>[
+      fCategoryAtGoods,
       fGoods.copyWith(width: 3.0),
       // fUomAtQty.copyWith(width: 0.5, editable: false),
-      fQty.copyWith(width: 1.0),
+      fQtyNew.copyWith(width: 1.0),
     ];
 
     return BlocProvider(
@@ -80,6 +84,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
         return bloc;
       },
       child: MemoryList(
+        mode: widget.mode,
         ctx: ctx,
         filter: filter,
         schema: schema,
@@ -96,25 +101,16 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-          // print("subtitle ${item.json}");
 
-          var text = '';
+         print("subtitle ${item.json}");
 
-          var qty = item.json[cQty] ?? '';
+          String dateBatch = item.json['batch']?['date'] ?? '';
 
-          while (qty is Map) {
-            final uom = qty[cUom];
-            if (uom is Map) {
-              if (uom['in'] is Map) {
-                text = '$text${qty[cNumber]} ${uom['in'][cName]} по ';
-              } else {
-                text = '$text${qty[cNumber]} ${uom[cName]} ';
-              }
-            } else {
-              text =
-                  '$text${qty[cNumber]} ${item.json[cGoods]?[cUom]?[cName] ?? ''}';
-            }
-            qty = qty[cUom];
+          final qty = item.json['qty'].toString();
+
+          var text = '$qty ';
+          if (dateBatch.isNotEmpty) {
+            text += ', $dateBatch';
           }
 
           TextStyle? style;
@@ -126,7 +122,10 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
           }
           return Text(text, style: style);
         },
-        onTap: (context, MemoryItem item) => popUpPatch(context, item),
+        onDoubleTap: (context, item) {
+          editItem(context, ctx, widget.doc, item);
+        },
+        //onTap: (context, MemoryItem item) => popUpPatch(context, item),
         // context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
         actions: [
           ItemAction(
@@ -143,6 +142,14 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
             foregroundColor: Colors.white,
             backgroundColor: Colors.blue,
           ),
+          ItemAction(
+            label: 'edit',
+            icon: Icons.edit,
+            onPressed: (context, item) =>
+                editItem(context, ctx, widget.doc, item),
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.green,
+          ),
         ],
       ),
     );
@@ -156,6 +163,78 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
     context
         .read<MemoryBloc>()
         .add(MemoryPatch('memories', ctx, const [], item.id, data));
+  }
+
+  void editItem(BuildContext context, List<String> ctx, MemoryItem doc,
+      MemoryItem item) async {
+    //print("docu ${doc.json}");
+    // print("item ${item.json}");
+
+    Map<String, dynamic> data = {};
+
+    data[cId] = item.id;
+    data[cUuid] = item.uuid;
+    data[cStorage] = doc.json[cStorage];
+    data[cGoods] = item.json[cGoods];
+    data[cCategory] = data[cGoods].json[cCategory];
+    data[cBatch] =
+    item.json[cBatch] == null ? null : MemoryItem.from(item.json[cBatch]);
+    (item.json['qty'] as Qty).toData(data);
+
+   // print("data $data");
+
+    final uiBloc = context.read<UiBloc>();
+
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) =>
+          BlocProvider(
+            create: (ctx) => UiBloc(uiBloc.state),
+            child: Dialog(
+              child: SizedBox(
+                width: 500,
+                height: 500,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                      child: SizedBox(
+                        width: 500,
+                        height: 400,
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: GoodsDispatch(
+                                ctx: const ['warehouse', 'inventory'],
+                                doc: widget.doc,
+                                rec: MemoryItem.from(data),
+                                schema: WHInventory.schema,
+                                enablePrinting: false,
+                                allowGoodsCreation: false,
+                                afterSave: () {
+                                  setState(() {});
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
   }
 
   Future drawPrinterList(BuildContext context, MemoryItem item) async {

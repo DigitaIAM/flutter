@@ -77,15 +77,15 @@ class WHInventory extends Entity {
         listBuilder: (date) => WHInventoriesListBuilder(date: date),
       ),
 
-      view: WHInventoryEditMobile(
+      view: action == 'view'
+      ? WHInventoryEditMobile(
         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
         entity: entity,
-      ),
-      // view: action == "edit"
-      //     ? WHInventoryEditFS(
-      //         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-      //         entity: entity,
-      //       )
+      )
+          : WHInventoryEditFS(
+              key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+              entity: entity,
+            ),
       //     : WHInventoryView(
       //         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
       //         entity: entity,

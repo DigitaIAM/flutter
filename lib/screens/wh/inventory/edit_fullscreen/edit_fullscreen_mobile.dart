@@ -1,36 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
-import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
-import 'package:nae/models/ui/state.dart';
-import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/wh/goods_dispatch.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/document_creation.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/goods.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/overview.dart';
-import 'package:nae/screens/wh/inventory/edit_fullscreen/show_stock.dart';
 import 'package:nae/screens/wh/inventory/screen.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/utils/date.dart';
-import 'package:nae/widgets/app_form.dart';
-import 'package:nae/widgets/app_form_card.dart';
-import 'package:nae/widgets/app_form_field.dart';
-import 'package:nae/widgets/app_form_picker_field.dart';
-import 'package:nae/widgets/autocomplete.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/memory_list.dart';
-import 'package:nae/widgets/scaffold_edit.dart';
 import 'package:nae/widgets/scaffold_view.dart';
-import 'package:nae/widgets/scrollable_list_view.dart';
+
 
 class WHInventoryEditMobile extends EntityHolder {
   final bool showStorages;
@@ -158,7 +146,7 @@ class _WHInventoryEditMobileState extends State<WHInventoryEditMobile>
                 ),
                 WHInventoryOverview(doc: widget.entity),
                 GoodsDispatch(
-                  ctx: const ['warehouse', 'transfer'],
+                  ctx: const ['warehouse', 'inventory'],
                   doc: widget.entity,
                   schema: WHInventory.schema,
                   storage: const MemoryItem(
