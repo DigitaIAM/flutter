@@ -91,17 +91,17 @@ class _WHInventoryEditState extends State<WHInventoryEdit> {
               onSave: _onSave,
               keyboardType: TextInputType.datetime,
             ),
-            DecoratedFormPickerField(
-              ctx: const ['counterparty'],
-              name: cCounterparty,
-              label: localization.translate(cCounterparty),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-              ]),
-              onSave: _onSave,
-              // keyboardType: TextInputType.text,
-            ),
+            // DecoratedFormPickerField(
+            //   ctx: const ['counterparty'],
+            //   name: cCounterparty,
+            //   label: localization.translate(cCounterparty),
+            //   autofocus: true,
+            //   validator: FormBuilderValidators.compose([
+            //     FormBuilderValidators.required(),
+            //   ]),
+            //   onSave: _onSave,
+            //   // keyboardType: TextInputType.text,
+            // ),
             DecoratedFormPickerField(
               ctx: const ['warehouse', 'storage'],
               name: cStorage,

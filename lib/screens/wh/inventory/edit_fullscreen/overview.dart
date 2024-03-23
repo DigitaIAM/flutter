@@ -26,8 +26,8 @@ class WHInventoryOverview extends StatelessWidget {
     };
     final schema = <Field>[
       fGoods.copyWith(width: 3.0),
-      fUomAtQty.copyWith(width: 0.5, editable: false),
-      fQty.copyWith(width: 1.0),
+     // fUomAtQty.copyWith(width: 0.5, editable: false),
+      fQtyNew.copyWith(width: 1.0),
     ];
 
     // print("WHInventoryOverview doc: $doc");
