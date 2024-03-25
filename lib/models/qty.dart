@@ -122,6 +122,35 @@ class Qty {
     }
   }
 
+  String toStringAggregated() {
+    if (nums.length <= 1) {
+      return toString();
+    }
+
+    final Uom? upperUOM = this.upperUOM;
+    final Uom? lowerUOM = this.lowerUOM;
+
+    Decimal upper = Decimal.zero;
+    Decimal lower = Decimal.zero;
+
+    // print("toStringAggregated $nums");
+
+    for (final num in nums) {
+      upper += num.number;
+      lower += num.lower;
+    }
+
+    // print("Qty.toString $nums");
+    var text =
+        '$upper ${upperUOM?.name() ?? ''} | $lower ${lowerUOM?.name() ?? ''}';
+
+    if (error()) {
+      return '!? $text';
+    } else {
+      return text;
+    }
+  }
+
   Qty operator +(Qty other) {
     // print("SUM $this + $other = ?");
 
@@ -349,6 +378,17 @@ class Named {
 
     return Named(
         number: number, named: Uom.fromJson(json['uom']), haveError: error);
+  }
+
+  Decimal get lower {
+    var number = this.number;
+    var deeper = named.deeper;
+    while (deeper != null) {
+      number *= deeper.$1;
+      deeper = deeper.$2.deeper;
+    }
+
+    return number;
   }
 
   bool error() {

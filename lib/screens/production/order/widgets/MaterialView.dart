@@ -339,7 +339,6 @@ class _MaterialViewState extends State<MaterialView> {
                                 rec: MemoryItem.from(data),
                                 schema: ProductionOrder.schema,
                                 enablePrinting: false,
-                                allowGoodsCreation: false,
                                 afterSave: () {
                                   setState(() {
                                     openProduced = false;

@@ -9,12 +9,11 @@ import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/inventory/edit_fullscreen/document_edit.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/edit_fullscreen_mobile.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/entity_screens.dart';
-import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/memory_list.dart';
-import 'package:nae/widgets/scaffold_list.dart';
 import 'package:nae/widgets/scaffold_list_calendar.dart';
 
 import 'edit_fullscreen/edit_fullscreen.dart';
@@ -51,47 +50,37 @@ class WHInventory extends Entity {
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
-      key: ValueKey('__${name()}'),
-      // _${DateTime.now().toString()}__'),
-      ctx: ctx,
-      schema: schema,
-      list: ScaffoldListCalendar(
-        entityType: WHInventory.ctx,
-        newBtn: (context) {
-          context.read<UiBloc>().add(ChangeView(WHInventory.ctx,
-              action: 'edit', entity: MemoryItem.create()));
-        },
-        newBtnTooltip: (context) =>
-            AppLocalizations.of(context).translate("new warehouse inventory"),
-        onDateChange: (context, date) {
-          context.read<MemoryBloc>().add(
-                MemoryFetch(
-                  'memories',
-                  WHInventory.ctx,
-                  schema: WHInventory.schema,
-                  filter: {'date': date.toYMD()},
-                  reset: true,
-                ),
-              );
-        },
-        listBuilder: (date) => WHInventoriesListBuilder(date: date),
-      ),
-
-      view: action == 'view'
-      ? WHInventoryEditMobile(
-        key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-        entity: entity,
-      )
-          : WHInventoryEditFS(
-              key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-              entity: entity,
-            ),
-      //     : WHInventoryView(
-      //         key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-      //         entity: entity,
-      //         tabIndex: 0,
-      //       ),
-    );
+        key: ValueKey('__${name()}'),
+        // _${DateTime.now().toString()}__'),
+        ctx: ctx,
+        schema: schema,
+        list: ScaffoldListCalendar(
+          entityType: WHInventory.ctx,
+          newBtn: (context) {
+            context.read<UiBloc>().add(ChangeView(WHInventory.ctx,
+                action: 'edit', entity: MemoryItem.create()));
+          },
+          newBtnTooltip: (context) =>
+              AppLocalizations.of(context).translate("new warehouse inventory"),
+          onDateChange: (context, date) {
+            context.read<MemoryBloc>().add(
+                  MemoryFetch(
+                    'memories',
+                    WHInventory.ctx,
+                    schema: WHInventory.schema,
+                    filter: {'date': date.toYMD()},
+                    reset: true,
+                  ),
+                );
+          },
+          listBuilder: (date) => WHInventoriesListBuilder(date: date),
+        ),
+        view: action == 'view'
+            ? WHInventoryEditMobile(
+                key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+                entity: entity,
+              )
+            : WHInventoryDocumentEdit(entity: entity));
   }
 }
 
