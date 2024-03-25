@@ -104,6 +104,7 @@
   "edit warehouse dispatch": "редактирование расходной накладной",
   "edit warehouse transfer": "редактирование перемещения",
   "warehouse inventory": "акт инвентаризации",
+  "new warehouse inventory": "новый акт инвентаризации",
   "status": "статус",
   "storage": "место хранения",
   "storage_from": "отправлено из",

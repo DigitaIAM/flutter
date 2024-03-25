@@ -120,7 +120,6 @@ class _ProductionOrderViewState extends State<ProductionOrderView>
                 doc: widget.entity,
                 schema: ProductionOrder.schema,
                 enablePrinting: false,
-                allowGoodsCreation: false,
                 storage: const MemoryItem(
                   id: 'warehouse/storage/2023-02-19T12:00:44.598Z',
                   json: {

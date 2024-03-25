@@ -242,7 +242,6 @@ class _WHTransferGoods extends State<WHTransferGoods> {
                             rec: MemoryItem.from(data),
                             schema: WHTransfer.schema,
                             enablePrinting: false,
-                            allowGoodsCreation: false,
                             afterSave: () {
                               setState(() {});
                               Navigator.pop(context);

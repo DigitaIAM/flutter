@@ -14,24 +14,43 @@ import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
 import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
+import 'package:nae/widgets/entity_screens.dart';
+import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
-class WHInventoryDocumentCreation extends StatefulWidget {
-  final MemoryItem doc;
-
-  const WHInventoryDocumentCreation({super.key, required this.doc});
+class WHInventoryDocumentEdit extends EntityHolder {
+  const WHInventoryDocumentEdit({super.key, required super.entity});
 
   @override
-  State<StatefulWidget> createState() => _WHInventoryDocumentCreationState();
+  State<StatefulWidget> createState() => _WHInventoryDocumentEditState();
 }
 
-class _WHInventoryDocumentCreationState extends State<WHInventoryDocumentCreation> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHInventoryDocumentCreation');
+class _WHInventoryDocumentEditState extends State<WHInventoryDocumentEdit> {
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHInventoryDocumentEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
+  late MemoryItem details;
 
   String status = "register";
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.entity.isNew) {
+      details = MemoryItem(id: '', json: {cDate: Utils.today()});
+    } else {
+      details = MemoryItem.from(widget.entity.json);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +89,9 @@ class _WHInventoryDocumentCreationState extends State<WHInventoryDocumentCreatio
               ),
               Container(height: 10),
               ElevatedButton(
-                onPressed: status == 'register' ? () => registerDocument(context) : null,
+                onPressed: status == 'register'
+                    ? () => registerDocument(context)
+                    : null,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -81,8 +102,13 @@ class _WHInventoryDocumentCreationState extends State<WHInventoryDocumentCreatio
             ])
           ]))
     ];
-    return ScrollableListView(
-      children: widgets,
+    return ScaffoldView(
+      title: localization.translate("new warehouse inventory"),
+      body: Builder(
+        builder: (context) {
+          return Column(children: widgets);
+        },
+      ),
     );
   }
 
@@ -96,14 +122,29 @@ class _WHInventoryDocumentCreationState extends State<WHInventoryDocumentCreatio
     final date = data[cDate] ?? '';
     final storage = data[cStorage] as MemoryItem;
 
-    final record = await Api.feathers().create(serviceName: 'memories', data: {
-      cDate: date,
-      cStorage: storage.id,
-    }, params: {
-      'oid': Api.instance.oid,
-      'ctx': ['warehouse', 'inventory', 'document']
-    });
+    var record;
+    if (widget.entity.isNew) {
+      record = await Api.feathers().create(
+        serviceName: 'memories',
+        data: {
+          cDate: date,
+          cStorage: storage.id,
+        },
+        params: {'oid': Api.instance.oid, 'ctx': WHInventory.ctx},
+      );
+    } else {
+      record = await Api.feathers().update(
+        serviceName: 'memories',
+        objectId: widget.entity.id,
+        data: {
+          cDate: date,
+          cStorage: storage.id,
+        },
+        params: {'oid': Api.instance.oid, 'ctx': WHInventory.ctx},
+      );
+    }
 
-    context.read<UiBloc>().add(ChangeView(WHInventory.ctx, action: 'edit', entity: MemoryItem.from(record)));
+    context.read<UiBloc>().add(ChangeView(WHInventory.ctx,
+        action: 'view', entity: MemoryItem.from(record)));
   }
 }

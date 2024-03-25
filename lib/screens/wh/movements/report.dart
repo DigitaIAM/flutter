@@ -478,13 +478,13 @@ class _RowWidgetState extends State<RowWidget> {
       child: Row(
         children: [
           c(label, isNumber: false, flex: 10),
-          c(item.json[openQty].toString()),
+          c(item.json[openQty].toStringAggregated()),
           c(Number.f(item.json['open_balance']?['cost'] ?? '')),
-          c(item.json[receiveQty].toString()),
+          c(item.json[receiveQty].toStringAggregated()),
           c(Number.f(item.json['receive']?['cost'] ?? '')),
-          c(item.json[issueQty].toString()),
+          c(item.json[issueQty].toStringAggregated()),
           c(Number.f(item.json['issue']?['cost'] ?? '')),
-          c(item.json[closeQty].toString()),
+          c(item.json[closeQty].toStringAggregated()),
           c(Number.f(item.json['close_balance']?['cost'] ?? '')),
         ],
       ),

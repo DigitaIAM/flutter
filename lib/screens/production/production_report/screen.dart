@@ -401,10 +401,10 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
         if (used != null && used.isNotEmpty) {
           for (Map value in used) {
             final keyUsed = 'used ${value['goods']?['name'] ?? ''}';
-            final used = qtyToText(value['qty'] ?? '');
-            cells[keyUsed] = PlutoCell(value: used);
-
+            // final used = qtyToText(value['qty'] ?? '');
             final qty = Qty.fromJson(value['qty']);
+
+            cells[keyUsed] = PlutoCell(value: qty);
 
             if (sumAll[keyUsed] != null) {
               final prev = sumAll[keyUsed]!.value;
@@ -527,14 +527,22 @@ class _ProductionReportPlutoGrid extends State<ProductionReportPlutoGrid> {
     // material used items
     List<String> materialUsedGroupFields = [];
     for (String materialUsed in mUsedSet) {
-      columns.add(PlutoColumn(
-        title: materialUsed,
-        field: 'used $materialUsed',
-        type: PlutoColumnType.text(),
-        textAlign: PlutoColumnTextAlign.end,
-        width: 150,
-        backgroundColor: theme.dividerColor,
-      ));
+      columns.add(
+        PlutoColumn(
+          title: materialUsed,
+          field: 'used $materialUsed',
+          type: PlutoColumnType.text(),
+          textAlign: PlutoColumnTextAlign.end,
+          width: 150,
+          backgroundColor: theme.dividerColor,
+          formatter: (v) {
+            if (v is Qty) {
+              return v.toStringAggregated();
+            }
+            return v.toString();
+          },
+        ),
+      );
       materialUsedGroupFields.add('used $materialUsed');
     }
     if (materialUsedGroupFields.isNotEmpty) {

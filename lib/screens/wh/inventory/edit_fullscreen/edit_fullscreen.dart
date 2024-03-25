@@ -13,7 +13,7 @@ import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
-import 'package:nae/screens/wh/inventory/edit_fullscreen/document_creation.dart';
+import 'package:nae/screens/wh/inventory/edit_fullscreen/document_edit.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/goods.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/overview.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/show_stock.dart';
@@ -30,8 +30,7 @@ import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
 class WHInventoryEditFS extends EntityHolder {
-  const WHInventoryEditFS({super.key, required super.entity})
-      : super(fullscreen: true);
+  const WHInventoryEditFS({super.key, required super.entity});
 
   @override
   State<WHInventoryEditFS> createState() => _WHInventoryEditFSState();
@@ -96,7 +95,7 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS>
           controller: _controller,
           isScrollable: true,
           tabs: [
-            Tab(text: localization.translate("new document")),
+            Tab(text: localization.translate("new warehouse inventory")),
           ],
         ),
         body: Builder(builder: (context) {
@@ -105,7 +104,7 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS>
               child: TabBarView(
                 controller: _controller,
                 children: <Widget>[
-                  WHInventoryDocumentCreation(doc: widget.entity)
+                  WHInventoryDocumentEdit(entity: widget.entity)
                 ],
               ),
             ),
@@ -122,7 +121,7 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS>
         if (uiState.isDesktop) {
           return EditScaffold(
             entity: widget.entity,
-            title: localization.translate("warehouse receive"),
+            title: localization.translate("warehouse inventory"),
             onClose: routerBack,
             onCancel: routerBack,
             onSave: _onSave,
@@ -157,7 +156,7 @@ class _WHInventoryEditFSState extends State<WHInventoryEditFS>
                 Expanded(
                   child: ScrollableListView(children: <Widget>[
                     Lines(
-                      ctx: const ['warehouse', 'receive'],
+                      ctx: const ['warehouse', 'inventory'],
                       schema: const [], // TODO
                       document: widget.entity,
                     ),

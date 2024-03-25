@@ -101,9 +101,6 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-
-         print("subtitle ${item.json}");
-
           String dateBatch = item.json['batch']?['date'] ?? '';
 
           final qty = item.json['qty'].toString();
@@ -178,62 +175,60 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
     data[cGoods] = item.json[cGoods];
     data[cCategory] = data[cGoods].json[cCategory];
     data[cBatch] =
-    item.json[cBatch] == null ? null : MemoryItem.from(item.json[cBatch]);
+        item.json[cBatch] == null ? null : MemoryItem.from(item.json[cBatch]);
     (item.json['qty'] as Qty).toData(data);
 
-   // print("data $data");
+    // print("data $data");
 
     final uiBloc = context.read<UiBloc>();
 
     showDialog<String>(
       context: context,
-      builder: (BuildContext context) =>
-          BlocProvider(
-            create: (ctx) => UiBloc(uiBloc.state),
-            child: Dialog(
-              child: SizedBox(
-                width: 500,
-                height: 500,
-                child: Column(
+      builder: (BuildContext context) => BlocProvider(
+        create: (ctx) => UiBloc(uiBloc.state),
+        child: Dialog(
+          child: SizedBox(
+            width: 500,
+            height: 500,
+            child: Column(
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child: SizedBox(
-                        width: 500,
-                        height: 400,
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: GoodsDispatch(
-                                ctx: const ['warehouse', 'inventory'],
-                                doc: widget.doc,
-                                rec: MemoryItem.from(data),
-                                schema: WHInventory.schema,
-                                enablePrinting: false,
-                                allowGoodsCreation: false,
-                                afterSave: () {
-                                  setState(() {});
-                                  Navigator.pop(context);
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Icon(Icons.close),
                     ),
                   ],
                 ),
-              ),
+                Expanded(
+                  child: SizedBox(
+                    width: 500,
+                    height: 400,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: GoodsDispatch(
+                            ctx: const ['warehouse', 'inventory'],
+                            doc: widget.doc,
+                            rec: MemoryItem.from(data),
+                            schema: WHInventory.schema,
+                            enablePrinting: false,
+                            afterSave: () {
+                              setState(() {});
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
+      ),
     );
   }
 
