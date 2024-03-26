@@ -103,7 +103,7 @@ class _WHInventoryDocumentEditState extends State<WHInventoryDocumentEdit> {
           ]))
     ];
     return ScaffoldView(
-      title: localization.translate("new warehouse inventory"),
+      title: localization.translate("warehouse inventory"),
       body: Builder(
         builder: (context) {
           return Column(children: widgets);
