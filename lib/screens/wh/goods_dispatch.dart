@@ -27,8 +27,8 @@ class GoodsDispatch extends StatefulWidget {
   final MemoryItem? rec;
   final List<Field> schema;
   final bool enablePrinting;
-  final bool allowGoodsCreation;
   final MemoryItem? storage;
+  final bool storageEditable;
 
   final Function()? afterSave;
 
@@ -39,9 +39,9 @@ class GoodsDispatch extends StatefulWidget {
     this.rec,
     required this.schema,
     this.enablePrinting = true,
-    this.allowGoodsCreation = true,
-    this.storage,
     this.afterSave,
+    this.storage,
+    this.storageEditable = true,
   });
 
   @override
@@ -174,6 +174,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             name: cStorage,
             label: localization.translate(cStorage),
             creatable: false,
+            editable: widget.storageEditable,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(
                   errorText: "выберите место хранения"),
@@ -190,7 +191,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
               // FormBuilderValidators.required(errorText: "выберите категорию"),
             ]),
             onSave: (context) {},
-            readOnly: true,
+            //editable: false,
             visible: showCategory,
           ),
           const SizedBox(height: 10),
@@ -198,24 +199,24 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             ctx: const [cGoods],
             name: cGoods,
             label: localization.translate(cGoods),
-            creatable: widget.allowGoodsCreation,
+            creatable: false,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: "выберите товар"),
             ]),
             onSave: (context) {},
-            readOnly: true,
+            //editable: false,
             visible: showGoods,
           ),
           DecoratedFormPickerField(
             ctx: const ['goods', 'stock'],
             name: cBatch,
             label: localization.translate(cBatch),
-            creatable: widget.allowGoodsCreation,
+            creatable: false,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: "выберите партию"),
             ]),
             onSave: (context) {},
-            readOnly: true,
+            //editable: false,
             visible: showBatch,
           ),
           const SizedBox(height: 10),
@@ -409,7 +410,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
           FormBuilderValidators.required(errorText: "выберите значение"),
         ]),
         onSave: (context) {},
-        readOnly: true,
+        editable: false,
       ),
     );
 

@@ -20,7 +20,6 @@ class Goods extends Entity {
     fCategory,
     fName,
     fUom,
-    Field(cQty, CalculatedType((MemoryItem goods) async => goods.balance()))
   ];
 
   @override
@@ -77,7 +76,8 @@ class GoodsListBuilder extends StatelessWidget {
       schema: Goods.schema,
       title: (MemoryItem item) => Text(item.name()),
       subtitle: (MemoryItem item) => Text(item.balance()),
-      onTap: (context, item) => context.read<UiBloc>().add(ChangeView(Goods.ctx, entity: item)),
+      onTap: (context, item) =>
+          context.read<UiBloc>().add(ChangeView(Goods.ctx, entity: item)),
     );
   }
 }
