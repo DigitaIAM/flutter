@@ -173,8 +173,10 @@ class MemoryItem extends Equatable {
 
   static empty() => const MemoryItem(id: 'empty', json: {});
 
+  static bool check(dynamic v) => v is Map<String, dynamic>; //  && (v[cId] || v['id']);
+
   static MemoryItem from(Map<String, dynamic> json) => MemoryItem(
-        id: json[cId] ?? json['id'],
+        id: json[cId] ?? json['id'] ?? '',
         json: json,
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       );
