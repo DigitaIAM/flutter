@@ -61,7 +61,7 @@ class _DecoratedFormPickerFieldState extends State<DecoratedFormPickerField> {
     final field = FormBuilderField<MemoryItem>(
       name: widget.name,
       validator: widget.validator,
-      onChanged: (val) => debugPrint("onChanged $val"),
+      // onChanged: (val) => debugPrint("onChanged $val"),
       builder: (FormFieldState field) {
         return Column(
           children: [

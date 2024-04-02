@@ -123,6 +123,7 @@ class Qty {
   }
 
   String toStringAggregated() {
+    // print("Qty.toStringAggregated $nums");
     if (nums.length <= 1) {
       return toString();
     }
@@ -142,7 +143,7 @@ class Qty {
 
     // print("Qty.toString $nums");
     var text =
-        '$upper ${upperUOM?.name() ?? ''} | $lower ${lowerUOM?.name() ?? ''}';
+        '$upper ${upperUOM?.name() ?? ''} = $lower ${lowerUOM?.name() ?? ''}';
 
     if (error()) {
       return '!? $text';
@@ -318,21 +319,21 @@ class Uom extends Equatable {
     var text = '';
 
     while (uom is Map) {
-      if (uom['number'] == null) {
-        text += ' ${nameOrId(uom['uom'])}';
-        break;
-      }
-      if (uom['uom'] == null) {
+      if (uom['number'] == null && uom['uom'] == null) {
         text += ' ${uom['name'] ?? ''}';
         break;
       }
-
-      text = '$text ${nameOrId(uom['in'])} по ${uom['number'] ?? ''}';
-
-      final label = nameOrId(uom['uom']);
-      if (label != null) {
-        text += ' $label';
+      if (uom['number'] == null) {
+        text += ' ${nameOrId(uom['uom'], '?')}';
+        break;
       }
+
+      text = '$text ${nameOrId(uom['in'], '?')} по ${uom['number'] ?? ''}';
+
+      // final label = nameOrId(uom['uom'], '');
+      // if (label != null) {
+      //   text += ' $label';
+      // }
       uom = uom['uom'];
     }
 
@@ -347,13 +348,13 @@ class Uom extends Equatable {
   List<Object?> get props => [id, deeper];
 }
 
-String nameOrId(dynamic json) {
+String nameOrId(dynamic json, String def) {
   if (json == null) {
-    return "NULL";
+    return def;
   } else if (json is String) {
     return json;
   } else {
-    return json['name'] ?? '';
+    return json['name'] ?? def;
   }
 }
 
@@ -396,5 +397,10 @@ class Named {
       return true;
     }
     return named.error();
+  }
+
+  @override
+  String toString() {
+    return '$number $named';
   }
 }

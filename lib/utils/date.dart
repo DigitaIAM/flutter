@@ -1,6 +1,11 @@
 import 'package:intl/intl.dart';
 
 class DT {
+  static DateTime today() {
+    DateTime now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
   static String format(String date) {
     return f(DateTime.parse(date));
   }
