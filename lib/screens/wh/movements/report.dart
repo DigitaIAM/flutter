@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,7 +48,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
   late CleanCalendarController calendarController;
 
   final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_uomEdit');
+      GlobalKey<FormBuilderState>(debugLabel: '_movementReport');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   MemoryItem formEntity = MemoryItem.empty();
@@ -73,6 +71,8 @@ class _MovementReportScreenState extends State<MovementReportScreen>
   @override
   void initState() {
     super.initState();
+
+    print("_MovementReportScreenState.initState");
 
     calendarController = CleanCalendarController(
       // DateTime.now().subtract(const Duration(days: 365)),
@@ -295,7 +295,8 @@ class _MovementReportScreenState extends State<MovementReportScreen>
               ),
             ),
           ),
-          child: const Icon(Icons.calendar_today_outlined, color: Colors.black26),
+          child:
+              const Icon(Icons.calendar_today_outlined, color: Colors.black26),
         ),
       ],
     );

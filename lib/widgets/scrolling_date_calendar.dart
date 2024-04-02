@@ -162,9 +162,7 @@ class _ScrollingDayCalendarState extends State<ScrollingDayCalendar> {
                 child: MaterialButton(
                   onPressed: () {
                     _pageController.previousPage(
-                      duration: widget.pageChangeDuration != null
-                          ? widget.pageChangeDuration!
-                          : const Duration(microseconds: 700),
+                      duration: widget.pageChangeDuration,
                       curve: Curves.easeIn,
                     );
                   },
@@ -203,8 +201,7 @@ class _ScrollingDayCalendarState extends State<ScrollingDayCalendar> {
                 child: MaterialButton(
                   onPressed: () {
                     _pageController.nextPage(
-                      duration: widget.pageChangeDuration ??
-                          Duration(milliseconds: 700),
+                      duration: widget.pageChangeDuration,
                       curve: Curves.easeIn,
                     );
                   },
