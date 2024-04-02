@@ -68,7 +68,7 @@ class Field {
     } else if (type is ReferenceType) {
       if (v is MemoryItem) {
         return v;
-      } else if (v is Map<String, dynamic>) {
+      } else if (MemoryItem.check(v)) {
         return MemoryItem.from(v);
       } else if (v is String) {
         return v;

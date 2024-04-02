@@ -295,7 +295,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
               ),
             ),
           ),
-          child: const Icon(Icons.calendar_today_outlined, color: Colors.white),
+          child: const Icon(Icons.calendar_today_outlined, color: Colors.black26),
         ),
       ],
     );

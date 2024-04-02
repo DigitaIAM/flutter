@@ -367,7 +367,7 @@ class Named {
   static Named fromJson(dynamic json) {
     //print("Named.fromJson $json");
     bool error = false;
-    String str = json['number']?.toString() ?? '';
+    String str = json['number']?.toString() ?? '0';
     var number = Decimal.tryParse(str);
     if (number == null) {
       error = true;
