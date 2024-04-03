@@ -12,6 +12,7 @@ import 'package:nae/screens/common/product/screen.dart';
 import 'package:nae/screens/common/uom/screen.dart';
 import 'package:nae/screens/production/area/screen.dart';
 import 'package:nae/screens/production/order/screen.dart';
+import 'package:nae/screens/production/pallets/screen.dart';
 import 'package:nae/screens/production/production_report/screen.dart';
 import 'package:nae/screens/settings/printer/screen.dart';
 import 'package:nae/screens/wh/balance/screen.dart';
@@ -70,6 +71,7 @@ class UiState extends Equatable {
 
   final List<List<Entity>> entities = [
     [ProductionOrder()],
+    [FormationOfPallets()],
     [ProductionReportView()],
     [WHBalance(), WHMovement()],
     [WHReceive(), WHTransfer(), WHDispatch(), WHInventory()],
