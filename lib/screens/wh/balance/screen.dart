@@ -4,7 +4,7 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/schema/schema.dart';
-import 'package:nae/screens/wh/list_builder.dart';
+import 'package:nae/screens/wh/balance/list_builder.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/scaffold_list.dart';

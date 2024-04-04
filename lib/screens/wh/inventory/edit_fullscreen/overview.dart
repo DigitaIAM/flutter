@@ -26,13 +26,15 @@ class WHInventoryOverview extends StatelessWidget {
     };
     final schema = <Field>[
       fGoods.copyWith(width: 3.0),
-     // fUomAtQty.copyWith(width: 0.5, editable: false),
+      // fUomAtQty.copyWith(width: 0.5, editable: false),
       fQtyNew.copyWith(width: 1.0),
     ];
 
-    // print("WHInventoryOverview doc: $doc");
+    print("doc: ${doc.json}");
 
-    final storage = doc.json[cStorage] is MemoryItem ? doc.json[cStorage].name() : doc.json[cStorage][cName] ?? '';
+    final storage = doc.json[cStorage] is MemoryItem
+        ? doc.json[cStorage].name()
+        : doc.json[cStorage][cName] ?? '';
 
     return BlocProvider(
       create: (context) {

@@ -9,6 +9,7 @@ import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/models/ui/state.dart';
@@ -59,69 +60,6 @@ class _WHBalanceViewState extends State<WHBalanceView>
 
 Field fType = Field(cType, CalculatedType((MemoryItem rec) async {
   return rec.json[cType] ?? rec.json['op']?[cType] ?? '';
-}));
-
-Field fQty = Field('_qty', CalculatedType((MemoryItem rec) async {
-  var text = '';
-  // print("_rec_: ${rec.json}");
-  List? list = rec.json[cQty] ?? rec.json['op']?[cQty];
-  // print('_list $list');
-  if (list != null && list.isNotEmpty) {
-    for (Map qty in list) {
-      // print('_qty $qty');
-      if (text != '') {
-        text = '$text, ';
-      }
-      text = '$text ${qty['number'] ?? ''}';
-      var uom = qty['uom'];
-
-      if (uom is String) {
-        // print('uomIsString');
-        var obj = await Api.feathers().get(
-            serviceName: "memories",
-            objectId: uom,
-            params: {
-              "oid": Api.instance.oid,
-              "ctx": []
-            }).onError((error, stackTrace) => {});
-        text = '$text ${obj['name'] ?? ''}';
-      } else {
-        // print('_uomType ${uom.runtimeType}');
-        while (uom is Map) {
-          var inObj = await Api.feathers().get(
-              serviceName: "memories",
-              objectId: uom['in'] ?? '',
-              params: {
-                "oid": Api.instance.oid,
-                "ctx": []
-              }).onError((error, stackTrace) => {});
-
-          text = '$text ${inObj['name'] ?? ''} по ${uom['number'] ?? ''}';
-          // print('_uom $uom');
-          if (uom['uom'] is String) {
-            var obj = await Api.feathers().get(
-                serviceName: "memories",
-                objectId: uom['uom'] ?? '',
-                params: {
-                  "oid": Api.instance.oid,
-                  "ctx": []
-                }).onError((error, stackTrace) => {});
-
-            text = '$text ${obj['name'] ?? ''}';
-            break;
-          } else {
-            uom = uom['uom'];
-          }
-        }
-      }
-    }
-  } else {
-    text = '0';
-  }
-  // print('_text $text');
-  return text;
-
-  // return rec.json[cQty] ?? rec.json['op']?[cQty] ?? '';
 }));
 
 Field fCost = Field(cCost, CalculatedType((MemoryItem rec) async {
@@ -201,7 +139,7 @@ class WHTransactionsBuilder extends StatelessWidget {
     final schema = [
       fDesc,
       fType,
-      fQty,
+      fQtyNew,
       fCost,
     ];
 
@@ -209,7 +147,7 @@ class WHTransactionsBuilder extends StatelessWidget {
     final goods = fGoods.resolve(entity.json);
 
     final filter = {
-      'dates': {cFrom: '2022-01-01', 'till': Utils.today()},
+      'dates': {cFrom: '2024-01-01', 'till': Utils.today()},
       cStorage: store.uuid,
       cGoods: goods.uuid,
       'batch_id': entity.json[cBatch]['id'],
@@ -238,19 +176,16 @@ class WHTransactionsBuilder extends StatelessWidget {
       schema: schema,
       filter: filter,
       title: (MemoryItem item) {
-        var qty = fQty.resolve(item.json);
-        if (qty is List && qty.isEmpty) {
-          qty = '0';
-        }
+        var qty = item.json[cQty].toStringAggregated();
         return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("$qty"),
+              Text(qty),
               Text(Number.format(fCost.resolve(item.json))),
             ]);
       },
       subtitle: (MemoryItem item) {
-        final description = fDesc.resolve(item.json);
+        final description = fDesc.resolve(item.json) ?? '';
         final parts = description.split('|');
         final type = parts[0] ?? '';
         if (parts.length == 2) {
