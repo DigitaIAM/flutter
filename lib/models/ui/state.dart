@@ -71,7 +71,7 @@ class UiState extends Equatable {
 
   final List<List<Entity>> entities = [
     [ProductionOrder()],
-    [FormationOfPallets()],
+    [PalletPacking()],
     [ProductionReportView()],
     [WHBalance(), WHMovement()],
     [WHReceive(), WHTransfer(), WHDispatch(), WHInventory()],

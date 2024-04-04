@@ -18,8 +18,13 @@ import 'package:nae/widgets/memory_list.dart';
 
 import 'package:nae/widgets/scaffold_list_calendar.dart';
 
-class FormationOfPallets extends Entity {
-  static const List<String> ctx = ['production', 'pallet'];
+class PalletPacking extends Entity {
+  static const List<String> ctx = ['production', 'pallet', 'packing'];
+  static const List<String> ctxOfDispatch = [
+    'production',
+    'pallet',
+    'dispatch'
+  ];
 
   static final List<Field> schema = [
     fDate,
@@ -30,7 +35,7 @@ class FormationOfPallets extends Entity {
   List<String> route() => ctx;
 
   @override
-  String name() => "formation of pallet";
+  String name() => "pallet packing";
 
   @override
   IconData icon() => Icons.pallet;
@@ -43,19 +48,19 @@ class FormationOfPallets extends Entity {
       ctx: ctx,
       schema: schema,
       list: ScaffoldListCalendar(
-        entityType: FormationOfPallets.ctx,
+        entityType: PalletPacking.ctx,
         newBtn: (context) {
-          context.read<UiBloc>().add(ChangeView(FormationOfPallets.ctx,
+          context.read<UiBloc>().add(ChangeView(PalletPacking.ctx,
               action: 'edit', entity: MemoryItem.create()));
         },
         newBtnTooltip: (context) =>
-            AppLocalizations.of(context).translate("new pallet"),
+            AppLocalizations.of(context).translate("pallet packing"),
         onDateChange: (context, date) {
           context.read<MemoryBloc>().add(
                 MemoryFetch(
                   'memories',
-                  FormationOfPallets.ctx,
-                  schema: FormationOfPallets.schema,
+                  PalletPacking.ctx,
+                  schema: PalletPacking.schema,
                   filter: {'date': date.toYMD()},
                   reset: true,
                 ),
@@ -84,9 +89,9 @@ class PalletListBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     return MemoryList(
       mode: Mode.mobile,
-      ctx: FormationOfPallets.ctx,
+      ctx: PalletPacking.ctx,
       filter: date == null ? {} : {'date': date!.toYMD()},
-      schema: FormationOfPallets.schema,
+      schema: PalletPacking.schema,
       groupBy: (element) {
         final id = element.json[cDate] ?? '';
         return MemoryItem(id: id, json: {cId: id, cName: id});
@@ -95,7 +100,7 @@ class PalletListBuilder extends StatelessWidget {
       subtitle: (MemoryItem item) => const Text(''),
       onTap: (context, item) => context
           .read<UiBloc>()
-          .add(ChangeView(FormationOfPallets.ctx, entity: item)),
+          .add(ChangeView(PalletPacking.ctx, entity: item)),
     );
   }
 }

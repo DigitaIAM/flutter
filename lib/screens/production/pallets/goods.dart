@@ -1,26 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:nae/api.dart';
-import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/qty.dart';
 import 'package:nae/models/ui/bloc.dart';
-import 'package:nae/printer/labels.dart';
-import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/production/pallets/screen.dart';
 import 'package:nae/screens/wh/goods_dispatch.dart';
-import 'package:nae/screens/wh/inventory/screen.dart';
-import 'package:nae/screens/wh/receive/screen.dart';
-import 'package:nae/share/utils.dart';
-import 'package:nae/widgets/app_form.dart';
-import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
 
@@ -35,39 +23,14 @@ class PalletsGoods extends StatefulWidget {
 }
 
 class _PalletsGoodsState extends State<PalletsGoods> {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_PalletsGoodsState');
-
-  final FocusScopeNode _focusNode = FocusScopeNode();
-
-  void _onSave(BuildContext context) {
-    final state = _formKey.currentState;
-    if (state != null && state.saveAndValidate()) {
-      debugPrint('new data');
-      debugPrint(_formKey.currentState?.value.toString());
-
-      final Map<String, dynamic> data = Map.from(state.value);
-      // workaround
-      data[cId] = widget.doc.id;
-
-      context.read<MemoryBloc>().add(MemorySave("memories", WHInventory.ctx,
-          WHInventory.schema, MemoryItem(id: widget.doc.id, json: data)));
-    } else {
-      debugPrint(_formKey.currentState?.value.toString());
-      debugPrint('validation failed');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    const ctx = ['production', 'pallet'];
     final filter = {
       cDocument: widget.doc.id,
     };
     final schema = <Field>[
-      fCategoryAtGoods,
       fGoods.copyWith(width: 3.0),
-      // fUomAtQty.copyWith(width: 0.5, editable: false),
+      fCategoryAtGoods,
       fQtyNew.copyWith(width: 1.0),
     ];
 
@@ -76,7 +39,7 @@ class _PalletsGoodsState extends State<PalletsGoods> {
         final bloc = MemoryBloc(schema: schema, reverse: true);
         bloc.add(MemoryFetch(
           'memories',
-          ctx,
+          PalletPacking.ctxOfDispatch,
           filter: filter,
           reverse: true,
           loadAll: true,
@@ -86,7 +49,7 @@ class _PalletsGoodsState extends State<PalletsGoods> {
       },
       child: MemoryList(
         mode: widget.mode,
-        ctx: ctx,
+        ctx: PalletPacking.ctxOfDispatch,
         filter: filter,
         schema: schema,
         title: (MemoryItem item) {
@@ -121,7 +84,7 @@ class _PalletsGoodsState extends State<PalletsGoods> {
           return Text(text, style: style);
         },
         onDoubleTap: (context, item) {
-          editItem(context, ctx, widget.doc, item);
+          editItem(context, PalletPacking.ctxOfDispatch, widget.doc, item);
         },
         //onTap: (context, MemoryItem item) => popUpPatch(context, item),
         // context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
@@ -134,17 +97,10 @@ class _PalletsGoodsState extends State<PalletsGoods> {
             backgroundColor: Colors.red,
           ),
           ItemAction(
-            label: 'print',
-            icon: Icons.print_outlined,
-            onPressed: (context, item) => drawPrinterList(context, item),
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.blue,
-          ),
-          ItemAction(
             label: 'edit',
             icon: Icons.edit,
-            onPressed: (context, item) =>
-                editItem(context, ctx, widget.doc, item),
+            onPressed: (context, item) => editItem(
+                context, PalletPacking.ctxOfDispatch, widget.doc, item),
             foregroundColor: Colors.white,
             backgroundColor: Colors.green,
           ),
@@ -154,13 +110,11 @@ class _PalletsGoodsState extends State<PalletsGoods> {
   }
 
   void deleteItem(BuildContext context, MemoryItem item) async {
-    const ctx = ['production', 'pallet'];
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
-    context
-        .read<MemoryBloc>()
-        .add(MemoryPatch('memories', ctx, const [], item.id, data));
+    context.read<MemoryBloc>().add(MemoryPatch(
+        'memories', PalletPacking.ctxOfDispatch, const [], item.id, data));
   }
 
   void editItem(BuildContext context, List<String> ctx, MemoryItem doc,
@@ -210,10 +164,10 @@ class _PalletsGoodsState extends State<PalletsGoods> {
                       children: [
                         Expanded(
                           child: GoodsDispatch(
-                            ctx: const ['production', 'pallet'],
+                            ctx: PalletPacking.ctxOfDispatch,
                             doc: widget.doc,
                             rec: MemoryItem.from(data),
-                            schema: FormationOfPallets.schema,
+                            schema: PalletPacking.schema,
                             enablePrinting: false,
                             afterSave: () {
                               setState(() {});
@@ -231,162 +185,5 @@ class _PalletsGoodsState extends State<PalletsGoods> {
         ),
       ),
     );
-  }
-
-  Future drawPrinterList(BuildContext context, MemoryItem item) async {
-    final list = await getPrinters(item);
-
-    return showMaterialModalBottomSheet(
-      context: context,
-      builder: (context) => SingleChildScrollView(
-        controller: ModalScrollController.of(context),
-        child: list,
-      ),
-    );
-  }
-
-  Future<Widget> getPrinters(MemoryItem item) async {
-    final response = await Api.feathers().find(serviceName: "memories", query: {
-      "oid": Api.instance.oid,
-      "ctx": const ['printer'],
-    });
-
-    // print("printers ${response.runtimeType} ${response}");
-
-    final printers = response['data'];
-
-    final children = <Widget>[];
-
-    children.add(const Text("Choose the printer"));
-
-    if (printers is List) {
-      for (var printer in printers) {
-        final ip = (printer['ip'] ?? '').toString();
-        final port = int.parse(printer['port'] ?? '0');
-        children.add(ListTile(
-            title: Text(printer[cName] ?? ''),
-            onTap: () => printPreparation(ip, port, item)));
-      }
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: children,
-    );
-  }
-
-  void printPreparation(String ip, int port, MemoryItem item) async {
-    // print("printPreparation: ${item.json}");
-
-    final d = await widget.doc.enrich(WHReceive.schema);
-
-    await Labels.connect(ip, port, (printer) async {
-      return await printing(printer, d, item, (newStatus) => {});
-    });
-
-    // print("printResult: $result");
-  }
-
-  Future popUpPatch(BuildContext context, MemoryItem record) {
-    return showMaterialModalBottomSheet(
-      context: context,
-      builder: (ctx) => SingleChildScrollView(
-        controller: ModalScrollController.of(context),
-        child: enteringAmount(context, record),
-      ),
-    );
-  }
-
-  Widget enteringAmount(BuildContext context, MemoryItem record) {
-    final localization = AppLocalizations.of(context);
-
-    List<Widget> widgets = [];
-
-    final MemoryItem details = MemoryItem(
-        id: '', json: {cDate: Utils.today()}); // TODO input doc date?
-
-    widgets.add(const Text('Enter the amount of goods:'));
-
-    widgets.add(DecoratedFormField(
-      name: cQty,
-      label: localization.translate(cQty),
-      autofocus: true,
-      validator: FormBuilderValidators.compose([
-        FormBuilderValidators.required(),
-      ]),
-      onSave: (context) => _onSave,
-      keyboardType: TextInputType.number,
-    ));
-
-    widgets.add(Container(height: 10));
-
-    widgets.add(
-      ElevatedButton(
-        onPressed: () => patchDocument(context, record),
-        // onPressed: () => {},
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        child: Text(localization.translate('register')),
-      ),
-    );
-
-    return AppForm(
-        entity: details,
-        formKey: _formKey,
-        focusNode: _focusNode,
-        onChanged: () {
-          _formKey.currentState!.save();
-          debugPrint("onChanged: ${_formKey.currentState!.value}");
-        },
-        child: Column(children: widgets));
-  }
-
-  void patchDocument(BuildContext context, MemoryItem record) {
-    final data = _formKey.currentState?.value;
-    if (data == null) {
-      return;
-    }
-
-    // print("data type ${data.runtimeType}");
-    // print("inventory_data $data");
-    // print("inventory_doc ${widget.doc.json}");
-
-    final qty = data[cQty] ?? '';
-
-    if (isNumeric(qty) == true) {
-      // context.read<MemoryBloc>().add(MemoryCreate("memories", const [
-      //       'warehouse',
-      //       'inventory'
-      //     ], const [], {
-      //       cDocument: widget.doc.id,
-      //       cGoods: record.id,
-      //       cQty: {cNumber: qty}
-      //     }));
-
-      context.read<MemoryBloc>().add(MemoryPatch(
-          "memories",
-          const ['production', 'pallet'],
-          const [],
-          record.id,
-          {
-            cQty: {cNumber: qty}
-          }));
-    } else {
-      // print("Wrong value was entered");
-    }
-  }
-
-  bool isNumeric(String str) {
-    try {
-      var value = double.parse(str);
-    } on FormatException {
-      return false;
-    }
-
-    return true;
   }
 }
