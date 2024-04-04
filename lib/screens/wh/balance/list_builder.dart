@@ -4,6 +4,7 @@ import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
@@ -134,37 +135,12 @@ class ListBuilder extends StatelessWidget {
             final balance = item.json['_balance'];
             // print("balance: ${balance}");
             if (balance != null) {
-              var text = '';
-              List? list = balance[cQty];
-              if (list != null && list.isNotEmpty) {
-                for (Map qty in list) {
-                  if (text != '') {
-                    text = '$text, ';
-                  }
-                  text = '$text ${qty['number'] ?? ''}';
-                  var uom = qty['uom'];
-                  if (uom is String) {
-                    text = '$text $uom';
-                  } else {
-                    while (uom is Map) {
-                      if (uom['name'] != null) {
-                        text = '$text ${uom['name']}';
-                        break;
-                      } else {
-                        text =
-                            '$text ${uom['in']?['name'] ?? ''} по ${uom['number'] ?? ''}';
-                        uom = uom['uom'] ?? uom;
-                      }
-                    }
-                  }
-                }
-              }
-
+              Qty qty = Qty.fromJson(balance[cQty]);
               return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Text('${balance[cQty] ?? ''} ${fUom.resolve(item.json)?.name() ?? ''}'),
-                    Text(text),
+                    Text(qty.toStringAggregated()),
                     Text('${Number.format(balance[cCost] ?? '')} $currency'),
                   ]);
             }

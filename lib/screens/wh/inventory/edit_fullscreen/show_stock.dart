@@ -10,7 +10,7 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/screens/wh/inventory/screen.dart';
-import 'package:nae/screens/wh/list_builder.dart';
+import 'package:nae/screens/wh/balance/list_builder.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_field.dart';
