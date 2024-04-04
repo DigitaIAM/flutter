@@ -9,7 +9,6 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/screens/production/pallets/screen.dart';
-import 'package:nae/screens/wh/inventory/screen.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
@@ -131,7 +130,7 @@ class _PalletDocumentEditState extends State<PalletDocumentEdit> {
           cDate: date,
           cStorage: storage.id,
         },
-        params: {'oid': Api.instance.oid, 'ctx': FormationOfPallets.ctx},
+        params: {'oid': Api.instance.oid, 'ctx': PalletPacking.ctx},
       );
     } else {
       record = await Api.feathers().update(
@@ -141,11 +140,11 @@ class _PalletDocumentEditState extends State<PalletDocumentEdit> {
           cDate: date,
           cStorage: storage.id,
         },
-        params: {'oid': Api.instance.oid, 'ctx': FormationOfPallets.ctx},
+        params: {'oid': Api.instance.oid, 'ctx': PalletPacking.ctx},
       );
     }
 
-    context.read<UiBloc>().add(ChangeView(FormationOfPallets.ctx,
+    context.read<UiBloc>().add(ChangeView(PalletPacking.ctx,
         action: 'view', entity: MemoryItem.from(record)));
   }
 }

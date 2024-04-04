@@ -69,8 +69,8 @@ class _FormationOfPalletsEditState extends State<FormationOfPalletsEdit>
 
       context.read<MemoryBloc>().add(MemorySave(
             "memories",
-            FormationOfPallets.ctx,
-            FormationOfPallets.schema,
+            PalletPacking.ctx,
+            PalletPacking.schema,
             MemoryItem(
               id: widget.entity.id,
               json: data,
@@ -118,7 +118,7 @@ class _FormationOfPalletsEditState extends State<FormationOfPalletsEdit>
       );
     } else {
       routerBack(BuildContext context) {
-        context.read<UiBloc>().add(ChangeView(FormationOfPallets.ctx));
+        context.read<UiBloc>().add(ChangeView(PalletPacking.ctx));
         // TODO context.read<UiBloc>().add(PreviousRoute());
       }
 
@@ -139,7 +139,7 @@ class _FormationOfPalletsEditState extends State<FormationOfPalletsEdit>
             icon: const Icon(Icons.edit_note_outlined),
             tooltip: localization.translate("edit"),
             onPressed: () {
-              context.read<UiBloc>().add(ChangeView(FormationOfPallets.ctx,
+              context.read<UiBloc>().add(ChangeView(PalletPacking.ctx,
                   action: 'edit', entity: widget.entity));
             },
           ),
@@ -152,13 +152,16 @@ class _FormationOfPalletsEditState extends State<FormationOfPalletsEdit>
                   doc: widget.entity,
                   mode: Mode.mobile,
                 ),
-                PalletOverview(doc: widget.entity),
-                GoodsDispatch(
-                  ctx: const ['production', 'pallet'],
+                PalletOverview(
                   doc: widget.entity,
-                  schema: FormationOfPallets.schema,
+                ),
+                GoodsDispatch(
+                  ctx: PalletPacking.ctxOfDispatch,
+                  doc: widget.entity,
+                  schema: PalletPacking.schema,
                   storage: widget.entity[cStorage],
                   storageEditable: false,
+                  enablePrinting: false,
                 )
               ]),
             ),
