@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
@@ -9,10 +12,14 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/qty.dart';
+import 'package:nae/printer/labels.dart';
+import 'package:nae/printer/network_printer.dart';
+import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/production/pallets/screen.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/key_value.dart';
+import 'package:nae/widgets/swipe_action.dart';
 
 class PalletOverview extends StatelessWidget {
   final MemoryItem doc;
@@ -26,34 +33,49 @@ class PalletOverview extends StatelessWidget {
 
     final storage = doc[cStorage]?.name() ?? '';
 
-    return Column(
-      children: <Widget>[
-        KeyValue(
-          label: localization.translate(cDate),
-          value: DT.format(doc.json[cDate]),
-          icon: const Icon(Icons.calendar_month),
+    final widget = Column(children: <Widget>[
+      KeyValue(
+        label: localization.translate(cDate),
+        value: DT.format(doc.json[cDate]),
+        icon: const Icon(Icons.calendar_month),
+      ),
+      KeyValue(
+        label: localization.translate(cStorage),
+        value: storage,
+        icon: const Icon(Icons.input),
+      ),
+      Container(
+          color: theme.secondaryHeaderColor,
+          padding:
+              const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
+          child: Align(
+              alignment: Alignment.center,
+              child: Text(localization.translate("goods"),
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.normal,
+                  )))),
+      Expanded(child: goodsDetails()),
+    ]);
+
+    return Scaffold(
+      floatingActionButton: Align(
+        alignment: Alignment.bottomRight,
+        child: FloatingActionButton(
+          heroTag: 'pallets_register_and_print',
+          backgroundColor: theme.primaryColorDark,
+          onPressed: () {
+            chooseAndPrint(context, doc);
+          },
+          tooltip: localization.translate('print'.toString()),
+          child: Icon(
+            Icons.print,
+            color: theme.primaryColorLight,
+          ),
         ),
-        KeyValue(
-          label: localization.translate(cStorage),
-          value: storage,
-          icon: const Icon(Icons.input),
-        ),
-        Container(
-            color: theme.secondaryHeaderColor,
-            padding:
-                const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
-            child: Align(
-                alignment: Alignment.center,
-                child: Text(localization.translate("goods"),
-                    textAlign: TextAlign.end,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.normal,
-                      // color: Colors.white70,
-                    )))),
-        //good(context, doc.json['goods'], "good"),
-        Expanded(child: goodsDetails()),
-      ],
+      ),
+      body: widget,
     );
   }
 
@@ -105,28 +127,17 @@ class PalletOverview extends StatelessWidget {
   Widget buildList(BuildContext context, RequestState state) {
     final items = prepareData(state.items);
     return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        // if (widget.actions.isEmpty) {
-        return card(context, item);
-        // }
-        // return SwipeActionWidget(
-        //   item: item,
-        //   actions: widget.actions,
-        //   // key: key,
-        //   child: card(context, item),
-        // );
-      },
-    );
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return card(context, item);
+        });
   }
 
   Widget card(BuildContext context, MemoryItem item) {
     // print("item ${item.json}");
     return InkWell(
-      onDoubleTap: () {
-        // widget.onDoubleTap?.call(context, item);
-      },
+      onDoubleTap: () {},
       child: Card(
         elevation: 2.0,
         margin: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0),
@@ -171,5 +182,61 @@ class PalletOverview extends StatelessWidget {
     }
 
     return result;
+  }
+
+  Future chooseAndPrint(BuildContext context, MemoryItem doc) async {
+    final list = await getPrinters(doc);
+
+    return showMaterialModalBottomSheet(
+      context: context,
+      builder: (context) => SingleChildScrollView(
+        controller: ModalScrollController.of(context),
+        child: list,
+      ),
+    );
+  }
+
+  Future<Widget> getPrinters(MemoryItem doc) async {
+    final response = await Api.feathers().find(serviceName: "memories", query: {
+      "oid": Api.instance.oid,
+      "ctx": const ['printer'],
+    });
+
+    // print("printers ${response.runtimeType} ${response}");
+
+    final printers = response['data'];
+
+    final children = <Widget>[];
+
+    children.add(const Text("Choose printer"));
+
+    if (printers is List) {
+      for (var printer in printers) {
+        children.add(ListTile(
+          title: Text(printer[cName] ?? ''),
+          onTap: () async {
+            final ip = printer['ip'];
+            final port = int.parse(printer['port']);
+
+            final result = await Labels.connect(ip, port,
+                (printer) async => printing(printer, doc, doc, (newStatus) {}));
+
+            if (result != PrintResult.success) {
+              showToast(result.msg,
+                  // context: context,
+                  axis: Axis.horizontal,
+                  alignment: Alignment.center,
+                  position: StyledToastPosition.bottom);
+            }
+          },
+        ));
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: children,
+    );
   }
 }
