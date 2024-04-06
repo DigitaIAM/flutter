@@ -88,24 +88,25 @@ class Labels {
 
   static void linesWithBarcode(
     NetworkPrinter printer,
-    String goodsName,
-    String goodsUuid,
+    String smallCode,
     String id,
-    String batchBarcode,
-    String batchId,
-    String batchDate,
+    String? batchBarcode,
+    String bigCode,
+    String? batchDate,
     Map<String, String> data,
   ) {
     printer.clear();
     printer.codepage(name: "1251");
     printer.direction();
 
-    printer.qrcode(60, 50, goodsUuid, cellWidth: 7);
+    printer.qrcode(60, 50, smallCode, cellWidth: 7);
 
-    printer.qrcode(450, 50, batchId, cellWidth: 7);
+    printer.qrcode(450, 50, bigCode, cellWidth: 7);
 
-    printer.text(35, 50, ('приход от $batchDate'),
-        font: "2", mx: 1, my: 1, rotation: 90);
+    if (batchDate != null) {
+      printer.text(35, 50, ('приход от $batchDate'),
+          font: "2", mx: 1, my: 1, rotation: 90);
+    }
     printer.bar(50, 10, 2, 780);
 
     // alignment: 3,

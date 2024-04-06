@@ -39,7 +39,20 @@ class _PalletDocumentEditState extends State<PalletDocumentEdit> {
     super.initState();
 
     if (widget.entity.isNew) {
-      details = MemoryItem(id: '', json: {cDate: Utils.today()});
+      const store = MemoryItem(
+        id: 'warehouse/storage/2023-04-20T06:53:43.468Z',
+        json: {
+          'location': 'warehouse/storage/2023-02-19T12:00:44.598Z',
+          'name': 'готовая продукция',
+          'code': '023010100061',
+          '_id': 'warehouse/storage/2023-04-20T06:53:43.468Z',
+          '_uuid': 'de10d99e-5cda-44a1-8b9a-eb201a6f09ee',
+        },
+      );
+      details = MemoryItem(id: '', json: {
+        cDate: Utils.today(),
+        cStorage: store,
+      });
     } else {
       details = MemoryItem.from(widget.entity.json);
     }
@@ -81,7 +94,7 @@ class _PalletDocumentEditState extends State<PalletDocumentEdit> {
                 name: cStorage,
                 creatable: false,
                 label: localization.translate(cStorage),
-                autofocus: true,
+                autofocus: false,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
                 ]),
@@ -93,6 +106,7 @@ class _PalletDocumentEditState extends State<PalletDocumentEdit> {
                     ? () => registerDocument(context)
                     : null,
                 style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(60.0, 60.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -119,8 +133,8 @@ class _PalletDocumentEditState extends State<PalletDocumentEdit> {
       return;
     }
 
-    final date = data[cDate] ?? '';
-    final storage = data[cStorage] as MemoryItem;
+    final date = data[cDate] ?? details.json[cDate];
+    final MemoryItem storage = data[cStorage] ?? details.json[cStorage];
 
     var record;
     if (widget.entity.isNew) {

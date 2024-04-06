@@ -12,14 +12,14 @@ import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/qty.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/models/ui/event.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
-import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/production/pallets/screen.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/key_value.dart';
-import 'package:nae/widgets/swipe_action.dart';
 
 class PalletOverview extends StatelessWidget {
   final MemoryItem doc;
@@ -32,6 +32,7 @@ class PalletOverview extends StatelessWidget {
     final localization = AppLocalizations.of(context);
 
     final storage = doc[cStorage]?.name() ?? '';
+    final isOpen = doc['packed_at'] == null;
 
     final widget = Column(children: <Widget>[
       KeyValue(
@@ -44,6 +45,12 @@ class PalletOverview extends StatelessWidget {
         value: storage,
         icon: const Icon(Icons.input),
       ),
+      if (isOpen != false)
+        KeyValue(
+          label: 'дата и время упаковки',
+          value: doc.json['packed_at'] ?? '-',
+          icon: const Icon(Icons.input),
+        ),
       Container(
           color: theme.secondaryHeaderColor,
           padding:
@@ -218,8 +225,11 @@ class PalletOverview extends StatelessWidget {
             final ip = printer['ip'];
             final port = int.parse(printer['port']);
 
-            final result = await Labels.connect(ip, port,
-                (printer) async => printing(printer, doc, doc, (newStatus) {}));
+            final result = await Labels.connect(
+              ip,
+              port,
+              (printer) async => validateAndPrint(printer, doc),
+            );
 
             if (result != PrintResult.success) {
               showToast(result.msg,
@@ -239,4 +249,101 @@ class PalletOverview extends StatelessWidget {
       children: children,
     );
   }
+}
+
+Future<PrintResult> validateAndPrint(
+  NetworkPrinter printer,
+  MemoryItem d,
+) async {
+  try {
+    // request data from server
+    final doc = await Api.feathers()
+        .get(serviceName: 'memories', objectId: d.id, params: {
+      'oid': Api.instance.oid,
+      'ctx': PalletPacking.ctx,
+    });
+    //print("doc $doc");
+
+    final lines = await Api.feathers().find(serviceName: 'memories', query: {
+      'oid': Api.instance.oid,
+      'ctx': PalletPacking.ctxOfDispatch,
+      '\$skip': 0,
+      '\$limit': 20,
+      'filter': {
+        cDocument: d.id,
+      }
+    });
+    //print("lines $lines");
+
+    // aggregation
+    Map<String, Qty> sums = {};
+    Map<String, dynamic> list = {};
+
+    for (final item in lines['data']) {
+      // print("item $item");
+      final goods = item['goods'];
+      final goodsId = goods['_id'];
+
+      final qty = Qty.fromJson(item['qty']);
+
+      sums[goodsId] = (sums[goodsId] ?? Qty.zero()) + qty;
+
+      list[goodsId] = goods;
+    }
+
+    // validation
+    if (sums.length == 1) {
+      for (final entry in sums.entries) {
+        final goods = list[entry.key];
+        final qty = entry.value;
+        if (qty.nums.length == 1) {
+          var packedAt = doc['packed_at'];
+          if (packedAt == null) {
+            // update document with packed_at
+            final updatedDoc = await Api.feathers().patch(
+              serviceName: 'memories',
+              objectId: d.id,
+              data: {'packed_at': DateTime.now().toIso8601StringWithTz()},
+              params: {
+                'oid': Api.instance.oid,
+                'ctx': PalletPacking.ctx,
+              },
+            );
+
+            packedAt = updatedDoc['packed_at'];
+          }
+
+          // print label
+          final productName = goods['name'];
+          final goodsUuid = goods['_uuid'];
+          final recordId = doc['_id'];
+          final batchId = doc['_uuid'];
+          final batchDate = packedAt;
+          final batchBarcode = '';
+
+          final Map<String, String> labelData = {
+            "продукция": productName,
+            // "артикул": '', // partNumber,
+            "дата": doc['date'],
+            "количество": qty.toString(),
+            // "line1": "",
+            // "оператор": operatorName,
+          };
+
+          Labels.linesWithBarcode(printer, goodsUuid, recordId, batchBarcode,
+              batchId, batchDate, labelData);
+
+          // TODO context.read<UiBloc>().add(ChangeView(PalletPacking.ctx));
+        }
+      }
+    } else {
+      // TODO show error message
+    }
+  } catch (e, stacktrace) {
+    print("ERROR _onFetched:");
+    print(e);
+    print(stacktrace);
+  }
+
+  return PrintResult.success;
 }
