@@ -72,8 +72,9 @@ class PalletOverview extends StatelessWidget {
         child: FloatingActionButton(
           heroTag: 'pallets_register_and_print',
           backgroundColor: theme.primaryColorDark,
-          onPressed: () {
-            chooseAndPrint(context, doc);
+          onPressed: () async {
+            final printers = await getPrinters();
+            chooseAndPrint(context, printers, doc);
           },
           tooltip: localization.translate('print'.toString()),
           child: Icon(
@@ -191,28 +192,30 @@ class PalletOverview extends StatelessWidget {
     return result;
   }
 
-  Future chooseAndPrint(BuildContext context, MemoryItem doc) async {
-    final list = await getPrinters(doc);
+  void chooseAndPrint(
+      BuildContext context, dynamic printers, MemoryItem doc) async {
+    final ui = context.read<UiBloc>();
 
-    return showMaterialModalBottomSheet(
+    await showMaterialModalBottomSheet(
       context: context,
-      builder: (context) => SingleChildScrollView(
-        controller: ModalScrollController.of(context),
-        child: list,
-      ),
+      builder: (ctx) {
+        return SingleChildScrollView(
+          // controller: ModalScrollController.of(ctx),
+          child: printerSelection(ctx, ui, printers),
+        );
+      },
     );
   }
 
-  Future<Widget> getPrinters(MemoryItem doc) async {
+  Future<dynamic> getPrinters() async {
     final response = await Api.feathers().find(serviceName: "memories", query: {
       "oid": Api.instance.oid,
       "ctx": const ['printer'],
     });
+    return response['data'];
+  }
 
-    // print("printers ${response.runtimeType} ${response}");
-
-    final printers = response['data'];
-
+  Widget printerSelection(BuildContext context, UiBloc ui, dynamic printers) {
     final children = <Widget>[];
 
     children.add(const Text("Choose printer"));
@@ -228,10 +231,15 @@ class PalletOverview extends StatelessWidget {
             final result = await Labels.connect(
               ip,
               port,
-              (printer) async => validateAndPrint(printer, doc),
+              (printer) async => await validateAndPrint(printer, doc),
             );
 
-            if (result != PrintResult.success) {
+            if (result == PrintResult.success) {
+              // print("change view");
+              ui.add(ChangeView(PalletPacking.ctx));
+              // close MaterialModalBottomSheet
+              Navigator.of(context).pop();
+            } else if (result != PrintResult.success) {
               showToast(result.msg,
                   // context: context,
                   axis: Axis.horizontal,
@@ -333,7 +341,7 @@ Future<PrintResult> validateAndPrint(
           Labels.linesWithBarcode(printer, goodsUuid, recordId, batchBarcode,
               batchId, batchDate, labelData);
 
-          // TODO context.read<UiBloc>().add(ChangeView(PalletPacking.ctx));
+          return PrintResult.success;
         }
       }
     } else {
@@ -345,5 +353,5 @@ Future<PrintResult> validateAndPrint(
     print(stacktrace);
   }
 
-  return PrintResult.success;
+  return PrintResult.registrationFailed;
 }
