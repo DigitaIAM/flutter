@@ -19,3 +19,15 @@ class DT {
     return split.length == 3 ? '${split[2]}.${split[1]}.${split[0]}' : '?';
   }
 }
+
+extension DateTimeExtension on DateTime {
+  String toIso8601StringWithTz() {
+    // Get offset
+    final timeZoneOffset = this.timeZoneOffset;
+    final sign = timeZoneOffset.isNegative ? '-' : '+';
+    final hours = timeZoneOffset.inHours.abs().toString();
+    final minutes = timeZoneOffset.inMinutes.abs().remainder(60).toString();
+
+    return '${toIso8601String()}$sign${hours.padLeft(2, '0')}:${minutes.padLeft(2, '0')}';
+  }
+}

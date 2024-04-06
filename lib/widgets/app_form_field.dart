@@ -71,8 +71,9 @@ class _DecoratedFormFieldState extends State<DecoratedFormField> {
         // border: OutlineInputBorder(
         //   borderRadius: BorderRadius.circular(8),
         // ),
-        floatingLabelBehavior:
-            widget.label?.isEmpty ?? true ? FloatingLabelBehavior.always : FloatingLabelBehavior.auto,
+        floatingLabelBehavior: widget.label?.isEmpty ?? true
+            ? FloatingLabelBehavior.always
+            : FloatingLabelBehavior.auto,
         // suffixIcon: suffixIcon,
       );
     }

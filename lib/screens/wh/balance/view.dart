@@ -414,8 +414,8 @@ class _WHBalanceProducedState extends State<WHBalanceProduced> {
           "приход от": dd,
         };
 
-        Labels.linesWithBarcode(printer, goodsName, goodsUuid, goodsId,
-            batchBarcode, operationId, batchDate, labelData);
+        Labels.linesWithBarcode(printer, goodsUuid, goodsId, batchBarcode,
+            operationId, batchDate, labelData);
 
         return Future<PrintResult>.value(PrintResult.success);
       });

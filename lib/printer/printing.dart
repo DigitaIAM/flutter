@@ -192,8 +192,8 @@ Future<PrintResult> printing(NetworkPrinter printer, MemoryItem doc,
   }
 
   // TODO: place length check and line break from lines_with_barcode to this function
-  Labels.linesWithBarcode(printer, goodsName, goodsUuid, recordId, batchBarcode,
-      batchId, batchDate, labelData);
+  Labels.linesWithBarcode(printer, goodsUuid, recordId, batchBarcode, batchId,
+      batchDate, labelData);
 
   return Future<PrintResult>.value(PrintResult.success);
 }
