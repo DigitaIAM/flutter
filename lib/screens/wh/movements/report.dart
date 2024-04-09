@@ -72,7 +72,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
   void initState() {
     super.initState();
 
-    print("_MovementReportScreenState.initState");
+    // print("_MovementReportScreenState.initState");
 
     calendarController = CleanCalendarController(
       // DateTime.now().subtract(const Duration(days: 365)),
@@ -93,6 +93,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final theme = Theme.of(context);
     // print("MovementReportScreen.build");
 
     // print("widget.entity.json ${widget.entity.json}");
@@ -261,6 +262,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
   }
 
   Widget calendar(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -295,8 +297,8 @@ class _MovementReportScreenState extends State<MovementReportScreen>
               ),
             ),
           ),
-          child:
-              const Icon(Icons.calendar_today_outlined, color: Colors.black26),
+          child: Icon(Icons.calendar_today_outlined,
+              color: theme.primaryColorLight),
         ),
       ],
     );
