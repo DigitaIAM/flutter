@@ -293,15 +293,17 @@ class _MemoryListState extends State<MemoryList> {
     final localization = AppLocalizations.of(context);
 
     return BlocBuilder<MemoryBloc, RequestState>(
-      buildWhen: (o, n) {
-        isLoading = false;
-        if (uiState.isMobile) {
-          return true;
-        }
-        return o.created != n.created || o.status != n.status;
-      },
+      // buildWhen: (o, n) {
+      //   isLoading = false;
+      //   if (uiState.isMobile) {
+      //     return true;
+      //   }
+      //   return o.created != n.created ||
+      //       o.status != n.status ||
+      //       o.items.length != n.items.length;
+      // },
       builder: (context, state) {
-        // print("builder ${state.status}");
+        // print("builder ${state.status} ${state.items.length}");
         switch (state.status) {
           case RequestStatus.failure:
             return Center(
