@@ -146,5 +146,8 @@
   "used raw material": "использованный материал",
   "produced raw material": "полученный материал",
   "registration": "регистрация",
-  "edit production order": "редактирование сменного задания"
+  "edit production order": "редактирование сменного задания",
+  "pallet packing": "формирование палеты",
+  "new pallet": "новая палета",
+  "pallet": "палета"
 }
