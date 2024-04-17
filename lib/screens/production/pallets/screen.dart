@@ -5,6 +5,7 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/models/ui/event.dart';
@@ -26,10 +27,7 @@ class PalletPacking extends Entity {
     'dispatch'
   ];
 
-  static final List<Field> schema = [
-    fDate,
-    fStorage,
-  ];
+  static final List<Field> schema = [fDate, fStorage, fGoods, fQtyNew];
 
   @override
   List<String> route() => ctx;
@@ -94,10 +92,16 @@ class PalletListBuilder extends StatelessWidget {
       schema: PalletPacking.schema,
       groupBy: (element) {
         final id = element.json[cDate] ?? '';
+        //  print('json: ${element.json}');
         return MemoryItem(id: id, json: {cId: id, cName: id});
       },
       title: (MemoryItem item) => Text(fStorage.resolve(item.json)?.name()),
-      subtitle: (MemoryItem item) => const Text(''),
+      subtitle: (MemoryItem item) => ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 0.0, vertical: 0.0),
+        title: Text(item['goods']?.name() ?? ''), // widget.title(item),
+        subtitle: Text((item.json['qty'] as Qty).toStringAggregated()),
+      ),
       onTap: (context, item) => context
           .read<UiBloc>()
           .add(ChangeView(PalletPacking.ctx, entity: item)),

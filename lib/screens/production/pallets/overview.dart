@@ -311,7 +311,11 @@ Future<PrintResult> validateAndPrint(
             final updatedDoc = await Api.feathers().patch(
               serviceName: 'memories',
               objectId: d.id,
-              data: {'packed_at': DateTime.now().toIso8601StringWithTz()},
+              data: {
+                'packed_at': DateTime.now().toIso8601StringWithTz(),
+                'goods': goods,
+                'qty': qty.toJson(),
+              },
               params: {
                 'oid': Api.instance.oid,
                 'ctx': PalletPacking.ctx,

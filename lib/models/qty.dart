@@ -205,6 +205,19 @@ class Qty {
       index++;
     }
   }
+
+  dynamic toJson() {
+    if (nums.length <= 1) {
+      for (final num in nums) {
+        return num.toJson();
+      }
+      return {};
+    } else {
+      final list = [];
+
+      return list;
+    }
+  }
 }
 
 class Uom extends Equatable {
@@ -344,6 +357,15 @@ class Uom extends Equatable {
     return text.trim();
   }
 
+  dynamic toJson() {
+    if (deeper == null) {
+      return id;
+    } else {
+      final (number, uom) = deeper!;
+      return {'in': id, 'number': number.toJson(), 'uom': uom.toJson()};
+    }
+  }
+
   @override
   List<Object?> get props => [id, deeper];
 }
@@ -402,5 +424,9 @@ class Named {
   @override
   String toString() {
     return '$number $named';
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'number': number.toJson(), 'uom': named.json};
   }
 }
