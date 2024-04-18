@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
-import 'package:nae/models/memory/bloc.dart';
-import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
-import 'package:nae/screens/wh/goods_dispatch.dart';
+import 'package:nae/models/qty.dart';
+//import 'package:nae/screens/wh/goods_dispatch.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/document_edit.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/goods.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/overview.dart';
@@ -118,13 +118,14 @@ class _WHInventoryEditMobileState extends State<WHInventoryEditMobile>
                   mode: Mode.mobile,
                 ),
                 WHInventoryOverview(doc: widget.entity),
-                GoodsDispatch(
-                  ctx: const ['warehouse', 'inventory'],
-                  doc: widget.entity,
-                  schema: WHInventory.schema,
-                  storage: widget.entity[cStorage],
-                  storageEditable: false,
-                )
+                ScanRegistration(doc: widget.entity),
+                // GoodsDispatch(
+                //   ctx: const ['warehouse', 'inventory'],
+                //   doc: widget.entity,
+                //   schema: WHInventory.schema,
+                //   storage: widget.entity[cStorage],
+                //   storageEditable: false,
+                // )
               ]),
             ),
           ]);
@@ -143,6 +144,90 @@ class _WHInventoryEditMobileState extends State<WHInventoryEditMobile>
       json[cDate] = DateTime.parse(
           json[cDate]); //DateFormat("yyyy-MM-dd").format(json[cDate]);
       return MemoryItem(id: widget.entity.id, json: json);
+    }
+  }
+}
+
+class ScanRegistration extends StatefulWidget {
+  final MemoryItem doc;
+
+  const ScanRegistration({super.key, required this.doc});
+
+  @override
+  State<StatefulWidget> createState() => _ScanRegistrationState();
+}
+
+class _ScanRegistrationState extends State<ScanRegistration> {
+  final textController = TextEditingController();
+
+  @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        TextField(
+          controller: textController,
+        ),
+        FloatingActionButton(
+          backgroundColor: theme.primaryColorDark,
+          onPressed: () {
+            process(textController.text);
+          },
+          tooltip: AppLocalizations.of(context).translate("new line"),
+          child: Icon(
+            Icons.done,
+            color: theme.primaryColorLight,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void process(String reference) async {
+    final res = await Api.feathers().get(
+      serviceName: "memories",
+      objectId: reference,
+      params: {
+        "oid": Api.instance.oid,
+      },
+    );
+    print("res $res");
+
+    final docId = res[cDocument];
+    if (docId != null) {
+      final document = await Api.feathers().get(
+        serviceName: "memories",
+        objectId: docId,
+        params: {'oid': Api.instance.oid},
+      );
+
+      print("document $document");
+
+      final data = {
+        cDocument: widget.doc.id,
+        'reference': reference,
+        cGoods: document['product']['_id'],
+        cBatch: {'id': document['_uuid'], 'date': document[cDate]},
+        cQty: res[cQty],
+      };
+
+      print("data $data");
+
+      final response = await Api.feathers().create(
+        serviceName: "memories",
+        data: data,
+        params: {
+          "oid": Api.instance.oid,
+          'ctx': WHInventory.ctxOfRecord,
+        },
+      );
+      print("response $response");
     }
   }
 }

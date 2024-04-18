@@ -20,6 +20,7 @@ import 'edit_fullscreen/edit_fullscreen.dart';
 
 class WHInventory extends Entity {
   static const List<String> ctx = ['warehouse', 'inventory', 'document'];
+  static const List<String> ctxOfRecord = ['warehouse', 'inventory'];
 
   static final List<Field> schema = [
     fDate,

@@ -59,7 +59,6 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
   @override
   Widget build(BuildContext context) {
-    const ctx = ['warehouse', 'inventory'];
     final filter = {
       cDocument: widget.doc.id,
     };
@@ -75,7 +74,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
         final bloc = MemoryBloc(schema: schema, reverse: true);
         bloc.add(MemoryFetch(
           'memories',
-          ctx,
+          WHInventory.ctxOfRecord,
           filter: filter,
           reverse: true,
           loadAll: true,
@@ -85,7 +84,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
       },
       child: MemoryList(
         mode: widget.mode,
-        ctx: ctx,
+        ctx: WHInventory.ctxOfRecord,
         filter: filter,
         schema: schema,
         title: (MemoryItem item) {
@@ -120,7 +119,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
           return Text(text, style: style);
         },
         onDoubleTap: (context, item) {
-          editItem(context, ctx, widget.doc, item);
+          editItem(context, WHInventory.ctxOfRecord, widget.doc, item);
         },
         //onTap: (context, MemoryItem item) => popUpPatch(context, item),
         // context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
@@ -143,7 +142,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
             label: 'edit',
             icon: Icons.edit,
             onPressed: (context, item) =>
-                editItem(context, ctx, widget.doc, item),
+                editItem(context, WHInventory.ctxOfRecord, widget.doc, item),
             foregroundColor: Colors.white,
             backgroundColor: Colors.green,
           ),
