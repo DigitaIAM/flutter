@@ -215,6 +215,8 @@ class _ScanRegistrationState extends State<ScanRegistration> {
         cGoods: document['product']['_id'],
         cBatch: {'id': document['_uuid'], 'date': document[cDate]},
         cQty: res[cQty],
+        // 'customer': res['customer'],
+        // 'label': res['label'],
       };
 
       print("data $data");

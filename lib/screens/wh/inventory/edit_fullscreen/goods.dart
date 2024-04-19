@@ -88,7 +88,14 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
         filter: filter,
         schema: schema,
         title: (MemoryItem item) {
-          final text = fGoods.resolve(item.json)?.name() ?? '';
+          // final customer = item.json['customer'];
+          // final label = item.json['label'];
+          // final goods = fGoods.resolve(item.json)?.name() ?? '';
+          var text = fGoods.resolve(item.json)?.name() ?? '';
+
+          // text += ', $customer | $label';
+
+          //print('text  ${item.json}');
 
           TextStyle? style;
 
