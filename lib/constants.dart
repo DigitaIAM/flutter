@@ -112,3 +112,5 @@ const String cBatch = 'batch';
 const String cBarcode = 'barcode';
 const String cNumber = 'number';
 const String cType = 'type';
+const String cCustomer = 'customer';
+const String cLabel = 'label';
