@@ -56,6 +56,7 @@ class ProductionOrder extends Entity {
     fProduct,
     fArea,
     fOperator,
+    fControl,
     fPacker,
     const Field('thickness', NumberType(), path: ['thickness'])
         .copyWith(width: 0.5),
@@ -130,14 +131,18 @@ class ProductionOrdersListBuilder extends StatelessWidget {
         final id = element.json[cDate] ?? '';
         return MemoryItem(id: id, json: {cId: id, cName: id});
       },
-      title: (MemoryItem item) =>
-          Text('${name(item.json[cArea])}\n${name(item.json[cProduct])}'),
+      title: (MemoryItem item) => Text(
+          '${name(item.json[cArea])}\n${name(item.json[cProduct])}${additional(item)}'),
       subtitle: (MemoryItem item) {
         final json = item.json;
         var text = 'план: ${json['planned']} шт'
             '\nвыработка: ${json['produced~']}'
-            '\nоператор: ${json[cOperator].json?[cName] ?? ''}'
-            '\nупаковщик: ${json[cPacker].json?[cName] ?? ''}';
+            '\nоператор: ${json[cOperator].json?[cName] ?? ''}';
+
+        final packer = json[cPacker]?.json?[cName];
+        if (packer != null) {
+          text += '\nупаковщик: $packer';
+        }
 
         if (json['thickness'] != null) {
           text = '$text\nтолщина: ${json['thickness']}';
@@ -148,6 +153,22 @@ class ProductionOrdersListBuilder extends StatelessWidget {
           .read<UiBloc>()
           .add(ChangeView(ProductionOrder.ctx, entity: item)),
     );
+  }
+
+  String additional(MemoryItem item) {
+    var text = '';
+
+    final customer = item.json[cCustomer];
+    if (customer != null) {
+      text += '\n$customer';
+    }
+
+    final label = item.json[cLabel];
+    if (label != null) {
+      text += ' : $label';
+    }
+
+    return text;
   }
 }
 

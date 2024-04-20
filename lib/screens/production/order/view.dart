@@ -156,29 +156,10 @@ class ProductionOrderOverview extends StatelessWidget {
     final theme = Theme.of(context);
     final localization = AppLocalizations.of(context);
 
-    String? operatorName;
-    final operator = order.json[cOperator];
-    if (operator is MemoryItem) {
-      operatorName = operator.name();
-    } else if (operator is Map) {
-      operatorName = operator[cName];
-    }
-
-    String? productName;
-    final product = order.json[cProduct];
-    if (product is MemoryItem) {
-      productName = product.name();
-    } else if (product is Map) {
-      productName = product[cName];
-    }
-
-    String? areaName;
-    final area = order.json[cArea];
-    if (area is MemoryItem) {
-      areaName = area.name();
-    } else if (area is Map) {
-      areaName = area[cName];
-    }
+    String? operatorName = resolve(order, cOperator);
+    String? productName = resolve(order, cProduct);
+    String? areaName = resolve(order, cArea);
+    String? controlName = resolve(order, cControl);
 
     final produced = Qty.fromJson(order.json['produced']);
 
@@ -200,7 +181,6 @@ class ProductionOrderOverview extends StatelessWidget {
       //   value: productName ?? ' ',
       //   icon: const Icon(Icons.question_mark),
       // ),
-      ...additional1(context),
       KeyValue(
         label: localization.translate(cArea),
         value: areaName ?? ' ',
@@ -211,7 +191,12 @@ class ProductionOrderOverview extends StatelessWidget {
         value: operatorName ?? ' ',
         icon: const Icon(Icons.question_mark),
       ),
-      ...additional2(context),
+      KeyValue(
+        label: localization.translate(cControl),
+        value: controlName ?? '',
+        icon: const Icon(Icons.question_mark),
+      ),
+      ...additional(context),
       KeyValue(
         label: localization.translate(cDate),
         value: DT.format(order.json[cDate]),
@@ -296,14 +281,19 @@ class ProductionOrderOverview extends StatelessWidget {
     return children;
   }
 
-  List<Widget> additional1(BuildContext context) {
-    final product = order.json[cProduct] ?? MemoryItem.empty;
-    final type = product is MemoryItem
-        ? product.json[cType] ?? ''
-        : product[cType] ?? '';
-    if (type == 'roll') {
-      final localization = AppLocalizations.of(context);
+  List<Widget> additional(BuildContext context) {
+    final localization = AppLocalizations.of(context);
 
+    // final product = order.json[cProduct] ?? MemoryItem.empty;
+    // final type = product is MemoryItem
+    //     ? product.json[cType] ?? ''
+    //     : product[cType] ?? '';
+
+    final area = order.json[cArea] ?? MemoryItem.empty();
+    final type =
+        area is MemoryItem ? area.json[cType] ?? '' : area[cType] ?? '';
+
+    if (type == 'roll') {
       return [
         KeyValue(
           label: localization.translate("raw material"),
@@ -316,34 +306,43 @@ class ProductionOrderOverview extends StatelessWidget {
           icon: const Icon(Icons.question_mark),
         ),
       ];
-    }
-    return [];
-  }
-
-  List<Widget> additional2(BuildContext context) {
-    final product = order.json[cProduct] ?? MemoryItem.empty;
-    final type = product is MemoryItem
-        ? product.json[cType] ?? ''
-        : product[cType] ?? '';
-    if (type != 'roll') {
-      final localization = AppLocalizations.of(context);
-
-      String? packerName;
-      final packer = order.json[cPacker];
-      if (packer is MemoryItem) {
-        packerName = packer.name();
-      } else if (packer is Map) {
-        packerName = packer[cName];
-      }
-
+    } else if (type == 'final') {
       return [
         KeyValue(
           label: localization.translate(cPacker),
-          value: packerName ?? ' ',
+          value: resolve(order, cPacker) ?? '',
+          icon: const Icon(Icons.question_mark),
+        ),
+        KeyValue(
+          label: localization.translate(cCustomer),
+          value: order.json[cCustomer] ?? '',
+          icon: const Icon(Icons.question_mark),
+        ),
+        KeyValue(
+          label: localization.translate(cLabel),
+          value: order.json[cLabel] ?? '',
+          icon: const Icon(Icons.question_mark),
+        ),
+      ];
+    } else {
+      return [
+        KeyValue(
+          label: localization.translate(cPacker),
+          value: resolve(order, cPacker) ?? '',
           icon: const Icon(Icons.question_mark),
         ),
       ];
     }
-    return [];
   }
+}
+
+String? resolve(MemoryItem order, String field) {
+  String? name;
+  final obj = order.json[field];
+  if (obj is MemoryItem) {
+    name = obj.name();
+  } else if (obj is Map) {
+    name = obj[cName];
+  }
+  return name;
 }

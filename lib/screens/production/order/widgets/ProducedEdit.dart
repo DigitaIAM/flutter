@@ -142,7 +142,8 @@ class POProducedEdit extends StatefulWidget {
 }
 
 class _POProducedEditState extends State<POProducedEdit> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_productionOrderProducedEdit');
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_productionOrderProducedEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
@@ -199,7 +200,7 @@ class _POProducedEditState extends State<POProducedEdit> {
               DecoratedFormField(
                 name: cDate,
                 label: localization.translate(cDate),
-                autofocus: true,
+                readOnly: true,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
                 ]),
@@ -208,15 +209,20 @@ class _POProducedEditState extends State<POProducedEdit> {
                 // readOnly: true,
               ),
               ...fields,
-              ElevatedButton(
-                onPressed: status == 'register' ? registerAndPrint : null,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: 200.0,
+                height: 50.0,
+                child: ElevatedButton(
+                  onPressed: status == 'register' ? registerAndPrint : null,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
+                  child: Text(localization.translate(status)),
                 ),
-                child: Text(localization.translate(status)),
-              )
+              ),
             ])
           ]))
     ];
@@ -227,27 +233,16 @@ class _POProducedEditState extends State<POProducedEdit> {
 
   List<Widget> rollForm(AppLocalizations localization) {
     return [
-      DecoratedFormField(
-        name: 'notes',
-        label: localization.translate("notes"),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-        keyboardType: TextInputType.number,
-      ),
-      DecoratedFormPickerField(
-        creatable: false,
-        ctx: const ['person'],
-        name: cControl,
-        label: localization.translate(cControl),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-      ),
+      // DecoratedFormField(
+      //   name: 'notes',
+      //   label: localization.translate("notes"),
+      //   autofocus: true,
+      //   validator: FormBuilderValidators.compose([
+      //     FormBuilderValidators.required(),
+      //   ]),
+      //   onSave: (context) {},
+      //   keyboardType: TextInputType.number,
+      // ),
       DecoratedFormField(
         name: 'length',
         label: localization.translate("length"),
@@ -273,17 +268,6 @@ class _POProducedEditState extends State<POProducedEdit> {
 
   List<Widget> boxedForm(AppLocalizations localization) {
     return [
-      DecoratedFormPickerField(
-        creatable: false,
-        ctx: const ['person'],
-        name: cControl,
-        label: localization.translate(cControl),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-      ),
       DecoratedFormField(
         name: cQty,
         label: localization.translate("qty in box"),
@@ -301,41 +285,13 @@ class _POProducedEditState extends State<POProducedEdit> {
   List<Widget> finalForm(AppLocalizations localization) {
     return [
       DecoratedFormField(
-        name: 'customer',
-        label: localization.translate("customer"),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-        keyboardType: TextInputType.text,
-      ),
-      DecoratedFormField(
-        name: 'label',
-        label: localization.translate("label"),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-        keyboardType: TextInputType.text,
-      ),
-      DecoratedFormPickerField(
-        creatable: false,
-        ctx: const ['person'],
-        name: cControl,
-        label: localization.translate(cControl),
-        autofocus: true,
-        validator: FormBuilderValidators.compose([
-          FormBuilderValidators.required(),
-        ]),
-        onSave: (context) {},
-      ),
-      DecoratedFormField(
         name: cQty,
         label: localization.translate("qty in box"),
         autofocus: true,
-        validator: FormBuilderValidators.compose([FormBuilderValidators.required(), FormBuilderValidators.integer()]),
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(),
+          FormBuilderValidators.integer()
+        ]),
         onSave: (context) {},
         keyboardType: TextInputType.number,
       ),
@@ -364,6 +320,7 @@ class _POProducedEditState extends State<POProducedEdit> {
       final order = await widget.order.enrich([
         fProduct,
         fOperator,
+        fControl,
       ]);
 
       // print("order ${order.json}");
@@ -377,7 +334,7 @@ class _POProducedEditState extends State<POProducedEdit> {
       //   throw const FormatException('operator is not selected');
       // }
 
-      final control = data[cControl];
+      final control = order.json[cControl] ?? data[cControl];
       if (control == null) {
         throw const FormatException('select control');
       }
@@ -393,17 +350,13 @@ class _POProducedEditState extends State<POProducedEdit> {
 
       final product = order.json['product'] as MemoryItem;
 
-      final filter = area.json['type'] == 'roll' ? "Рул" : "Кор";
-
-      final uomIn = await Api.feathers().find(serviceName: "memories", query: {
-        "oid": Api.instance.oid,
-        "ctx": [cUom],
-        "filter": {cName: filter},
-      });
+      final uomIn = area.json['type'] == 'roll'
+          ? '3c887c88-964c-4ce2-b1f0-c7f1709e233a' // roll
+          : '76db8665-68bf-4088-857a-cce650bac352'; // box
 
       uom[cNumber] = qty;
       uom[cUom] = product.json[cUom]?[cUuid] ?? '';
-      uom['in'] = uomIn['data']?[0]?[cUuid];
+      uom['in'] = uomIn;
 
       innerQty[cNumber] = 1;
       innerQty[cUom] = uom;
@@ -418,12 +371,12 @@ class _POProducedEditState extends State<POProducedEdit> {
         cQty: qty
       };
 
-      final material = data['material'];
+      final material = order.json['material'] ?? data['material'];
       if (material != null) {
         recordData['material'] = material;
       }
 
-      final thickness = data['thickness'];
+      final thickness = order.json['thickness'] ?? data['thickness'];
       if (thickness != null) {
         recordData['thickness'] = thickness;
       }
@@ -433,19 +386,20 @@ class _POProducedEditState extends State<POProducedEdit> {
         recordData['length'] = length;
       }
 
-      final customer = data['customer'];
+      final customer = order.json['customer'] ?? data['customer'];
       if (customer != null) {
         recordData['customer'] = customer;
       }
 
-      final label = data['label'];
+      final label = order.json['label'] ?? data['label'];
       if (label != null) {
         recordData['label'] = label;
       }
 
       final result = await Labels.connect(ip, port, (printer) async {
         setState(() => status = "registering");
-        final response = await Api.feathers().create(serviceName: 'memories', data: recordData, params: {
+        final response = await Api.feathers()
+            .create(serviceName: 'memories', data: recordData, params: {
           'oid': Api.instance.oid,
           'ctx': ['production', 'produce']
         });
