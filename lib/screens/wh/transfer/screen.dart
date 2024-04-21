@@ -9,6 +9,7 @@ import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/transfer/edit_fullscreen/document_creation.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/entity_screens.dart';
 
@@ -83,24 +84,7 @@ class WHTransfer extends Entity {
               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
               entity: entity,
             )
-          : WHTransferEdit(
-              key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-              entity: entity,
-            ),
-      // view: WHTransferEditFS(
-      //   key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-      //   entity: entity,
-      // ),
-//       view: action == "edit"
-//           ? WHTransferEditFS(
-//               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-//               entity: entity,
-//             )
-//           : WHTransferView(
-//               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-//               entity: entity,
-//               tabIndex: 0,
-//             ),
+          : WHTransferDocumentCreation(entity: entity),
     );
   }
 }

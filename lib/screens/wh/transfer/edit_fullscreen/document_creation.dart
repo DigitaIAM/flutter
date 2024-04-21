@@ -14,24 +14,44 @@ import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
 import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
+import 'package:nae/widgets/entity_screens.dart';
+import 'package:nae/widgets/scaffold_view.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
-class WHTransferDocumentCreation extends StatefulWidget {
-  final MemoryItem doc;
-
-  const WHTransferDocumentCreation({super.key, required this.doc});
+class WHTransferDocumentCreation extends EntityHolder {
+  const WHTransferDocumentCreation({super.key, required super.entity});
 
   @override
   State<StatefulWidget> createState() => _WHTransferDocumentCreationState();
 }
 
-class _WHTransferDocumentCreationState extends State<WHTransferDocumentCreation> {
-  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>(debugLabel: '_WHTransferDocumentCreation');
+class _WHTransferDocumentCreationState
+    extends State<WHTransferDocumentCreation> {
+  final GlobalKey<FormBuilderState> _formKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_WHTransferDocumentCreation');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
-  final MemoryItem details = MemoryItem(id: '', json: {cDate: Utils.today()});
+  late MemoryItem details;
 
   String status = "register";
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.entity.isNew) {
+      details = MemoryItem(id: '', json: {cDate: Utils.today()});
+    } else {
+      details = MemoryItem.from(widget.entity.json);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +101,9 @@ class _WHTransferDocumentCreationState extends State<WHTransferDocumentCreation>
               ),
               Container(height: 10),
               ElevatedButton(
-                onPressed: status == 'register' ? () => registerDocument(context) : null,
+                onPressed: status == 'register'
+                    ? () => registerDocument(context)
+                    : null,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -92,8 +114,13 @@ class _WHTransferDocumentCreationState extends State<WHTransferDocumentCreation>
             ])
           ]))
     ];
-    return ScrollableListView(
-      children: widgets,
+    return ScaffoldView(
+      title: localization.translate("warehouse transfer"),
+      body: Builder(
+        builder: (context) {
+          return Column(children: widgets);
+        },
+      ),
     );
   }
 
@@ -123,6 +150,15 @@ class _WHTransferDocumentCreationState extends State<WHTransferDocumentCreation>
 
     // print("record: $record");
 
-    context.read<UiBloc>().add(ChangeView(WHTransfer.ctx, action: 'edit', entity: MemoryItem.from(record)));
+    if (mounted) {
+      final entity = MemoryItem.from(record);
+      await entity.enrich(WHTransfer.schema);
+
+      // print("show entity");
+
+      context
+          .read<UiBloc>()
+          .add(ChangeView(WHTransfer.ctx, action: 'view', entity: entity));
+    }
   }
 }
