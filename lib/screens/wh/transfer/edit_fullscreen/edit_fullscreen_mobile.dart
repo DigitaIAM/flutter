@@ -56,31 +56,31 @@ class _WHTransferEditMobileState extends State<WHTransferEditMobile>
     super.dispose();
   }
 
-  void _onSave(BuildContext context) {
-    final state = _formKey.currentState;
-    if (state != null && state.saveAndValidate()) {
-      debugPrint('new data');
-      debugPrint(_formKey.currentState?.value.toString());
-
-      final Map<String, dynamic> data = Map.from(state.value);
-      // workaround
-      data[cId] = widget.entity.id;
-
-      // workaround
-      data[cDate] = DT.format(data[cDate]);
-      //DateFormat("yyyy-MM-dd").format(data[cDate]);
-
-      context.read<MemoryBloc>().add(MemorySave("memories", WHTransfer.ctx,
-          WHTransfer.schema, MemoryItem(id: widget.entity.id, json: data)));
-    } else {
-      debugPrint(_formKey.currentState?.value.toString());
-      debugPrint('validation failed');
-    }
-
-    // if (_formKey.currentState?.validate() ?? false) {
-    //   context.read<MemoryBloc>().add(MemorySave("memories", UomScreen.route, widget.entity));
-    // }
-  }
+  // void _onSave(BuildContext context) {
+  //   final state = _formKey.currentState;
+  //   if (state != null && state.saveAndValidate()) {
+  //     debugPrint('new data');
+  //     debugPrint(_formKey.currentState?.value.toString());
+  //
+  //     final Map<String, dynamic> data = Map.from(state.value);
+  //     // workaround
+  //     data[cId] = widget.entity.id;
+  //
+  //     // workaround
+  //     data[cDate] = DT.format(data[cDate]);
+  //     //DateFormat("yyyy-MM-dd").format(data[cDate]);
+  //
+  //     context.read<MemoryBloc>().add(MemorySave("memories", WHTransfer.ctx,
+  //         WHTransfer.schema, MemoryItem(id: widget.entity.id, json: data)));
+  //   } else {
+  //     debugPrint(_formKey.currentState?.value.toString());
+  //     debugPrint('validation failed');
+  //   }
+  //
+  //   // if (_formKey.currentState?.validate() ?? false) {
+  //   //   context.read<MemoryBloc>().add(MemorySave("memories", UomScreen.route, widget.entity));
+  //   // }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +101,7 @@ class _WHTransferEditMobileState extends State<WHTransferEditMobile>
               child: TabBarView(
                 controller: _controller,
                 children: <Widget>[
-                  WHTransferDocumentCreation(doc: widget.entity)
+                  WHTransferDocumentCreation(entity: widget.entity)
                 ],
               ),
             ),

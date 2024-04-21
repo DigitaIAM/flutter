@@ -254,7 +254,7 @@ class ProductionOrderOverview extends StatelessWidget {
 
         for (Map item in data) {
           // print("item $item");
-          final value = qtyToText(item['qty'] ?? '');
+          final value = Qty.fromJson(item['qty']).toString();
 
           children.add(KeyValue(
             label: item['goods']?['name'] ?? '',
@@ -268,7 +268,7 @@ class ProductionOrderOverview extends StatelessWidget {
               Text(localization.translate(label), textAlign: TextAlign.right));
         }
 
-        final value = qtyToText(data['used'] ?? data['produced'] ?? '');
+        final value = Qty.fromJson(data['used'] ?? data['produced']).toString();
 
         children.add(KeyValue(
           label: data['name'] ?? '',

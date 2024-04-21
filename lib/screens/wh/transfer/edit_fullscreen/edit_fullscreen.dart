@@ -115,7 +115,7 @@ class _WHTransferEditFSState extends State<WHTransferEditFS>
               child: TabBarView(
                 controller: _controller,
                 children: <Widget>[
-                  WHTransferDocumentCreation(doc: widget.entity)
+                  WHTransferDocumentCreation(entity: widget.entity)
                 ],
               ),
             ),

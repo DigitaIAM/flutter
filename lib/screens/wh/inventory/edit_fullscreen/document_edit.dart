@@ -144,7 +144,13 @@ class _WHInventoryDocumentEditState extends State<WHInventoryDocumentEdit> {
       );
     }
 
-    context.read<UiBloc>().add(ChangeView(WHInventory.ctx,
-        action: 'view', entity: MemoryItem.from(record)));
+    if (mounted) {
+      final entity = MemoryItem.from(record);
+      await entity.enrich(WHInventory.schema);
+
+      context
+          .read<UiBloc>()
+          .add(ChangeView(WHInventory.ctx, action: 'view', entity: entity));
+    }
   }
 }

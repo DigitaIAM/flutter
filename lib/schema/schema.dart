@@ -170,10 +170,10 @@ class ListType extends Type {
   const ListType(this.fields);
 }
 
-class CalculatedType extends Type {
+class CalculatedType<V> extends Type {
   CalculatedType(this.eval);
 
-  final Future<String> Function(MemoryItem) eval;
+  final Future<V> Function(MemoryItem) eval;
 }
 
 class PopupMenuButtonType extends Type {
