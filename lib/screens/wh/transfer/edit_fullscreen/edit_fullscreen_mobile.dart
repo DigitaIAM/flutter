@@ -31,8 +31,6 @@ class WHTransferEditMobile extends EntityHolder {
 
 class _WHTransferEditMobileState extends State<WHTransferEditMobile>
     with SingleTickerProviderStateMixin {
-  final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_WHTransferEditMobile');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   late TabController _controller;
@@ -84,6 +82,7 @@ class _WHTransferEditMobileState extends State<WHTransferEditMobile>
 
   @override
   Widget build(BuildContext context) {
+    print("build_1 ${widget.entity.json}");
     final localization = AppLocalizations.of(context);
 
     if (widget.entity.isNew) {
@@ -149,16 +148,9 @@ class _WHTransferEditMobileState extends State<WHTransferEditMobile>
                   ctx: const ['warehouse', 'transfer'],
                   doc: widget.entity,
                   schema: WHTransfer.schema,
-                  storage: const MemoryItem(
-                      id: 'warehouse/storage/2023-02-19T12:00:25.151Z',
-                      json: {
-                        "location": null,
-                        "name": "склад",
-                        "code": "023010100000",
-                        "_id": "warehouse/storage/2023-02-19T12:00:25.151Z",
-                        "_uuid": "404037f2-3db7-4dae-9884-6a79fd9cd94e"
-                      }),
-                )
+                  storage: widget.entity[cFrom],
+                  storageEditable: false,
+                ),
               ]),
             ),
           ]);

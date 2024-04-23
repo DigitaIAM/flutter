@@ -26,20 +26,8 @@ class WHTransfer extends Entity {
 
   static final List<Field> schema = [
     fDate,
-    const Field(cFrom, ReferenceType(['warehouse', 'storage'])),
-    const Field(cInto, ReferenceType(['warehouse', 'storage'])),
-//    const Field(
-//        cGoods,
-//        ListType([
-//          fStorage,
-//          // Field('ref', ReferenceType([cGoods])),
-//          Field(cBatch, StringType()),
-//          fGoods,
-//          fUomAtQty,
-//          fQty,
-//          // Field(cPrice, NumberType()),
-//          // Field(cCost, NumberType()),
-//        ]))
+    fFrom,
+    fInto,
   ];
 
   @override

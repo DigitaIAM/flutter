@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/printer/printing.dart';
@@ -299,7 +301,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
             child: ItemsListBuilder(
               items: items,
               title: (MemoryItem item) {
-                return Text(qtyToText(item.json));
+                return Text(Qty.fromJson(item.json).toString());
               },
               subtitle: (MemoryItem item) {
                 // return Text(qtyToText(item.json['_balance']?[cQty]));
@@ -380,7 +382,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       batch[cName] = DT.pretty(batch[cDate] ?? '');
       state.patchValue({cBatch: MemoryItem.from(batch)});
       List? qtyList = item.json['_balance']?[cQty] ?? item.json;
-      print("_qtyList $qtyList");
+      // print("_qtyList $qtyList");
       if (qtyList != null) {
         if (qtyList.length == 1) {
           Map qty = qtyList.first;
@@ -459,22 +461,22 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
       registered = type;
 
       // workaround as unknown where item resetting to initial
-      showCategory = false;
-      showGoods = false;
-      showBatch = false;
-      showQtyUom = false;
+      // showCategory = false;
+      // showGoods = false;
+      // showBatch = false;
+      // showQtyUom = false;
     });
     Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         registered = '';
 
         // workaround as unknown where item resetting to initial
-        final storageData = details.json[cStorage];
-        if (storageData is MemoryItem) {
-          final storage = MemoryItem.clone(details.json[cStorage]);
-          storage.json['_category'] = cStorage;
-          changeState(storage);
-        }
+        // final storageData = details.json[cStorage];
+        // if (storageData is MemoryItem) {
+        //   final storage = MemoryItem.clone(details.json[cStorage]);
+        //   storage.json['_category'] = cStorage;
+        //   changeState(storage);
+        // }
       });
     });
   }
@@ -584,13 +586,14 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 }
 
 class BalanceListBuilder extends StatelessWidget {
-  const BalanceListBuilder(
-      {super.key,
-      this.storage,
-      this.category,
-      this.goods,
-      this.batch,
-      required this.changeState});
+  const BalanceListBuilder({
+    super.key,
+    this.storage,
+    this.category,
+    this.goods,
+    this.batch,
+    required this.changeState,
+  });
 
   final Function(MemoryItem item) changeState;
 
@@ -604,6 +607,23 @@ class BalanceListBuilder extends StatelessWidget {
     final schema = <Field>[
       fName.copyWith(width: 3.0),
       const Field(cQty, NumberType(), path: ['_balance', cQty]),
+      Field("details", CalculatedType((MemoryItem item) async {
+        final batch = item.json['batch']?['id'];
+        if (batch != null) {
+          try {
+            final res = await Api.feathers()
+                .get(serviceName: "memories", objectId: batch, params: {
+              "oid": Api.instance.oid,
+              "ctx": [],
+            });
+            return res;
+          } catch (e) {
+            // print("error $e");
+          }
+        }
+
+        return {};
+      }))
     ];
 
     Map<String, dynamic> filter = {};
@@ -636,6 +656,7 @@ class BalanceListBuilder extends StatelessWidget {
           filter: filter,
           reverse: true,
           loadAll: true,
+          schema: schema,
         ));
 
         return bloc;
@@ -648,14 +669,29 @@ class BalanceListBuilder extends StatelessWidget {
           final batch = item.json[cBatch];
 
           if (batch != null) {
-            return Text(DT.pretty(batch[cDate] ?? ''));
+            var add = ' ';
+
+            final details = item.json['details'];
+            final customer = details['customer'];
+            final label = details['label'];
+
+            if (customer != null) {
+              add += customer;
+              if (label != null) {
+                add += ' : $label';
+              }
+            } else if (label != null) {
+              add += label;
+            }
+
+            return Text(DT.pretty(batch[cDate] ?? '') + add);
           }
           return Text(fName.resolve(item.json) ?? '');
         },
         subtitle: (MemoryItem item) {
           final qty = item.json['_balance']?[cQty] ?? item.json[cQty];
           if (qty != null) {
-            return Text(qtyToText(qty));
+            return Text(Qty.fromJson(qty).toString());
           }
           return const Text('');
         },
@@ -718,53 +754,4 @@ class ItemsListBuilder extends StatelessWidget {
       ),
     );
   }
-}
-
-String qtyToText(dynamic listOrMap) {
-  // print("qtyToText $listOrMap");
-  String text = '';
-  if (listOrMap != null) {
-    if (listOrMap is List && listOrMap.isNotEmpty) {
-      // print("list case");
-      for (Map qty in listOrMap) {
-        text = qtyToTextInner(text, qty);
-      }
-    } else if (listOrMap is Map) {
-      // print("map case");
-      text = qtyToTextInner(text, listOrMap);
-    }
-  }
-  return text;
-}
-
-String qtyToTextInner(String text, Map qty) {
-  // print("qtyToTextInner $text $qty");
-  if (text != '') {
-    text = '$text, ';
-  }
-  text = '$text ${qty['number'] ?? ''}';
-  var uom = qty['uom'];
-
-  if (uom is String) {
-    text = '$text $uom';
-  } else {
-    while (uom is Map) {
-      if (uom['uom'] == null) {
-        text = '$text ${uom['name'] ?? ''}';
-        break;
-      }
-      text = '$text ${uom['in']?['name'] ?? ''} по ${uom['number'] ?? ''}';
-
-      final label = uom['uom']?['name'];
-      if (label != null) {
-        text = '$text $label';
-        break;
-      } else {
-        uom = uom['uom'];
-      }
-    }
-  }
-  // workaround for algorithm above
-  text = text.trimLeft();
-  return text;
 }
