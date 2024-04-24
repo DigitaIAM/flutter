@@ -11,6 +11,7 @@ import 'package:nae/screens/common/person/screen.dart';
 import 'package:nae/screens/common/product/screen.dart';
 import 'package:nae/screens/common/uom/screen.dart';
 import 'package:nae/screens/production/area/screen.dart';
+import 'package:nae/screens/production/kpi/screen.dart';
 import 'package:nae/screens/production/order/screen.dart';
 import 'package:nae/screens/production/pallets/screen.dart';
 import 'package:nae/screens/production/production_report/screen.dart';
@@ -70,9 +71,8 @@ class UiState extends Equatable {
   bool get isMobile => !isDesktop;
 
   final List<List<Entity>> entities = [
-    [ProductionOrder()],
-    [PalletPacking()],
-    [ProductionReportView()],
+    [ProductionOrder(), PalletPacking()],
+    [ProductionReportView(), KpiReportView()],
     [WHBalance(), WHMovement()],
     [WHReceive(), WHTransfer(), WHDispatch(), WHInventory()],
     [Product(), Goods(), CategoryForGoods(), Uom()],
