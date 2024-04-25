@@ -122,7 +122,7 @@ class _KpiReportScreenState extends State<KpiReportScreen>
   Widget selected(BuildContext context) {
     final localization = AppLocalizations.of(context);
     return SizedBox(
-      width: 700,
+      width: 300,
       height: 60,
       child: AppForm(
         formKey: _formKey,
@@ -147,71 +147,21 @@ class _KpiReportScreenState extends State<KpiReportScreen>
             widget.entity.json[cName] = area?.name() ?? '';
             // widget.updateReport(widget.entity);
           });
-
-          MemoryItem? person = state.value[cOperator];
-          setState(() {
-            formEntity = MemoryItem(
-              id: formEntity.id,
-              json: {cOperator: person ?? MemoryItem.empty()},
-            );
-
-            // print("area selected ${area?.json}");
-            widget.entity.json[cOperator] = person?.id;
-            widget.entity.json[cOperator] = person?.name() ?? '';
-            // widget.updateReport(widget.entity);
-          });
-
-          // debugPrint("report onChanged: $selectedArea");
         },
-        child: Row(children: [
-          Expanded(
-            child: DecoratedFormPickerField(
-              creatable: false,
-              ctx: const [cProduction, cArea],
-              name: cArea,
-              label: localization.translate('area'),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-              ]),
-              onSave: (context) {},
-              // keyboardType: TextInputType.text,
-            ),
-          ),
-          const SizedBox(
-            height: 10,
-            width: 60,
-          ),
-          Expanded(
-            child: DecoratedFormPickerField(
-              creatable: false,
-              ctx: const ['person'],
-              name: cOperator,
-              label: localization.translate(cOperator),
-              autofocus: true,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-              ]),
-              onSave: (context) {},
-              // keyboardType: TextInputType.text,
-            ),
-          ),
-        ]),
+        child: DecoratedFormPickerField(
+          creatable: false,
+          ctx: const [cProduction, cArea],
+          name: cArea,
+          label: localization.translate('area'),
+          autofocus: true,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(),
+          ]),
+          onSave: (context) {},
+          // keyboardType: TextInputType.text,
+        ),
       ),
     );
-  }
-
-  MemoryItem getEntity() {
-    if (widget.entity.isNew && widget.entity.json[cDate] == null) {
-      final json = Map.of(widget.entity.json);
-      json[cDate] = DateTime.now(); // Utils.today();
-      return MemoryItem(id: widget.entity.id, json: json);
-    } else {
-      final json = Map.of(widget.entity.json);
-      json[cDate] = DateTime.parse(
-          json[cDate]); //DateFormat("yyyy-MM-dd").format(json[cDate]);
-      return MemoryItem(id: widget.entity.id, json: json);
-    }
   }
 
   void reset() {
@@ -313,86 +263,101 @@ class _KpiReportScreenState extends State<KpiReportScreen>
     }
   }
 
-  Set<String> getDataForColumns(List<MemoryItem> data) {
-    Set<String> produced = {};
+  // person-id, product-id, (planned, produced) = decimal
+  (
+    Map<String, MemoryItem>,
+    Map<String, MemoryItem>,
+    Map<String, Map<String, Map<String, Decimal>>>
+  ) prepare(List<MemoryItem> data) {
+    Map<String, Map<String, Map<String, Decimal>>> agr = {};
+
+    Map<String, MemoryItem> people = {};
+    Map<String, MemoryItem> products = {};
 
     for (MemoryItem item in data) {
       final json = item.json;
 
-      Map? product = json['product'];
+      final personId = json['operator']['_id'];
+      final productId = json['product']['_id'];
+      final planned = Decimal.tryParse(json['planned']) ?? Decimal.zero;
+      final produced = Qty.fromJson(json['produced']).lower;
 
-      if (product != null) {
-        final partNumber = product['part_number'] ?? '';
-        produced.add('${product['name'] ?? ''} $partNumber');
-      }
+      people[personId] = MemoryItem.from(json['operator'] ?? {});
+      products[productId] = MemoryItem.from(json['product'] ?? {});
+
+      agr.update(
+        personId,
+        (products) {
+          products.update(
+            productId,
+            (numbers) {
+              numbers.update(
+                'planned',
+                (number) => number + planned,
+                ifAbsent: () => planned,
+              );
+
+              numbers.update(
+                'produced',
+                (number) => number + produced,
+                ifAbsent: () => produced,
+              );
+
+              return numbers;
+            },
+            ifAbsent: () => {'planned': planned, 'produced': produced},
+          );
+          return products;
+        },
+        ifAbsent: () => {
+          productId: {'planned': planned, 'produced': produced}
+        },
+      );
     }
 
-    return produced;
+    // print("agr $agr");
+
+    return (people, products, agr);
   }
 
-  List<PlutoRow> intoRows(List<PlutoColumn> columns, RequestState state) {
-    var items = state.items;
+  List<PlutoRow> intoRows(
+      List<PlutoColumn> columns,
+      Map<String, MemoryItem> people,
+      Map<String, Map<String, Map<String, Decimal>>> data) {
+    // Map<String, PlutoCell> sumAll = {'person': PlutoCell(value: 'итого')};
 
-    Map<String, PlutoCell> sumAll = {'date': PlutoCell(value: 'итого')};
-
-    var result = List.of(items.map((item) {
+    List<PlutoRow> result = [];
+    for (final ePerson in people.entries) {
       Map<String, PlutoCell> cells = {};
 
       for (PlutoColumn column in columns) {
         cells[column.field] = PlutoCell(value: '');
       }
 
-      final json = item.json;
-      // print('_json $json');
+      cells['person'] = PlutoCell(value: ePerson.value.name());
 
-      final date =
-          json['date'] != null ? json['date'].toString().substring(8) : '';
-      cells['date'] = PlutoCell(value: date);
+      final products = data[ePerson.key] ?? {};
+      for (final eProduct in products.entries) {
+        for (final eNumber in eProduct.value.entries) {
+          cells['${eProduct.key}_${eNumber.key}'] =
+              PlutoCell(value: eNumber.value.toString());
+        }
 
-      Qty produced = Qty.fromJson(json['produced']);
+        final planned = eProduct.value['planned'] ?? Decimal.zero;
+        final produced = eProduct.value['produced'] ?? Decimal.zero;
 
-      String str = json['planned']?.toString() ?? '0';
-      var plan = Decimal.tryParse(str) ?? Decimal.zero;
+        var per = '';
+        if (planned != Decimal.zero) {
+          per = ((produced / planned) * Decimal.fromInt(100).toRational())
+              .round()
+              .toString();
+        }
 
-      // if (produced.isNotEmpty) {
-      final name = json['product']?['name'] ?? '';
-      final partNumber = json['product']?['part_number'] ?? '';
-      final product = '$name $partNumber';
+        cells['${eProduct.key}_per'] = PlutoCell(value: per);
+      }
 
-      final keyPiece = 'piece $product';
-      cells[keyPiece] = PlutoCell(value: produced.lower);
-
-      final keyBox = 'box $product';
-      cells[keyBox] = PlutoCell(value: produced.upper);
-
-      final keyPlan = 'plan $product';
-      print("keyPlan $keyPlan");
-      cells[keyPlan] = PlutoCell(value: plan);
-
-      sumAll.update(
-        keyPlan,
-        (prev) => PlutoCell(value: prev.value + plan),
-        ifAbsent: () => PlutoCell(value: plan),
-      );
-
-      final piece = produced.lower;
-      sumAll.update(
-        keyPiece,
-        (prev) => PlutoCell(value: prev.value + piece),
-        ifAbsent: () => PlutoCell(value: piece),
-      );
-
-      final box = produced.upper;
-      sumAll.update(
-        keyBox,
-        (prev) => PlutoCell(value: prev.value + box),
-        ifAbsent: () => PlutoCell(value: box),
-      );
-
-      return PlutoRow(key: ValueKey(item.id), cells: cells);
-    }));
-
-    result.add(PlutoRow(key: const ValueKey('sum'), cells: sumAll));
+      result.add(PlutoRow(cells: cells));
+    }
 
     return result;
   }
@@ -401,73 +366,61 @@ class _KpiReportScreenState extends State<KpiReportScreen>
     final theme = Theme.of(context);
     final localization = AppLocalizations.of(context);
 
+    final List<PlutoColumnGroup> columnGroups = [];
     final List<PlutoColumn> columns = [];
 
+    final (people, products, data) = prepare(state.items);
+
     columns.add(PlutoColumn(
-      title: localization.translate('date'),
-      field: 'date',
+      title: localization.translate('person'),
+      field: 'person',
       type: PlutoColumnType.text(),
       titleTextAlign: PlutoColumnTextAlign.center,
       textAlign: PlutoColumnTextAlign.center,
-      width: 100,
+      width: 150,
       backgroundColor: theme.dividerColor.withAlpha(30),
     ));
 
-    final List<PlutoColumnGroup> columnGroups = [];
-    // columnGroups.add(PlutoColumnGroup(
-    //     title: localization.translate('order'), fields: ['date']));
+    for (final product in products.entries) {
+      final kPlanned = '${product.key}_planned';
 
-    //final producedSet = getDataForColumns(state.items);
-
-    final producedSet = getDataForColumns(state.items);
-
-    // produced items
-    List<String> producedGroupFields = [];
-    for (String produced in producedSet) {
-      // workaround
-      final titleInner = produced == 'Рулон полипропилен R'
-          ? 'кг'
-          : localization.translate('pieces');
-
-      final kPlan = 'plan $produced';
       columns.add(PlutoColumn(
         title: 'план',
-        field: kPlan,
+        field: kPlanned,
         type: PlutoColumnType.text(),
         textAlign: PlutoColumnTextAlign.end,
         width: 100,
         backgroundColor: theme.dividerColor.withAlpha(30),
       ));
 
-      final kPiece = 'piece $produced';
+      final kProduced = '${product.key}_produced';
       columns.add(PlutoColumn(
         title: 'факт',
-        field: kPiece,
+        field: kProduced,
         type: PlutoColumnType.text(),
         textAlign: PlutoColumnTextAlign.end,
         width: 100,
         backgroundColor: theme.dividerColor.withAlpha(30),
       ));
 
-      columnGroups.add(PlutoColumnGroup(
-        title: produced,
-        fields: [kPlan, kPiece],
+      final kPer = '${product.key}_per';
+      columns.add(PlutoColumn(
+        title: '%',
+        field: kPer,
+        type: PlutoColumnType.text(),
+        textAlign: PlutoColumnTextAlign.end,
+        width: 50,
         backgroundColor: theme.dividerColor.withAlpha(30),
       ));
 
-      // columns.add(PlutoColumn(title: produced, field: produced, type: text));
-
-      producedGroupFields.add(produced);
-    }
-
-    if (producedGroupFields.isNotEmpty) {
       columnGroups.add(PlutoColumnGroup(
-        title: localization.translate('product'),
-        fields: producedGroupFields,
+        title: product.value.name(),
+        fields: [kPlanned, kProduced, kPer],
+        backgroundColor: theme.dividerColor.withAlpha(30),
       ));
     }
 
-    List<PlutoRow> rows = intoRows(columns, state);
+    List<PlutoRow> rows = intoRows(columns, people, data);
 
     final config = PlutoGridConfiguration.dark(
       enterKeyAction: PlutoGridEnterKeyAction.editingAndMoveRight,
