@@ -4,9 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/app_localizations.dart';
-import 'package:nae/constants.dart';
+import 'package:nae/core/theme.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -16,10 +15,9 @@ import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/screens/production/production_report/screen.dart';
 import 'package:nae/utils/date.dart';
-import 'package:nae/widgets/app_form.dart';
-import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/scrolling_date_calendar.dart';
 import 'package:pluto_grid_plus/pluto_grid_plus.dart';
+import 'package:flutter/services.dart';
 
 class KpiReportScreen extends StatefulWidget {
   const KpiReportScreen({
@@ -71,7 +69,7 @@ class _KpiReportScreenState extends State<KpiReportScreen>
                 height: 10,
                 width: 60,
               ),
-              selected(context),
+              copy(context),
             ],
           ),
           Expanded(
@@ -119,48 +117,10 @@ class _KpiReportScreenState extends State<KpiReportScreen>
     );
   }
 
-  Widget selected(BuildContext context) {
-    final localization = AppLocalizations.of(context);
-    return SizedBox(
-      width: 300,
-      height: 60,
-      child: AppForm(
-        formKey: _formKey,
-        focusNode: _focusNode,
-        entity: formEntity,
-        schema: const [fArea],
-        onChanged: () {
-          final state = _formKey.currentState!;
-          state.save();
-
-          // print("state.value ${state.value}");
-
-          MemoryItem? area = state.value[cArea];
-          setState(() {
-            formEntity = MemoryItem(
-              id: formEntity.id,
-              json: {cArea: area ?? MemoryItem.empty()},
-            );
-
-            // print("area selected ${area?.json}");
-            widget.entity.json[cArea] = area?.id;
-            widget.entity.json[cName] = area?.name() ?? '';
-            // widget.updateReport(widget.entity);
-          });
-        },
-        child: DecoratedFormPickerField(
-          creatable: false,
-          ctx: const [cProduction, cArea],
-          name: cArea,
-          label: localization.translate('area'),
-          autofocus: true,
-          validator: FormBuilderValidators.compose([
-            FormBuilderValidators.required(),
-          ]),
-          onSave: (context) {},
-          // keyboardType: TextInputType.text,
-        ),
-      ),
+  Widget copy(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {},
+      child: const Text('Excel'),
     );
   }
 
@@ -198,13 +158,9 @@ class _KpiReportScreenState extends State<KpiReportScreen>
     return widget.entity.json['date'] ?? DT.today();
   }
 
-  String _selectedArea() {
-    return widget.entity.json[cArea] ?? '';
-  }
-
   Widget tableWidget() {
     final selectedDate = _selectedDate();
-    final selectedArea = _selectedArea();
+    //  final selectedArea = _selectedArea();
     return BlocBuilder<MemoryBloc, RequestState>(
       key: ValueKey('__reportTable_$selectedDate'),
       builder: (context, state) {
@@ -218,12 +174,8 @@ class _KpiReportScreenState extends State<KpiReportScreen>
 
             return buildPlutoGrid(context, state);
           case RequestStatus.initiate:
-            if (selectedArea.isNotEmpty) {
-              loadMore(context, state);
-              return const Center(child: Text('loading'));
-            } else {
-              return const Center(child: Text(''));
-            }
+            loadMore(context, state);
+            return const Center(child: Text('loading'));
         }
       },
     );
@@ -236,31 +188,20 @@ class _KpiReportScreenState extends State<KpiReportScreen>
   }
 
   MemoryFetch request(bool reset) {
-    final selectedArea = _selectedArea();
-    if (selectedArea.isNotEmpty) {
-      final selectedDate = _selectedDate();
-      final date = selectedDate.toString().substring(0, 7);
+    final selectedDate = _selectedDate();
+    final date = selectedDate.toString().substring(0, 7);
 
-      return MemoryFetch(
-        'memories',
-        const ['production', 'order'],
-        schema: ProductionReportView.schema,
-        limit: 100,
-        // search: widget.search,
-        filter: {
-          "\$starts-with": {"date": date} // , "area": selectedArea},
-        },
-        reset: reset,
-      );
-    } else {
-      return MemoryFetch(
-        'memories',
-        const ['production', 'order'],
-        schema: ProductionReportView.schema,
-        limit: 0,
-        reset: true,
-      );
-    }
+    return MemoryFetch(
+      'memories',
+      const ['production', 'order'],
+      schema: ProductionReportView.schema,
+      limit: 100,
+      // search: widget.search,
+      filter: {
+        "\$starts-with": {"date": date} // , "area": selectedArea},
+      },
+      reset: reset,
+    );
   }
 
   // person-id, product-id, (planned, produced) = decimal
