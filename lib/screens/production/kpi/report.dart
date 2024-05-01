@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:nae/app_localizations.dart';
+import 'package:nae/constants.dart';
 import 'package:nae/core/theme.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
@@ -69,7 +70,7 @@ class _KpiReportScreenState extends State<KpiReportScreen>
                 height: 10,
                 width: 60,
               ),
-              copy(context),
+              //  copy(context, )
             ],
           ),
           Expanded(
@@ -117,13 +118,6 @@ class _KpiReportScreenState extends State<KpiReportScreen>
     );
   }
 
-  Widget copy(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {},
-      child: const Text('Excel'),
-    );
-  }
-
   void reset() {
     // print("reset $selectedArea");
     // if (!(selectedArea?.isEmpty ?? true)) {
@@ -160,7 +154,6 @@ class _KpiReportScreenState extends State<KpiReportScreen>
 
   Widget tableWidget() {
     final selectedDate = _selectedDate();
-    //  final selectedArea = _selectedArea();
     return BlocBuilder<MemoryBloc, RequestState>(
       key: ValueKey('__reportTable_$selectedDate'),
       builder: (context, state) {
@@ -256,9 +249,46 @@ class _KpiReportScreenState extends State<KpiReportScreen>
       );
     }
 
-    // print("agr $agr");
+    print("agr $agr");
 
     return (people, products, agr);
+  }
+
+  Widget copy(BuildContext context, List<PlutoRow> rows,
+      List<PlutoColumn> columns, List<PlutoColumnGroup> groups) {
+    var string = '';
+
+    for (PlutoColumn col in columns) {
+      for (PlutoColumnGroup group in groups) {
+        if (group.fields?[0] == col.field) {
+          string += group.title;
+        }
+      }
+      string += '\t';
+    }
+    string += '\n';
+
+    for (PlutoColumn col in columns) {
+      string += '${col.title}\t';
+    }
+    string += '\n';
+
+    for (PlutoRow row in rows) {
+      for (PlutoColumn col in columns) {
+        string += row.cells[col.field]?.value ?? '';
+        string += '\t';
+      }
+      string += '\n';
+    }
+    return ElevatedButton(
+      onPressed: () {
+        Clipboard.setData(ClipboardData(text: string)).then((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Copied to your clipboard !')));
+        });
+      },
+      child: const Text('Copy'),
+    );
   }
 
   List<PlutoRow> intoRows(
@@ -299,11 +329,10 @@ class _KpiReportScreenState extends State<KpiReportScreen>
 
       result.add(PlutoRow(cells: cells));
     }
-
     return result;
   }
 
-  PlutoGrid buildPlutoGrid(BuildContext context, RequestState state) {
+  Widget buildPlutoGrid(BuildContext context, RequestState state) {
     final theme = Theme.of(context);
     final localization = AppLocalizations.of(context);
 
@@ -384,36 +413,40 @@ class _KpiReportScreenState extends State<KpiReportScreen>
       items[element.id] = element;
     }
 
-    return PlutoGrid(
-      key: UniqueKey(),
-      columns: columns,
-      rows: rows,
-      // rows: [],
-      columnGroups: columnGroups,
-      mode: PlutoGridMode.readOnly,
-      configuration: config,
-      onLoaded: (PlutoGridOnLoadedEvent event) {
-        stateManager = event.stateManager;
-        // stateManager?.setSelectingMode(PlutoGridSelectingMode.row);
-      },
-      onRowDoubleTap: (PlutoGridOnRowDoubleTapEvent event) {
-        final str = event.row.key.toString();
-        final len = str.length - 3;
-        final id = event.row.key.toString().substring(3, len);
-        final MemoryItem item = items[id];
-        // print("onRowDoubleTap ${item.json}");
-        context
-            .read<UiBloc>()
-            .add(ChangeView(const ['production', 'order'], entity: item));
-      },
-      // createFooter: (stateManager) => InfinityScroll(
-      //   intoRows: intoRows,
-      //   initialFetch: true,
-      //   fetchWithSorting: false,
-      //   fetchWithFiltering: false,
-      //   fetch: (r) => loadMore(context, state),
-      //   stateManager: stateManager,
-      // ),
-    );
+    return Column(children: [
+      copy(context, rows, columns, columnGroups),
+      Expanded(
+          child: PlutoGrid(
+        key: UniqueKey(),
+        columns: columns,
+        rows: rows,
+        // rows: [],
+        columnGroups: columnGroups,
+        mode: PlutoGridMode.readOnly,
+        configuration: config,
+        onLoaded: (PlutoGridOnLoadedEvent event) {
+          stateManager = event.stateManager;
+          // stateManager?.setSelectingMode(PlutoGridSelectingMode.row);
+        },
+        onRowDoubleTap: (PlutoGridOnRowDoubleTapEvent event) {
+          final str = event.row.key.toString();
+          final len = str.length - 3;
+          final id = event.row.key.toString().substring(3, len);
+          final MemoryItem item = items[id];
+          // print("onRowDoubleTap ${item.json}");
+          context
+              .read<UiBloc>()
+              .add(ChangeView(const ['production', 'order'], entity: item));
+        },
+        // createFooter: (stateManager) => InfinityScroll(
+        //   intoRows: intoRows,
+        //   initialFetch: true,
+        //   fetchWithSorting: false,
+        //   fetchWithFiltering: false,
+        //   fetch: (r) => loadMore(context, state),
+        //   stateManager: stateManager,
+        // ),
+      ))
+    ]);
   }
 }
