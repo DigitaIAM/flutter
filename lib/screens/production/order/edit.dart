@@ -275,17 +275,6 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
           onSave: (context) {},
           keyboardType: TextInputType.text,
         ),
-        DecoratedFormPickerField(
-          creatable: false,
-          ctx: const [cPerson],
-          name: cControl,
-          label: localization.translate(cControl),
-          autofocus: true,
-          validator: FormBuilderValidators.compose([
-            FormBuilderValidators.required(),
-          ]),
-          onSave: (context) {},
-        ),
       ];
     }
     return [];
