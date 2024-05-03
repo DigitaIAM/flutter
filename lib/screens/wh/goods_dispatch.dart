@@ -66,6 +66,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
   bool showGoods = false;
   bool showBatch = false;
   bool showQtyUom = false;
+
   // bool showStorage = false;
 
   @override
@@ -328,7 +329,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     return <Widget>[];
   }
 
-  void changeState(MemoryItem item) {
+  void changeState(MemoryItem item) async {
     // print("setState ${_formKey.currentState?.fields[cGoods]}");
     // print("changeState: (item) ${item.json}");
 
@@ -344,7 +345,10 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
     } else if (category.toString() == cCategory) {
       state.patchValue({cCategory: item});
     } else if (category.toString() == cGoods) {
-      state.patchValue({cGoods: item});
+      item = await item.enrich([fCategory]);
+      final category = item.json[cCategory];
+
+      state.patchValue({cCategory: category, cGoods: item});
     }
 
     // TODO refactoring
