@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nae/api.dart';
+import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
@@ -12,8 +14,10 @@ import 'package:nae/models/memory/state.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/widgets/app_form_card.dart';
+import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/swipe_action.dart';
-
+import '../../../../widgets/scrollable_list_view.dart';
 import 'ProducedEdit.dart';
 
 class POProducedView extends StatefulWidget {
@@ -27,6 +31,7 @@ class POProducedView extends StatefulWidget {
 
 class _POProducedViewState extends State<POProducedView> {
   MemoryItem? selected;
+  String status = "register";
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +50,9 @@ class _POProducedViewState extends State<POProducedView> {
     final formatter = NumberFormat("00");
 
     return BlocProvider(
-      create: (context) =>
-          MemoryBloc(schema: schema)..add(MemoryFetch('memories', ctx, schema: schema, filter: filter, loadAll: true)),
+      create: (context) => MemoryBloc(schema: schema)
+        ..add(MemoryFetch('memories', ctx,
+            schema: schema, filter: filter, loadAll: true)),
       child: BlocBuilder<MemoryBloc, RequestState>(builder: (context, state) {
         if (state.status == RequestStatus.initiate) {
           return const Center(child: Text('loading...'));
@@ -60,9 +66,11 @@ class _POProducedViewState extends State<POProducedView> {
             id = id.substring(id.length - 24, id.length);
 
             final current = DateTime.parse(id).toLocal();
-            id = '${current.year}-${current.month}-${current.day}T${current.hour}';
+            id =
+                '${current.year}-${current.month}-${current.day}T${current.hour}';
 
-            var name = '${formatter.format(current.hour)}-${formatter.format(current.hour + 1)} час';
+            var name =
+                '${formatter.format(current.hour)}-${formatter.format(current.hour + 1)} час';
             if (current.hour + 1 > 24) {
               name = '${formatter.format(current.hour)}-01 час';
             }
@@ -88,14 +96,18 @@ class _POProducedViewState extends State<POProducedView> {
               ...groups.map((g) {
                 return Card(
                   elevation: 2.0,
-                  margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 5.0, vertical: 5.0),
                   child: Column(children: [
                     ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10.0, vertical: 5.0),
                       // leading: const Icon(Icons.account_circle),
                       tileColor: theme.secondaryHeaderColor,
                       title: Text(g.name()),
-                      trailing: selected == g ? const Icon(Icons.arrow_drop_down) : const Icon(Icons.arrow_right),
+                      trailing: selected == g
+                          ? const Icon(Icons.arrow_drop_down)
+                          : const Icon(Icons.arrow_right),
                       onTap: () {
                         setState(() {
                           if (selected == g) {
@@ -110,8 +122,9 @@ class _POProducedViewState extends State<POProducedView> {
                       SizedBox(
                         height: 300,
                         child: ListView(
-                          children:
-                              (items[selected] as List<MemoryItem>).map((item) => buildItem(item, theme)).toList(),
+                          children: (items[selected] as List<MemoryItem>)
+                              .map((item) => buildItem(item, theme))
+                              .toList(),
                         ),
                       )
                   ]),
@@ -125,12 +138,16 @@ class _POProducedViewState extends State<POProducedView> {
   }
 
   Widget buildItem(MemoryItem item, ThemeData theme) {
-    final title = '${item.json[cQty]?[cUom]?[cNumber].toString() ?? ''} ${item.json['customer'] ?? ''} ${item.json['label'] ?? ''}';
+    final title =
+        '${item.json[cQty]?[cUom]?[cNumber].toString() ?? ''} ${item.json['customer'] ?? ''} ${item.json['label'] ?? ''}';
     final subtitle = item.id.split('T').last;
-    final style = item.json[cStatus] == "deleted" ? const TextStyle(decoration: TextDecoration.lineThrough) : const TextStyle();
+    final style = item.json[cStatus] == "deleted"
+        ? const TextStyle(decoration: TextDecoration.lineThrough)
+        : const TextStyle();
 
     final tile = ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       leading: const Icon(Icons.catching_pokemon_outlined),
       // title: Text(item.json[cQty].toString()),
       title: Text(title, style: style),
@@ -160,6 +177,13 @@ class _POProducedViewState extends State<POProducedView> {
         foregroundColor: Colors.white,
         backgroundColor: Colors.blue,
       ),
+      ItemAction(
+        label: 'edit',
+        icon: Icons.edit,
+        onPressed: (context, item) => editItem(context, item),
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.green,
+      ),
     ];
 
     return SwipeActionWidget(
@@ -175,7 +199,45 @@ class _POProducedViewState extends State<POProducedView> {
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
-    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
+    context
+        .read<MemoryBloc>()
+        .add(MemoryPatch('memories', ctx, const [], item.id, data));
+  }
+
+  void editItem(BuildContext context, MemoryItem item) async {
+    final localization = AppLocalizations.of(context);
+    print('doc.json ${item.json}');
+    return showMaterialModalBottomSheet(
+        context: context,
+        builder: (context) => ScrollableListView(children: <Widget>[
+              FormCard(isLast: true, children: <Widget>[
+                DecoratedFormPickerField(
+                  creatable: false,
+                  ctx: const ['document'],
+                  name: cOrder,
+                  label: localization.translate(cOrder),
+                  autofocus: true,
+                  validator: FormBuilderValidators.compose([
+                    FormBuilderValidators.required(),
+                  ]),
+                  onSave: (context) {},
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: 200.0,
+                  height: 50.0,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(localization.translate(status)),
+                  ),
+                ),
+              ])
+            ]));
   }
 
   Future chooseAndPrint(BuildContext context, MemoryItem doc) async {
@@ -212,8 +274,11 @@ class _POProducedViewState extends State<POProducedView> {
             final ip = printer['ip'];
             final port = int.parse(printer['port']);
 
-            final result = await Labels.connect(ip, port,
-                (printer) async => POProducedEdit.printingProduce(printer, widget.order, doc, (newStatus) {}));
+            final result = await Labels.connect(
+                ip,
+                port,
+                (printer) async => POProducedEdit.printingProduce(
+                    printer, widget.order, doc, (newStatus) {}));
 
             if (result != PrintResult.success) {
               showToast(result.msg,

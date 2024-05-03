@@ -284,10 +284,10 @@ class _KpiReportScreenState extends State<KpiReportScreen>
       onPressed: () {
         Clipboard.setData(ClipboardData(text: string)).then((_) {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Copied to your clipboard !')));
+              const SnackBar(content: Text('Данные скопированы')));
         });
       },
-      child: const Text('Copy'),
+      child: const Text('Скопировать'),
     );
   }
 
