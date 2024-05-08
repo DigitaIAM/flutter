@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -118,6 +120,14 @@ class _ProductionOrderEditState extends State<ProductionOrderEdit> {
         entity: getEntity(),
         child: ScrollableListView(children: <Widget>[
           FormCard(isLast: true, children: <Widget>[
+            InkWell(
+                child: Text(widget.entity.id),
+                onTap: () =>
+                    Clipboard.setData(ClipboardData(text: widget.entity.id))
+                        .then((_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Данные скопированы')));
+                    })),
             DateField(
               name: cDate,
               label: localization.translate(cDate),

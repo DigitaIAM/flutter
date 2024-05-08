@@ -15,8 +15,9 @@ import 'package:nae/widgets/swipe_action.dart';
 
 class WHDispatchGoods extends StatelessWidget {
   final MemoryItem doc;
+  final Mode mode;
 
-  const WHDispatchGoods({super.key, required this.doc});
+  const WHDispatchGoods({super.key, required this.doc, this.mode = Mode.auto});
 
   static const ctx = ['warehouse', 'dispatch'];
 
@@ -61,7 +62,7 @@ class WHDispatchGoods extends StatelessWidget {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-          // print("item.json ${item.json}");
+          print("subtitle ${item.json}");
 
           var text = '';
 
@@ -115,7 +116,9 @@ class WHDispatchGoods extends StatelessWidget {
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
-    context.read<MemoryBloc>().add(MemoryPatch('memories', ctx, const [], item.id, data));
+    context
+        .read<MemoryBloc>()
+        .add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
 
   Future drawPrinterList(BuildContext context, MemoryItem item) async {
@@ -148,7 +151,9 @@ class WHDispatchGoods extends StatelessWidget {
       for (var printer in printers) {
         final ip = (printer['ip'] ?? '').toString();
         final port = int.parse(printer['port'] ?? '0');
-        children.add(ListTile(title: Text(printer[cName] ?? ''), onTap: () => printPreparation(ip, port, item)));
+        children.add(ListTile(
+            title: Text(printer[cName] ?? ''),
+            onTap: () => printPreparation(ip, port, item)));
       }
     }
 
