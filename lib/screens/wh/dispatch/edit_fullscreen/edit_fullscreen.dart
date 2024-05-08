@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
@@ -11,22 +10,17 @@ import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
-import 'package:nae/models/ui/state.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/wh/dispatch/edit_fullscreen/document_creation.dart';
 import 'package:nae/screens/wh/dispatch/edit_fullscreen/goods.dart';
 import 'package:nae/screens/wh/dispatch/edit_fullscreen/overview.dart';
 import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/share/utils.dart';
-import 'package:nae/widgets/app_form.dart';
+import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/app_form_card.dart';
-import 'package:nae/widgets/app_form_field.dart';
-import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/autocomplete.dart';
 import 'package:nae/widgets/entity_screens.dart';
-import 'package:nae/widgets/scaffold_edit.dart';
 import 'package:nae/widgets/scaffold_view.dart';
-import 'package:nae/widgets/scrollable_list_view.dart';
 
 import '../screen.dart';
 
@@ -52,7 +46,7 @@ class _WHDispatchEditFSState extends State<WHDispatchEditFS>
     _controller = TabController(
       vsync: this,
       length: widget.entity.isNew ? 1 : 3,
-      initialIndex: widget.entity.isNew ? 0 : 1,
+      initialIndex: 0, //widget.entity.isNew ? 0 : 1,
     );
   }
 
@@ -64,27 +58,27 @@ class _WHDispatchEditFSState extends State<WHDispatchEditFS>
     super.dispose();
   }
 
-  void _onSave(BuildContext context) {
-    final state = _formKey.currentState;
-    if (state != null && state.saveAndValidate()) {
-      debugPrint('new data');
-      debugPrint(_formKey.currentState?.value.toString());
-
-      final Map<String, dynamic> data = Map.from(state.value);
-      // workaround
-      data[cId] = widget.entity.id;
-
-      context.read<MemoryBloc>().add(MemorySave("memories", WHDispatch.ctx,
-          WHDispatch.schema, MemoryItem(id: widget.entity.id, json: data)));
-    } else {
-      debugPrint(_formKey.currentState?.value.toString());
-      debugPrint('validation failed');
-    }
-
-    // if (_formKey.currentState?.validate() ?? false) {
-    //   context.read<MemoryBloc>().add(MemorySave("memories", UomScreen.route, widget.entity));
-    // }
-  }
+  // void _onSave(BuildContext context) {
+  //   final state = _formKey.currentState;
+  //   if (state != null && state.saveAndValidate()) {
+  //     debugPrint('new data');
+  //     debugPrint(_formKey.currentState?.value.toString());
+  //
+  //     final Map<String, dynamic> data = Map.from(state.value);
+  //     // workaround
+  //     data[cId] = widget.entity.id;
+  //
+  //     context.read<MemoryBloc>().add(MemorySave("memories", WHDispatch.ctx,
+  //         WHDispatch.schema, MemoryItem(id: widget.entity.id, json: data)));
+  //   } else {
+  //     debugPrint(_formKey.currentState?.value.toString());
+  //     debugPrint('validation failed');
+  //   }
+  //
+  //   // if (_formKey.currentState?.validate() ?? false) {
+  //   //   context.read<MemoryBloc>().add(MemorySave("memories", UomScreen.route, widget.entity));
+  //   // }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -115,96 +109,44 @@ class _WHDispatchEditFSState extends State<WHDispatchEditFS>
         // TODO context.read<UiBloc>().add(PreviousRoute());
       }
 
-      return BlocBuilder<UiBloc, UiState>(builder: (context, uiState) {
-        if (uiState.isDesktop) {
-          return EditScaffold(
-            entity: widget.entity,
-            title: localization.translate("warehouse dispatch"),
-            onClose: routerBack,
-            onCancel: routerBack,
-            onSave: _onSave,
-            body: AppForm(
-              schema: WHDispatch.schema,
-              formKey: _formKey,
-              focusNode: _focusNode,
-              entity: getEntity(),
-              child: Column(children: [
-                FormCard(children: <Widget>[
-                  DecoratedFormField(
-                    name: cDate,
-                    label: localization.translate(cDate),
-                    autofocus: true,
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                    ]),
-                    onSave: _onSave,
-                    keyboardType: TextInputType.datetime,
-                  ),
-                  DecoratedFormPickerField(
-                    ctx: const ['warehouse', 'storage'],
-                    name: cStorage,
-                    label: localization.translate(cStorage),
-                    autofocus: true,
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                    ]),
-                    onSave: _onSave,
-                  ),
-                  DecoratedFormPickerField(
-                    ctx: const ['counterparty'],
-                    name: cCounterparty,
-                    label: localization.translate(cCounterparty),
-                    autofocus: true,
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                    ]),
-                    onSave: _onSave,
-                  ),
-                ]),
-                Expanded(
-                  child: ScrollableListView(children: <Widget>[
-                    Lines(
-                      ctx: const ['warehouse', 'dispatch'],
-                      schema: const [], // TODO
-                      document: widget.entity,
-                    ),
-                    // workaround to give some space for dropdown
-                    Container(height: 300)
-                  ]),
-                )
+      return ScaffoldView(
+        title:
+            "${localization.translate("warehouse dispatch")} ${DT.format(widget.entity.json[cDate])}",
+        appBarBottom: TabBar(
+          controller: _controller,
+          isScrollable: true,
+          tabs: [
+            Tab(text: localization.translate(cGoods)),
+            Tab(text: localization.translate("overview")),
+            Tab(text: localization.translate("registration")),
+          ],
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.edit_note_outlined),
+            tooltip: localization.translate("edit"),
+            onPressed: () {
+              context.read<UiBloc>().add(ChangeView(WHDispatch.ctx,
+                  action: 'edit', entity: widget.entity));
+            },
+          ),
+        ],
+        body: Builder(builder: (context) {
+          return Column(children: <Widget>[
+            Expanded(
+              child: TabBarView(controller: _controller, children: <Widget>[
+                WHDispatchGoods(doc: widget.entity),
+                WHDispatchOverview(doc: widget.entity),
+                GoodsRegistration(
+                    ctx: const ['warehouse', 'dispatch'],
+                    doc: widget.entity,
+                    schema: WHDispatch.schema,
+                    enablePrinting: false)
               ]),
             ),
-          );
-        } else {
-          return ScaffoldView(
-            title: localization.translate("warehouse dispatch"),
-            appBarBottom: TabBar(
-              controller: _controller,
-              isScrollable: true,
-              tabs: [
-                Tab(text: localization.translate(cGoods)),
-                Tab(text: localization.translate("overview")),
-                Tab(text: localization.translate("registration")),
-              ],
-            ),
-            body: Builder(builder: (context) {
-              return Column(children: <Widget>[
-                Expanded(
-                  child: TabBarView(controller: _controller, children: <Widget>[
-                    WHDispatchGoods(doc: widget.entity),
-                    WHDispatchOverview(doc: widget.entity),
-                    GoodsRegistration(
-                        ctx: const ['warehouse', 'dispatch'],
-                        doc: widget.entity,
-                        schema: WHDispatch.schema,
-                        enablePrinting: false)
-                  ]),
-                ),
-              ]);
-            }),
-          );
-        }
-      });
+          ]);
+        }),
+      );
     }
   }
 

@@ -138,6 +138,7 @@ class _POProducedViewState extends State<POProducedView> {
   }
 
   Widget buildItem(MemoryItem item, ThemeData theme) {
+    //  print("buildItem ${item.json}");
     final title =
         '${item.json[cQty]?[cUom]?[cNumber].toString() ?? ''} ${item.json['customer'] ?? ''} ${item.json['label'] ?? ''}';
     final subtitle = item.id.split('T').last;
@@ -204,40 +205,49 @@ class _POProducedViewState extends State<POProducedView> {
         .add(MemoryPatch('memories', ctx, const [], item.id, data));
   }
 
+  final textController = TextEditingController();
+
+  @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
+  }
+
   void editItem(BuildContext context, MemoryItem item) async {
+    print('json :${item.json}');
     final localization = AppLocalizations.of(context);
-    print('doc.json ${item.json}');
+    final theme = Theme.of(context);
+    final textController = TextEditingController();
     return showMaterialModalBottomSheet(
         context: context,
         builder: (context) => ScrollableListView(children: <Widget>[
               FormCard(isLast: true, children: <Widget>[
-                DecoratedFormPickerField(
-                  creatable: false,
-                  ctx: const ['document'],
-                  name: cOrder,
-                  label: localization.translate(cOrder),
-                  autofocus: true,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(),
-                  ]),
-                  onSave: (context) {},
+                TextField(
+                  controller: textController,
                 ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: 200.0,
-                  height: 50.0,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Text(localization.translate(status)),
+                FloatingActionButton(
+                  backgroundColor: theme.primaryColorDark,
+                  onPressed: () {
+                    replacement(textController.text, item);
+                  },
+                  tooltip: AppLocalizations.of(context).translate("new line"),
+                  child: Icon(
+                    Icons.done,
+                    color: theme.primaryColorLight,
                   ),
                 ),
               ])
             ]));
+  }
+
+  void replacement(String reference, MemoryItem item) async {
+    final response = await Api.feathers()
+        .patch(serviceName: "memories", objectId: item.id, data: {
+      'document': reference
+    }, params: {
+      "oid": Api.instance.oid,
+      "ctx": ['production', 'produce'],
+    });
   }
 
   Future chooseAndPrint(BuildContext context, MemoryItem doc) async {

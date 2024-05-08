@@ -375,7 +375,7 @@ class _KpiReportScreenState extends State<KpiReportScreen>
 
       final kPer = '${product.key}_per';
       columns.add(PlutoColumn(
-        title: '%',
+        title: '% от плана',
         field: kPer,
         type: PlutoColumnType.text(),
         textAlign: PlutoColumnTextAlign.end,
