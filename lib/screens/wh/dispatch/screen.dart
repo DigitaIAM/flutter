@@ -9,6 +9,7 @@ import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/entity.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/dispatch/edit_fullscreen/document_creation.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/entity_screens.dart';
 
@@ -55,46 +56,37 @@ class WHDispatch extends Entity {
   @override
   Widget screen(String action, MemoryItem entity) {
     return EntityScreens(
-      key: ValueKey('__${name()}'),
-      // _${DateTime.now().toString()}__'),
-      ctx: ctx,
-      schema: schema,
-      list: ScaffoldListCalendar(
-        entityType: WHDispatch.ctx,
-        newBtn: (context) {
-          context.read<UiBloc>().add(ChangeView(WHDispatch.ctx,
-              action: 'edit', entity: MemoryItem.create()));
-        },
-        newBtnTooltip: (context) =>
-            AppLocalizations.of(context).translate("new warehouse transfer"),
-        onDateChange: (context, date) {
-          context.read<MemoryBloc>().add(
-                MemoryFetch(
-                  'memories',
-                  WHDispatch.ctx,
-                  schema: WHDispatch.schema,
-                  filter: {'date': date.toYMD()},
-                  reset: true,
-                ),
-              );
-        },
-        listBuilder: (date) => WHDispatchListBuilder(date: date),
-      ),
-      view: WHDispatchEditFS(
-        key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-        entity: entity,
-      ),
-//       view: action == "edit"
-//           ? WHDispatchEditFS(
-//               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-//               entity: entity,
-//             )
-//           : WHDispatchView(
-//               key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
-//               entity: entity,
-//               tabIndex: 0,
-//             ),
-    );
+        key: ValueKey('__${name()}'),
+        // _${DateTime.now().toString()}__'),
+        ctx: ctx,
+        schema: schema,
+        list: ScaffoldListCalendar(
+          entityType: WHDispatch.ctx,
+          newBtn: (context) {
+            context.read<UiBloc>().add(ChangeView(WHDispatch.ctx,
+                action: 'edit', entity: MemoryItem.create()));
+          },
+          newBtnTooltip: (context) =>
+              AppLocalizations.of(context).translate("new warehouse transfer"),
+          onDateChange: (context, date) {
+            context.read<MemoryBloc>().add(
+                  MemoryFetch(
+                    'memories',
+                    WHDispatch.ctx,
+                    schema: WHDispatch.schema,
+                    filter: {'date': date.toYMD()},
+                    reset: true,
+                  ),
+                );
+          },
+          listBuilder: (date) => WHDispatchListBuilder(date: date),
+        ),
+        view: action == 'view'
+            ? WHDispatchEditFS(
+                key: ValueKey('__${entity.id}_${entity.updatedAt}__'),
+                entity: entity,
+              )
+            : WHDispatchDocumentCreation(entity: entity));
   }
 }
 
