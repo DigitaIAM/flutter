@@ -13,23 +13,29 @@ import 'package:nae/screens/wh/dispatch/screen.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
 
-class WHDispatchGoods extends StatelessWidget {
+class WHDispatchGoods extends StatefulWidget {
   final MemoryItem doc;
   final Mode mode;
 
   const WHDispatchGoods({super.key, required this.doc, this.mode = Mode.auto});
 
+  @override
+  State<StatefulWidget> createState() => _WHDispatchGoods();
+}
+
+class _WHDispatchGoods extends State<WHDispatchGoods> {
   static const ctx = ['warehouse', 'dispatch'];
 
   @override
   Widget build(BuildContext context) {
     final filter = {
-      cDocument: doc.id,
+      cDocument: widget.doc.id,
     };
     final schema = <Field>[
+      fCategoryAtGoods,
       fGoods.copyWith(width: 3.0),
       // fUomAtQty.copyWith(width: 0.5, editable: false),
-      fQty.copyWith(width: 1.0),
+      fQtyNew.copyWith(width: 1.0),
     ];
 
     return BlocProvider(
@@ -46,6 +52,7 @@ class WHDispatchGoods extends StatelessWidget {
         return bloc;
       },
       child: MemoryList(
+        mode: widget.mode,
         ctx: ctx,
         filter: filter,
         schema: schema,
@@ -64,20 +71,12 @@ class WHDispatchGoods extends StatelessWidget {
         subtitle: (MemoryItem item) {
           print("subtitle ${item.json}");
 
-          var text = '';
+          String dateBatch = item.json['batch']?['date'] ?? '';
+          final qty = item.json['qty'].toString();
 
-          var qty = item.json[cQty] ?? '';
-
-          while (qty is Map) {
-            final uom = qty[cUom];
-            if (uom is Map) {
-              if (uom['in'] is Map) {
-                text = '$text${qty[cNumber]} ${uom['in'][cName]} по ';
-              } else {
-                text = '$text${qty[cNumber]} ${uom[cName]} ';
-              }
-            }
-            qty = qty[cUom];
+          var text = '$qty ';
+          if (dateBatch.isNotEmpty) {
+            text += ', $dateBatch';
           }
 
           TextStyle? style;
@@ -167,7 +166,7 @@ class WHDispatchGoods extends StatelessWidget {
   void printPreparation(String ip, int port, MemoryItem item) async {
     // print("printPreparation: ${item.json}");
 
-    final _doc = await doc.enrich(WHDispatch.schema);
+    final _doc = await widget.doc.enrich(WHDispatch.schema);
 
     final result = await Labels.connect(ip, port, (printer) async {
       return await printing(printer, _doc, item, (newStatus) => {});

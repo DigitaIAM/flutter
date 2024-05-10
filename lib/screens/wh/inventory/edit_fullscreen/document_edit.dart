@@ -106,7 +106,7 @@ class _WHInventoryDocumentEditState extends State<WHInventoryDocumentEdit> {
       title: localization.translate("warehouse inventory"),
       body: Builder(
         builder: (context) {
-          return Column(children: widgets);
+          return Expanded(child: Column(children: widgets));
         },
       ),
     );

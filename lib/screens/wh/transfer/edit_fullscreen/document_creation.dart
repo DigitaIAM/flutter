@@ -139,14 +139,27 @@ class _WHTransferDocumentCreationState
     final from = data[cFrom] as MemoryItem;
     final into = data[cInto] as MemoryItem;
 
-    final record = await Api.feathers().create(serviceName: 'memories', data: {
-      cDate: date,
-      cFrom: from.id,
-      cInto: into.id,
-    }, params: {
-      'oid': Api.instance.oid,
-      'ctx': ['warehouse', 'transfer', 'document']
-    });
+    var record;
+    if (widget.entity.isNew) {
+      record = await Api.feathers().create(serviceName: 'memories', data: {
+        cDate: date,
+        cFrom: from.id,
+        cInto: into.id,
+      }, params: {
+        'oid': Api.instance.oid,
+        'ctx': ['warehouse', 'transfer', 'document']
+      });
+    } else {
+      record = await Api.feathers()
+          .update(serviceName: 'memories', objectId: widget.entity.id, data: {
+        cDate: date,
+        cFrom: from.id,
+        cInto: into.id,
+      }, params: {
+        'oid': Api.instance.oid,
+        'ctx': ['warehouse', 'transfer', 'document']
+      });
+    }
 
     // print("record: $record");
 
