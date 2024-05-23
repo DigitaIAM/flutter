@@ -1,3 +1,5 @@
+import 'package:nae/api.dart';
+import 'package:nae/models/memory/item.dart';
 import 'package:nae/schema/schema.dart';
 
 // https://material.io/design/usability/accessibility.html#layout-typography
@@ -81,6 +83,26 @@ const Field fType = Field(cType, ReferenceType([cType]));
 const Field fPrice = Field(cPrice, NumberType());
 const Field fCost = Field(cCost, NumberType());
 
+final Field fBatchDocument =
+    Field(cBatchDetails, CalculatedType((MemoryItem item) async {
+  final batch = item.json['batch']?['id'];
+  if (batch != null) {
+    try {
+      final res = await Api.feathers()
+          .get(serviceName: "memories", objectId: batch, params: {
+        "oid": Api.instance.oid,
+        "ctx": [],
+      });
+      return res;
+    } catch (e) {
+      // print("error $e");
+    }
+  }
+
+  return {};
+}));
+
+const String cBatchDetails = 'batch_details';
 const String cStatus = '_status';
 const String cDocument = 'document';
 const String cOrder = 'order';

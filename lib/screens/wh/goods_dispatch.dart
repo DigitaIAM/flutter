@@ -611,23 +611,7 @@ class BalanceListBuilder extends StatelessWidget {
     final schema = <Field>[
       fName.copyWith(width: 3.0),
       const Field(cQty, NumberType(), path: ['_balance', cQty]),
-      Field("details", CalculatedType((MemoryItem item) async {
-        final batch = item.json['batch']?['id'];
-        if (batch != null) {
-          try {
-            final res = await Api.feathers()
-                .get(serviceName: "memories", objectId: batch, params: {
-              "oid": Api.instance.oid,
-              "ctx": [],
-            });
-            return res;
-          } catch (e) {
-            // print("error $e");
-          }
-        }
-
-        return {};
-      }))
+      fBatchDocument
     ];
 
     Map<String, dynamic> filter = {};
@@ -675,9 +659,9 @@ class BalanceListBuilder extends StatelessWidget {
           if (batch != null) {
             var add = ' ';
 
-            final details = item.json['details'];
-            final customer = details['customer'];
-            final label = details['label'];
+            final batchDetails = item.json[cBatchDetails];
+            final customer = batchDetails['customer'];
+            final label = batchDetails['label'];
 
             if (customer != null) {
               add += customer;
