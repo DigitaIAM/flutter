@@ -36,6 +36,7 @@ class _WHDispatchGoods extends State<WHDispatchGoods> {
       fGoods.copyWith(width: 3.0),
       // fUomAtQty.copyWith(width: 0.5, editable: false),
       fQtyNew.copyWith(width: 1.0),
+      fBatchDocument,
     ];
 
     return BlocProvider(
@@ -57,7 +58,25 @@ class _WHDispatchGoods extends State<WHDispatchGoods> {
         filter: filter,
         schema: schema,
         title: (MemoryItem item) {
-          final text = fGoods.resolve(item.json)?.name() ?? '';
+          var text = fGoods.resolve(item.json)?.name() ?? '';
+
+          final batchDetails = item.json[cBatchDetails];
+          final customer = batchDetails['customer'];
+          final label = batchDetails['label'];
+
+          var additionalBatchDetails = '';
+          if (customer != null) {
+            additionalBatchDetails += customer;
+            if (label != null) {
+              additionalBatchDetails += ', $label';
+            }
+          } else if (label != null) {
+            additionalBatchDetails += label;
+          }
+
+          if (additionalBatchDetails.isNotEmpty) {
+            text = text + '\n' + additionalBatchDetails;
+          }
 
           TextStyle? style;
 

@@ -171,7 +171,7 @@ class ListType extends Type {
 }
 
 class CalculatedType<V> extends Type {
-  CalculatedType(this.eval);
+  const CalculatedType(this.eval);
 
   final Future<V> Function(MemoryItem) eval;
 }
