@@ -21,6 +21,7 @@ import 'package:nae/screens/wh/dispatch/screen.dart';
 import 'package:nae/screens/wh/inventory/screen.dart';
 import 'package:nae/screens/wh/movements/screen.dart';
 import 'package:nae/screens/wh/receive/screen.dart';
+import 'package:nae/screens/wh/return/screen.dart';
 import 'package:nae/screens/wh/storage/screen.dart';
 import 'package:nae/screens/wh/transfer/screen.dart';
 import 'package:nae/widgets/blank_screen.dart';
@@ -74,7 +75,7 @@ class UiState extends Equatable {
     [ProductionOrder(), PalletPacking()],
     [ProductionReportView(), KpiReportView()],
     [WHBalance(), WHMovement()],
-    [WHReceive(), WHTransfer(), WHDispatch(), WHInventory()],
+    [WHReceive(), WHTransfer(), WHDispatch(), WHReturn(), WHInventory()],
     [Product(), Goods(), CategoryForGoods(), Uom()],
     [WHStorage(), ProductionArea()],
     [Counterparty(), Person()],
