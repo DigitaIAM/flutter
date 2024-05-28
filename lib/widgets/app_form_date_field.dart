@@ -16,6 +16,7 @@ class DateField extends StatefulWidget {
     this.maxLines = 1,
     this.decoration,
     required this.onSave,
+    this.onChange,
     this.readOnly = false,
   });
 
@@ -35,6 +36,7 @@ class DateField extends StatefulWidget {
 
   final InputDecoration? decoration;
   final Function(BuildContext)? onSave;
+  final Function(DateTime?)? onChange;
 
   @override
   State<DateField> createState() => _DateFieldState();
@@ -69,8 +71,9 @@ class _DateFieldState extends State<DateField> {
         // border: OutlineInputBorder(
         //   borderRadius: BorderRadius.circular(8),
         // ),
-        floatingLabelBehavior:
-            widget.label?.isEmpty ?? true ? FloatingLabelBehavior.always : FloatingLabelBehavior.auto,
+        floatingLabelBehavior: widget.label?.isEmpty ?? true
+            ? FloatingLabelBehavior.always
+            : FloatingLabelBehavior.auto,
         // suffixIcon: suffixIcon,
       );
     }
@@ -94,13 +97,7 @@ class _DateFieldState extends State<DateField> {
       autofocus: widget.autofocus,
       keyboardType: widget.keyboardType,
       textInputAction: TextInputAction.next,
-      // onEditingComplete: () {
-      //   print("onEditingComplete");
-      // },
-      // onSubmitted: (value) {
-      //   print("onSubmitted");
-      //   print(value);
-      // },
+      onChanged: (v) => widget.onChange?.call(v),
     );
   }
 }

@@ -11,6 +11,7 @@ import 'package:nae/screens/wh/dispatch/edit_fullscreen/overview.dart';
 import 'package:nae/screens/wh/goods_registration.dart';
 import 'package:nae/screens/wh/return/document_creation.dart';
 import 'package:nae/screens/wh/return/goods.dart';
+import 'package:nae/screens/wh/return/goods_return.dart';
 import 'package:nae/screens/wh/return/overview.dart';
 import 'package:nae/screens/wh/return/screen.dart';
 import 'package:nae/share/utils.dart';
@@ -116,12 +117,11 @@ class _WHReturnEditFSState extends State<WHReturnEditFS>
                   doc: widget.entity,
                   mode: Mode.mobile,
                 ),
-                WHReturnOverview(doc: widget.entity),
-                GoodsRegistration(
-                  ctx: const ['warehouse', 'receive'],
+                //WHReturnOverview(doc: widget.entity),
+                GoodsReturn(
                   doc: widget.entity,
-                  schema: WHReturn.schema,
-                )
+                  entity: widget.entity,
+                ),
               ]),
             ),
           ]);
