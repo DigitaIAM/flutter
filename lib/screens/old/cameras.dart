@@ -48,7 +48,8 @@ class _CamerasPageState extends State<CamerasPage> {
           Dialog myDialog = Dialog(
             child: getDialogBody(settings, "", null),
           );
-          showDialog(context: context, builder: (BuildContext context) => myDialog);
+          showDialog(
+              context: context, builder: (BuildContext context) => myDialog);
         },
       ),
       body: SafeArea(
@@ -56,7 +57,9 @@ class _CamerasPageState extends State<CamerasPage> {
           color: Colors.grey.shade200,
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           child: rows.isEmpty
-              ? Center(child: Text(AppLocalizations.of(context).translate("no-data")))
+              ? Center(
+                  child:
+                      Text(AppLocalizations.of(context).translate("no-data")))
               : ListView.builder(
                   itemCount: rows.length,
                   itemBuilder: (context, index) {
@@ -84,17 +87,29 @@ class _CamerasPageState extends State<CamerasPage> {
                                   children: [
                                     Text(
                                       rows[index][cName],
-                                      style: Theme.of(context).textTheme.headline6,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge,
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      rows[index]["ip"] + ":" + rows[index]["port"] + "   " + rows[index]["protocol"],
-                                      style: Theme.of(context).textTheme.bodyText2,
+                                      rows[index]["ip"] +
+                                          ":" +
+                                          rows[index]["port"] +
+                                          "   " +
+                                          rows[index]["protocol"],
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      rows[index]["devIndex"] + "    " + rows[index]["username"],
-                                      style: Theme.of(context).textTheme.bodyText2,
+                                      rows[index]["devIndex"] +
+                                          "    " +
+                                          rows[index]["username"],
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
                                     )
                                   ],
                                 )),
@@ -102,30 +117,44 @@ class _CamerasPageState extends State<CamerasPage> {
                                   rows[index]["status"][cName] +
                                       "  " +
                                       timeago.format(
-                                          DateTime.fromMillisecondsSinceEpoch(rows[index]["status"]["ts"] * 1000)),
-                                  style: Theme.of(context).textTheme.bodyText2,
+                                          DateTime.fromMillisecondsSinceEpoch(
+                                              rows[index]["status"]["ts"] *
+                                                  1000)),
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                                 IconButton(
                                     onPressed: () async {
                                       Dialog myDialog = Dialog(
-                                        child: getDialogBody(settings, rows[index][cId], rows[index]),
+                                        child: getDialogBody(settings,
+                                            rows[index][cId], rows[index]),
                                       );
-                                      showDialog(context: context, builder: (BuildContext context) => myDialog);
+                                      showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) =>
+                                              myDialog);
                                     },
-                                    icon: const Icon(Icons.edit, color: Colors.green)),
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.green)),
                                 IconButton(
                                     onPressed: () async {
                                       if (await confirm(
                                         context,
-                                        title: Text(localization.translate("delete")),
-                                        content: Text(localization.translate("delete-content")),
-                                        textOK: Text(localization.translate("yes")),
-                                        textCancel: Text(localization.translate("no")),
+                                        title: Text(
+                                            localization.translate("delete")),
+                                        content: Text(localization
+                                            .translate("delete-content")),
+                                        textOK:
+                                            Text(localization.translate("yes")),
+                                        textCancel:
+                                            Text(localization.translate("no")),
                                       )) {
-                                        await Api.feathers().remove(serviceName: "cameras", objectId: rows[index][cId]);
+                                        await Api.feathers().remove(
+                                            serviceName: "cameras",
+                                            objectId: rows[index][cId]);
                                       }
                                     },
-                                    icon: const Icon(Icons.delete, color: Colors.red))
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red))
                               ],
                             )),
                       ),
@@ -139,7 +168,10 @@ class _CamerasPageState extends State<CamerasPage> {
 
   void getFromServer(MySettings settings) async {
     try {
-      Api.feathers().find(serviceName: "cameras", query: {"oid": settings.companyId}).asStream().listen((event) {
+      Api.feathers()
+          .find(serviceName: "cameras", query: {"oid": settings.companyId})
+          .asStream()
+          .listen((event) {
             setState(() {
               rows = event["data"];
             });
@@ -184,7 +216,7 @@ class _CamerasPageState extends State<CamerasPage> {
                     child: Center(
                         child: Text(
                       row == null ? "New camera" : row[cName],
-                      style: Theme.of(context).textTheme.headline6,
+                      style: Theme.of(context).textTheme.titleLarge,
                     )),
                   ),
                 ),
@@ -216,7 +248,8 @@ class _CamerasPageState extends State<CamerasPage> {
                 decoration: InputDecoration(
                   isDense: true,
                   prefixStyle: const TextStyle(color: Colors.red),
-                  labelText: AppLocalizations.of(context).translate("dev-index"),
+                  labelText:
+                      AppLocalizations.of(context).translate("dev-index"),
                   border: const OutlineInputBorder(),
                 ),
               ),
@@ -232,7 +265,8 @@ class _CamerasPageState extends State<CamerasPage> {
                       decoration: InputDecoration(
                         isDense: true,
                         prefixStyle: const TextStyle(color: Colors.red),
-                        labelText: AppLocalizations.of(context).translate("protocol"),
+                        labelText:
+                            AppLocalizations.of(context).translate("protocol"),
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -258,7 +292,8 @@ class _CamerasPageState extends State<CamerasPage> {
                       decoration: InputDecoration(
                         isDense: true,
                         prefixStyle: const TextStyle(color: Colors.red),
-                        labelText: AppLocalizations.of(context).translate("port"),
+                        labelText:
+                            AppLocalizations.of(context).translate("port"),
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -277,7 +312,8 @@ class _CamerasPageState extends State<CamerasPage> {
                       decoration: InputDecoration(
                         isDense: true,
                         prefixStyle: const TextStyle(color: Colors.red),
-                        labelText: AppLocalizations.of(context).translate("username"),
+                        labelText:
+                            AppLocalizations.of(context).translate("username"),
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -290,7 +326,8 @@ class _CamerasPageState extends State<CamerasPage> {
                       decoration: InputDecoration(
                         isDense: true,
                         prefixStyle: const TextStyle(color: Colors.red),
-                        labelText: AppLocalizations.of(context).translate("password"),
+                        labelText:
+                            AppLocalizations.of(context).translate("password"),
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -306,7 +343,8 @@ class _CamerasPageState extends State<CamerasPage> {
                   ElevatedButton(
                       onPressed: () async {
                         if (id == "") {
-                          await Api.feathers().create(serviceName: "cameras", data: {
+                          await Api.feathers()
+                              .create(serviceName: "cameras", data: {
                             "oid": settings.companyId,
                             "name": nameController.text,
                             "enabled": true,
@@ -318,21 +356,25 @@ class _CamerasPageState extends State<CamerasPage> {
                             "password": passwordController.text,
                           });
                         } else {
-                          await Api.feathers().patch(serviceName: "cameras", objectId: id, data: {
-                            "oid": settings.companyId,
-                            "name": nameController.text,
-                            "enabled": true,
-                            "devIndex": devIndexController.text,
-                            "protocol": protocolController.text,
-                            "ip": ipController.text,
-                            "port": portController.text,
-                            "username": userNameController.text,
-                            "password": passwordController.text,
-                          });
+                          await Api.feathers().patch(
+                              serviceName: "cameras",
+                              objectId: id,
+                              data: {
+                                "oid": settings.companyId,
+                                "name": nameController.text,
+                                "enabled": true,
+                                "devIndex": devIndexController.text,
+                                "protocol": protocolController.text,
+                                "ip": ipController.text,
+                                "port": portController.text,
+                                "username": userNameController.text,
+                                "password": passwordController.text,
+                              });
                         }
                         Navigator.pop(context);
                       },
-                      child: Text(AppLocalizations.of(context).translate("save"))),
+                      child:
+                          Text(AppLocalizations.of(context).translate("save"))),
                 ],
               ),
             )

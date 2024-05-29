@@ -95,7 +95,7 @@ class _LoginFormState extends State<LoginForm> {
                   children: [
                     Text(
                       "Don't have an account yet?",
-                      style: Theme.of(context).textTheme.button,
+                      style: Theme.of(context).textTheme.labelLarge,
                     ),
                     const SizedBox(width: 8),
                     TextButton(
@@ -280,7 +280,8 @@ class _LoginFormState extends State<LoginForm> {
       error = '';
     });
     try {
-      var response = await Api.feathers().create(serviceName: "authentication", data: {
+      var response =
+          await Api.feathers().create(serviceName: "authentication", data: {
         "strategy": "local",
         "email": emailController.text,
         "password": passwordController.text,
@@ -332,7 +333,8 @@ class _LoginFormState extends State<LoginForm> {
         state = Status.successful;
       });
 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Wrapper()));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const Wrapper()));
     }
   }
 }

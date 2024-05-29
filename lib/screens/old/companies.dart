@@ -37,9 +37,11 @@ class _CompaniesPageState extends State<CompaniesPage> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () async {
-          String? newName = await prompt(context, title: const Text("New company name"));
+          String? newName =
+              await prompt(context, title: const Text("New company name"));
           if (newName == null) return;
-          Api.feathers().create(serviceName: "companies", data: {cName: newName});
+          Api.feathers()
+              .create(serviceName: "companies", data: {cName: newName});
         },
       ),
       body: SafeArea(
@@ -47,7 +49,9 @@ class _CompaniesPageState extends State<CompaniesPage> {
           color: Colors.grey.shade200,
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           child: rows.isEmpty
-              ? Center(child: Text(AppLocalizations.of(context).translate("no-data")))
+              ? Center(
+                  child:
+                      Text(AppLocalizations.of(context).translate("no-data")))
               : ListView.builder(
                   itemCount: rows.length,
                   itemBuilder: (context, index) {
@@ -71,32 +75,43 @@ class _CompaniesPageState extends State<CompaniesPage> {
                                 Expanded(
                                     child: Text(
                                   rows[index][cName],
-                                  style: Theme.of(context).textTheme.headline6,
+                                  style: Theme.of(context).textTheme.titleLarge,
                                 )),
                                 IconButton(
                                     onPressed: () async {
                                       String? newName = await prompt(context,
-                                          title: Text(AppLocalizations.of(context).translate(cName)),
+                                          title: Text(
+                                              AppLocalizations.of(context)
+                                                  .translate(cName)),
                                           initialValue: rows[index][cName]);
                                       if (newName == null) return;
                                       Api.feathers().update(
-                                          serviceName: "companies", objectId: rows[index][cId], data: {cName: newName});
+                                          serviceName: "companies",
+                                          objectId: rows[index][cId],
+                                          data: {cName: newName});
                                     },
-                                    icon: const Icon(Icons.edit, color: Colors.green)),
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.green)),
                                 IconButton(
                                     onPressed: () async {
                                       if (await confirm(
                                         context,
-                                        title: Text(localization.translate("delete")),
-                                        content: Text(localization.translate("delete-content")),
-                                        textOK: Text(localization.translate("yes")),
-                                        textCancel: Text(localization.translate("no")),
+                                        title: Text(
+                                            localization.translate("delete")),
+                                        content: Text(localization
+                                            .translate("delete-content")),
+                                        textOK:
+                                            Text(localization.translate("yes")),
+                                        textCancel:
+                                            Text(localization.translate("no")),
                                       )) {
-                                        await Api.feathers()
-                                            .remove(serviceName: "companies", objectId: rows[index][cId]);
+                                        await Api.feathers().remove(
+                                            serviceName: "companies",
+                                            objectId: rows[index][cId]);
                                       }
                                     },
-                                    icon: const Icon(Icons.delete, color: Colors.red))
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red))
                               ],
                             )),
                       ),
@@ -110,7 +125,10 @@ class _CompaniesPageState extends State<CompaniesPage> {
 
   void getFromServer(MySettings settings) async {
     try {
-      Api.feathers().find(serviceName: "companies", query: {}).asStream().listen((event) {
+      Api.feathers()
+          .find(serviceName: "companies", query: {})
+          .asStream()
+          .listen((event) {
             setState(() {
               rows = event["data"];
             });
