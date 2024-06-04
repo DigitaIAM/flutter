@@ -117,7 +117,7 @@ class _WHReturnEditFSState extends State<WHReturnEditFS>
                   doc: widget.entity,
                   mode: Mode.mobile,
                 ),
-                //WHReturnOverview(doc: widget.entity),
+                WHReturnOverview(doc: widget.entity),
                 GoodsReturn(
                   doc: widget.entity,
                   entity: widget.entity,

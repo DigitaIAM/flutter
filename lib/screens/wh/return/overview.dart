@@ -35,9 +35,9 @@ class WHReturnOverview extends StatelessWidget {
     final storage = doc.json[cStorage] is MemoryItem
         ? doc.json[cStorage].name()
         : doc.json[cStorage][cName] ?? '';
-    final counterparty = doc.json[cCounterparty] is MemoryItem
-        ? doc.json[cCounterparty].name()
-        : doc.json[cCounterparty][cName] ?? '';
+    // final counterparty = doc.json[cCounterparty] is MemoryItem
+    //     ? doc.json[cCounterparty].name()
+    //     : doc.json[cCounterparty][cName] ?? '';
 
     return BlocProvider(
       create: (context) {
@@ -63,11 +63,11 @@ class WHReturnOverview extends StatelessWidget {
           value: storage,
           icon: const Icon(Icons.output),
         ),
-        KeyValue(
-          label: localization.translate(cCounterparty),
-          value: counterparty,
-          icon: const Icon(Icons.input),
-        ),
+        // KeyValue(
+        //   label: localization.translate(cCounterparty),
+        //   value: counterparty,
+        //   icon: const Icon(Icons.input),
+        // ),
       ]),
     );
   }

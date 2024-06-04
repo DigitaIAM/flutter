@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/api.dart';
+import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/screens/wh/dispatch/screen.dart';
@@ -10,14 +11,21 @@ import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
 import 'package:nae/widgets/app_form_date_field.dart';
+import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/app_form_picker_field.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
 class GoodsReturn extends EntityHolder {
   final MemoryItem doc;
+  final MemoryItem? rec;
 
-  const GoodsReturn({super.key, required this.doc, required super.entity});
+  const GoodsReturn({
+    super.key,
+    required this.doc,
+    required super.entity,
+    this.rec,
+  });
 
   @override
   State<StatefulWidget> createState() => _GoodsReturnState();
@@ -29,19 +37,32 @@ class _GoodsReturnState extends State<GoodsReturn> {
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   late MemoryItem details;
+  String status = "register";
+  String registered = '';
 
   List<MemoryItem> items = [];
   MemoryItem? selectedDocument;
+  MemoryItem? goods;
 
   bool showGoods = false;
+  bool showQtyUom = false;
+  bool showBatch = false;
 
   @override
   void initState() {
     super.initState();
 
-    details = MemoryItem(id: '', json: {
-      cDate: Utils.getDate(),
-    });
+    if (selectedDocument == null) {
+      details = MemoryItem(id: '', json: {
+        cDate: Utils.getDate(),
+      });
+    } else {
+      details = widget.rec!;
+
+      showGoods = details.json[cGoods] != null;
+      showBatch = details.json[cBatch] != null;
+      showQtyUom = details.json['uom_0'] != null;
+    }
   }
 
   @override
@@ -53,45 +74,113 @@ class _GoodsReturnState extends State<GoodsReturn> {
 
   @override
   Widget build(BuildContext context) {
+    final localization = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     print("build ${details.json}");
-    return AppForm(
-      formKey: _formKey,
-      entity: details,
-      focusNode: _focusNode,
-      child: ScrollableListView(
+    final widgets = <Widget>[
+      AppForm(
+        formKey: _formKey,
+        entity: details,
+        focusNode: _focusNode,
+        onChanged: () {
+          final state = _formKey.currentState;
+          if (state == null) {
+            return;
+          }
+          state.save();
+        },
+        child: ScrollableListView(
+          children: <Widget>[
+            FormCard(
+              isLast: true,
+              children: <Widget>[
+                DateField(
+                  name: cDate,
+                  label: "отгрузка от",
+                  autofocus: false,
+                  validator: FormBuilderValidators.compose([
+                    FormBuilderValidators.required(),
+                  ]),
+                  onSave: (ctx) {},
+                  onChange: (date) {
+                    loadDocuments(date);
+                  },
+                  keyboardType: TextInputType.datetime,
+                ),
+                const SizedBox(height: 10),
+                DecoratedFormPickerField(
+                  ctx: const ['warehouse', 'dispatch'],
+                  name: cDocument,
+                  label: "контрагент",
+                  autofocus: false,
+                  validator: FormBuilderValidators.compose([
+                    FormBuilderValidators.required(),
+                  ]),
+                  onSave: (ctx) {},
+                ),
+                const SizedBox(height: 10),
+                DecoratedFormPickerField(
+                  ctx: const ['warehouse', 'dispatch'],
+                  name: cGoods,
+                  label: localization.translate(cGoods),
+                  creatable: false,
+                  validator: FormBuilderValidators.compose([
+                    FormBuilderValidators.required(errorText: "выберите товар"),
+                  ]),
+                  onSave: (context) {},
+                  //editable: false,
+                  // visible: showGoods,
+                ),
+                DecoratedFormPickerField(
+                  ctx: const ['goods', 'stock'],
+                  name: cBatch,
+                  label: localization.translate(cBatch),
+                  creatable: false,
+                  validator: FormBuilderValidators.compose([
+                    FormBuilderValidators.required(
+                        errorText: "выберите партию"),
+                  ]),
+                  onSave: (context) {},
+                  //editable: false,
+                  // visible: showBatch,
+                ),
+                ...goodsList(),
+                ...qtyUom(context),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ];
+
+    return Scaffold(
+      floatingActionButton: Stack(
         children: <Widget>[
-          FormCard(
-            isLast: true,
-            children: <Widget>[
-              DateField(
-                name: cDate,
-                label: "отгрузка от",
-                autofocus: false,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (ctx) {},
-                onChange: (date) {
-                  loadDocuments(date);
-                },
-                keyboardType: TextInputType.datetime,
-              ),
-              const SizedBox(height: 10),
-              DecoratedFormPickerField(
-                ctx: const ['warehouse', 'dispatch'],
-                name: cDocument,
-                label: "контрагент",
-                autofocus: false,
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                onSave: (ctx) {},
-              ),
-              const SizedBox(height: 10),
-              ...goodsList(),
-            ],
+          Align(
+            alignment: Alignment.bottomRight,
+            child: FloatingActionButton(
+              heroTag: 'product_register',
+              backgroundColor: theme.primaryColorDark,
+              onPressed: () {},
+              //status == 'register' ? registerPreparation : null,
+              tooltip: localization.translate('register'.toString()),
+              child: registered == 'register'
+                  ? const Icon(Icons.done)
+                  : widget.rec == null
+                      ? Icon(
+                          Icons.add,
+                          color: theme.primaryColorLight,
+                        )
+                      : Icon(
+                          Icons.edit,
+                          color: theme.primaryColorLight,
+                        ),
+            ),
           ),
         ],
+      ),
+      body: ScrollableListView(
+        children: widgets,
       ),
     );
   }
@@ -132,6 +221,56 @@ class _GoodsReturnState extends State<GoodsReturn> {
     return <Widget>[];
   }
 
+  List<Widget> qtyUom(BuildContext context) {
+    final localization = AppLocalizations.of(context);
+    var children = <Widget>[];
+
+    final uom = Expanded(
+      flex: 1,
+      child: DecoratedFormPickerField(
+        creatable: false,
+        ctx: const [cUom],
+        name: 'uom_0',
+        label: localization.translate(cUom),
+        autofocus: true,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(errorText: "выберите значение"),
+        ]),
+        onSave: (context) {},
+        editable: false,
+      ),
+    );
+
+    final qty = Expanded(
+      flex: 1,
+      child: DecoratedFormField(
+        name: 'qty_0',
+        label: localization.translate(cQty),
+        autofocus: true,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(),
+          FormBuilderValidators.numeric(),
+        ]),
+        onSave: (context) {},
+        keyboardType: TextInputType.number,
+      ),
+    );
+
+    children.add(
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [uom, const SizedBox(width: 5), qty],
+      ),
+    );
+    children.add(const SizedBox(height: 10));
+
+    if (showQtyUom) {
+      return children;
+    } else {
+      return [SizedBox(height: 0, child: Column(children: children))];
+    }
+  }
+
   void changeState(MemoryItem item) async {
     if (selectedDocument == null) {
       selectedDocument = item;
@@ -142,13 +281,34 @@ class _GoodsReturnState extends State<GoodsReturn> {
         details.json[cDocument] = item;
         _formKey.currentState?.patchValue({cDocument: item});
       });
+
       final rows = await getRows(item);
       setState(() => items = rows);
+    } else {
+      print("item ${item.json}");
+
+      final goods = item[cGoods];
+      final batch = item[cBatch];
+      final uom = null;
+
+      setState(() {
+        showGoods = true;
+        details.json[cGoods] = goods;
+        _formKey.currentState?.patchValue({cGoods: goods});
+
+        showBatch = true;
+        details.json[cBatch] = batch;
+        _formKey.currentState?.patchValue({cBatch: batch});
+
+        showQtyUom = true;
+        details.json['uom_0'] = uom;
+        _formKey.currentState?.patchValue({'uom_0': uom});
+      });
     }
   }
 
   void loadDocuments(DateTime? date) {
-    print("loadDocuments");
+    // print("loadDocuments");
     if (date == null) {
       setState(() => items = []);
       print("date == null");
@@ -170,15 +330,15 @@ Future<List<MemoryItem>> getDocuments(DateTime date) async {
     "ctx": WHDispatch.ctx,
     "filter": {"date": date.toYMD()}
   });
-  print("response $response");
+  // print("response $response");
 
   List<MemoryItem> list = [];
 
   final data = response['data'] as List;
   for (var json in data) {
-    print('json $json');
+    // print('json $json');
     final item = MemoryItem.from(json);
-    print('item $item');
+    // print('item $item');
     // place for enrichment
 
     list.add(item);
