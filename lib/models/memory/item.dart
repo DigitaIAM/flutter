@@ -45,6 +45,11 @@ class MemoryItem extends Equatable {
   }
 
   String name() {
+    // workaround for uom
+    final uom = json['in'];
+    if (uom != null) {
+      return uom['name'];
+    }
     // workaround for product
     final partNumber = json["part_number"];
     if (partNumber is String) {
@@ -173,7 +178,8 @@ class MemoryItem extends Equatable {
 
   static empty() => const MemoryItem(id: 'empty', json: {});
 
-  static bool check(dynamic v) => v is Map<String, dynamic>; //  && (v[cId] || v['id']);
+  static bool check(dynamic v) =>
+      v is Map<String, dynamic>; //  && (v[cId] || v['id']);
 
   static MemoryItem from(Map<String, dynamic> json) => MemoryItem(
         id: json[cId] ?? json['id'] ?? '',

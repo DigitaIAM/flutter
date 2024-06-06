@@ -6,8 +6,10 @@ import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 import 'package:nae/screens/wh/dispatch/screen.dart';
 import 'package:nae/share/utils.dart';
+import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
 import 'package:nae/widgets/app_form_date_field.dart';
@@ -19,12 +21,14 @@ import 'package:nae/widgets/scrollable_list_view.dart';
 class GoodsReturn extends EntityHolder {
   final MemoryItem doc;
   final MemoryItem? rec;
+  final Function()? afterSave;
 
   const GoodsReturn({
     super.key,
     required this.doc,
     required super.entity,
     this.rec,
+    this.afterSave,
   });
 
   @override
@@ -144,8 +148,8 @@ class _GoodsReturnState extends State<GoodsReturn> {
                   //editable: false,
                   // visible: showBatch,
                 ),
-                ...goodsList(),
                 ...qtyUom(context),
+                ...goodsList(),
               ],
             ),
           ],
@@ -161,8 +165,7 @@ class _GoodsReturnState extends State<GoodsReturn> {
             child: FloatingActionButton(
               heroTag: 'product_register',
               backgroundColor: theme.primaryColorDark,
-              onPressed: () {},
-              //status == 'register' ? registerPreparation : null,
+              onPressed: status == 'register' ? registerPreparation : null,
               tooltip: localization.translate('register'.toString()),
               child: registered == 'register'
                   ? const Icon(Icons.done)
@@ -183,6 +186,33 @@ class _GoodsReturnState extends State<GoodsReturn> {
         children: widgets,
       ),
     );
+  }
+
+  registerPreparation() {
+    // {id: new, document: ref, natasha: ID, qty: {num: , uom: {}}}
+    final state = _formKey.currentState;
+    if (state == null) {
+      // TODO raise error instead
+      return;
+    }
+    if (state.saveAndValidate()) {
+      var data = state.value;
+
+      print("form $data");
+
+      final ref = data['document'];
+
+      final num = data['qty_0'];
+      final uom = data['uom_0'];
+
+      final newDoc = {
+        'document': widget.doc.id,
+        'natasha': ref.id,
+        'qty': {'num': num, 'uom': Uom.fromJson(uom.json).toJson()}
+      };
+
+      print("to save $newDoc");
+    }
   }
 
   List<Widget> goodsList() {
@@ -271,6 +301,41 @@ class _GoodsReturnState extends State<GoodsReturn> {
     }
   }
 
+  void resetDone() {
+    setState(() => registered = '');
+  }
+
+  void done(String type) {
+    if (type == 'register') {
+      if (widget.afterSave != null) {
+        widget.afterSave?.call();
+        return;
+      }
+    }
+    setState(() {
+      registered = type;
+
+      // workaround as unknown where item resetting to initial
+      // showCategory = false;
+      // showGoods = false;
+      // showBatch = false;
+      // showQtyUom = false;
+    });
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        registered = '';
+
+        // workaround as unknown where item resetting to initial
+        // final storageData = details.json[cStorage];
+        // if (storageData is MemoryItem) {
+        //   final storage = MemoryItem.clone(details.json[cStorage]);
+        //   storage.json['_category'] = cStorage;
+        //   changeState(storage);
+        // }
+      });
+    });
+  }
+
   void changeState(MemoryItem item) async {
     if (selectedDocument == null) {
       selectedDocument = item;
@@ -288,22 +353,37 @@ class _GoodsReturnState extends State<GoodsReturn> {
       print("item ${item.json}");
 
       final goods = item[cGoods];
-      final batch = item[cBatch];
-      final uom = null;
 
       setState(() {
         showGoods = true;
         details.json[cGoods] = goods;
         _formKey.currentState?.patchValue({cGoods: goods});
 
-        showBatch = true;
-        details.json[cBatch] = batch;
-        _formKey.currentState?.patchValue({cBatch: batch});
+        final state = _formKey.currentState;
+        if (state == null) {
+          return;
+        }
 
-        showQtyUom = true;
-        details.json['uom_0'] = uom;
-        _formKey.currentState?.patchValue({'uom_0': uom});
+        Map? qty = item.json[cQty];
+        if (qty != null) {
+          print('qty $qty');
+          final uom = qty["uom"];
+          if (uom != null) {
+            state.patchValue({
+              "qty_0": qty["number"].toString(),
+              "uom_0": MemoryItem.from(uom)
+            });
+            showQtyUom = true;
+          }
+        }
+
+        final batch = item.json[cBatch];
+        if (batch != null) {
+          batch[cName] = DT.pretty(batch[cDate] ?? '');
+          state.patchValue({cBatch: MemoryItem.from(batch)});
+        }
       });
+      items = [];
     }
   }
 
