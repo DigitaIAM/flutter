@@ -30,11 +30,9 @@ class WHReturnOverview extends StatelessWidget {
       fQty.copyWith(width: 1.0),
     ];
 
-    // print("WHTransferOverview doc: $doc");
+    print("WHReturnOverview doc: ${doc.json}");
 
-    final storage = doc.json[cStorage] is MemoryItem
-        ? doc.json[cStorage].name()
-        : doc.json[cStorage][cName] ?? '';
+    //final storage = doc[cStorage]?.name() ?? '';
     // final counterparty = doc.json[cCounterparty] is MemoryItem
     //     ? doc.json[cCounterparty].name()
     //     : doc.json[cCounterparty][cName] ?? '';
@@ -58,11 +56,11 @@ class WHReturnOverview extends StatelessWidget {
           value: DT.format(doc.json[cDate]),
           icon: const Icon(Icons.calendar_month),
         ),
-        KeyValue(
-          label: localization.translate(cStorage),
-          value: storage,
-          icon: const Icon(Icons.output),
-        ),
+        // KeyValue(
+        //   label: localization.translate(cStorage),
+        //   value: storage,
+        //   icon: const Icon(Icons.output),
+        // ),
         // KeyValue(
         //   label: localization.translate(cCounterparty),
         //   value: counterparty,

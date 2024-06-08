@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:nae/api.dart';
@@ -7,7 +8,10 @@ import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/qty.dart';
+import 'package:nae/models/ui/bloc.dart';
+import 'package:nae/models/ui/event.dart';
 import 'package:nae/screens/wh/dispatch/screen.dart';
+import 'package:nae/screens/wh/return/screen.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/app_form.dart';
@@ -80,7 +84,7 @@ class _GoodsReturnState extends State<GoodsReturn> {
   Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    print("build ${details.json}");
+    // print("build ${details.json}");
     final widgets = <Widget>[
       AppForm(
         formKey: _formKey,
@@ -136,7 +140,7 @@ class _GoodsReturnState extends State<GoodsReturn> {
                   // visible: showGoods,
                 ),
                 DecoratedFormPickerField(
-                  ctx: const ['goods', 'stock'],
+                  ctx: const ['warehouse', 'dispatch'],
                   name: cBatch,
                   label: localization.translate(cBatch),
                   creatable: false,
@@ -165,7 +169,9 @@ class _GoodsReturnState extends State<GoodsReturn> {
             child: FloatingActionButton(
               heroTag: 'product_register',
               backgroundColor: theme.primaryColorDark,
-              onPressed: status == 'register' ? registerPreparation : null,
+              onPressed: status == 'register'
+                  ? () => registerPreparation(context)
+                  : null,
               tooltip: localization.translate('register'.toString()),
               child: registered == 'register'
                   ? const Icon(Icons.done)
@@ -188,8 +194,8 @@ class _GoodsReturnState extends State<GoodsReturn> {
     );
   }
 
-  registerPreparation() {
-    // {id: new, document: ref, natasha: ID, qty: {num: , uom: {}}}
+  Future<dynamic> registerPreparation(BuildContext context) async {
+    // {id: new, document: ref, line: ID, qty: {num: , uom: {}}}
     final state = _formKey.currentState;
     if (state == null) {
       // TODO raise error instead
@@ -198,20 +204,27 @@ class _GoodsReturnState extends State<GoodsReturn> {
     if (state.saveAndValidate()) {
       var data = state.value;
 
-      print("form $data");
+      //  print("form $data");
 
       final ref = data['document'];
 
       final num = data['qty_0'];
       final uom = data['uom_0'];
 
-      final newDoc = {
-        'document': widget.doc.id,
-        'natasha': ref.id,
-        'qty': {'num': num, 'uom': Uom.fromJson(uom.json).toJson()}
-      };
+      var newDoc;
 
-      print("to save $newDoc");
+      newDoc = await Api.feathers().create(serviceName: 'memories', data: {
+        'document': widget.doc.id,
+        'line': ref.id,
+        'qty': {'num': num, 'uom': Uom.fromJson(uom.json).toJson()}
+      }, params: {
+        'oid': Api.instance.oid,
+        'ctx': WHReturn.ctx
+      });
+      context.read<UiBloc>().add(ChangeView(WHReturn.ctx,
+          action: 'view', entity: MemoryItem.from(newDoc)));
+      // отправляем на сервер данные
+      // print("to save $newDoc");
     }
   }
 
@@ -350,7 +363,7 @@ class _GoodsReturnState extends State<GoodsReturn> {
       final rows = await getRows(item);
       setState(() => items = rows);
     } else {
-      print("item ${item.json}");
+      // print("item ${item.json}");
 
       final goods = item[cGoods];
 
@@ -366,7 +379,7 @@ class _GoodsReturnState extends State<GoodsReturn> {
 
         Map? qty = item.json[cQty];
         if (qty != null) {
-          print('qty $qty');
+          // print('qty $qty');
           final uom = qty["uom"];
           if (uom != null) {
             state.patchValue({
@@ -391,7 +404,7 @@ class _GoodsReturnState extends State<GoodsReturn> {
     // print("loadDocuments");
     if (date == null) {
       setState(() => items = []);
-      print("date == null");
+      //   print("date == null");
       return;
     }
 
@@ -428,21 +441,21 @@ Future<List<MemoryItem>> getDocuments(DateTime date) async {
 }
 
 Future<List<MemoryItem>> getRows(MemoryItem doc) async {
-  print("getRows");
+//  print("getRows");
   final response = await Api.feathers().find(serviceName: "memories", query: {
     "oid": Api.instance.oid,
     "ctx": ['warehouse', 'dispatch'],
     "filter": {"document": doc.id}
   });
-  print("response $response");
+  // print("response $response");
 
   List<MemoryItem> goods = [];
 
   final data = response['data'] as List;
   for (var json in data) {
-    print('json $json');
+    // print('json $json');
     final item = MemoryItem.from(json);
-    print('item $item');
+    // print('item $item');
 
     // place for enrichment
 

@@ -10,6 +10,7 @@ import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/wh/dispatch/screen.dart';
+import 'package:nae/screens/wh/return/screen.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
 
@@ -24,7 +25,7 @@ class WHReturnGoods extends StatefulWidget {
 }
 
 class _WHReturnGoods extends State<WHReturnGoods> {
-  static const ctx = ['warehouse', 'return'];
+  static const ctx = WHReturn.ctx;
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +33,8 @@ class _WHReturnGoods extends State<WHReturnGoods> {
       cDocument: widget.doc.id,
     };
     final schema = <Field>[
-      fCategoryAtGoods,
       fGoods.copyWith(width: 3.0),
+      fCategoryAtGoods,
       // fUomAtQty.copyWith(width: 0.5, editable: false),
       fQtyNew.copyWith(width: 1.0),
       fBatchDocument,
@@ -58,6 +59,8 @@ class _WHReturnGoods extends State<WHReturnGoods> {
         filter: filter,
         schema: schema,
         title: (MemoryItem item) {
+          print('item ${item.json}');
+
           var text = fGoods.resolve(item.json)?.name() ?? '';
 
           final batchDetails = item.json[cBatchDetails];
