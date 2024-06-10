@@ -18,10 +18,6 @@ import 'package:nae/widgets/memory_list.dart';
 
 import 'package:nae/widgets/scaffold_list_calendar.dart';
 
-// [cGoods] => ['warehouse','inventory'],
-//              ['warehouse','receive'],
-//              ['warehouse','transfer'],
-//              ['warehouse','dispatch']
 class WHReturn extends Entity {
   static const List<String> ctx = ['warehouse', 'return', 'document'];
 
@@ -33,11 +29,11 @@ class WHReturn extends Entity {
         cGoods,
         ListType([
           fStorage,
-          // Field('ref', ReferenceType([cGoods])),
-          // Field(cBatch, StringType()),
+          Field('ref', ReferenceType([cGoods])),
+          Field(cBatch, StringType()),
           fGoods,
-          fUomAtQty,
-          fQty,
+          // fUomAtQty,
+          fQtyNew,
           // Field(cPrice, NumberType()),
           // Field(cCost, NumberType()),
         ]))

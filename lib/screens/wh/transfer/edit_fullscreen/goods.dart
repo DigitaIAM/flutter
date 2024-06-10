@@ -62,6 +62,7 @@ class _WHTransferGoods extends State<WHTransferGoods> {
         schema: schema,
         title: (MemoryItem item) {
           var text = fGoods.resolve(item.json)?.name() ?? '';
+          print('tran ${item.json}');
 
           final batchDetails = item.json[cBatchDetails];
           final customer = batchDetails['customer'];

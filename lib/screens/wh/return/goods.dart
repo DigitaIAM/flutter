@@ -33,11 +33,12 @@ class _WHReturnGoods extends State<WHReturnGoods> {
       cDocument: widget.doc.id,
     };
     final schema = <Field>[
-      fGoods.copyWith(width: 3.0),
-      fCategoryAtGoods,
+      // fGoods.copyWith(width: 3.0),
+      // fCategoryAtGoods,
       // fUomAtQty.copyWith(width: 0.5, editable: false),
+      Field('line',
+          ReferenceType(WHDispatch.ctx, fields: [fGoods, fBatchDocument])),
       fQtyNew.copyWith(width: 1.0),
-      fBatchDocument,
     ];
 
     return BlocProvider(
@@ -59,9 +60,11 @@ class _WHReturnGoods extends State<WHReturnGoods> {
         filter: filter,
         schema: schema,
         title: (MemoryItem item) {
-          print('item ${item.json}');
+          // print('item ${item.json}');
+          print('${item['line']?.json}');
 
-          var text = fGoods.resolve(item.json)?.name() ?? '';
+          var text = fGoods.resolve(item['line']?.json)?.name() ?? '';
+          // print("text $text");
 
           final batchDetails = item.json[cBatchDetails];
           final customer = batchDetails['customer'];
@@ -91,9 +94,9 @@ class _WHReturnGoods extends State<WHReturnGoods> {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-          print("subtitle ${item.json}");
+          print("subtitle ${item['line']?['batch']}");
 
-          String dateBatch = item.json['batch']?['date'] ?? '';
+          String dateBatch = item['line']?['batch']?.json['date'] ?? '';
           final qty = item.json['qty'].toString();
 
           var text = '$qty ';

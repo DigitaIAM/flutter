@@ -50,6 +50,7 @@ class _GoodsReturnState extends State<GoodsReturn> {
 
   List<MemoryItem> items = [];
   MemoryItem? selectedDocument;
+  MemoryItem? selectedLine;
   MemoryItem? goods;
 
   bool showGoods = false;
@@ -116,42 +117,9 @@ class _GoodsReturnState extends State<GoodsReturn> {
                   keyboardType: TextInputType.datetime,
                 ),
                 const SizedBox(height: 10),
-                DecoratedFormPickerField(
-                  ctx: const ['warehouse', 'dispatch'],
-                  name: cDocument,
-                  label: "контрагент",
-                  autofocus: false,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(),
-                  ]),
-                  onSave: (ctx) {},
-                ),
-                const SizedBox(height: 10),
-                DecoratedFormPickerField(
-                  ctx: const ['warehouse', 'dispatch'],
-                  name: cGoods,
-                  label: localization.translate(cGoods),
-                  creatable: false,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(errorText: "выберите товар"),
-                  ]),
-                  onSave: (context) {},
-                  //editable: false,
-                  // visible: showGoods,
-                ),
-                DecoratedFormPickerField(
-                  ctx: const ['warehouse', 'dispatch'],
-                  name: cBatch,
-                  label: localization.translate(cBatch),
-                  creatable: false,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(
-                        errorText: "выберите партию"),
-                  ]),
-                  onSave: (context) {},
-                  //editable: false,
-                  // visible: showBatch,
-                ),
+                // if (selectedDocument != null){
+                // return [
+                ...dispatch(),
                 ...qtyUom(context),
                 ...goodsList(),
               ],
@@ -197,34 +165,94 @@ class _GoodsReturnState extends State<GoodsReturn> {
   Future<dynamic> registerPreparation(BuildContext context) async {
     // {id: new, document: ref, line: ID, qty: {num: , uom: {}}}
     final state = _formKey.currentState;
-    if (state == null) {
+    if (state == null || selectedLine == null) {
       // TODO raise error instead
       return;
     }
     if (state.saveAndValidate()) {
       var data = state.value;
 
-      //  print("form $data");
+      print("form $data");
 
-      final ref = data['document'];
+      final ref = selectedLine!;
+
+      print("ref $ref");
 
       final num = data['qty_0'];
       final uom = data['uom_0'];
 
       var newDoc;
 
-      newDoc = await Api.feathers().create(serviceName: 'memories', data: {
+      final record = {
         'document': widget.doc.id,
         'line': ref.id,
-        'qty': {'num': num, 'uom': Uom.fromJson(uom.json).toJson()}
-      }, params: {
-        'oid': Api.instance.oid,
-        'ctx': WHReturn.ctx
-      });
-      context.read<UiBloc>().add(ChangeView(WHReturn.ctx,
-          action: 'view', entity: MemoryItem.from(newDoc)));
+        'qty': {'number': num, 'uom': Uom.fromJson(uom.json).toJson()}
+      };
+
+      print("record $record");
+
       // отправляем на сервер данные
-      // print("to save $newDoc");
+
+      newDoc = await Api.feathers().create(
+          serviceName: 'memories',
+          data: record,
+          params: {'oid': Api.instance.oid, 'ctx': WHReturn.ctx});
+
+      if (mounted) {
+        final entity = MemoryItem.from(newDoc);
+        await entity.enrich(WHReturn.schema);
+
+        context.read<UiBloc>().add(ChangeView(WHReturn.ctx,
+            action: 'view', entity: MemoryItem.from(newDoc)));
+
+        print("to save $newDoc");
+      }
+    }
+  }
+
+  List<Widget> dispatch() {
+    final localization = AppLocalizations.of(context);
+
+    if (selectedDocument != null) {
+      return <Widget>[
+        DecoratedFormPickerField(
+          ctx: const ['warehouse', 'dispatch'],
+          name: cDocument,
+          label: "контрагент",
+          autofocus: false,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(),
+          ]),
+          onSave: (ctx) {},
+        ),
+        const SizedBox(height: 10),
+        DecoratedFormPickerField(
+          ctx: const ['warehouse', 'dispatch'],
+          name: cGoods,
+          label: localization.translate(cGoods),
+          creatable: false,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(errorText: "выберите товар"),
+          ]),
+          onSave: (context) {},
+          //editable: false,
+          // visible: showGoods,
+        ),
+        DecoratedFormPickerField(
+          ctx: const ['warehouse', 'dispatch'],
+          name: cBatch,
+          label: localization.translate(cBatch),
+          creatable: false,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(errorText: "выберите партию"),
+          ]),
+          onSave: (context) {},
+          //editable: false,
+          // visible: showBatch,
+        ),
+      ];
+    } else {
+      return <Widget>[];
     }
   }
 
@@ -368,6 +396,8 @@ class _GoodsReturnState extends State<GoodsReturn> {
       final goods = item[cGoods];
 
       setState(() {
+        selectedLine = item;
+
         showGoods = true;
         details.json[cGoods] = goods;
         _formKey.currentState?.patchValue({cGoods: goods});
