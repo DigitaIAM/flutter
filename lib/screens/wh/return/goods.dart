@@ -33,9 +33,6 @@ class _WHReturnGoods extends State<WHReturnGoods> {
       cDocument: widget.doc.id,
     };
     final schema = <Field>[
-      // fGoods.copyWith(width: 3.0),
-      // fCategoryAtGoods,
-      // fUomAtQty.copyWith(width: 0.5, editable: false),
       Field('line',
           ReferenceType(WHDispatch.ctx, fields: [fGoods, fBatchDocument])),
       fQtyNew.copyWith(width: 1.0),
@@ -61,12 +58,12 @@ class _WHReturnGoods extends State<WHReturnGoods> {
         schema: schema,
         title: (MemoryItem item) {
           // print('item ${item.json}');
-          print('${item['line']?.json}');
+          //  print('${item['line']?.json}');
 
           var text = fGoods.resolve(item['line']?.json)?.name() ?? '';
           // print("text $text");
 
-          final batchDetails = item.json[cBatchDetails];
+          final batchDetails = item['line']?.json[cBatchDetails];
           final customer = batchDetails['customer'];
           final label = batchDetails['label'];
 
@@ -94,7 +91,7 @@ class _WHReturnGoods extends State<WHReturnGoods> {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-          print("subtitle ${item['line']?['batch']}");
+          //  print("subtitle ${item['line']?['batch']}");
 
           String dateBatch = item['line']?['batch']?.json['date'] ?? '';
           final qty = item.json['qty'].toString();

@@ -283,6 +283,7 @@ class _GoodsDispatchState extends State<GoodsDispatch> {
 
     final state = _formKey.currentState;
     if (state == null) {
+      // print('details.json ${details.json}');
       storage = details.json[cStorage];
       if (storage == null) {
         return <Widget>[];

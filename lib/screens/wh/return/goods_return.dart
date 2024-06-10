@@ -23,13 +23,11 @@ import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/scrollable_list_view.dart';
 
 class GoodsReturn extends EntityHolder {
-  final MemoryItem doc;
-  final MemoryItem? rec;
   final Function()? afterSave;
+  final MemoryItem? rec;
 
   const GoodsReturn({
     super.key,
-    required this.doc,
     required super.entity,
     this.rec,
     this.afterSave,
@@ -41,7 +39,7 @@ class GoodsReturn extends EntityHolder {
 
 class _GoodsReturnState extends State<GoodsReturn> {
   final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_productionOrderEdit');
+      GlobalKey<FormBuilderState>(debugLabel: '_goodsReturnEdit');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   late MemoryItem details;
@@ -61,17 +59,12 @@ class _GoodsReturnState extends State<GoodsReturn> {
   void initState() {
     super.initState();
 
-    if (selectedDocument == null) {
-      details = MemoryItem(id: '', json: {
-        cDate: Utils.getDate(),
-      });
-    } else {
-      details = widget.rec!;
+    details = MemoryItem(id: '', json: {
+      cCounterparty: widget.entity[cCounterparty],
+      // cDate: Utils.getDate(),
+    });
 
-      showGoods = details.json[cGoods] != null;
-      showBatch = details.json[cBatch] != null;
-      showQtyUom = details.json['uom_0'] != null;
-    }
+    loadDocuments(null);
   }
 
   @override
@@ -97,29 +90,29 @@ class _GoodsReturnState extends State<GoodsReturn> {
             return;
           }
           state.save();
+          var value = state.value;
+          debugPrint("onChanged: $value");
         },
         child: ScrollableListView(
           children: <Widget>[
             FormCard(
               isLast: true,
               children: <Widget>[
-                DateField(
-                  name: cDate,
-                  label: "отгрузка от",
-                  autofocus: false,
+                DecoratedFormPickerField(
+                  ctx: WHReturn.ctx,
+                  name: cCounterparty,
+                  label: localization.translate(cCounterparty),
+                  creatable: false,
+                  editable: false,
                   validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(),
+                    FormBuilderValidators.required(
+                        errorText: "выберите контрагент"),
                   ]),
-                  onSave: (ctx) {},
-                  onChange: (date) {
-                    loadDocuments(date);
-                  },
-                  keyboardType: TextInputType.datetime,
+                  onSave: (context) {},
                 ),
                 const SizedBox(height: 10),
-                // if (selectedDocument != null){
-                // return [
-                ...dispatch(),
+                ...dispatchDate(),
+                ...lineGood(),
                 ...qtyUom(context),
                 ...goodsList(),
               ],
@@ -163,6 +156,7 @@ class _GoodsReturnState extends State<GoodsReturn> {
   }
 
   Future<dynamic> registerPreparation(BuildContext context) async {
+    resetDone();
     // {id: new, document: ref, line: ID, qty: {num: , uom: {}}}
     final state = _formKey.currentState;
     if (state == null || selectedLine == null) {
@@ -172,59 +166,84 @@ class _GoodsReturnState extends State<GoodsReturn> {
     if (state.saveAndValidate()) {
       var data = state.value;
 
-      print("form $data");
+      // print("form $data");
 
       final ref = selectedLine!;
 
-      print("ref $ref");
+      // print("ref $ref");
 
       final num = data['qty_0'];
       final uom = data['uom_0'];
 
-      var newDoc;
-
       final record = {
-        'document': widget.doc.id,
+        'document': widget.entity.id,
         'line': ref.id,
         'qty': {'number': num, 'uom': Uom.fromJson(uom.json).toJson()}
       };
 
-      print("record $record");
+      // print("record $record");
 
       // отправляем на сервер данные
 
-      newDoc = await Api.feathers().create(
+      final newDoc = await Api.feathers().create(
           serviceName: 'memories',
           data: record,
           params: {'oid': Api.instance.oid, 'ctx': WHReturn.ctx});
 
       if (mounted) {
-        final entity = MemoryItem.from(newDoc);
-        await entity.enrich(WHReturn.schema);
+        // final entity = MemoryItem.from(newDoc);
+        // await entity.enrich(WHReturn.schema);
 
-        context.read<UiBloc>().add(ChangeView(WHReturn.ctx,
-            action: 'view', entity: MemoryItem.from(newDoc)));
+        // context.read<UiBloc>().add(ChangeView(WHReturn.ctx,
+        //     action: 'view', entity: MemoryItem.from(newDoc)));
 
-        print("to save $newDoc");
+        // print("to save $newDoc");
+
+        setState(() {
+          // state.patchValue({cGoods: null, cBatch: null, 'qty_0': null, 'uom_0': null});
+
+          details.json[cGoods] = null;
+          details.json[cBatch] = null;
+          details.json['qty_0'] = null;
+          details.json['uom_0'] = null;
+
+          showQtyUom = false;
+
+          selectedDocument = null;
+          selectedLine = null;
+        });
+
+        loadDocuments(null);
       }
     }
   }
 
-  List<Widget> dispatch() {
-    final localization = AppLocalizations.of(context);
-
+  List<Widget> dispatchDate() {
     if (selectedDocument != null) {
       return <Widget>[
-        DecoratedFormPickerField(
-          ctx: const ['warehouse', 'dispatch'],
-          name: cDocument,
-          label: "контрагент",
+        DateField(
+          name: cDate,
+          label: "отгрузка от",
           autofocus: false,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(),
           ]),
           onSave: (ctx) {},
+          onChange: (date) {
+            loadDocuments(date);
+          },
+          keyboardType: TextInputType.datetime,
         ),
+      ];
+    } else {
+      return <Widget>[];
+    }
+  }
+
+  List<Widget> lineGood() {
+    final localization = AppLocalizations.of(context);
+    if (selectedLine != null) {
+      return <Widget>[
         const SizedBox(height: 10),
         DecoratedFormPickerField(
           ctx: const ['warehouse', 'dispatch'],
@@ -235,8 +254,6 @@ class _GoodsReturnState extends State<GoodsReturn> {
             FormBuilderValidators.required(errorText: "выберите товар"),
           ]),
           onSave: (context) {},
-          //editable: false,
-          // visible: showGoods,
         ),
         DecoratedFormPickerField(
           ctx: const ['warehouse', 'dispatch'],
@@ -247,8 +264,6 @@ class _GoodsReturnState extends State<GoodsReturn> {
             FormBuilderValidators.required(errorText: "выберите партию"),
           ]),
           onSave: (context) {},
-          //editable: false,
-          // visible: showBatch,
         ),
       ];
     } else {
@@ -257,14 +272,17 @@ class _GoodsReturnState extends State<GoodsReturn> {
   }
 
   List<Widget> goodsList() {
-    dynamic date;
+    dynamic counterparty;
 
     final state = _formKey.currentState;
     if (state == null) {
-      date = details.json[cDate];
-      if (date == null) {
+      //  print('details.json ${details.json}');
+      counterparty = details.json[cCounterparty];
+      if (counterparty == null) {
         return <Widget>[];
       }
+    } else {
+      counterparty = state.value[cCounterparty];
     }
 
     if (items.isNotEmpty) {
@@ -275,14 +293,18 @@ class _GoodsReturnState extends State<GoodsReturn> {
               items: items,
               title: (MemoryItem item) {
                 if (selectedDocument == null) {
+                  // print('item.json ${item.json}');
                   return Text(item.json[cCounterparty]?[cName] ?? '');
                 } else {
                   return Text(item.json[cGoods]?[cName] ?? '');
                 }
               },
               subtitle: (MemoryItem item) {
-                // return Text(qtyToText(item.json['_balance']?[cQty]));
-                return const Text('');
+                if (selectedDocument == null) {
+                  return Text('отгрузка от ${item.json[cDate]}');
+                } else {
+                  return const Text('');
+                }
               },
               onTap: (item) => changeState(item),
             ))
@@ -378,21 +400,24 @@ class _GoodsReturnState extends State<GoodsReturn> {
   }
 
   void changeState(MemoryItem item) async {
+    // print('changeState ${item.json}');
     if (selectedDocument == null) {
       selectedDocument = item;
 
-      item.json[cName] = item.json[cCounterparty][cName];
-
       setState(() {
-        details.json[cDocument] = item;
-        _formKey.currentState?.patchValue({cDocument: item});
+        details.json[cDate] = DT.parse(item.json[cDate]);
+        // final state = _formKey.currentState;
+        // if (state != null) {
+        //   state.patchValue({
+        //     cDate: DT.parse(item.json[cDate]),
+        //   });
+        //   state.save();
+        // }
       });
 
       final rows = await getRows(item);
       setState(() => items = rows);
     } else {
-      // print("item ${item.json}");
-
       final goods = item[cGoods];
 
       setState(() {
@@ -407,6 +432,16 @@ class _GoodsReturnState extends State<GoodsReturn> {
           return;
         }
 
+        final batch = item.json[cBatch];
+        print('batch $batch');
+        if (batch != null) {
+          final copy = Map.from(batch);
+          copy[cName] = DT.pretty(copy[cDate] ?? '');
+          final item = MemoryItem.from(batch);
+          state.patchValue({cBatch: item});
+          details.json[cBatch] = item;
+        }
+
         Map? qty = item.json[cQty];
         if (qty != null) {
           // print('qty $qty');
@@ -419,12 +454,6 @@ class _GoodsReturnState extends State<GoodsReturn> {
             showQtyUom = true;
           }
         }
-
-        final batch = item.json[cBatch];
-        if (batch != null) {
-          batch[cName] = DT.pretty(batch[cDate] ?? '');
-          state.patchValue({cBatch: MemoryItem.from(batch)});
-        }
       });
       items = [];
     }
@@ -432,11 +461,11 @@ class _GoodsReturnState extends State<GoodsReturn> {
 
   void loadDocuments(DateTime? date) {
     // print("loadDocuments");
-    if (date == null) {
-      setState(() => items = []);
-      //   print("date == null");
-      return;
-    }
+    // if (date == null) {
+    //   setState(() => items = []);
+    //   //   print("date == null");
+    //   return;
+    // }
 
     getDocuments(date).then((value) {
       setState(() {
@@ -445,29 +474,42 @@ class _GoodsReturnState extends State<GoodsReturn> {
       });
     });
   }
-}
 
-Future<List<MemoryItem>> getDocuments(DateTime date) async {
-  final response = await Api.feathers().find(serviceName: "memories", query: {
-    "oid": Api.instance.oid,
-    "ctx": WHDispatch.ctx,
-    "filter": {"date": date.toYMD()}
-  });
-  // print("response $response");
+  Future<List<MemoryItem>> getDocuments(DateTime? date) async {
+    final filter = {};
 
-  List<MemoryItem> list = [];
+    final counterparty = widget.entity[cCounterparty];
+    if (counterparty == null) {
+      // print("return empty list");
+      return [];
+    }
+    filter[cCounterparty] = counterparty.id;
 
-  final data = response['data'] as List;
-  for (var json in data) {
-    // print('json $json');
-    final item = MemoryItem.from(json);
-    // print('item $item');
-    // place for enrichment
+    if (date != null) {
+      filter[cDate] = date.toYMD();
+    }
 
-    list.add(item);
+    final response = await Api.feathers().find(serviceName: "memories", query: {
+      "oid": Api.instance.oid,
+      "ctx": WHDispatch.ctx,
+      "filter": filter,
+    });
+    // print("response $response");
+
+    List<MemoryItem> list = [];
+
+    final data = response['data'] as List;
+    for (var json in data) {
+      // print('json $json');
+      final item = MemoryItem.from(json);
+      // print('item $item');
+      // place for enrichment
+
+      list.add(item);
+    }
+    // print('list ${list.length}');
+    return list;
   }
-  // print('list ${list.length}');
-  return list;
 }
 
 Future<List<MemoryItem>> getRows(MemoryItem doc) async {

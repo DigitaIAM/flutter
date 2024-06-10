@@ -6,6 +6,8 @@ import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/screens/wh/dispatch/screen.dart';
+import 'package:nae/screens/wh/return/screen.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/key_value.dart';
 
@@ -16,11 +18,9 @@ class WHReturnOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // print("context in WHDispatchOverview: $context");
-
     final localization = AppLocalizations.of(context);
 
-    const ctx = ['warehouse', 'return'];
+    const ctx = WHReturn.ctx;
     final filter = {
       cDocument: doc.id,
     };
@@ -35,9 +35,9 @@ class WHReturnOverview extends StatelessWidget {
     final storage = doc.json[cStorage] is MemoryItem
         ? doc.json[cStorage].name()
         : doc.json[cStorage][cName] ?? '';
-    // final counterparty = doc.json[cCounterparty] is MemoryItem
-    //     ? doc.json[cCounterparty].name()
-    //     : doc.json[cCounterparty][cName] ?? '';
+    final counterparty = doc.json[cCounterparty] is MemoryItem
+        ? doc.json[cCounterparty].name()
+        : doc.json[cCounterparty][cName] ?? '';
 
     return BlocProvider(
       create: (context) {
@@ -59,15 +59,15 @@ class WHReturnOverview extends StatelessWidget {
           icon: const Icon(Icons.calendar_month),
         ),
         KeyValue(
+          label: localization.translate(cCounterparty),
+          value: counterparty,
+          icon: const Icon(Icons.input),
+        ),
+        KeyValue(
           label: localization.translate(cStorage),
           value: storage,
           icon: const Icon(Icons.output),
         ),
-        // KeyValue(
-        //   label: localization.translate(cCounterparty),
-        //   value: counterparty,
-        //   icon: const Icon(Icons.input),
-        // ),
       ]),
     );
   }

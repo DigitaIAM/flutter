@@ -8,7 +8,6 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
-import 'package:nae/screens/wh/dispatch/screen.dart';
 import 'package:nae/screens/wh/return/screen.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/widgets/app_form.dart';
@@ -88,17 +87,17 @@ class _WHReturnDocumentCreationState extends State<WHReturnDocumentCreation> {
                 ]),
                 onSave: (context) {},
               ),
-              // DecoratedFormPickerField(
-              //   ctx: const ['counterparty'],
-              //   name: cCounterparty,
-              //   creatable: false,
-              //   label: localization.translate(cCounterparty),
-              //   autofocus: true,
-              //   validator: FormBuilderValidators.compose([
-              //     FormBuilderValidators.required(),
-              //   ]),
-              //   onSave: (context) {},
-              // ),
+              DecoratedFormPickerField(
+                ctx: const ['counterparty'],
+                name: cCounterparty,
+                creatable: false,
+                label: localization.translate(cCounterparty),
+                autofocus: true,
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(),
+                ]),
+                onSave: (context) {},
+              ),
               Container(height: 10),
               ElevatedButton(
                 onPressed: status == 'register'
@@ -137,13 +136,14 @@ class _WHReturnDocumentCreationState extends State<WHReturnDocumentCreation> {
 
     final date = data[cDate] ?? '';
     final storage = data[cStorage] as MemoryItem;
+    final counterparty = data[cCounterparty] as MemoryItem;
 
     var record;
     if (widget.entity.isNew) {
       record = await Api.feathers().create(serviceName: 'memories', data: {
         cDate: date,
         cStorage: storage.id,
-        // cCounterparty: counterparty.id,
+        cCounterparty: counterparty.id,
       }, params: {
         'oid': Api.instance.oid,
         'ctx': WHReturn.ctx
@@ -153,7 +153,7 @@ class _WHReturnDocumentCreationState extends State<WHReturnDocumentCreation> {
           .update(serviceName: 'memories', objectId: widget.entity.id, data: {
         cDate: date,
         cStorage: storage.id,
-        // cCounterparty: counterparty.id,
+        cCounterparty: counterparty.id,
       }, params: {
         'oid': Api.instance.oid,
         'ctx': WHReturn.ctx
