@@ -89,7 +89,7 @@ class _WHReturnEditFSState extends State<WHReturnEditFS>
 
       return ScaffoldView(
         title:
-            "${localization.translate("return to the warehouse")} ${DT.format(widget.entity.json[cDate])}",
+            "${localization.translate("return to the warehouse")} от ${DT.format(widget.entity.json[cDate])}",
         appBarBottom: TabBar(
           controller: _controller,
           isScrollable: true,

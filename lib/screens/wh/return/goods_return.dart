@@ -112,8 +112,10 @@ class _GoodsReturnState extends State<GoodsReturn> {
                 ),
                 const SizedBox(height: 10),
                 ...dispatchDate(),
-                ...lineGood(),
+                ...selectedGoods(),
+                const SizedBox(height: 10),
                 ...qtyUom(context),
+                const SizedBox(height: 10),
                 ...goodsList(),
               ],
             ),
@@ -209,38 +211,35 @@ class _GoodsReturnState extends State<GoodsReturn> {
 
           showQtyUom = false;
 
-          selectedDocument = null;
+          // selectedDocument = null;
           selectedLine = null;
         });
 
-        loadDocuments(null);
+        // loadDocuments(null);
+        loadRows();
       }
     }
   }
 
   List<Widget> dispatchDate() {
-    if (selectedDocument != null) {
-      return <Widget>[
-        DateField(
-          name: cDate,
-          label: "отгрузка от",
-          autofocus: false,
-          validator: FormBuilderValidators.compose([
-            FormBuilderValidators.required(),
-          ]),
-          onSave: (ctx) {},
-          onChange: (date) {
-            loadDocuments(date);
-          },
-          keyboardType: TextInputType.datetime,
-        ),
-      ];
-    } else {
-      return <Widget>[];
-    }
+    return <Widget>[
+      DateField(
+        name: cDate,
+        label: "отгрузка от",
+        autofocus: false,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(),
+        ]),
+        onSave: (ctx) {},
+        onChange: (date) {
+          loadDocuments(date);
+        },
+        keyboardType: TextInputType.datetime,
+      ),
+    ];
   }
 
-  List<Widget> lineGood() {
+  List<Widget> selectedGoods() {
     final localization = AppLocalizations.of(context);
     if (selectedLine != null) {
       return <Widget>[
@@ -255,6 +254,7 @@ class _GoodsReturnState extends State<GoodsReturn> {
           ]),
           onSave: (context) {},
         ),
+        const SizedBox(height: 10),
         DecoratedFormPickerField(
           ctx: const ['warehouse', 'dispatch'],
           name: cBatch,
@@ -272,42 +272,37 @@ class _GoodsReturnState extends State<GoodsReturn> {
   }
 
   List<Widget> goodsList() {
-    dynamic counterparty;
-
-    final state = _formKey.currentState;
-    if (state == null) {
-      //  print('details.json ${details.json}');
-      counterparty = details.json[cCounterparty];
-      if (counterparty == null) {
-        return <Widget>[];
-      }
-    } else {
-      counterparty = state.value[cCounterparty];
-    }
-
     if (items.isNotEmpty) {
       return <Widget>[
         SizedBox(
-            height: 350,
-            child: MemoryItemListBuilder(
-              items: items,
-              title: (MemoryItem item) {
-                if (selectedDocument == null) {
-                  // print('item.json ${item.json}');
-                  return Text(item.json[cCounterparty]?[cName] ?? '');
-                } else {
-                  return Text(item.json[cGoods]?[cName] ?? '');
-                }
-              },
-              subtitle: (MemoryItem item) {
-                if (selectedDocument == null) {
-                  return Text('отгрузка от ${item.json[cDate]}');
-                } else {
+          height: 350,
+          child: MemoryItemListBuilder(
+            items: items,
+            title: (MemoryItem item) {
+              print('item.json ${item.json}');
+              print('cBatchDetails ${item[cBatchDetails]}');
+              if (selectedDocument == null) {
+                return Text(item[cCounterparty]?.name() ?? '');
+              } else {
+                return Text(item[cGoods]?.name() ?? '');
+              }
+            },
+            subtitle: (MemoryItem item) {
+              if (selectedDocument == null) {
+                return Text('отгрузка от ${item.json[cDate]}');
+              } else {
+                final details = item.json[cBatchDetails];
+                if (details == null) {
                   return const Text('');
+                } else {
+                  return Text(
+                      '${details['customer'] ?? ''}, ${details['label'] ?? ''}');
                 }
-              },
-              onTap: (item) => changeState(item),
-            ))
+              }
+            },
+            onTap: (item) => changeState(item),
+          ),
+        )
       ];
     }
 
@@ -400,23 +395,22 @@ class _GoodsReturnState extends State<GoodsReturn> {
   }
 
   void changeState(MemoryItem item) async {
-    // print('changeState ${item.json}');
+    print('changeState ${item.json}');
     if (selectedDocument == null) {
       selectedDocument = item;
 
       setState(() {
         details.json[cDate] = DT.parse(item.json[cDate]);
-        // final state = _formKey.currentState;
-        // if (state != null) {
-        //   state.patchValue({
-        //     cDate: DT.parse(item.json[cDate]),
-        //   });
-        //   state.save();
-        // }
+        final state = _formKey.currentState;
+        if (state != null) {
+          state.patchValue({
+            cDate: DT.parse(item.json[cDate]),
+          });
+          state.save();
+        }
       });
 
-      final rows = await getRows(item);
-      setState(() => items = rows);
+      loadRows();
     } else {
       final goods = item[cGoods];
 
@@ -460,16 +454,8 @@ class _GoodsReturnState extends State<GoodsReturn> {
   }
 
   void loadDocuments(DateTime? date) {
-    // print("loadDocuments");
-    // if (date == null) {
-    //   setState(() => items = []);
-    //   //   print("date == null");
-    //   return;
-    // }
-
     getDocuments(date).then((value) {
       setState(() {
-        selectedDocument = null;
         items = value;
       });
     });
@@ -510,6 +496,20 @@ class _GoodsReturnState extends State<GoodsReturn> {
     // print('list ${list.length}');
     return list;
   }
+
+  void loadRows() {
+    if (selectedDocument == null) {
+      setState(() {
+        items = [];
+      });
+    } else {
+      getRows(selectedDocument!).then((value) {
+        setState(() {
+          items = value;
+        });
+      });
+    }
+  }
 }
 
 Future<List<MemoryItem>> getRows(MemoryItem doc) async {
@@ -530,8 +530,9 @@ Future<List<MemoryItem>> getRows(MemoryItem doc) async {
     // print('item $item');
 
     // place for enrichment
+    final it = await item.enrich([fBatchDocument]);
 
-    goods.add(item);
+    goods.add(it);
   }
   // print('list ${list.length}');
   return goods;
