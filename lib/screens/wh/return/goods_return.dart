@@ -279,8 +279,8 @@ class _GoodsReturnState extends State<GoodsReturn> {
           child: MemoryItemListBuilder(
             items: items,
             title: (MemoryItem item) {
-              print('item.json ${item.json}');
-              print('cBatchDetails ${item[cBatchDetails]}');
+              // print('item.json ${item.json}');
+              // print('cBatchDetails ${item[cBatchDetails]}');
               if (selectedDocument == null) {
                 return Text(item[cCounterparty]?.name() ?? '');
               } else {
@@ -296,7 +296,7 @@ class _GoodsReturnState extends State<GoodsReturn> {
                   return const Text('');
                 } else {
                   return Text(
-                      '${details['customer'] ?? ''}, ${details['label'] ?? ''}');
+                      '${details['customer'] ?? ''}, ${details['label'] ?? ''}, ${item.json['batch']['date'] ?? ''}');
                 }
               }
             },
@@ -394,8 +394,8 @@ class _GoodsReturnState extends State<GoodsReturn> {
     });
   }
 
-  void changeState(MemoryItem item) async {
-    print('changeState ${item.json}');
+  void changeState(MemoryItem item) {
+    // print('changeState ${item.json}');
     if (selectedDocument == null) {
       selectedDocument = item;
 

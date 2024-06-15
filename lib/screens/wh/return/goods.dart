@@ -134,6 +134,7 @@ class _WHReturnGoods extends State<WHReturnGoods> {
   }
 
   void deleteItem(BuildContext context, MemoryItem item) async {
+    const ctx = WHReturn.ctx;
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
