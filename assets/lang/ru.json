@@ -150,5 +150,7 @@
   "pallet packing": "формирование палеты",
   "new pallet": "новая палета",
   "pallet": "палета",
-  "KPI": "анализ эффективности"
+  "KPI": "анализ эффективности",
+  "return to the warehouse": "возврат",
+  "new return to the warehouse": "новый возврат"
 }
