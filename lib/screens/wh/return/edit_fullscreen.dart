@@ -6,31 +6,33 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
-import 'package:nae/screens/wh/dispatch/edit_fullscreen/document_creation.dart';
 import 'package:nae/screens/wh/dispatch/edit_fullscreen/goods.dart';
 import 'package:nae/screens/wh/dispatch/edit_fullscreen/overview.dart';
-import 'package:nae/screens/wh/goods_dispatch.dart';
+import 'package:nae/screens/wh/goods_registration.dart';
+import 'package:nae/screens/wh/return/document_creation.dart';
+import 'package:nae/screens/wh/return/goods.dart';
+import 'package:nae/screens/wh/return/goods_return.dart';
+import 'package:nae/screens/wh/return/overview.dart';
+import 'package:nae/screens/wh/return/screen.dart';
 import 'package:nae/share/utils.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 
-import '../screen.dart';
-
-class WHDispatchEditFS extends EntityHolder {
+class WHReturnEditFS extends EntityHolder {
   final bool showStorages;
-  const WHDispatchEditFS(
+  const WHReturnEditFS(
       {super.key, required super.entity, this.showStorages = false});
 
   @override
-  State<WHDispatchEditFS> createState() => _WHDispatchEditFSState();
+  State<WHReturnEditFS> createState() => _WHReturnEditFSState();
 }
 
-class _WHDispatchEditFSState extends State<WHDispatchEditFS>
+class _WHReturnEditFSState extends State<WHReturnEditFS>
     with SingleTickerProviderStateMixin {
   final GlobalKey<FormBuilderState> _formKey =
-      GlobalKey<FormBuilderState>(debugLabel: '_WHDispatchEditFS');
+      GlobalKey<FormBuilderState>(debugLabel: '_WHReturnEditFS');
   final FocusScopeNode _focusNode = FocusScopeNode();
 
   late TabController _controller;
@@ -71,7 +73,7 @@ class _WHDispatchEditFSState extends State<WHDispatchEditFS>
           return Column(children: <Widget>[
             Expanded(
               child: TabBarView(controller: _controller, children: <Widget>[
-                WHDispatchDocumentCreation(
+                WHReturnDocumentCreation(
                   entity: widget.entity,
                 )
               ]),
@@ -81,13 +83,13 @@ class _WHDispatchEditFSState extends State<WHDispatchEditFS>
       );
     } else {
       routerBack(BuildContext context) {
-        context.read<UiBloc>().add(ChangeView(WHDispatch.ctx));
+        context.read<UiBloc>().add(ChangeView(WHReturn.ctx));
         // TODO context.read<UiBloc>().add(PreviousRoute());
       }
 
       return ScaffoldView(
         title:
-            "${localization.translate("warehouse dispatch")} ${DT.format(widget.entity.json[cDate])}",
+            "${localization.translate("return to the warehouse")} от ${DT.format(widget.entity.json[cDate])}",
         appBarBottom: TabBar(
           controller: _controller,
           isScrollable: true,
@@ -102,7 +104,7 @@ class _WHDispatchEditFSState extends State<WHDispatchEditFS>
             icon: const Icon(Icons.edit_note_outlined),
             tooltip: localization.translate("edit"),
             onPressed: () {
-              context.read<UiBloc>().add(ChangeView(WHDispatch.ctx,
+              context.read<UiBloc>().add(ChangeView(WHReturn.ctx,
                   action: 'edit', entity: widget.entity));
             },
           ),
@@ -111,17 +113,13 @@ class _WHDispatchEditFSState extends State<WHDispatchEditFS>
           return Column(children: <Widget>[
             Expanded(
               child: TabBarView(controller: _controller, children: <Widget>[
-                WHDispatchGoods(
+                WHReturnGoods(
                   doc: widget.entity,
                   mode: Mode.mobile,
                 ),
-                WHDispatchOverview(doc: widget.entity),
-                GoodsDispatch(
-                  ctx: const ['warehouse', 'dispatch'],
-                  doc: widget.entity,
-                  schema: WHDispatch.schema,
-                  storage: widget.entity[cStorage],
-                  storageEditable: false,
+                WHReturnOverview(doc: widget.entity),
+                GoodsReturn(
+                  entity: widget.entity,
                 ),
               ]),
             ),

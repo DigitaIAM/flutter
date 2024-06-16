@@ -259,6 +259,7 @@ class _POProducedEditState extends State<POProducedEdit> {
         autofocus: true,
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.required(),
+          FormBuilderValidators.numeric(),
         ]),
         onSave: (context) {},
         keyboardType: TextInputType.number,

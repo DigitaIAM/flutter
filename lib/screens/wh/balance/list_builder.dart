@@ -99,10 +99,31 @@ class ListBuilder extends StatelessWidget {
           final strDate = item.json[cBatch]?[cDate] ?? '';
           final date = DT.pretty(strDate);
 
+          String details = '';
+
+          final batchDetails = item.json[cBatchDetails];
+          if (batchDetails != null) {
+            String customer = (batchDetails['customer'] ?? '').trim();
+            String label = (batchDetails['label'] ?? '').trim();
+            if (customer.isNotEmpty) {
+              details = customer;
+            }
+            if (label.isNotEmpty) {
+              if (details.isEmpty) {
+                details = label;
+              } else {
+                details += ', $label';
+              }
+            }
+          }
+          if (details.isNotEmpty) {
+            details = ' [$details]';
+          }
+
           return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(date),
+                Text('$date$details'),
                 Text('${fStorage.resolve(item.json)?.name() ?? ''}'),
               ]);
         } else {
@@ -122,7 +143,7 @@ class ListBuilder extends StatelessWidget {
           //   return Text('${item.json['_balance']?[cQty] ?? ''} ${fUomAtGoods.resolve(item.json)?.name() ?? ''}, '
           //       '${item.json['_balance']?[cCost] ?? ''} сум');
         } else {
-          print("_item: ${item.json}");
+          // print("_item: ${item.json}");
           final cost = item.json['_cost'];
           if (cost != null) {
             return Row(

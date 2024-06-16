@@ -17,6 +17,7 @@ class WHBalance extends Entity {
   static List<Field> schema = [
     fStorage,
     fBatch,
+    fBatchDocument,
     fGoods,
     // fQty,
     fUomAtGoods,

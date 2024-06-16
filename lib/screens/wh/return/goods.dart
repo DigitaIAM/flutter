@@ -6,40 +6,36 @@ import 'package:nae/constants.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
-import 'package:nae/models/qty.dart';
-import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/printing.dart';
 import 'package:nae/schema/schema.dart';
-import 'package:nae/screens/wh/goods_dispatch.dart';
-import 'package:nae/screens/wh/transfer/screen.dart';
+import 'package:nae/screens/wh/dispatch/screen.dart';
+import 'package:nae/screens/wh/return/screen.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/swipe_action.dart';
 
-class WHTransferGoods extends StatefulWidget {
+class WHReturnGoods extends StatefulWidget {
   final MemoryItem doc;
   final Mode mode;
 
-  const WHTransferGoods({super.key, required this.doc, this.mode = Mode.auto});
+  const WHReturnGoods({super.key, required this.doc, this.mode = Mode.auto});
 
   @override
-  State<StatefulWidget> createState() => _WHTransferGoods();
+  State<StatefulWidget> createState() => _WHReturnGoods();
 }
 
-class _WHTransferGoods extends State<WHTransferGoods> {
+class _WHReturnGoods extends State<WHReturnGoods> {
+  static const ctx = WHReturn.ctx;
+
   @override
   Widget build(BuildContext context) {
-    const ctx = ['warehouse', 'transfer'];
     final filter = {
       cDocument: widget.doc.id,
     };
     final schema = <Field>[
-      fCategoryAtGoods,
-      fGoods.copyWith(width: 3.0),
-      // fUomAtQty.copyWith(width: 0.5, editable: false),
-      // fQty.copyWith(width: 1.0),
+      Field('line',
+          ReferenceType(WHDispatch.ctx, fields: [fGoods, fBatchDocument])),
       fQtyNew.copyWith(width: 1.0),
-      fBatchDocument,
     ];
 
     return BlocProvider(
@@ -61,10 +57,13 @@ class _WHTransferGoods extends State<WHTransferGoods> {
         filter: filter,
         schema: schema,
         title: (MemoryItem item) {
-          var text = fGoods.resolve(item.json)?.name() ?? '';
-          print('tran ${item.json}');
+          // print('item ${item.json}');
+          //  print('${item['line']?.json}');
 
-          final batchDetails = item.json[cBatchDetails];
+          var text = fGoods.resolve(item['line']?.json)?.name() ?? '';
+          // print("text $text");
+
+          final batchDetails = item['line']?.json[cBatchDetails];
           final customer = batchDetails['customer'];
           final label = batchDetails['label'];
 
@@ -92,9 +91,9 @@ class _WHTransferGoods extends State<WHTransferGoods> {
           return Text(text, style: style);
         },
         subtitle: (MemoryItem item) {
-          // print("item.json ${item.json}");
+          //  print("subtitle ${item['line']?['batch']}");
 
-          String dateBatch = item.json['batch']?['date'] ?? '';
+          String dateBatch = item['line']?['batch']?.json['date'] ?? '';
           final qty = item.json['qty'].toString();
 
           var text = '$qty ';
@@ -114,9 +113,6 @@ class _WHTransferGoods extends State<WHTransferGoods> {
         // onTap: (MemoryItem item) => context
         //     .read<UiBloc>()
         //     .add(ChangeView(WHTransfer.ctx, entity: item)),
-        onDoubleTap: (context, item) {
-          editItem(context, ctx, widget.doc, item);
-        },
         actions: [
           ItemAction(
             label: 'delete',
@@ -132,21 +128,13 @@ class _WHTransferGoods extends State<WHTransferGoods> {
             foregroundColor: Colors.white,
             backgroundColor: Colors.blue,
           ),
-          ItemAction(
-            label: 'edit',
-            icon: Icons.edit,
-            onPressed: (context, item) =>
-                editItem(context, ctx, widget.doc, item),
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.green,
-          ),
         ],
       ),
     );
   }
 
   void deleteItem(BuildContext context, MemoryItem item) async {
-    const ctx = ['warehouse', 'transfer'];
+    const ctx = WHReturn.ctx;
     final status = item.json[cStatus] == 'deleted' ? 'restored' : 'deleted';
     final Map<String, dynamic> data = {cStatus: status};
     // TODO fix schema
@@ -201,82 +189,12 @@ class _WHTransferGoods extends State<WHTransferGoods> {
   void printPreparation(String ip, int port, MemoryItem item) async {
     // print("printPreparation: ${item.json}");
 
-    final d = await widget.doc.enrich(WHTransfer.schema);
+    final _doc = await widget.doc.enrich(WHDispatch.schema);
 
     final result = await Labels.connect(ip, port, (printer) async {
-      return await printing(printer, d, item, (newStatus) => {});
+      return await printing(printer, _doc, item, (newStatus) => {});
     });
 
     // print("printResult: $result");
-  }
-
-  void editItem(BuildContext context, List<String> ctx, MemoryItem doc,
-      MemoryItem item) async {
-    //print("docu ${doc.json}");
-    // print("item ${item.json}");
-
-    Map<String, dynamic> data = {};
-
-    data[cId] = item.id;
-    data[cUuid] = item.uuid;
-    data[cStorage] = doc.json[cFrom];
-    data[cGoods] = item.json[cGoods];
-    data[cCategory] = data[cGoods].json[cCategory];
-    data[cBatch] =
-        item.json[cBatch] == null ? null : MemoryItem.from(item.json[cBatch]);
-    (item.json['qty'] as Qty).toData(data);
-
-    print("data $data");
-
-    final uiBloc = context.read<UiBloc>();
-
-    showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => BlocProvider(
-        create: (ctx) => UiBloc(uiBloc.state),
-        child: Dialog(
-          child: SizedBox(
-            width: 500,
-            height: 500,
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: SizedBox(
-                    width: 500,
-                    height: 400,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: GoodsDispatch(
-                            ctx: const ['warehouse', 'transfer'],
-                            doc: widget.doc,
-                            rec: MemoryItem.from(data),
-                            schema: WHTransfer.schema,
-                            enablePrinting: false,
-                            afterSave: () {
-                              setState(() {});
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

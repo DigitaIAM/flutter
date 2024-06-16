@@ -6,6 +6,10 @@ class DT {
     return DateTime(now.year, now.month, now.day);
   }
 
+  static DateTime parse(String date) {
+    return DateTime.parse(date);
+  }
+
   static String format(String date) {
     return f(DateTime.parse(date));
   }
