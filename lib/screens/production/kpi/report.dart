@@ -1,12 +1,12 @@
 import 'package:decimal/decimal.dart';
+import 'package:excel/excel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:nae/app_localizations.dart';
-import 'package:nae/constants.dart';
-import 'package:nae/core/theme.dart';
 import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
@@ -254,42 +254,110 @@ class _KpiReportScreenState extends State<KpiReportScreen>
     return (people, products, agr);
   }
 
-  Widget copy(BuildContext context, List<PlutoRow> rows,
+  Widget excel(BuildContext context, List<PlutoRow> rows,
       List<PlutoColumn> columns, List<PlutoColumnGroup> groups) {
-    var string = '';
+    exportExcel() {
+      Excel excel = Excel.createExcel();
 
-    for (PlutoColumn col in columns) {
-      for (PlutoColumnGroup group in groups) {
-        if (group.fields?[0] == col.field) {
-          string += group.title;
-        }
+      final s = excel.getDefaultSheet();
+      if (s != null) {
+        excel.rename(s, 'Sheet');
       }
-      string += '\t';
-    }
-    string += '\n';
+      Sheet sheet = excel['Sheet'];
 
-    for (PlutoColumn col in columns) {
-      string += '${col.title}\t';
-    }
-    string += '\n';
+      List<TextCellValue> list = [];
 
-    for (PlutoRow row in rows) {
+      List<(int, int, String)> toMerge = [];
+      int index = 0;
+      (int, String) last = (-1, '');
+
       for (PlutoColumn col in columns) {
-        string += row.cells[col.field]?.value ?? '';
-        string += '\t';
+        for (PlutoColumnGroup group in groups) {
+          if (group.fields?[0] == col.field) {
+            if (last.$1 != -1 && last.$1 != index - 1) {
+              toMerge.add((last.$1, index - 1, last.$2));
+            }
+            last = (index, group.title);
+          }
+        }
+        index += 1;
       }
-      string += '\n';
+      if (last.$1 != -1 && last.$1 != index - 1) {
+        toMerge.add((last.$1, index - 1, last.$2));
+      }
+
+      for (final item in toMerge) {
+        sheet.merge(
+          CellIndex.indexByColumnRow(columnIndex: item.$1, rowIndex: 0),
+          CellIndex.indexByColumnRow(columnIndex: item.$2, rowIndex: 0),
+          customValue: TextCellValue(item.$3),
+        );
+      }
+
+      list = [];
+      for (PlutoColumn col in columns) {
+        list.add(TextCellValue(col.title));
+      }
+      sheet.appendRow(list);
+
+      for (PlutoRow row in rows) {
+        list = [];
+        for (PlutoColumn col in columns) {
+          // TODO number and formula
+          // if (col.type is PlutoColumnTypeNumber) {
+          //   list.add(DoubleCellValue(row.cells[col.field]?.value));
+          // } else {
+          list.add(TextCellValue(row.cells[col.field]?.value ?? ''));
+          // }
+        }
+        sheet.appendRow(list);
+      }
+
+      excel.save(fileName: "export.xlsx");
     }
-    return ElevatedButton(
-      onPressed: () {
-        Clipboard.setData(ClipboardData(text: string)).then((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Данные скопированы')));
-        });
-      },
-      child: const Text('Скопировать'),
-    );
+
+    return ElevatedButton(onPressed: exportExcel, child: const Text('Excel'));
   }
+
+  // Widget copy(BuildContext context, List<PlutoRow> rows,
+  //     List<PlutoColumn> columns, List<PlutoColumnGroup> groups) {
+  //   var string = '';
+  //
+  //   for (PlutoColumn col in columns) {
+  //     for (PlutoColumnGroup group in groups) {
+  //       if (group.fields?[0] == col.field) {
+  //         string += group.title;
+  //       }
+  //     }
+  //     string += '\t';
+  //   }
+  //   string += '\n';
+  //
+  //   // print("string $string");
+  //
+  //   for (PlutoColumn col in columns) {
+  //     string += '${col.title}\t';
+  //   }
+  //   string += '\n';
+  //
+  //   for (PlutoRow row in rows) {
+  //     for (PlutoColumn col in columns) {
+  //       string += row.cells[col.field]?.value ?? '';
+  //       string += '\t';
+  //     }
+  //     string += '\n';
+  //     // print("string $string");
+  //   }
+  //   return ElevatedButton(
+  //     onPressed: () {
+  //       Clipboard.setData(ClipboardData(text: string)).then((_) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //             const SnackBar(content: Text('Данные скопированы')));
+  //       });
+  //     },
+  //     child: const Text('Скопировать'),
+  //   );
+  // }
 
   List<PlutoRow> intoRows(
       List<PlutoColumn> columns,
@@ -414,7 +482,7 @@ class _KpiReportScreenState extends State<KpiReportScreen>
     }
 
     return Column(children: [
-      copy(context, rows, columns, columnGroups),
+      excel(context, rows, columns, columnGroups),
       Expanded(
           child: PlutoGrid(
         key: UniqueKey(),
