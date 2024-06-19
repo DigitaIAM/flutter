@@ -1,3 +1,6 @@
+import 'package:decimal/decimal.dart';
+import 'package:excel/excel.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +15,7 @@ import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/qty.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
+import 'package:nae/screens/production/production_report/excel.dart';
 import 'package:nae/screens/production/production_report/screen.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/app_form.dart';
@@ -41,6 +45,10 @@ class _ProReportScreenState extends State<ProReportScreen>
 
   PlutoGridStateManager? stateManager;
 
+  List<PlutoColumn>? _columns;
+  List<PlutoColumnGroup>? _groups;
+  List<PlutoRow>? _rows;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -48,7 +56,7 @@ class _ProReportScreenState extends State<ProReportScreen>
   void initState() {
     super.initState();
 
-    print("_MovementReportScreenState.initState");
+    // print("_MovementReportScreenState.initState");
   }
 
   @override
@@ -70,7 +78,18 @@ class _ProReportScreenState extends State<ProReportScreen>
         }
         return Column(children: [
           Row(
-            children: [dateWidget(), selectedArea(context)],
+            children: [
+              dateWidget(),
+              selectedArea(context),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: ElevatedButton(
+                  onPressed: exportToExcel,
+                  child: const Text('Excel'),
+                ),
+              ),
+            ],
           ),
           Expanded(
             child: Stack(alignment: Alignment.topCenter, children: <Widget>[
@@ -80,6 +99,76 @@ class _ProReportScreenState extends State<ProReportScreen>
         ]);
       }),
     );
+  }
+
+  void exportToExcel() {
+    final columns = _columns!;
+    final groups = _groups!;
+    final rows = _rows!;
+
+    Excel excel = Excel.createExcel();
+
+    final s = excel.getDefaultSheet();
+    if (s != null) {
+      excel.rename(s, 'Sheet');
+    }
+    Sheet sheet = excel['Sheet'];
+
+    List<CellValue> list = [];
+
+    List<(int, int, String)> toMerge = [];
+    int index = 0;
+    (int, String) last = (-1, '');
+
+    for (PlutoColumn col in columns) {
+      for (PlutoColumnGroup group in groups) {
+        if (group.fields?[0] == col.field) {
+          if (last.$1 != -1 && last.$1 != index - 1) {
+            toMerge.add((last.$1, index - 1, last.$2));
+          }
+          last = (index, group.title);
+        }
+      }
+      index += 1;
+    }
+    if (last.$1 != -1 && last.$1 != index - 1) {
+      toMerge.add((last.$1, index - 1, last.$2));
+    }
+
+    for (final item in toMerge) {
+      sheet.merge(
+        CellIndex.indexByColumnRow(columnIndex: item.$1, rowIndex: 0),
+        CellIndex.indexByColumnRow(columnIndex: item.$2, rowIndex: 0),
+        customValue: TextCellValue(item.$3),
+      );
+    }
+
+    list = [];
+    for (PlutoColumn col in columns) {
+      list.add(TextCellValue(col.title));
+    }
+    sheet.appendRow(list);
+
+    for (PlutoRow row in rows) {
+      list = [];
+      for (PlutoColumn col in columns) {
+        // TODO number and formula
+        final v = row.cells[col.field]?.value;
+
+        if (v is Decimal) {
+          if (v.isInteger) {
+            list.add(IntCellValue(v.toBigInt().toInt()));
+          } else {
+            list.add(DoubleCellValue(v.toDouble()));
+          }
+        } else {
+          list.add(TextCellValue(v?.toString() ?? ''));
+        }
+      }
+      sheet.appendRow(list);
+    }
+
+    excel.save(fileName: "export.xlsx");
   }
 
   Widget dateWidget() {
@@ -564,6 +653,10 @@ class _ProReportScreenState extends State<ProReportScreen>
     for (var element in state.items) {
       items[element.id] = element;
     }
+
+    _rows = rows;
+    _columns = columns;
+    _groups = columnGroups;
 
     return PlutoGrid(
       key: UniqueKey(),

@@ -42,6 +42,10 @@ class _KpiReportScreenState extends State<KpiReportScreen>
 
   PlutoGridStateManager? stateManager;
 
+  List<PlutoColumn>? _columns;
+  List<PlutoColumnGroup>? _groups;
+  List<PlutoRow>? _rows;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -66,11 +70,14 @@ class _KpiReportScreenState extends State<KpiReportScreen>
           Row(
             children: [
               dateWidget(),
-              const SizedBox(
-                height: 10,
-                width: 60,
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: ElevatedButton(
+                  onPressed: exportToExcel,
+                  child: const Text('Excel'),
+                ),
               ),
-              //  copy(context, )
             ],
           ),
           Expanded(
@@ -81,6 +88,70 @@ class _KpiReportScreenState extends State<KpiReportScreen>
         ]);
       }),
     );
+  }
+
+  void exportToExcel() {
+    final columns = _columns!;
+    final groups = _groups!;
+    final rows = _rows!;
+
+    Excel excel = Excel.createExcel();
+
+    final s = excel.getDefaultSheet();
+    if (s != null) {
+      excel.rename(s, 'Sheet');
+    }
+    Sheet sheet = excel['Sheet'];
+
+    List<TextCellValue> list = [];
+
+    List<(int, int, String)> toMerge = [];
+    int index = 0;
+    (int, String) last = (-1, '');
+
+    for (PlutoColumn col in columns) {
+      for (PlutoColumnGroup group in groups) {
+        if (group.fields?[0] == col.field) {
+          if (last.$1 != -1 && last.$1 != index - 1) {
+            toMerge.add((last.$1, index - 1, last.$2));
+          }
+          last = (index, group.title);
+        }
+      }
+      index += 1;
+    }
+    if (last.$1 != -1 && last.$1 != index - 1) {
+      toMerge.add((last.$1, index - 1, last.$2));
+    }
+
+    for (final item in toMerge) {
+      sheet.merge(
+        CellIndex.indexByColumnRow(columnIndex: item.$1, rowIndex: 0),
+        CellIndex.indexByColumnRow(columnIndex: item.$2, rowIndex: 0),
+        customValue: TextCellValue(item.$3),
+      );
+    }
+
+    list = [];
+    for (PlutoColumn col in columns) {
+      list.add(TextCellValue(col.title));
+    }
+    sheet.appendRow(list);
+
+    for (PlutoRow row in rows) {
+      list = [];
+      for (PlutoColumn col in columns) {
+        // TODO number and formula
+        // if (col.type is PlutoColumnTypeNumber) {
+        //   list.add(DoubleCellValue(row.cells[col.field]?.value));
+        // } else {
+        list.add(TextCellValue(row.cells[col.field]?.value ?? ''));
+        // }
+      }
+      sheet.appendRow(list);
+    }
+
+    excel.save(fileName: "export.xlsx");
   }
 
   Widget dateWidget() {
@@ -249,115 +320,10 @@ class _KpiReportScreenState extends State<KpiReportScreen>
       );
     }
 
-    print("agr $agr");
+    // print("agr $agr");
 
     return (people, products, agr);
   }
-
-  Widget excel(BuildContext context, List<PlutoRow> rows,
-      List<PlutoColumn> columns, List<PlutoColumnGroup> groups) {
-    exportExcel() {
-      Excel excel = Excel.createExcel();
-
-      final s = excel.getDefaultSheet();
-      if (s != null) {
-        excel.rename(s, 'Sheet');
-      }
-      Sheet sheet = excel['Sheet'];
-
-      List<TextCellValue> list = [];
-
-      List<(int, int, String)> toMerge = [];
-      int index = 0;
-      (int, String) last = (-1, '');
-
-      for (PlutoColumn col in columns) {
-        for (PlutoColumnGroup group in groups) {
-          if (group.fields?[0] == col.field) {
-            if (last.$1 != -1 && last.$1 != index - 1) {
-              toMerge.add((last.$1, index - 1, last.$2));
-            }
-            last = (index, group.title);
-          }
-        }
-        index += 1;
-      }
-      if (last.$1 != -1 && last.$1 != index - 1) {
-        toMerge.add((last.$1, index - 1, last.$2));
-      }
-
-      for (final item in toMerge) {
-        sheet.merge(
-          CellIndex.indexByColumnRow(columnIndex: item.$1, rowIndex: 0),
-          CellIndex.indexByColumnRow(columnIndex: item.$2, rowIndex: 0),
-          customValue: TextCellValue(item.$3),
-        );
-      }
-
-      list = [];
-      for (PlutoColumn col in columns) {
-        list.add(TextCellValue(col.title));
-      }
-      sheet.appendRow(list);
-
-      for (PlutoRow row in rows) {
-        list = [];
-        for (PlutoColumn col in columns) {
-          // TODO number and formula
-          // if (col.type is PlutoColumnTypeNumber) {
-          //   list.add(DoubleCellValue(row.cells[col.field]?.value));
-          // } else {
-          list.add(TextCellValue(row.cells[col.field]?.value ?? ''));
-          // }
-        }
-        sheet.appendRow(list);
-      }
-
-      excel.save(fileName: "export.xlsx");
-    }
-
-    return ElevatedButton(onPressed: exportExcel, child: const Text('Excel'));
-  }
-
-  // Widget copy(BuildContext context, List<PlutoRow> rows,
-  //     List<PlutoColumn> columns, List<PlutoColumnGroup> groups) {
-  //   var string = '';
-  //
-  //   for (PlutoColumn col in columns) {
-  //     for (PlutoColumnGroup group in groups) {
-  //       if (group.fields?[0] == col.field) {
-  //         string += group.title;
-  //       }
-  //     }
-  //     string += '\t';
-  //   }
-  //   string += '\n';
-  //
-  //   // print("string $string");
-  //
-  //   for (PlutoColumn col in columns) {
-  //     string += '${col.title}\t';
-  //   }
-  //   string += '\n';
-  //
-  //   for (PlutoRow row in rows) {
-  //     for (PlutoColumn col in columns) {
-  //       string += row.cells[col.field]?.value ?? '';
-  //       string += '\t';
-  //     }
-  //     string += '\n';
-  //     // print("string $string");
-  //   }
-  //   return ElevatedButton(
-  //     onPressed: () {
-  //       Clipboard.setData(ClipboardData(text: string)).then((_) {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //             const SnackBar(content: Text('Данные скопированы')));
-  //       });
-  //     },
-  //     child: const Text('Скопировать'),
-  //   );
-  // }
 
   List<PlutoRow> intoRows(
       List<PlutoColumn> columns,
@@ -481,8 +447,11 @@ class _KpiReportScreenState extends State<KpiReportScreen>
       items[element.id] = element;
     }
 
+    _rows = rows;
+    _columns = columns;
+    _groups = columnGroups;
+
     return Column(children: [
-      excel(context, rows, columns, columnGroups),
       Expanded(
           child: PlutoGrid(
         key: UniqueKey(),
