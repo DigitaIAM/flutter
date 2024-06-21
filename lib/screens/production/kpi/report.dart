@@ -16,6 +16,7 @@ import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/screens/production/production_report/screen.dart';
 import 'package:nae/utils/date.dart';
+import 'package:nae/utils/excel_ops.dart';
 import 'package:nae/widgets/scrolling_date_calendar.dart';
 import 'package:pluto_grid_plus/pluto_grid_plus.dart';
 import 'package:flutter/services.dart';
@@ -74,7 +75,8 @@ class _KpiReportScreenState extends State<KpiReportScreen>
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: ElevatedButton(
-                  onPressed: exportToExcel,
+                  onPressed: () =>
+                      ExcelOps.exportToExcel(_columns!, _groups!, _rows!),
                   child: const Text('Excel'),
                 ),
               ),
@@ -88,70 +90,6 @@ class _KpiReportScreenState extends State<KpiReportScreen>
         ]);
       }),
     );
-  }
-
-  void exportToExcel() {
-    final columns = _columns!;
-    final groups = _groups!;
-    final rows = _rows!;
-
-    Excel excel = Excel.createExcel();
-
-    final s = excel.getDefaultSheet();
-    if (s != null) {
-      excel.rename(s, 'Sheet');
-    }
-    Sheet sheet = excel['Sheet'];
-
-    List<TextCellValue> list = [];
-
-    List<(int, int, String)> toMerge = [];
-    int index = 0;
-    (int, String) last = (-1, '');
-
-    for (PlutoColumn col in columns) {
-      for (PlutoColumnGroup group in groups) {
-        if (group.fields?[0] == col.field) {
-          if (last.$1 != -1 && last.$1 != index - 1) {
-            toMerge.add((last.$1, index - 1, last.$2));
-          }
-          last = (index, group.title);
-        }
-      }
-      index += 1;
-    }
-    if (last.$1 != -1 && last.$1 != index - 1) {
-      toMerge.add((last.$1, index - 1, last.$2));
-    }
-
-    for (final item in toMerge) {
-      sheet.merge(
-        CellIndex.indexByColumnRow(columnIndex: item.$1, rowIndex: 0),
-        CellIndex.indexByColumnRow(columnIndex: item.$2, rowIndex: 0),
-        customValue: TextCellValue(item.$3),
-      );
-    }
-
-    list = [];
-    for (PlutoColumn col in columns) {
-      list.add(TextCellValue(col.title));
-    }
-    sheet.appendRow(list);
-
-    for (PlutoRow row in rows) {
-      list = [];
-      for (PlutoColumn col in columns) {
-        // TODO number and formula
-        // if (col.type is PlutoColumnTypeNumber) {
-        //   list.add(DoubleCellValue(row.cells[col.field]?.value));
-        // } else {
-        list.add(TextCellValue(row.cells[col.field]?.value ?? ''));
-        // }
-      }
-      sheet.appendRow(list);
-    }
-
-    excel.save(fileName: "export.xlsx");
   }
 
   Widget dateWidget() {
