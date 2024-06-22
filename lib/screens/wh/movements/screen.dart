@@ -6,6 +6,8 @@ import 'package:nae/models/ui/entity.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/screens/common/uom/edit.dart';
 import 'package:nae/screens/wh/movements/report.dart';
+import 'package:nae/share/utils.dart';
+import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/list_filter.dart';
 import 'package:nae/widgets/scaffold_list.dart';
@@ -88,7 +90,10 @@ class _WHMovementReportScreenState extends State<WHMovementReportScreen>
     MemoryItem.from({
       'id': '1',
       cName: '',
-      'dates': {cFrom: '2024-03-01', cTill: '2024-03-31'},
+      'dates': {
+        cFrom: DT.beginningOfMonth().toYMD(),
+        cTill: DT.today().toYMD()
+      },
       //cStorage: '404037f2-3db7-4dae-9884-6a79fd9cd94e',
       // cGoods: '0cf13464-658f-4405-b540-d4df4d774682',
       // cBatch: {
