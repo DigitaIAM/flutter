@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
@@ -11,27 +12,39 @@ import 'package:nae/models/memory/bloc.dart';
 import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
 import 'package:nae/models/memory/state.dart';
+import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/printer/labels.dart';
 import 'package:nae/printer/network_printer.dart';
 import 'package:nae/schema/schema.dart';
+import 'package:nae/widgets/app_form.dart';
 import 'package:nae/widgets/app_form_card.dart';
-import 'package:nae/widgets/app_form_picker_field.dart';
+import 'package:nae/widgets/app_form_field.dart';
 import 'package:nae/widgets/swipe_action.dart';
-import '../../../../widgets/scrollable_list_view.dart';
 import 'ProducedEdit.dart';
 
 class POProducedView extends StatefulWidget {
   final MemoryItem order;
+  final Function()? afterSave;
 
-  const POProducedView({super.key, required this.order});
+  const POProducedView({
+    super.key,
+    required this.order,
+    this.afterSave,
+  });
 
   @override
   State<StatefulWidget> createState() => _POProducedViewState();
 }
 
 class _POProducedViewState extends State<POProducedView> {
+  final GlobalKey<FormBuilderState> _editFormKey =
+      GlobalKey<FormBuilderState>(debugLabel: '_goodsEdit');
+  final FocusScopeNode _focusNode = FocusScopeNode();
+
   MemoryItem? selected;
   String status = "register";
+  bool registered = false;
+  int numberOfQuantities = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +194,7 @@ class _POProducedViewState extends State<POProducedView> {
       ItemAction(
         label: 'edit',
         icon: Icons.edit,
-        onPressed: (context, item) => editItem(context, item),
+        onPressed: (context, item) => editItem(context, item, widget.order),
         foregroundColor: Colors.white,
         backgroundColor: Colors.green,
       ),
@@ -213,42 +226,205 @@ class _POProducedViewState extends State<POProducedView> {
     super.dispose();
   }
 
-  void editItem(BuildContext context, MemoryItem item) async {
-    print('json :${item.json}');
-    final localization = AppLocalizations.of(context);
+  void editItem(BuildContext context, MemoryItem item, MemoryItem order) async {
+    // print('json :${item.json}');
+
     final theme = Theme.of(context);
-    final textController = TextEditingController();
-    return showMaterialModalBottomSheet(
-        context: context,
-        builder: (context) => ScrollableListView(children: <Widget>[
-              FormCard(isLast: true, children: <Widget>[
-                TextField(
-                  controller: textController,
+    final localization = AppLocalizations.of(context);
+
+    final uiBloc = context.read<UiBloc>();
+
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => BlocProvider(
+        create: (ctx) => UiBloc(uiBloc.state),
+        child: Dialog(
+          child: SizedBox(
+            width: 310,
+            height: 320,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Icon(Icons.close),
+                    ),
+                  ],
                 ),
-                FloatingActionButton(
-                  backgroundColor: theme.primaryColorDark,
-                  onPressed: () {
-                    replacement(textController.text, item);
-                  },
-                  tooltip: AppLocalizations.of(context).translate("new line"),
-                  child: Icon(
-                    Icons.done,
-                    color: theme.primaryColorLight,
+                SizedBox(
+                  width: 300,
+                  height: 250,
+                  child: FormCard(
+                    isLast: true,
+                    children: [
+                      AppForm(
+                        entity: MemoryItem.from({
+                          cQty: item.json['qty']['uom']['number']?.toString() ??
+                              '',
+                        }),
+                        formKey: _editFormKey,
+                        focusNode: _focusNode,
+                        onChanged: () {
+                          final state = _editFormKey.currentState!;
+                          state.save();
+
+                          state.validate(focusOnInvalid: false);
+                          setState(() {
+                            if (state.errors.isNotEmpty) {
+                              status = 'error';
+                            } else {
+                              status = "register";
+                            }
+                          });
+                        },
+                        child: Column(
+                          children: [
+                            DecoratedFormField(
+                              name: cQty,
+                              label: localization.translate("qty in box"),
+                              autofocus: true,
+                              validator: FormBuilderValidators.compose([
+                                FormBuilderValidators.required(),
+                                FormBuilderValidators.integer(),
+                              ]),
+                              onSave: (context) {},
+                              keyboardType: TextInputType.number,
+                            ),
+                            const SizedBox(
+                              width: 50,
+                              height: 50,
+                            ),
+                            FloatingActionButton(
+                              heroTag: 'product_register',
+                              backgroundColor: theme.primaryColorDark,
+                              onPressed: status == 'register'
+                                  ? () => patching(context, item)
+                                  : null,
+                              tooltip:
+                                  localization.translate('register'.toString()),
+                              child: registered
+                                  ? const Icon(Icons.done)
+                                  : const Icon(Icons.save),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ])
-            ]));
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // final textController = TextEditingController();
+    // return showMaterialModalBottomSheet(
+    //   context: context,
+    //   builder: (context) => ScrollableListView(children: <Widget>[
+    //         FormCard(isLast: true, children: <Widget>[
+    //           TextField(
+    //             controller: textController,
+    //           ),
+    //           FloatingActionButton(
+    //             backgroundColor: theme.primaryColorDark,
+    //             onPressed: () {
+    //               replacement(textController.text, item);
+    //             },
+    //             tooltip: AppLocalizations.of(context).translate("new line"),
+    //             child: Icon(
+    //               Icons.done,
+    //               color: theme.primaryColorLight,
+    //             ),
+    //           ),
+    //         ])
+    //       ]));
   }
 
-  void replacement(String reference, MemoryItem item) async {
-    final response = await Api.feathers()
-        .patch(serviceName: "memories", objectId: item.id, data: {
-      'document': reference
-    }, params: {
-      "oid": Api.instance.oid,
-      "ctx": ['production', 'produce'],
+  void patching(BuildContext context, MemoryItem item) async {
+    // print("patching ${item.json}");
+    resetDone();
+
+    var completed = true;
+    try {
+      final state = _editFormKey.currentState;
+      if (state == null) {
+        // print("state is null");
+        // TODO raise error instead
+        return;
+      }
+      if (state.saveAndValidate()) {
+        final data = state.value;
+
+        final qty = item.json[cQty];
+        // print("qty before $qty");
+        qty['uom']['number'] = data[cQty];
+        // print("qty after $qty");
+
+        final response = await Api.feathers()
+            .patch(serviceName: "memories", objectId: item.id, data: {
+          'qty': qty
+        }, params: {
+          "oid": Api.instance.oid,
+          "ctx": ['production', 'produce'],
+        });
+
+        // print("response $response");
+        Navigator.pop(context);
+      } else {
+        // print("validation fail");
+      }
+    } finally {
+      done(completed);
+    }
+  }
+
+  void resetDone() {
+    setState(() {
+      status = 'saving';
+      registered = false;
     });
   }
+
+  void done(bool completed) {
+    if (completed) {
+      if (widget.afterSave != null) {
+        widget.afterSave?.call();
+        return;
+      }
+    }
+    setState(() {
+      if (completed) {
+        registered = completed;
+        status = "saved";
+      } else {
+        status = "error";
+      }
+    });
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        status = "register";
+        registered = false;
+      });
+    });
+  }
+
+  void setStatus(String newStatus) {
+    setState(() => status = newStatus);
+  }
+
+  // void replacement(String reference, MemoryItem item) async {
+  //   final response = await Api.feathers()
+  //       .patch(serviceName: "memories", objectId: item.id, data: {
+  //     'document': reference
+  //   }, params: {
+  //     "oid": Api.instance.oid,
+  //     "ctx": ['production', 'produce'],
+  //   });
+  // }
 
   Future chooseAndPrint(BuildContext context, MemoryItem doc) async {
     final list = await getPrinters(doc);
