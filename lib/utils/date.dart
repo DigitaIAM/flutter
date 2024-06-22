@@ -6,6 +6,11 @@ class DT {
     return DateTime(now.year, now.month, now.day);
   }
 
+  static DateTime beginningOfMonth() {
+    DateTime now = DateTime.now();
+    return DateTime(now.year, now.month, 1);
+  }
+
   static DateTime parse(String date) {
     return DateTime.parse(date);
   }
