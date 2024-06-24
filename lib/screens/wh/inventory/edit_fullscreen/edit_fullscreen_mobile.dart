@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/qty.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
 import 'package:nae/screens/wh/inventory/edit_fullscreen/document_edit.dart';
@@ -158,36 +160,84 @@ class ScanRegistration extends StatefulWidget {
 class _ScanRegistrationState extends State<ScanRegistration> {
   final textController = TextEditingController();
 
+  final focusNode = FocusNode();
+
+  MemoryItem? object;
+
   @override
   void dispose() {
     textController.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      children: [
-        TextField(
-          controller: textController,
-        ),
-        FloatingActionButton(
-          backgroundColor: theme.primaryColorDark,
-          onPressed: () {
-            process(textController.text);
-          },
-          tooltip: AppLocalizations.of(context).translate("new line"),
-          child: Icon(
-            Icons.done,
-            color: theme.primaryColorLight,
+    // return Scaffold(
+    //   floatingActionButton: Stack(
+    //     children: <Widget>[
+    //       Align(
+    //         alignment: Alignment.bottomRight,
+    //         child: FloatingActionButton(
+    //           backgroundColor: theme.primaryColorDark,
+    //           onPressed: () {
+    //             process(textController.text);
+    //           },
+    //           tooltip: AppLocalizations.of(context).translate("new line"),
+    //           child: Icon(
+    //             Icons.done,
+    //             color: theme.primaryColorLight,
+    //           ),
+    //         ),
+    //       ),
+    //     ],
+    //   ),
+    //   body:
+    return KeyboardListener(
+      focusNode: focusNode,
+      autofocus: true,
+      onKeyEvent: (event) {
+        print("keyboard $event");
+        if (event is KeyDownEvent) {
+          if (event.logicalKey == LogicalKeyboardKey.enter) {
+            final reference = textController.text;
+            process(reference);
+          } else {
+            textController.text += event.character ?? '';
+          }
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10, top: 10),
+        child: Column(children: [
+          TextFormField(
+            readOnly: true,
+            // focusNode: focusNode,
+            decoration: const InputDecoration(
+              labelStyle: TextStyle(
+                color: Color(0xFF6200EE),
+              ),
+              helperText: 'отсканируйте ТМЦ',
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide.none,
+              ),
+            ),
+            controller: textController,
           ),
-        ),
-      ],
+          Text(object?['goods']?.name() ?? ''),
+          Text(object?.json['batch']?['date'] ?? ''),
+          Text(Qty.fromJson(object?.json['qty']).toString())
+        ]),
+      ),
     );
   }
 
   void process(String reference) async {
+    setState(() {
+      object = MemoryItem.empty();
+    });
+
     final res = await Api.feathers().get(
       serviceName: "memories",
       objectId: reference,
@@ -195,6 +245,7 @@ class _ScanRegistrationState extends State<ScanRegistration> {
         "oid": Api.instance.oid,
       },
     );
+
     print("res $res");
 
     final docId = res[cDocument];
@@ -207,17 +258,19 @@ class _ScanRegistrationState extends State<ScanRegistration> {
 
       print("document $document");
 
+      textController.text = '';
+
       final data = {
         cDocument: widget.doc.id,
         'reference': reference,
         cGoods: document['product']['_id'],
         cBatch: {'id': document['_uuid'], 'date': document[cDate]},
         cQty: res[cQty],
-        // 'customer': res['customer'],
-        // 'label': res['label'],
+        'customer': res['customer'],
+        'label': res['label'],
       };
 
-      print("data $data");
+      // print("data $data");
 
       final response = await Api.feathers().create(
         serviceName: "memories",
@@ -228,6 +281,10 @@ class _ScanRegistrationState extends State<ScanRegistration> {
         },
       );
       print("response $response");
+
+      setState(() {
+        object = MemoryItem.from(response);
+      });
     }
   }
 }

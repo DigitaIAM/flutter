@@ -67,6 +67,7 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
       fGoods.copyWith(width: 3.0),
       // fUomAtQty.copyWith(width: 0.5, editable: false),
       fQtyNew.copyWith(width: 1.0),
+      fBatchDocument,
     ];
 
     return BlocProvider(
@@ -88,14 +89,31 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
         filter: filter,
         schema: schema,
         title: (MemoryItem item) {
+          //  print('item.json ${item.json}');
           // final customer = item.json['customer'];
           // final label = item.json['label'];
           // final goods = fGoods.resolve(item.json)?.name() ?? '';
           var text = fGoods.resolve(item.json)?.name() ?? '';
 
-          // text += ', $customer | $label';
+          final batchDetails = item.json[cBatchDetails];
+          final customer = batchDetails['customer'];
+          final label = batchDetails['label'];
 
-          //print('text  ${item.json}');
+          var additionalBatchDetails = '';
+          if (customer != null) {
+            additionalBatchDetails += customer;
+            if (label != null) {
+              additionalBatchDetails += ', $label';
+            }
+          } else if (label != null) {
+            additionalBatchDetails += label;
+          }
+
+          if (additionalBatchDetails.isNotEmpty) {
+            text = text + '\n' + additionalBatchDetails;
+          }
+
+          //  print('text  ${item.json}');
 
           TextStyle? style;
 
