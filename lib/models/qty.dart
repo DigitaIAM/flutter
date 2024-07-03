@@ -18,6 +18,10 @@ class Qty {
       return Qty.zero();
     }
 
+    if (json is Qty) {
+      return json;
+    }
+
     List<Named> nums = [];
     if (json != null) {
       if (json is List) {
