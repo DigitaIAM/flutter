@@ -10,7 +10,6 @@ import 'package:nae/models/qty.dart';
 import 'package:nae/schema/schema.dart';
 import 'package:nae/utils/date.dart';
 import 'package:nae/widgets/key_value.dart';
-import 'package:nae/widgets/scrollable_list_view.dart';
 
 class WHInventoryOverview extends StatelessWidget {
   final MemoryItem doc;
@@ -33,7 +32,7 @@ class WHInventoryOverview extends StatelessWidget {
       fQtyNew.copyWith(width: 1.0),
     ];
 
-    // print("doc: ${doc.json}");
+    //  print("doc: ${doc.json}");
 
     final storage = doc.json[cStorage] is MemoryItem
         ? doc.json[cStorage].name()
@@ -58,7 +57,7 @@ class WHInventoryOverview extends StatelessWidget {
         listener: (context, state) {
           // do stuff here based on BlocA's state
         },
-        builder: (context, state) => Column(children: <Widget>[
+        builder: (context, state) => ListView(children: <Widget>[
           KeyValue(
             label: localization.translate(cDate),
             value: DT.format(doc.json[cDate]),
@@ -92,30 +91,119 @@ class WHInventoryOverview extends StatelessWidget {
 
   List<Widget> buildItemsList(
       BuildContext context, List<MemoryItem> data, String label) {
-    final localization = AppLocalizations.of(context);
+    // final localization = AppLocalizations.of(context);
 
     var children = <Widget>[];
 
-    print('buildItemsList $data');
+    // print('buildItemsList $data');
 
-    if (data.isNotEmpty) {
-      children.add(Padding(
-        padding: const EdgeInsets.all(5),
-        child: Text(localization.translate(label), textAlign: TextAlign.right),
-      ));
-    }
+    // if (data.isNotEmpty) {
+    //   children.add(Padding(
+    //     padding: const EdgeInsets.all(5),
+    //     child: Text(localization.translate(label), textAlign: TextAlign.right),
+    //   ));
+    // }
+
+    Map<(String?, String?, String?, String?), Qty> numbers = {};
+    Map<String, MemoryItem?> goods = {};
+    Map<String, MemoryItem?> batches = {};
 
     for (final item in data) {
-      print("item $item");
-      final value = Qty.fromJson(item['qty']).toString();
+      goods[item['goods']?.id ?? ''] = item['goods'];
+      batches[item['batch']?.id ?? ''] = item['batch'];
 
-      children.add(KeyValue(
-        label: item['goods']?.name() ?? '',
-        value: value,
-        icon: const Icon(Icons.question_mark),
+      final key = (
+        item['goods']?.id,
+        item.json['customer'] as String?,
+        item.json['label'] as String?,
+        item['batch']?.id,
+      );
+
+      final qty = Qty.fromJson(item.json['qty']);
+
+      // print("data ${item.json['qty']}");
+      // print("qty $qty");
+
+      final num = numbers[key];
+      if (num == null) {
+        numbers[key] = qty;
+      } else {
+        numbers[key] = num + qty;
+      }
+    }
+
+    final keys = List.from(numbers.keys);
+    keys.sort((a, b) {
+      final ga = goods[a.$1];
+      final gb = goods[b.$1];
+
+      final gc = (ga?.name() ?? '').compareTo(gb?.name() ?? '');
+      if (gc != 0) {
+        return gc;
+      }
+
+      final cc = (a.$2 ?? '').compareTo(b.$2 ?? '');
+      if (cc != 0) {
+        return cc;
+      }
+
+      final lc = (a.$3 ?? '').compareTo(b.$3 ?? '');
+      if (lc != 0) {
+        return lc;
+      }
+
+      final ba = batches[a.$4 ?? ''];
+      final bb = batches[b.$4 ?? ''];
+
+      return (ba?.json['date'] ?? '').compareTo(bb?.json['date'] ?? '');
+    });
+
+    for (final key in keys) {
+      final value = numbers[key];
+      final qty = value.toString();
+      // print("key ${entry.key} = $qty");
+
+      final g = goods[key.$1 ?? ''];
+      final b = batches[key.$4 ?? ''];
+
+      String title = '${g?.name() ?? '?'}\n';
+      if (key.$2 != null) {
+        title += '${key.$2 ?? ''} ';
+      }
+      if (key.$3 != null) {
+        title += '${key.$3 ?? ''} ';
+      }
+      if (title[title.length - 1] == ' ') {
+        title += '\n';
+      }
+      title += b?.json['date'] ?? '';
+
+      children.add(card(
+        context,
+        Text(title),
+        Text(qty),
       ));
     }
 
     return children;
+  }
+
+  Widget card(BuildContext context, Widget title, Widget subtitle) {
+    return Card(
+      elevation: 1.0,
+      margin: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0),
+      child: ListTile(
+        contentPadding:
+            // const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+        // leading: const Icon(Icons.account_circle),
+        title: title,
+        subtitle: subtitle,
+        // trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
+        // onTap: () {
+        //   widget.onTap?.call(context, item);
+        // },
+      ),
+    );
   }
 }

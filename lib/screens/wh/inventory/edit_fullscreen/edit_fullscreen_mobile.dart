@@ -43,7 +43,7 @@ class _WHInventoryEditMobileState extends State<WHInventoryEditMobile>
     _controller = TabController(
       vsync: this,
       length: widget.entity.isNew ? 1 : 3,
-      initialIndex: 0, //widget.entity.isNew ? 0 : 1,
+      initialIndex: widget.entity.isNew ? 0 : 1,
     );
   }
 
