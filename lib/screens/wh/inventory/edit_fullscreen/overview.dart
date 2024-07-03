@@ -49,7 +49,7 @@ class WHInventoryOverview extends StatelessWidget {
           loadAll: true,
         ));
 
-        print("bloc $bloc");
+        //print("bloc $bloc");
 
         return bloc;
       },
@@ -96,13 +96,6 @@ class WHInventoryOverview extends StatelessWidget {
     var children = <Widget>[];
 
     // print('buildItemsList $data');
-
-    // if (data.isNotEmpty) {
-    //   children.add(Padding(
-    //     padding: const EdgeInsets.all(5),
-    //     child: Text(localization.translate(label), textAlign: TextAlign.right),
-    //   ));
-    // }
 
     Map<(String?, String?, String?, String?), Qty> numbers = {};
     Map<String, MemoryItem?> goods = {};
@@ -199,10 +192,6 @@ class WHInventoryOverview extends StatelessWidget {
         // leading: const Icon(Icons.account_circle),
         title: title,
         subtitle: subtitle,
-        // trailing: widget.onTap == null ? null : const Icon(Icons.arrow_forward),
-        // onTap: () {
-        //   widget.onTap?.call(context, item);
-        // },
       ),
     );
   }
