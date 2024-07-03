@@ -5,7 +5,10 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:nae/api.dart';
 import 'package:nae/app_localizations.dart';
 import 'package:nae/constants.dart';
+import 'package:nae/models/memory/bloc.dart';
+import 'package:nae/models/memory/event.dart';
 import 'package:nae/models/memory/item.dart';
+import 'package:nae/models/memory/state.dart';
 import 'package:nae/models/qty.dart';
 import 'package:nae/models/ui/bloc.dart';
 import 'package:nae/models/ui/event.dart';
@@ -119,13 +122,6 @@ class _WHInventoryEditMobileState extends State<WHInventoryEditMobile>
                 ),
                 WHInventoryOverview(doc: widget.entity),
                 ScanRegistration(doc: widget.entity),
-                // GoodsDispatch(
-                //   ctx: const ['warehouse', 'inventory'],
-                //   doc: widget.entity,
-                //   schema: WHInventory.schema,
-                //   storage: widget.entity[cStorage],
-                //   storageEditable: false,
-                // )
               ]),
             ),
           ]);
@@ -162,7 +158,7 @@ class _ScanRegistrationState extends State<ScanRegistration> {
 
   final focusNode = FocusNode();
 
-  MemoryItem? object;
+  String error = '';
 
   @override
   void dispose() {
@@ -173,70 +169,94 @@ class _ScanRegistrationState extends State<ScanRegistration> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    // return Scaffold(
-    //   floatingActionButton: Stack(
-    //     children: <Widget>[
-    //       Align(
-    //         alignment: Alignment.bottomRight,
-    //         child: FloatingActionButton(
-    //           backgroundColor: theme.primaryColorDark,
-    //           onPressed: () {
-    //             process(textController.text);
-    //           },
-    //           tooltip: AppLocalizations.of(context).translate("new line"),
-    //           child: Icon(
-    //             Icons.done,
-    //             color: theme.primaryColorLight,
-    //           ),
-    //         ),
-    //       ),
-    //     ],
-    //   ),
-    //   body:
-    return KeyboardListener(
-      focusNode: focusNode,
-      autofocus: true,
-      onKeyEvent: (event) {
-        print("keyboard $event");
-        if (event is KeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.enter) {
-            final reference = textController.text;
-            process(reference);
-          } else {
-            textController.text += event.character ?? '';
-          }
-        }
+    const ctx = ['warehouse', 'inventory'];
+    return BlocProvider(
+      create: (context) {
+        final bloc = MemoryBloc(schema: [], reverse: true);
+        bloc.add(MemoryFetch(
+          'memories',
+          ctx,
+          // filter: filter,
+          reverse: true,
+          loadAll: true,
+        ));
+
+        print("bloc $bloc");
+
+        return bloc;
       },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 10, top: 10),
-        child: Column(children: [
-          TextFormField(
-            readOnly: true,
-            // focusNode: focusNode,
-            decoration: const InputDecoration(
-              labelStyle: TextStyle(
-                color: Color(0xFF6200EE),
-              ),
-              helperText: 'отсканируйте ТМЦ',
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide.none,
-              ),
+      child: BlocConsumer<MemoryBloc, RequestState>(
+        listener: (context, state) {
+          // do stuff here based on BlocA's state
+        },
+        builder: (context, state) => ListView(children: <Widget>[
+          KeyboardListener(
+            focusNode: focusNode,
+            autofocus: true,
+            onKeyEvent: (event) {
+              print("keyboard $event");
+              if (event is KeyDownEvent) {
+                if (event.logicalKey == LogicalKeyboardKey.enter) {
+                  final reference = textController.text;
+                  process(context, reference, state);
+                } else {
+                  textController.text += event.character ?? '';
+                }
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10, top: 10),
+              child: Column(children: [
+                TextFormField(
+                  readOnly: true,
+                  // focusNode: focusNode,
+                  decoration: const InputDecoration(
+                    labelStyle: TextStyle(
+                      color: Color(0xFF6200EE),
+                    ),
+                    helperText: 'отсканируйте ТМЦ',
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  controller: textController,
+                ),
+                if (error.isNotEmpty) Text('ОШИБКА: $error !'),
+                Text(state.saved?['goods']?.name() ?? ''),
+                Text(state.saved?.json['batch']?['date'] ?? ''),
+                Text(Qty.fromJson(state.saved?.json['qty']).toString())
+              ]),
             ),
-            controller: textController,
           ),
-          Text(object?['goods']?.name() ?? ''),
-          Text(object?.json['batch']?['date'] ?? ''),
-          Text(Qty.fromJson(object?.json['qty']).toString())
         ]),
       ),
     );
   }
 
-  void process(String reference) async {
-    setState(() {
-      object = MemoryItem.empty();
-    });
+  void process(
+      BuildContext context, String reference, RequestState state) async {
+    if (state.status != RequestStatus.success) {
+      textController.text = '';
+      setState(() {
+        error = 'нет данных с сервера';
+      });
+
+      return;
+    }
+
+    // setState(() {
+    //   object = MemoryItem.empty();
+    // });
+
+    for (final item in state.items) {
+      if (item.json['reference'] == reference) {
+        textController.text = '';
+        setState(() {
+          error = 'такой товар уже есть';
+        });
+        return;
+      }
+    }
 
     final res = await Api.feathers().get(
       serviceName: "memories",
@@ -270,21 +290,24 @@ class _ScanRegistrationState extends State<ScanRegistration> {
         'label': res['label'],
       };
 
-      // print("data $data");
+      print("data $data");
 
-      final response = await Api.feathers().create(
-        serviceName: "memories",
-        data: data,
-        params: {
-          "oid": Api.instance.oid,
-          'ctx': WHInventory.ctxOfRecord,
-        },
-      );
-      print("response $response");
+      context.read<MemoryBloc>().add(
+          MemoryCreate('memories', WHInventory.ctxOfRecord, const [], data));
 
-      setState(() {
-        object = MemoryItem.from(response);
-      });
+      // final response = await Api.feathers().create(
+      //   serviceName: "memories",
+      //   data: data,
+      //   params: {
+      //     "oid": Api.instance.oid,
+      //     'ctx': WHInventory.ctxOfRecord,
+      //   },
+      // );
+      // print("response $response");
+
+      // setState(() {
+      //   object = MemoryItem.from(response);
+      // });
     }
   }
 }
