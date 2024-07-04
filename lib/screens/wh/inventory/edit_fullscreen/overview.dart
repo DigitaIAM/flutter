@@ -38,54 +38,38 @@ class WHInventoryOverview extends StatelessWidget {
         ? doc.json[cStorage].name()
         : doc.json[cStorage][cName] ?? '';
 
-    return BlocProvider(
-      create: (context) {
-        final bloc = MemoryBloc(schema: schema, reverse: true);
-        bloc.add(MemoryFetch(
-          'memories',
-          ctx,
-          filter: filter,
-          reverse: true,
-          loadAll: true,
-        ));
-
-        //print("bloc $bloc");
-
-        return bloc;
+    return BlocConsumer<MemoryBloc, RequestState>(
+      listener: (context, state) {
+        // do stuff here based on BlocA's state
       },
-      child: BlocConsumer<MemoryBloc, RequestState>(
-        listener: (context, state) {
-          // do stuff here based on BlocA's state
-        },
-        builder: (context, state) => ListView(children: <Widget>[
-          KeyValue(
-            label: localization.translate(cDate),
-            value: DT.format(doc.json[cDate]),
-            icon: const Icon(Icons.calendar_month),
+      builder: (context, state) => ListView(children: <Widget>[
+        KeyValue(
+          label: localization.translate(cDate),
+          value: DT.format(doc.json[cDate]),
+          icon: const Icon(Icons.calendar_month),
+        ),
+        KeyValue(
+          label: localization.translate(cStorage),
+          value: storage,
+          icon: const Icon(Icons.input),
+        ),
+        Container(
+          color: theme.secondaryHeaderColor,
+          padding:
+              const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
+          child: const Align(
+            alignment: Alignment.center,
+            child: Text('',
+                textAlign: TextAlign.end,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.normal,
+                  // color: Colors.white70,
+                )),
           ),
-          KeyValue(
-            label: localization.translate(cStorage),
-            value: storage,
-            icon: const Icon(Icons.input),
-          ),
-          Container(
-            color: theme.secondaryHeaderColor,
-            padding:
-                const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
-            child: const Align(
-              alignment: Alignment.center,
-              child: Text('',
-                  textAlign: TextAlign.end,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.normal,
-                    // color: Colors.white70,
-                  )),
-            ),
-          ),
-          ...buildItemsList(context, state.items, ''),
-        ]),
-      ),
+        ),
+        ...buildItemsList(context, state.items, ''),
+      ]),
     );
   }
 

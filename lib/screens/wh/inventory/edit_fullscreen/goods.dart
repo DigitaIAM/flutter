@@ -59,120 +59,97 @@ class _WHInventoryGoodsState extends State<WHInventoryGoods> {
 
   @override
   Widget build(BuildContext context) {
-    final filter = {
-      cDocument: widget.doc.id,
-    };
-    final schema = <Field>[
-      fCategoryAtGoods,
-      fGoods.copyWith(width: 3.0),
-      // fUomAtQty.copyWith(width: 0.5, editable: false),
-      fQtyNew.copyWith(width: 1.0),
-      fBatchDocument,
-    ];
-
-    return BlocProvider(
-      create: (context) {
-        final bloc = MemoryBloc(schema: schema, reverse: true);
-        bloc.add(MemoryFetch(
-          'memories',
-          WHInventory.ctxOfRecord,
-          filter: filter,
-          reverse: true,
-          loadAll: true,
-        ));
-
-        return bloc;
+    return MemoryList(
+      mode: widget.mode,
+      ctx: WHInventory.ctxOfRecord,
+      filter: {
+        cDocument: widget.doc.id,
       },
-      child: MemoryList(
-        mode: widget.mode,
-        ctx: WHInventory.ctxOfRecord,
-        filter: filter,
-        schema: schema,
-        title: (MemoryItem item) {
-          //  print('item.json ${item.json}');
-          // final customer = item.json['customer'];
-          // final label = item.json['label'];
-          // final goods = fGoods.resolve(item.json)?.name() ?? '';
-          var text = fGoods.resolve(item.json)?.name() ?? '';
+      schema: WHInventory.schemaOfRecord,
+      title: (MemoryItem item) {
+        //  print('item.json ${item.json}');
+        // final customer = item.json['customer'];
+        // final label = item.json['label'];
+        // final goods = fGoods.resolve(item.json)?.name() ?? '';
+        var text = fGoods.resolve(item.json)?.name() ?? '';
 
-          final batchDetails = item.json[cBatchDetails];
-          final customer = batchDetails['customer'];
-          final label = batchDetails['label'];
+        final batchDetails = item.json[cBatchDetails];
+        final customer = batchDetails['customer'];
+        final label = batchDetails['label'];
 
-          var additionalBatchDetails = '';
-          if (customer != null) {
-            additionalBatchDetails += customer;
-            if (label != null) {
-              additionalBatchDetails += ', $label';
-            }
-          } else if (label != null) {
-            additionalBatchDetails += label;
+        var additionalBatchDetails = '';
+        if (customer != null) {
+          additionalBatchDetails += customer;
+          if (label != null) {
+            additionalBatchDetails += ', $label';
           }
+        } else if (label != null) {
+          additionalBatchDetails += label;
+        }
 
-          if (additionalBatchDetails.isNotEmpty) {
-            text = text + '\n' + additionalBatchDetails;
-          }
+        if (additionalBatchDetails.isNotEmpty) {
+          text = text + '\n' + additionalBatchDetails;
+        }
 
-          //  print('text  ${item.json}');
+        //  print('text  ${item.json}');
 
-          TextStyle? style;
+        TextStyle? style;
 
-          if (item.json[cStatus] == 'deleted') {
-            style = const TextStyle(
-              decoration: TextDecoration.lineThrough,
-            );
-          }
-          return Text(text, style: style);
-        },
-        subtitle: (MemoryItem item) {
-          String dateBatch = item.json['batch']?['date'] ?? '';
+        if (item.json[cStatus] == 'deleted') {
+          style = const TextStyle(
+            decoration: TextDecoration.lineThrough,
+          );
+        }
+        return Text(text, style: style);
+      },
+      subtitle: (MemoryItem item) {
+        String dateBatch = item.json['batch']?['date'] ?? '';
 
-          final qty = item.json['qty'].toString();
+        final qty = item.json['qty'].toString();
 
-          var text = '$qty ';
-          if (dateBatch.isNotEmpty) {
-            text += ', $dateBatch';
-          }
+        var text = '$qty ';
+        if (dateBatch.isNotEmpty) {
+          text += ', $dateBatch';
+        }
 
-          TextStyle? style;
+        TextStyle? style;
 
-          if (item.json[cStatus] == 'deleted') {
-            style = const TextStyle(
-              decoration: TextDecoration.lineThrough,
-            );
-          }
-          return Text(text, style: style);
-        },
-        onDoubleTap: (context, item) {
-          editItem(context, WHInventory.ctxOfRecord, widget.doc, item);
-        },
-        //onTap: (context, MemoryItem item) => popUpPatch(context, item),
-        // context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
-        actions: [
-          ItemAction(
-            label: 'delete',
-            icon: Icons.delete_outline,
-            onPressed: (context, item) => deleteItem(context, item),
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.red,
-          ),
-          ItemAction(
-            label: 'print',
-            icon: Icons.print_outlined,
-            onPressed: (context, item) => drawPrinterList(context, item),
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.blue,
-          ),
-          ItemAction(
-            label: 'edit',
-            icon: Icons.edit,
-            onPressed: (context, item) =>
-                editItem(context, WHInventory.ctxOfRecord, widget.doc, item),
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.green,
-          ),
-        ],
-      ),
+        if (item.json[cStatus] == 'deleted') {
+          style = const TextStyle(
+            decoration: TextDecoration.lineThrough,
+          );
+        }
+        return Text(text, style: style);
+      },
+      onDoubleTap: (context, item) {
+        editItem(context, WHInventory.ctxOfRecord, widget.doc, item);
+      },
+      //onTap: (context, MemoryItem item) => popUpPatch(context, item),
+      // context.read<UiBloc>().add(ChangeView(WHReceive.ctx, entity: item)),
+      actions: [
+        ItemAction(
+          label: 'delete',
+          icon: Icons.delete_outline,
+          onPressed: (context, item) => deleteItem(context, item),
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.red,
+        ),
+        ItemAction(
+          label: 'print',
+          icon: Icons.print_outlined,
+          onPressed: (context, item) => drawPrinterList(context, item),
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.blue,
+        ),
+        ItemAction(
+          label: 'edit',
+          icon: Icons.edit,
+          onPressed: (context, item) =>
+              editItem(context, WHInventory.ctxOfRecord, widget.doc, item),
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.green,
+        ),
+      ],
     );
   }
 
