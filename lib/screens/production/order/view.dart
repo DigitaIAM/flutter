@@ -163,6 +163,20 @@ class ProductionOrderOverview extends StatelessWidget {
 
     final produced = Qty.fromJson(order.json['produced']);
 
+    print('order ${order.json}');
+    print('cProduct ${order[cProduct]?.json}');
+
+    final goodsId = order[cProduct]?[cGoods]?.id ?? '';
+    var qtyProduced = produced.lower;
+
+    for (final item in order.json['_material']['used']) {
+      if (goodsId == item[cGoods]['_id']) {
+        final qty = Qty.fromJson(item[cQty]);
+
+        qtyProduced = qtyProduced - qty.lower;
+      }
+    }
+
     final widgets = <Widget>[
       const SizedBox(height: 10),
       Text(productName ?? ' ', // localization.translate("material product"),
@@ -172,9 +186,9 @@ class ProductionOrderOverview extends StatelessWidget {
         // Pair(localization.translate("production order"), memoryItem.json[cDate])
         Pair(localization.translate("plan"),
             order.json['planned']?.toString() ?? '-'),
-        Pair(localization.translate("produced"), '${produced.lower}'),
-        Pair((produced.upperUOM?.name() ?? '').toLowerCase(),
-            '${produced.upper}'),
+        Pair(localization.translate("produced"), '$qtyProduced'),
+        // Pair((produced.upperUOM?.name() ?? '').toLowerCase(),
+        //     '${produced.upper}'),
       ]),
       // KeyValue(
       //   label: localization.translate(cProduct),
@@ -204,25 +218,48 @@ class ProductionOrderOverview extends StatelessWidget {
       ),
       // ListDivider(),
       Container(
-          color: theme.secondaryHeaderColor,
-          padding:
-              const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
-          child: Align(
-              alignment: Alignment.center,
-              child: Text(localization.translate("materials"),
-                  textAlign: TextAlign.end,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.normal,
-                    // color: Colors.white70,
-                  )))),
-
-      // )),
-      // EntityHeader(pairs: [
-      //   Pair(localization.translate("used material"), sumUsed),
-      //   Pair(localization.translate("produced material"), sumProduced),
-      //   Pair(localization.translate("delta"), sumDelta),
-      // ]),
+        color: theme.secondaryHeaderColor,
+        padding:
+            const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
+        child: Align(
+          alignment: Alignment.center,
+          child: Text(
+            localization.translate("products"),
+            textAlign: TextAlign.end,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.normal,
+              // color: Colors.white70,
+            ),
+          ),
+        ),
+      ),
+      Container(
+        // color: theme.secondaryHeaderColor,
+        padding: const EdgeInsets.all(10),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Column(children: [
+            Text(produced.generateString('\n')),
+          ]),
+        ),
+      ),
+      Container(
+        color: theme.secondaryHeaderColor,
+        padding: const EdgeInsets.all(10),
+        child: Align(
+          alignment: Alignment.center,
+          child: Text(
+            localization.translate("materials"),
+            textAlign: TextAlign.end,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.normal,
+              // color: Colors.white70,
+            ),
+          ),
+        ),
+      ),
       ...buildItemsList(
           context, order.json['_material']?['used'], "materials used"),
       ...buildItemsList(

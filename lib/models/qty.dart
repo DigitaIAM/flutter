@@ -108,12 +108,16 @@ class Qty {
 
   @override
   String toString() {
+    return generateString(', ');
+  }
+
+  String generateString(String delimiter) {
     // print("Qty.toString $nums");
     var text = '';
 
     for (final num in nums) {
       if (text.isNotEmpty) {
-        text += ', ';
+        text += delimiter;
       }
       // print("num ${num.number}");
       text += '${num.number.toString()} ${num.named.toString()}';
