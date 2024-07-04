@@ -25,18 +25,14 @@ class WHInventory extends Entity {
   static final List<Field> schema = [
     fDate,
     fStorage,
-    // const Field(
-    //     cGoods,
-    //     ListType([
-    //       fStorage,
-    //       // Field('ref', ReferenceType([cGoods])),
-    //       // Field(cBatch, StringType()),
-    //       fGoods,
-    //       fUomAtQty,
-    //       fQty,
-    // Field(cPrice, NumberType()),
-    // Field(cCost, NumberType()),
-    //]))
+  ];
+
+  static final schemaOfRecord = <Field>[
+    fCategoryAtGoods,
+    fGoods.copyWith(width: 3.0),
+    // fUomAtQty.copyWith(width: 0.5, editable: false),
+    fQtyNew.copyWith(width: 1.0),
+    fBatchDocument,
   ];
 
   @override

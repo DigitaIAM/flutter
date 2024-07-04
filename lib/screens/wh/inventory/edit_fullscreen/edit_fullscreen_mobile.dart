@@ -22,6 +22,8 @@ import 'package:nae/widgets/entity_screens.dart';
 import 'package:nae/widgets/memory_list.dart';
 import 'package:nae/widgets/scaffold_view.dart';
 
+import 'scan_registration.dart';
+
 class WHInventoryEditMobile extends EntityHolder {
   final bool showStorages;
   const WHInventoryEditMobile(
@@ -71,18 +73,16 @@ class _WHInventoryEditMobileState extends State<WHInventoryEditMobile>
             Tab(text: localization.translate("new warehouse inventory")),
           ],
         ),
-        body: Builder(builder: (context) {
-          return Column(children: <Widget>[
-            Expanded(
-              child: TabBarView(
-                controller: _controller,
-                children: <Widget>[
-                  WHInventoryDocumentEdit(entity: widget.entity)
-                ],
-              ),
+        body: Column(children: <Widget>[
+          Expanded(
+            child: TabBarView(
+              controller: _controller,
+              children: <Widget>[
+                WHInventoryDocumentEdit(entity: widget.entity)
+              ],
             ),
-          ]);
-        }),
+          ),
+        ]),
       );
     } else {
       routerBack(BuildContext context) {
@@ -112,9 +112,24 @@ class _WHInventoryEditMobileState extends State<WHInventoryEditMobile>
             },
           ),
         ],
-        body: Builder(builder: (context) {
-          return Column(children: <Widget>[
-            Expanded(
+        body: Column(children: <Widget>[
+          Expanded(
+            child: BlocProvider(
+              create: (context) {
+                final bloc = MemoryBloc(
+                    schema: WHInventory.schemaOfRecord, reverse: true);
+                bloc.add(MemoryFetch(
+                  'memories',
+                  WHInventory.ctxOfRecord,
+                  filter: {
+                    cDocument: widget.entity.id,
+                  },
+                  reverse: true,
+                  loadAll: true,
+                ));
+
+                return bloc;
+              },
               child: TabBarView(controller: _controller, children: <Widget>[
                 WHInventoryGoods(
                   doc: widget.entity,
@@ -124,8 +139,8 @@ class _WHInventoryEditMobileState extends State<WHInventoryEditMobile>
                 ScanRegistration(doc: widget.entity),
               ]),
             ),
-          ]);
-        }),
+          ),
+        ]),
       );
     }
   }
@@ -140,174 +155,6 @@ class _WHInventoryEditMobileState extends State<WHInventoryEditMobile>
       json[cDate] = DateTime.parse(
           json[cDate]); //DateFormat("yyyy-MM-dd").format(json[cDate]);
       return MemoryItem(id: widget.entity.id, json: json);
-    }
-  }
-}
-
-class ScanRegistration extends StatefulWidget {
-  final MemoryItem doc;
-
-  const ScanRegistration({super.key, required this.doc});
-
-  @override
-  State<StatefulWidget> createState() => _ScanRegistrationState();
-}
-
-class _ScanRegistrationState extends State<ScanRegistration> {
-  final textController = TextEditingController();
-
-  final focusNode = FocusNode();
-
-  String error = '';
-
-  @override
-  void dispose() {
-    textController.dispose();
-    focusNode.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    const ctx = ['warehouse', 'inventory'];
-    return BlocProvider(
-      create: (context) {
-        final bloc = MemoryBloc(schema: [], reverse: true);
-        bloc.add(MemoryFetch(
-          'memories',
-          ctx,
-          // filter: filter,
-          reverse: true,
-          loadAll: true,
-        ));
-
-        print("bloc $bloc");
-
-        return bloc;
-      },
-      child: BlocConsumer<MemoryBloc, RequestState>(
-        listener: (context, state) {
-          // do stuff here based on BlocA's state
-        },
-        builder: (context, state) => ListView(children: <Widget>[
-          KeyboardListener(
-            focusNode: focusNode,
-            autofocus: true,
-            onKeyEvent: (event) {
-              print("keyboard $event");
-              if (event is KeyDownEvent) {
-                if (event.logicalKey == LogicalKeyboardKey.enter) {
-                  final reference = textController.text;
-                  process(context, reference, state);
-                } else {
-                  textController.text += event.character ?? '';
-                }
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.only(left: 10, top: 10),
-              child: Column(children: [
-                TextFormField(
-                  readOnly: true,
-                  // focusNode: focusNode,
-                  decoration: const InputDecoration(
-                    labelStyle: TextStyle(
-                      color: Color(0xFF6200EE),
-                    ),
-                    helperText: 'отсканируйте ТМЦ',
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  controller: textController,
-                ),
-                if (error.isNotEmpty) Text('ОШИБКА: $error !'),
-                Text(state.saved?['goods']?.name() ?? ''),
-                Text(state.saved?.json['batch']?['date'] ?? ''),
-                Text(Qty.fromJson(state.saved?.json['qty']).toString())
-              ]),
-            ),
-          ),
-        ]),
-      ),
-    );
-  }
-
-  void process(
-      BuildContext context, String reference, RequestState state) async {
-    if (state.status != RequestStatus.success) {
-      textController.text = '';
-      setState(() {
-        error = 'нет данных с сервера';
-      });
-
-      return;
-    }
-
-    // setState(() {
-    //   object = MemoryItem.empty();
-    // });
-
-    for (final item in state.items) {
-      if (item.json['reference'] == reference) {
-        textController.text = '';
-        setState(() {
-          error = 'такой товар уже есть';
-        });
-        return;
-      }
-    }
-
-    final res = await Api.feathers().get(
-      serviceName: "memories",
-      objectId: reference,
-      params: {
-        "oid": Api.instance.oid,
-      },
-    );
-
-    print("res $res");
-
-    final docId = res[cDocument];
-    if (docId != null) {
-      final document = await Api.feathers().get(
-        serviceName: "memories",
-        objectId: docId,
-        params: {'oid': Api.instance.oid},
-      );
-
-      print("document $document");
-
-      textController.text = '';
-
-      final data = {
-        cDocument: widget.doc.id,
-        'reference': reference,
-        cGoods: document['product']['_id'],
-        cBatch: {'id': document['_uuid'], 'date': document[cDate]},
-        cQty: res[cQty],
-        'customer': res['customer'],
-        'label': res['label'],
-      };
-
-      print("data $data");
-
-      context.read<MemoryBloc>().add(
-          MemoryCreate('memories', WHInventory.ctxOfRecord, const [], data));
-
-      // final response = await Api.feathers().create(
-      //   serviceName: "memories",
-      //   data: data,
-      //   params: {
-      //     "oid": Api.instance.oid,
-      //     'ctx': WHInventory.ctxOfRecord,
-      //   },
-      // );
-      // print("response $response");
-
-      // setState(() {
-      //   object = MemoryItem.from(response);
-      // });
     }
   }
 }
