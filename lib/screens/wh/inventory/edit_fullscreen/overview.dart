@@ -22,16 +22,6 @@ class WHInventoryOverview extends StatelessWidget {
     final theme = Theme.of(context);
     final localization = AppLocalizations.of(context);
 
-    const ctx = ['warehouse', 'inventory'];
-    final filter = {
-      cDocument: doc.id,
-    };
-    final schema = <Field>[
-      fGoods.copyWith(width: 3.0),
-      // fUomAtQty.copyWith(width: 0.5, editable: false),
-      fQtyNew.copyWith(width: 1.0),
-    ];
-
     //  print("doc: ${doc.json}");
 
     final storage = doc.json[cStorage] is MemoryItem
@@ -68,6 +58,8 @@ class WHInventoryOverview extends StatelessWidget {
                 )),
           ),
         ),
+        if (state.status == RequestStatus.initiate)
+          const Center(child: CircularProgressIndicator()),
         ...buildItemsList(context, state.items, ''),
       ]),
     );
