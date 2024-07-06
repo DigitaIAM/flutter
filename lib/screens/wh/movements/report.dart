@@ -108,11 +108,11 @@ class _MovementReportScreenState extends State<MovementReportScreen>
     }
 
     final cols = [
-      Col("Наименование"),
-      GCol('На начало', [Col("кол-во"), Col("сумма")]),
-      GCol('Приход', [Col("кол-во"), Col("сумма")]),
-      GCol('Расход', [Col("кол-во"), Col("сумма")]),
-      GCol('На конец', [Col("кол-во"), Col("сумма")]),
+      Col("Наименование", flex: 6),
+      GCol('На начало', 6, [Col("кол-во"), Col("сумма", flex: 1)]),
+      GCol('Приход', 6, [Col("кол-во"), Col("сумма", flex: 1)]),
+      GCol('Расход', 6, [Col("кол-во"), Col("сумма", flex: 1)]),
+      GCol('На конец', 6, [Col("кол-во"), Col("сумма", flex: 1)]),
     ];
 
     var schema = [
@@ -237,7 +237,7 @@ class _MovementReportScreenState extends State<MovementReportScreen>
             if (item is GCol) {
               return groupCell(item);
             } else {
-              return titleCell(item.label);
+              return titleCell(item.label, item.flex);
             }
           }).toList(),
         ));
@@ -245,16 +245,17 @@ class _MovementReportScreenState extends State<MovementReportScreen>
 
   Widget groupCell(GCol group) {
     return Flexible(
-      flex: 5,
+      flex: group.flex,
       child: Column(
         children: [
           Expanded(
               child: Row(
-            children: [titleCell(group.label)],
+            children: [titleCell(group.label, group.flex)],
           )),
           Expanded(
               child: Row(
-            children: group.cols.map((e) => titleCell(e.label)).toList(),
+            children:
+                group.cols.map((e) => titleCell(e.label, e.flex)).toList(),
           ))
         ],
       ),
@@ -374,9 +375,9 @@ class _MovementReportScreenState extends State<MovementReportScreen>
   }
 }
 
-Widget titleCell(String content) {
+Widget titleCell(String content, int flex) {
   return Flexible(
-    flex: 5,
+    flex: flex,
     child: Container(
       decoration: BoxDecoration(
         color: Colors.white70,
@@ -480,15 +481,15 @@ class _RowWidgetState extends State<RowWidget> {
       height: 30,
       child: Row(
         children: [
-          c(label, isNumber: false, flex: 10),
+          c(label, isNumber: false, flex: 6),
           c(item.json[openQty].toStringAggregated()),
-          c(Number.f(item.json['open_balance']?['cost'] ?? '')),
+          c(Number.f(item.json['open_balance']?['cost'] ?? ''), flex: 1),
           c(item.json[receiveQty].toStringAggregated()),
-          c(Number.f(item.json['receive']?['cost'] ?? '')),
+          c(Number.f(item.json['receive']?['cost'] ?? ''), flex: 1),
           c(item.json[issueQty].toStringAggregated()),
-          c(Number.f(item.json['issue']?['cost'] ?? '')),
+          c(Number.f(item.json['issue']?['cost'] ?? ''), flex: 1),
           c(item.json[closeQty].toStringAggregated()),
-          c(Number.f(item.json['close_balance']?['cost'] ?? '')),
+          c(Number.f(item.json['close_balance']?['cost'] ?? ''), flex: 1),
         ],
       ),
     );
@@ -536,15 +537,16 @@ class _RowWidgetState extends State<RowWidget> {
 }
 
 class Col {
+  final int flex;
   final String label;
 
-  Col(this.label);
+  Col(this.label, {this.flex = 5});
 }
 
 class GCol extends Col {
   final List<Col> cols;
 
-  GCol(super.label, this.cols);
+  GCol(super.label, int flex, this.cols) : super(flex: flex);
 }
 
 class RowDetailedWidget extends StatefulWidget {
@@ -569,57 +571,57 @@ class _RowDetailedWidget extends State<RowDetailedWidget> {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            c('', isNumber: false, flex: 10),
+            c('', isNumber: false, flex: 6),
             c(item.json['qty'].toString()),
-            c(Number.f(item.json['cost'] ?? '')),
+            c(Number.f(item.json['cost'] ?? ''), flex: 1),
             c(''),
+            c('', flex: 1),
             c(''),
+            c('', flex: 1),
             c(''),
-            c(''),
-            c(''),
-            c(''),
+            c('', flex: 1),
           ]));
     } else if (opType == 'receive') {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            c(item.json['description'] ?? '', isNumber: false, flex: 10),
+            c(item.json['description'] ?? '', isNumber: false, flex: 6),
             c(''),
-            c(''),
+            c('', flex: 1),
             c(item.json['qty'].toString()),
-            c(Number.f(item.json['cost'] ?? 'nothing')),
+            c(Number.f(item.json['cost'] ?? 'nothing'), flex: 1),
             c(''),
+            c('', flex: 1),
             c(''),
-            c(''),
-            c(''),
+            c('', flex: 1),
           ]));
     } else if (opType == 'issue') {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            c(item.json['description'] ?? 'nothing', isNumber: false, flex: 10),
+            c(item.json['description'] ?? 'nothing', isNumber: false, flex: 6),
             c(''),
+            c('', flex: 1),
             c(''),
-            c(''),
-            c(''),
+            c('', flex: 1),
             c(item.json['qty'].toString()),
-            c(Number.f(item.json['cost'] ?? '')),
+            c(Number.f(item.json['cost'] ?? ''), flex: 1),
             c(''),
-            c(''),
+            c('', flex: 1),
           ]));
     } else if (opType == 'close_balance') {
       return SizedBox(
           height: 30,
           child: Row(children: [
-            c('', isNumber: false, flex: 10),
+            c('', isNumber: false, flex: 6),
             c(''),
+            c('', flex: 1),
             c(''),
+            c('', flex: 1),
             c(''),
-            c(''),
-            c(''),
-            c(''),
+            c('', flex: 1),
             c(item.json['qty'].toString()),
-            c(Number.f(item.json['cost'] ?? '')),
+            c(Number.f(item.json['cost'] ?? ''), flex: 1),
           ]));
     } else {
       return const SizedBox(height: 30, child: Row(children: []));
