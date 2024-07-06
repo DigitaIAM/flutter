@@ -122,10 +122,12 @@ class MemoryBloc extends Bloc<MemoryEvent, RequestState> {
         // enrich
         final s = event.schema ?? schema ?? [];
         if (s.isNotEmpty) {
+          List<Future<MemoryItem>> waits = [];
           for (int i = 0; i < items.length; i++) {
             final item = items[i];
-            result.add(await item.enrich(s));
+            waits.add(item.enrich(s));
           }
+          result.addAll(await Future.wait(waits));
         } else {
           result.addAll(items);
         }
