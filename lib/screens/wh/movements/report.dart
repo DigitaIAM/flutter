@@ -415,9 +415,9 @@ Widget cell(
     ),
   );
 
-  if (content.length > 20) {
-    text = Tooltip(message: content, child: text);
-  }
+  // if (content.length > 20) {
+  text = Tooltip(message: content, child: text);
+  // }
 
   final container = Container(
     padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
