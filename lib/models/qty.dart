@@ -115,7 +115,10 @@ class Qty {
     // print("Qty.toString $nums");
     var text = '';
 
-    for (final num in nums) {
+    final list = List.of(nums);
+    list.sort((a, b) => b.compareTo(a));
+
+    for (final num in list) {
       if (text.isNotEmpty) {
         text += delimiter;
       }
@@ -267,6 +270,29 @@ class Uom extends Equatable {
     }
   }
 
+  int compareTo(Uom other) {
+    final ic = id.compareTo(other.id);
+    if (ic == 0) {
+      if (deeper != null) {
+        if (other.deeper != null) {
+          final (an, au) = deeper!;
+          final (bn, bu) = other.deeper!;
+
+          final cr = au.compareTo(bu);
+
+          if (cr == 0) {
+            return an.compareTo(bn);
+          }
+        } else {
+          return 1;
+        }
+      } else {
+        return -1;
+      }
+    }
+    return ic;
+  }
+
   bool error() {
     if (haveError) {
       return true;
@@ -409,6 +435,14 @@ class Named {
 
     return Named(
         number: number, named: Uom.fromJson(json['uom']), haveError: error);
+  }
+
+  int compareTo(Named other) {
+    final cr = named.compareTo(other.named);
+    if (cr == 0) {
+      return number.compareTo(other.number);
+    }
+    return cr;
   }
 
   Decimal get lower {

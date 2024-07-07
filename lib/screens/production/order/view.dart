@@ -163,19 +163,7 @@ class ProductionOrderOverview extends StatelessWidget {
 
     final produced = Qty.fromJson(order.json['produced']);
 
-    print('order ${order.json}');
-    print('cProduct ${order[cProduct]?.json}');
-
-    final goodsId = order[cProduct]?[cGoods]?.id ?? '';
     var qtyProduced = produced.lower;
-
-    for (final item in order.json['_material']['used']) {
-      if (goodsId == item[cGoods]['_id']) {
-        final qty = Qty.fromJson(item[cQty]);
-
-        qtyProduced = qtyProduced - qty.lower;
-      }
-    }
 
     final widgets = <Widget>[
       const SizedBox(height: 10),
