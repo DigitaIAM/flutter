@@ -25,12 +25,17 @@ class _ScanRegistrationState extends State<ScanRegistration> {
 
   final focusNode = FocusNode();
 
+  String lang = 'EN';
+  String scanText = '';
   String error = '';
 
   final mappingRU =
       'йцукенгшщзхъфывапролджячсмитьбю. ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ,';
   final mappingEN =
       'qwertyuiop[]asdfghjkl;zxcvbnm,./ QWERTYUIOP{}ASDFGHJKL:"|ZXCVBNM<>?';
+
+  final rus = 'йцукенгшщзхъфывапролджячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ';
+  final eng = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
 
   @override
   void dispose() {
@@ -53,11 +58,22 @@ class _ScanRegistrationState extends State<ScanRegistration> {
             // print("keyboard $event");
             if (event is KeyDownEvent) {
               if (event.logicalKey == LogicalKeyboardKey.enter) {
+                lang = 'EN';
+                for (final ch in rus.characters) {
+                  if (scanText.contains(ch)) {
+                    lang = 'RU';
+                    break;
+                  }
+                }
+                if (lang == 'EN') {
+                  textController.text = scanText;
+                }
                 final reference = textController.text;
                 process(context, reference, state);
               } else {
                 final char = event.character;
                 if (char != null) {
+                  scanText += char;
                   final index = mappingRU.indexOf(char);
                   if (index < 0) {
                     textController.text += char;
@@ -163,6 +179,7 @@ class _ScanRegistrationState extends State<ScanRegistration> {
       }
     } finally {
       textController.text = '';
+      scanText = '';
     }
   }
 }
